@@ -14,6 +14,7 @@ import {
 import AuthLayout from '../components/auth/AuthLayout';
 import Button from '../components/common/Button';
 import { auth } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 
 type VerificationState = 'loading' | 'success' | 'error' | 'pending';
 
@@ -21,6 +22,7 @@ const VerifyEmail: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const location = useLocation();
+  const { user, refreshSession } = useAuth();
 
   const token = searchParams.get('token');
   const emailFromState = location.state?.email as string | undefined;
@@ -39,6 +41,36 @@ const VerifyEmail: React.FC = () => {
       verifyEmail(token);
     }
   }, [token]);
+
+  // Poll for verification status if pending and user exists
+  useEffect(() => {
+    let interval: ReturnType<typeof setInterval>;
+    if (state === 'pending' && user && !user.emailVerified) {
+      interval = setInterval(() => {
+        refreshSession();
+      }, 5000);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [state, user, refreshSession]);
+
+  // Update state if user becomes verified via polling
+  useEffect(() => {
+    if (state === 'pending' && user?.emailVerified) {
+      setState('success');
+    }
+  }, [user?.emailVerified, state]);
+
+  // Auto-redirect on success
+  useEffect(() => {
+    if (state === 'success') {
+      const timer = setTimeout(() => {
+        navigate('/dashboard');
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [state, navigate]);
 
   // Resend cooldown timer
   useEffect(() => {
@@ -144,7 +176,7 @@ const VerifyEmail: React.FC = () => {
             icon={<ArrowRight className="w-5 h-5" />}
             iconPosition="right"
           >
-            Go to Dashboard
+            Go to Dashboard (Redirecting...)
           </Button>
 
           <p className="text-gray-500 text-sm">
