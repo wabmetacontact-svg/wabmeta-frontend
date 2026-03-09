@@ -39,9 +39,15 @@ export default function SimpleBulkPasteModal({ isOpen, onClose, onSuccess, group
 
     const getPreviewCount = () => {
         if (!phoneNumbers.trim()) return 0;
-        return phoneNumbers
-            .split(/[\n,;\s]+/)
-            .filter(n => n.trim().length > 0)
+        // Normalize spaced phone formats: +91 98765 43210 → +919876543210
+        const normalized = phoneNumbers.replace(
+            /(\+\d{1,4})\s+(\d[\d\s]{6,14}\d)/g,
+            (_match: string, cc: string, rest: string) => cc + rest.replace(/\s+/g, '')
+        );
+        return normalized
+            .split(/[\n,;]+/)
+            .flatMap((line: string) => line.trim().split(/\s+/).filter((p: string) => p.length > 0))
+            .filter((n: string) => n.length > 0)
             .length;
     };
 
@@ -158,7 +164,7 @@ export default function SimpleBulkPasteModal({ isOpen, onClose, onSuccess, group
                                 Auto Country Detection
                             </p>
                             <p className="text-sm text-green-600 dark:text-green-400 mt-1">
-                                Include country code with each number (e.g., +91, +1, +44).
+                                Include country code with each number (e.g., +919876543210 or +91 98765 43210).
                                 Numbers will be automatically validated.
                             </p>
                         </div>
@@ -177,10 +183,10 @@ export default function SimpleBulkPasteModal({ isOpen, onClose, onSuccess, group
 
 Examples:
 +919876543210
++91 98765 43210
 +14155551234
 +447911123456
-+971501234567
-+8613912345678`}
++971501234567`}
                             className="w-full h-52 px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-sm resize-none"
                         />
                         <div className="flex items-center justify-between mt-2">
