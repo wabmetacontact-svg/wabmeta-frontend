@@ -47,6 +47,9 @@ interface DashboardStats {
     thisMonthSent: number;
   };
   revenue: {
+    totalRevenue: number;
+    monthlyRevenue: number;
+    todayRevenue: number;
     mrr: number;
     arr: number;
   };
@@ -363,6 +366,9 @@ const AdminDashboard: React.FC = () => {
       thisMonthSent: 0
     },
     revenue: {
+      totalRevenue: 0,
+      monthlyRevenue: 0,
+      todayRevenue: 0,
       mrr: 0,
       arr: 0
     },
@@ -394,6 +400,9 @@ const AdminDashboard: React.FC = () => {
       thisMonthSent: dashboardStats.messages?.thisMonthSent ?? 0,
     },
     revenue: {
+      totalRevenue: dashboardStats.revenue?.totalRevenue ?? 0,
+      monthlyRevenue: dashboardStats.revenue?.monthlyRevenue ?? 0,
+      todayRevenue: dashboardStats.revenue?.todayRevenue ?? 0,
       mrr: dashboardStats.revenue?.mrr ?? 0,
       arr: dashboardStats.revenue?.arr ?? 0,
     },
@@ -462,7 +471,7 @@ const AdminDashboard: React.FC = () => {
         />
         <StatCard
           title="Monthly Revenue"
-          value={formatINR(safeStats.revenue.mrr)}
+          value={formatINR(safeStats.revenue.monthlyRevenue / 100)}
           icon={CreditCard}
           iconBg="bg-orange-100"
           iconColor="text-orange-600"
@@ -491,20 +500,37 @@ const AdminDashboard: React.FC = () => {
       </div>
 
       {/* Revenue Card */}
-      <div className="bg-gradient-to-r from-gray-900 to-gray-800 rounded-2xl p-6 text-white">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-gray-400 text-sm font-medium">Annual Recurring Revenue (ARR)</p>
-            {/* ✅ FIXED: Safe toLocaleString */}
-            <p className="text-4xl font-bold mt-2">
-              {formatINR(safeStats.revenue.arr || 0)}
-            </p>
-            <p className="text-gray-400 text-sm mt-2">
-              Based on {formatINR(safeStats.revenue.mrr || 0)} MRR
-            </p>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="bg-gradient-to-r from-green-700 to-green-800 rounded-2xl p-6 text-white">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-green-200 text-sm font-medium">Total Revenue (All Time)</p>
+              <p className="text-4xl font-bold mt-2">
+                {formatINR(safeStats.revenue.totalRevenue / 100)}
+              </p>
+              <p className="text-green-200 text-sm mt-2">
+                Today: {formatINR(safeStats.revenue.todayRevenue / 100)}
+              </p>
+            </div>
+            <div className="hidden md:block">
+              <CreditCard className="w-16 h-16 text-green-600" />
+            </div>
           </div>
-          <div className="hidden md:block">
-            <BarChart3 className="w-20 h-20 text-gray-700" />
+        </div>
+        <div className="bg-gradient-to-r from-gray-900 to-gray-800 rounded-2xl p-6 text-white">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-gray-400 text-sm font-medium">Annual Recurring Revenue (ARR)</p>
+              <p className="text-4xl font-bold mt-2">
+                {formatINR(safeStats.revenue.arr || 0)}
+              </p>
+              <p className="text-gray-400 text-sm mt-2">
+                Based on {formatINR(safeStats.revenue.mrr || 0)} MRR
+              </p>
+            </div>
+            <div className="hidden md:block">
+              <BarChart3 className="w-20 h-20 text-gray-700" />
+            </div>
           </div>
         </div>
       </div>
