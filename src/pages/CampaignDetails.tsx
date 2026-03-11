@@ -114,7 +114,10 @@ const CampaignDetails: React.FC = () => {
         limit: 10,
       });
       if (response.data.success) {
-        setRecipients(response.data.data.recipients || response.data.data.contacts || []);
+        // The API returns the list directly in response.data.data
+        const data = response.data.data;
+        const recipientsList = Array.isArray(data) ? data : (data.recipients || data.contacts || []);
+        setRecipients(recipientsList);
         setRecipientsMeta(response.data.meta);
       }
     } catch (err: any) {
