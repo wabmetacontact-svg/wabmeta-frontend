@@ -40,6 +40,13 @@ const CampaignDetails: React.FC = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // ✅ Recipient list state
+  const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
+  const [recipients, setRecipients] = useState<any[]>([]);
+  const [recipientsLoading, setRecipientsLoading] = useState(false);
+  const [recipientsMeta, setRecipientsMeta] = useState<any>(null);
+  const [recipientsPage, setRecipientsPage] = useState(1);
+
   // ✅ Real-time socket hook
   const {
     progress,
@@ -94,6 +101,43 @@ const CampaignDetails: React.FC = () => {
     } finally {
       setLoading(false);
       setRefreshing(false);
+    }
+  };
+
+  const fetchRecipients = async (status: string | null, page = 1) => {
+    if (!id) return;
+    setRecipientsLoading(true);
+    try {
+      const response = await campaignsApi.getRecipients(id, {
+        status: (status === 'TOTAL' || !status) ? undefined : status,
+        page,
+        limit: 10,
+      });
+      if (response.data.success) {
+        setRecipients(response.data.data.recipients || response.data.data.contacts || []);
+        setRecipientsMeta(response.data.meta);
+      }
+    } catch (err: any) {
+      toast.error('Failed to load recipients');
+    } finally {
+      setRecipientsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (selectedStatus) {
+      fetchRecipients(selectedStatus, recipientsPage);
+    } else {
+      setRecipients([]);
+    }
+  }, [selectedStatus, recipientsPage, id]);
+
+  const handleStatusClick = (status: string) => {
+    if (selectedStatus === status) {
+      setSelectedStatus(null);
+    } else {
+      setSelectedStatus(status);
+      setRecipientsPage(1);
     }
   };
 
@@ -420,7 +464,11 @@ const CampaignDetails: React.FC = () => {
       {/* Metrics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
         {/* Total Recipients */}
-        <div className="bg-gray-900 text-white rounded-xl p-5 shadow-sm">
+        <div
+          onClick={() => handleStatusClick('TOTAL')}
+          className={`cursor-pointer transition-all duration-200 hover:scale-[1.02] ${selectedStatus === 'TOTAL' ? 'ring-2 ring-blue-500 ring-offset-2 dark:ring-offset-gray-900' : ''
+            } bg-gray-900 text-white rounded-xl p-5 shadow-sm`}
+        >
           <div className="flex items-center justify-between mb-4">
             <div className="p-2 bg-gray-800 rounded-lg">
               <Users className="w-5 h-5 text-gray-300" />
@@ -431,7 +479,11 @@ const CampaignDetails: React.FC = () => {
         </div>
 
         {/* Sent */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl p-5 border border-gray-200 dark:border-gray-700 shadow-sm">
+        <div
+          onClick={() => handleStatusClick('SENT')}
+          className={`cursor-pointer transition-all duration-200 hover:scale-[1.02] ${selectedStatus === 'SENT' ? 'ring-2 ring-blue-400 ring-offset-2 dark:ring-offset-gray-900' : ''
+            } bg-white dark:bg-gray-800 rounded-xl p-5 border border-gray-200 dark:border-gray-700 shadow-sm`}
+        >
           <div className="flex items-center justify-between mb-4">
             <div className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
               <Send className="w-5 h-5 text-blue-600 dark:text-blue-400" />
@@ -445,7 +497,11 @@ const CampaignDetails: React.FC = () => {
         </div>
 
         {/* Delivered */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl p-5 border border-gray-200 dark:border-gray-700 shadow-sm">
+        <div
+          onClick={() => handleStatusClick('DELIVERED')}
+          className={`cursor-pointer transition-all duration-200 hover:scale-[1.02] ${selectedStatus === 'DELIVERED' ? 'ring-2 ring-green-400 ring-offset-2 dark:ring-offset-gray-900' : ''
+            } bg-white dark:bg-gray-800 rounded-xl p-5 border border-gray-200 dark:border-gray-700 shadow-sm`}
+        >
           <div className="flex items-center justify-between mb-4">
             <div className="p-2 bg-green-50 dark:bg-green-900/20 rounded-lg">
               <CheckCircle2 className="w-5 h-5 text-green-600 dark:text-green-400" />
@@ -461,7 +517,11 @@ const CampaignDetails: React.FC = () => {
         </div>
 
         {/* Read */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl p-5 border border-gray-200 dark:border-gray-700 shadow-sm">
+        <div
+          onClick={() => handleStatusClick('READ')}
+          className={`cursor-pointer transition-all duration-200 hover:scale-[1.02] ${selectedStatus === 'READ' ? 'ring-2 ring-purple-400 ring-offset-2 dark:ring-offset-gray-900' : ''
+            } bg-white dark:bg-gray-800 rounded-xl p-5 border border-gray-200 dark:border-gray-700 shadow-sm`}
+        >
           <div className="flex items-center justify-between mb-4">
             <div className="p-2 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
               <Eye className="w-5 h-5 text-purple-600 dark:text-purple-400" />
@@ -477,7 +537,11 @@ const CampaignDetails: React.FC = () => {
         </div>
 
         {/* Failed */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl p-5 border border-gray-200 dark:border-gray-700 shadow-sm">
+        <div
+          onClick={() => handleStatusClick('FAILED')}
+          className={`cursor-pointer transition-all duration-200 hover:scale-[1.02] ${selectedStatus === 'FAILED' ? 'ring-2 ring-red-400 ring-offset-2 dark:ring-offset-gray-900' : ''
+            } bg-white dark:bg-gray-800 rounded-xl p-5 border border-gray-200 dark:border-gray-700 shadow-sm`}
+        >
           <div className="flex items-center justify-between mb-4">
             <div className="p-2 bg-red-50 dark:bg-red-900/20 rounded-lg">
               <XCircle className="w-5 h-5 text-red-600 dark:text-red-400" />
@@ -490,6 +554,118 @@ const CampaignDetails: React.FC = () => {
           <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">Failed</div>
         </div>
       </div>
+
+      {/* ✅ Recipient List Section */}
+      {selectedStatus && (
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden animate-fadeIn">
+          <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between bg-gray-50 dark:bg-gray-800/50">
+            <h3 className="font-semibold text-gray-900 dark:text-white">
+              {selectedStatus === 'TOTAL' ? 'All Recipients' : `${selectedStatus} Recipients`}
+            </h3>
+            <button
+              onClick={() => setSelectedStatus(null)}
+              className="text-sm text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+            >
+              Close
+            </button>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-left">
+              <thead className="bg-gray-50 dark:bg-gray-800 text-xs text-gray-500 uppercase">
+                <tr>
+                  <th className="px-6 py-3 font-medium">Recipient</th>
+                  <th className="px-6 py-3 font-medium">Status</th>
+                  <th className="px-6 py-3 font-medium">Sent At</th>
+                  <th className="px-6 py-3 font-medium">Updates</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+                {recipientsLoading && recipients.length === 0 ? (
+                  <tr>
+                    <td colSpan={4} className="px-6 py-10 text-center">
+                      <Loader2 className="w-6 h-6 animate-spin mx-auto text-blue-500" />
+                    </td>
+                  </tr>
+                ) : recipients.length === 0 ? (
+                  <tr>
+                    <td colSpan={4} className="px-6 py-10 text-center text-gray-500">
+                      No recipients found for this status
+                    </td>
+                  </tr>
+                ) : (
+                  recipients.map((rec) => (
+                    <tr key={rec.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                      <td className="px-6 py-4">
+                        <div className="font-medium text-gray-900 dark:text-white">{rec.fullName || rec.phone}</div>
+                        <div className="text-xs text-gray-500">{rec.phone}</div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${rec.status === 'SENT' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400' :
+                          rec.status === 'DELIVERED' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' :
+                            rec.status === 'READ' ? 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400' :
+                              rec.status === 'FAILED' ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400' :
+                                'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400'
+                          }`}>
+                          {rec.status}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-xs text-gray-500 dark:text-gray-400">
+                        {rec.sentAt ? new Date(rec.sentAt).toLocaleString() : 'Pending'}
+                      </td>
+                      <td className="px-6 py-4">
+                        {rec.failureReason ? (
+                          <div className="text-[10px] text-red-500 max-w-[200px] truncate" title={rec.failureReason}>
+                            {rec.failureReason}
+                          </div>
+                        ) : (
+                          <div className="flex gap-2">
+                            {rec.deliveredAt && (
+                              <span title={`Delivered: ${new Date(rec.deliveredAt).toLocaleString()}`}>
+                                <CheckCircle2 className="w-4 h-4 text-green-500" />
+                              </span>
+                            )}
+                            {rec.readAt && (
+                              <span title={`Read: ${new Date(rec.readAt).toLocaleString()}`}>
+                                <Eye className="w-4 h-4 text-purple-500" />
+                              </span>
+                            )}
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Pagination */}
+          {recipientsMeta && recipientsMeta.totalPages > 1 && (
+            <div className="px-6 py-4 bg-gray-50 dark:bg-gray-800/50 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
+              <span className="text-sm text-gray-500">
+                Page {recipientsPage} of {recipientsMeta.totalPages}
+              </span>
+              <div className="flex gap-2">
+                <button
+                  disabled={recipientsPage === 1}
+                  onClick={() => setRecipientsPage(p => p - 1)}
+                  className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm disabled:opacity-50"
+                >
+                  Previous
+                </button>
+                <button
+                  disabled={recipientsPage === recipientsMeta.totalPages}
+                  onClick={() => setRecipientsPage(p => p + 1)}
+                  className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm disabled:opacity-50"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* ✅ Live Contact Updates Feed */}
       {contactUpdates.length > 0 && (
