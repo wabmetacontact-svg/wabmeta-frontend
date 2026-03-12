@@ -425,6 +425,20 @@ const CreateTemplate: React.FC = () => {
       return;
     }
 
+    // ✅ Clean name one last time (trim trailing underscores)
+    const cleanName = formData.name.replace(/_+$/, '');
+    if (cleanName.length < 3) {
+      setErrors(prev => ({ ...prev, name: 'Template name too short after cleaning' }));
+      return;
+    }
+    
+    // ✅ Check for forbidden words
+    if (cleanName.includes('meta') || cleanName.includes('whatsapp')) {
+      setApiError('Template name cannot contain "meta" or "whatsapp". Meta will reject these templates.');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+
     setSaving(true);
 
     try {
@@ -463,7 +477,7 @@ const CreateTemplate: React.FC = () => {
 
       // Build payload with whatsappAccountId
       const payload: Record<string, any> = {
-        name: formData.name.trim(),
+        name: cleanName, // ✅ Use clean name
         language: formData.language,
         category: formData.category.toUpperCase(),
         headerType: formData.header.type.toUpperCase(),
@@ -594,13 +608,18 @@ const CreateTemplate: React.FC = () => {
               </button>
               <button
                 onClick={() => handleSubmit(false)}
-                disabled={saving || loadingAccounts || whatsappAccounts.length === 0}
+                disabled={saving || loadingAccounts || mediaUploading || whatsappAccounts.length === 0}
                 className="flex items-center space-x-2 px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white font-medium rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {saving ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
                     <span>Submitting...</span>
+                  </>
+                ) : mediaUploading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Uploading Media...</span>
                   </>
                 ) : (
                   <>
