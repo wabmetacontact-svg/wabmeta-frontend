@@ -816,7 +816,7 @@ const CreateTemplate: React.FC = () => {
                       <div className="space-y-4">
                         <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-5 border border-dashed border-gray-300 dark:border-gray-600 transition-all hover:bg-gray-100 dark:hover:bg-gray-700/50">
                           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">
-                            Header Media (Preview Sample)
+                            Header Media (Approval Sample)
                           </label>
                           
                           <div className="flex flex-col space-y-4">
@@ -857,7 +857,7 @@ const CreateTemplate: React.FC = () => {
                                   <Upload className="w-5 h-5" />
                                 )}
                                 <span className="font-semibold">
-                                  {formData.header.mediaUrl ? 'Change Media' : `Upload Sample ${formData.header.type}`}
+                                  {formData.header.mediaUrl ? 'Change Media' : `Upload Approval Sample`}
                                 </span>
                               </label>
                             </div>
@@ -867,7 +867,7 @@ const CreateTemplate: React.FC = () => {
                         <div className="bg-blue-50 dark:bg-blue-900/10 rounded-lg p-3 flex items-start space-x-2">
                           <Info className="w-4 h-4 text-blue-500 mt-0.5 shrink-0" />
                           <p className="text-xs text-blue-700 dark:text-blue-300">
-                            This media is used for preview purposes. When sending a campaign, you can choose to use this sample or upload new media for each recipient.
+                            This media will be sent to Meta as a sample for template approval. When sending a campaign, you can choose to use this sample or provide different media for each recipient.
                           </p>
                         </div>
                       </div>

@@ -626,7 +626,7 @@ const Contacts: React.FC = () => {
 
     try {
       await api.delete(`/contacts/groups/${groupId}`);
-      await fetchGroups();
+      await fetchAll();
       if (activeGroup?.id === groupId) {
         setActiveGroup(null);
         setActiveTab('contacts');
