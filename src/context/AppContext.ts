@@ -8,6 +8,7 @@ export interface UserType {
     phone?: string;
     name: string;
     email: string;
+    avatar?: string | null;
 }
 
 export interface AppContextType {

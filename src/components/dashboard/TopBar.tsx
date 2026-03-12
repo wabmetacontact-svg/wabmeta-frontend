@@ -33,9 +33,15 @@ const TopBar: React.FC<TopBarProps> = ({ onMenuClick, sidebarCollapsed }) => {
   const [showSearch, setShowSearch] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
+  const [avatarError, setAvatarError] = useState(false);
 
   const notificationRef = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
+
+  // Reset avatar error when user changes
+  useEffect(() => {
+    setAvatarError(false);
+  }, [user?.avatar]);
 
   // Handle Logout
   const handleLogout = async () => {
@@ -199,8 +205,19 @@ const TopBar: React.FC<TopBarProps> = ({ onMenuClick, sidebarCollapsed }) => {
               onClick={() => setShowProfile(!showProfile)}
               className="flex items-center space-x-2 p-1.5 rounded-xl hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors"
             >
-              <div className="w-9 h-9 bg-linear-to-br from-primary-500 to-whatsapp-teal rounded-full flex items-center justify-center text-white font-bold text-sm">
-                {user?.name ? user.name.substring(0, 2).toUpperCase() : 'JD'}
+              <div className="w-9 h-9 rounded-full overflow-hidden border border-gray-100 dark:border-slate-800 flex items-center justify-center bg-gray-100 dark:bg-slate-800">
+                {user?.avatar && !avatarError ? (
+                  <img
+                    src={user.avatar}
+                    alt={user.name}
+                    className="w-full h-full object-cover"
+                    onError={() => setAvatarError(true)}
+                  />
+                ) : (
+                  <div className="w-full h-full bg-linear-to-br from-primary-500 to-whatsapp-teal flex items-center justify-center text-white font-bold text-sm">
+                    {user?.name ? user.name.substring(0, 2).toUpperCase() : 'JD'}
+                  </div>
+                )}
               </div>
               <div className="hidden md:block text-left">
                 <p className="text-sm font-medium text-gray-900 dark:text-slate-100">{user?.name || 'Guest'}</p>

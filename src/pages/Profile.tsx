@@ -18,6 +18,8 @@ import {
   Monitor
 } from 'lucide-react';
 import { auth, users } from '../services/api';
+import { useAuth } from '../context/AuthContext';
+import { useApp } from '../context/AppContext';
 
 interface UserProfile {
   id: string;
@@ -42,6 +44,8 @@ interface Session {
 }
 
 const Profile: React.FC = () => {
+  const { updateUser } = useAuth();
+  const { setUser } = useApp();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -167,6 +171,16 @@ const Profile: React.FC = () => {
       const updatedUser = response.data?.data || response.data;
       if (updatedUser) {
         setProfile((prev) => prev ? { ...prev, ...updatedUser } : updatedUser);
+        
+        // ✅ Sync Global State
+        updateUser(updatedUser);
+        setUser({
+          name: [updatedUser.firstName, updatedUser.lastName].filter(Boolean).join(" ") || updatedUser.email,
+          email: updatedUser.email,
+          phone: updatedUser.phone || "",
+          role: updatedUser.role || "",
+          avatar: updatedUser.avatar || null,
+        });
       }
       
       setSuccess(true);

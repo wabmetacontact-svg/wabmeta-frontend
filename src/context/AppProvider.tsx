@@ -27,6 +27,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
                 email: u.email,
                 phone: u.phone || "",
                 role: u.role || "",
+                avatar: u.avatar || null,
             };
         } catch {
             return null;
