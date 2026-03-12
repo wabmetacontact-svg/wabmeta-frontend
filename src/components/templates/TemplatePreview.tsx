@@ -142,12 +142,23 @@ const PreviewContent: React.FC<PreviewContentProps> = ({ template, sampleVariabl
                   )}
                   {template.header.type === 'video' && (
                     <div className="aspect-video bg-gray-700 flex items-center justify-center relative">
-                      <div className="text-center text-gray-400">
-                        <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto">
-                          <Play className="w-8 h-8 text-white ml-1" fill="white" />
+                      {template.header.mediaUrl ? (
+                         <video 
+                           src={template.header.mediaUrl} 
+                           className="w-full h-full object-cover"
+                           controls={false}
+                           autoPlay
+                           muted
+                           loop
+                         />
+                      ) : (
+                        <div className="text-center text-gray-400">
+                          <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto">
+                            <Play className="w-8 h-8 text-white ml-1" fill="white" />
+                          </div>
+                          <p className="text-sm mt-2">Video Header</p>
                         </div>
-                        <p className="text-sm mt-2">Video Header</p>
-                      </div>
+                      )}
                     </div>
                   )}
                   {template.header.type === 'document' && (

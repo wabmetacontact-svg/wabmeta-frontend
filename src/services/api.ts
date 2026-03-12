@@ -792,6 +792,15 @@ export const inbox = {
   },
   markAsRead: (conversationId: string) =>
     api.post<ApiResponse>(`/inbox/conversations/${conversationId}/read`),
+  uploadMedia: (file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return api.post<ApiResponse>('/inbox/media/upload', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+  },
   stats: () => api.get<ApiResponse>('/inbox/stats'),
 };
 

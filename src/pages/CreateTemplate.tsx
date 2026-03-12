@@ -19,8 +19,9 @@ import {
   Trash2,
   MessageSquare,
   RefreshCw,
+  Upload,
 } from 'lucide-react';
-import api, { templates as templateApi } from '../services/api';
+import api, { templates as templateApi, inbox } from '../services/api';
 import TemplatePreview from '../components/templates/TemplatePreview';
 import type { TemplateFormData, HeaderType, TemplateCategory } from '../types/template';
 
@@ -57,6 +58,7 @@ const CreateTemplate: React.FC = () => {
   const [selectedAccountId, setSelectedAccountId] = useState<string>('');
   const [loadingAccounts, setLoadingAccounts] = useState(true);
   const [accountsError, setAccountsError] = useState<string | null>(null);
+  const [mediaUploading, setMediaUploading] = useState(false);
 
   // Form State - Initialize from duplicate if exists
   const [formData, setFormData] = useState<TemplateFormData>({
@@ -227,6 +229,42 @@ const CreateTemplate: React.FC = () => {
       setSelectedAccountId('');
     } finally {
       setLoadingAccounts(false);
+    }
+  };
+
+  // ✅ HANDLER: Media Upload for Preview
+  const handleMediaUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate size (16MB max)
+    if (file.size > 16 * 1024 * 1024) {
+      setApiError('File is too large. Max size is 16MB.');
+      return;
+    }
+
+    try {
+      setMediaUploading(true);
+      setApiError(null);
+
+      // 1. Local preview (instant)
+      const localUrl = URL.createObjectURL(file);
+      updateFormData('header', { ...formData.header, mediaUrl: localUrl });
+
+      // 2. Upload to server (for persistence)
+      const response = await inbox.uploadMedia(file);
+      if (response.data?.success && response.data?.data?.url) {
+        updateFormData('header', {
+          ...formData.header,
+          mediaUrl: response.data.data.url,
+          fileName: file.name
+        });
+      }
+    } catch (error: any) {
+      console.error('❌ Upload failed:', error);
+      setApiError('Failed to upload media. Using local preview.');
+    } finally {
+      setMediaUploading(false);
     }
   };
 
@@ -775,13 +813,63 @@ const CreateTemplate: React.FC = () => {
                     )}
 
                     {['image', 'video', 'document'].includes(formData.header.type) && (
-                      <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 text-center">
-                        <p className="text-gray-600 dark:text-gray-300 text-sm">
-                          Media will be uploaded when sending the message.
-                        </p>
-                        <p className="text-gray-500 dark:text-gray-400 text-xs mt-1">
-                          You can specify a URL or upload during campaign creation.
-                        </p>
+                      <div className="space-y-4">
+                        <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-5 border border-dashed border-gray-300 dark:border-gray-600 transition-all hover:bg-gray-100 dark:hover:bg-gray-700/50">
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">
+                            Header Media (Preview Sample)
+                          </label>
+                          
+                          <div className="flex flex-col space-y-4">
+                            {/* URL Input */}
+                            <div className="flex flex-col space-y-1.5">
+                              <span className="text-xs text-gray-500 dark:text-gray-400 font-medium ml-1">Media URL</span>
+                              <input
+                                type="text"
+                                value={formData.header.mediaUrl || ''}
+                                onChange={(e) => updateFormData('header', { ...formData.header, mediaUrl: e.target.value })}
+                                placeholder={`Enter ${formData.header.type} URL`}
+                                className="w-full px-4 py-2.5 border border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-primary-500/20 outline-none"
+                              />
+                            </div>
+
+                            <div className="flex items-center space-x-3">
+                              <div className="h-px flex-1 bg-gray-200 dark:bg-gray-700" />
+                              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">OR</span>
+                              <div className="h-px flex-1 bg-gray-200 dark:bg-gray-700" />
+                            </div>
+
+                            {/* File Upload Button */}
+                            <div className="relative">
+                              <input
+                                type="file"
+                                accept={formData.header.type === 'image' ? 'image/*' : formData.header.type === 'video' ? 'video/*' : '.pdf,.doc,.docx'}
+                                onChange={handleMediaUpload}
+                                className="hidden"
+                                id="header-media-upload"
+                              />
+                              <label
+                                htmlFor="header-media-upload"
+                                className="flex items-center justify-center space-x-2 w-full px-4 py-3 bg-white dark:bg-gray-700 border border-primary-100 dark:border-primary-900 text-primary-600 dark:text-primary-400 rounded-xl hover:bg-primary-50 dark:hover:bg-primary-900/10 cursor-pointer transition-all shadow-sm border-b-2 active:translate-y-px active:border-b-0"
+                              >
+                                {mediaUploading ? (
+                                  <Loader2 className="w-5 h-5 animate-spin" />
+                                ) : (
+                                  <Upload className="w-5 h-5" />
+                                )}
+                                <span className="font-semibold">
+                                  {formData.header.mediaUrl ? 'Change Media' : `Upload Sample ${formData.header.type}`}
+                                </span>
+                              </label>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="bg-blue-50 dark:bg-blue-900/10 rounded-lg p-3 flex items-start space-x-2">
+                          <Info className="w-4 h-4 text-blue-500 mt-0.5 shrink-0" />
+                          <p className="text-xs text-blue-700 dark:text-blue-300">
+                            This media is used for preview purposes. When sending a campaign, you can choose to use this sample or upload new media for each recipient.
+                          </p>
+                        </div>
                       </div>
                     )}
 

@@ -622,7 +622,7 @@ const Contacts: React.FC = () => {
 
   const handleDeleteGroup = async (e: React.MouseEvent, groupId: string, groupName: string) => {
     e.stopPropagation();
-    if (!window.confirm(`Are you sure you want to delete the group "${groupName}"? The contacts within this group will not be deleted, only the group itself will be removed.`)) return;
+    if (!window.confirm(`Are you sure you want to delete the group "${groupName}"? All contacts within this group will also be deleted. This action cannot be undone.`)) return;
 
     try {
       await api.delete(`/contacts/groups/${groupId}`);
