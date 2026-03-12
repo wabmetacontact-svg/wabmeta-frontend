@@ -19,7 +19,8 @@ import {
   AlertCircle,
   MessageSquare,
   RefreshCw,
-  Copy
+  Copy,
+  Phone
 } from 'lucide-react';
 
 interface Message {
@@ -34,6 +35,8 @@ interface Message {
   mediaMimeType?: string | null;
   mediaId?: string | null;
   fileName?: string | null;
+  failureReason?: string | null;
+  metadata?: any;
 }
 
 interface MessageBubbleProps {
@@ -514,15 +517,44 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, onCopy }) => {
   // ==========================================
 
   const renderTemplate = (displayText: string, templateName?: string) => {
+    const hasMedia = !!message.mediaUrl;
+    const buttons = message.metadata?.buttons || [];
+
     return (
       <div className="space-y-2">
         {templateName && (
-          <div className="flex items-center gap-1.5 text-xs opacity-70">
+          <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider font-bold text-gray-400 mb-1">
             <MessageSquare className="w-3 h-3" />
-            <span>Template</span>
+            <span>Template: {templateName}</span>
           </div>
         )}
+
+        {/* Media Header */}
+        {hasMedia && (
+          <div className="mb-2 rounded-lg overflow-hidden border border-gray-100 dark:border-gray-700">
+            {message.mediaType === 'image' || displayText.includes('[Image]') ? renderImage() :
+             message.mediaType === 'video' || displayText.includes('[Video]') ? renderVideo() :
+             renderDocument()}
+          </div>
+        )}
+
         <p className="text-sm whitespace-pre-wrap break-words">{displayText}</p>
+
+        {/* Buttons */}
+        {buttons.length > 0 && (
+          <div className="pt-2 border-t border-gray-100 dark:border-gray-700 mt-2 space-y-1">
+            {buttons.map((btn: any, idx: number) => (
+              <div 
+                key={idx}
+                className="flex items-center justify-center p-2 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-600 text-xs font-semibold text-gray-600 dark:text-gray-300 pointer-events-none"
+              >
+                {btn.type === 'URL' && <ExternalLink className="w-3 h-3 mr-1.5" />}
+                {btn.type === 'PHONE_NUMBER' && <Phone className="w-3 h-3 mr-1.5" />}
+                {btn.text}
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     );
   };
@@ -620,6 +652,16 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, onCopy }) => {
           <span className="text-[10px]">{formatTime(message.timestamp || (message as any).createdAt)}</span>
           {renderStatus()}
         </div>
+
+        {/* Failure Reason */}
+        {message.status?.toUpperCase() === 'FAILED' && message.failureReason && (
+          <div className="mt-2 pt-2 border-t border-red-400/30 flex items-start gap-1.5">
+            <AlertCircle className="w-3.5 h-3.5 text-red-200 shrink-0 mt-0.5" />
+            <p className="text-[10px] text-red-100 font-medium">
+              Failed: {message.failureReason}
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );

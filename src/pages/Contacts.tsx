@@ -620,7 +620,27 @@ const Contacts: React.FC = () => {
     }
   };
 
-  const handleRefreshProfile = async (id: string) => {
+  const handleDeleteGroup = async (e: React.MouseEvent, groupId: string, groupName: string) => {
+    e.stopPropagation();
+    if (!window.confirm(`Are you sure you want to delete the group "${groupName}"? The contacts within this group will not be deleted, only the group itself will be removed.`)) return;
+
+    try {
+      await api.delete(`/contacts/groups/${groupId}`);
+      await fetchGroups();
+      if (activeGroup?.id === groupId) {
+        setActiveGroup(null);
+        setActiveTab('contacts');
+      }
+    } catch (err: any) {
+      alert(
+        err.response?.data?.error ||
+        err.response?.data?.message ||
+        'Failed to delete group'
+      );
+    }
+  };
+
+   const handleRefreshProfile = async (id: string) => {
     setRefreshingProfile(id);
     try {
       await api.post(`/contacts/${id}/refresh-profile`);
@@ -1214,8 +1234,12 @@ const Contacts: React.FC = () => {
                     <Users className="w-4 h-4" />
                     <span>{group.contactCount.toLocaleString()} {group.contactCount === 1 ? 'number' : 'numbers'}</span>
                   </div>
-                  <button className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg opacity-0 group-hover/card:opacity-100 transition-opacity">
-                    <MoreVertical className="w-4 h-4" />
+                  <button 
+                    onClick={(e) => handleDeleteGroup(e, group.id, group.name)}
+                    className="absolute top-4 right-4 p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg opacity-0 group-hover/card:opacity-100 transition-opacity"
+                    title="Delete Group"
+                  >
+                    <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
               ))}

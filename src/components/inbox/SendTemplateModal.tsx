@@ -9,6 +9,8 @@ import {
     Search,
     AlertCircle,
     MessageSquare,
+    Image as ImageIcon,
+    Video,
 } from 'lucide-react';
 import { templates, whatsapp } from '../../services/api';
 import toast from 'react-hot-toast';
@@ -49,6 +51,7 @@ const SendTemplateModal: React.FC<SendTemplateModalProps> = ({
     const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null);
     const [search, setSearch] = useState('');
     const [variableValues, setVariableValues] = useState<Record<string, string>>({});
+    const [headerMediaUrl, setHeaderMediaUrl] = useState('');
 
     useEffect(() => {
         if (isOpen) {
@@ -84,14 +87,18 @@ const SendTemplateModal: React.FC<SendTemplateModalProps> = ({
 
     const handleSelectTemplate = (template: Template) => {
         setSelectedTemplate(template);
+        setHeaderMediaUrl(template.headerContent || '');
 
         // Initialize variable values
-        const vars = extractVariables(template.bodyText);
+        const bodyVars = extractVariables(template.bodyText);
+        const headerVars = template.headerType === 'TEXT' ? extractVariables(template.headerContent || '') : [];
+        const allVars = [...new Set([...bodyVars, ...headerVars])];
+        
         const initialValues: Record<string, string> = {};
 
-        vars.forEach((v, index) => {
+        allVars.forEach((v, index) => {
             // Pre-fill with contact info if available
-            if (index === 0 && contactName) {
+            if (v === '{{1}}' && contactName) {
                 initialValues[v] = contactName;
             } else {
                 initialValues[v] = '';
@@ -105,6 +112,19 @@ const SendTemplateModal: React.FC<SendTemplateModalProps> = ({
         if (!selectedTemplate) return '';
 
         let text = selectedTemplate.bodyText;
+        Object.entries(variableValues).forEach(([key, value]) => {
+            text = text.replace(key, value || key);
+        });
+
+        return text;
+    };
+
+    const getHeaderPreview = () => {
+        if (!selectedTemplate || !selectedTemplate.headerContent || selectedTemplate.headerType !== 'TEXT') {
+            return selectedTemplate?.headerContent || '';
+        }
+
+        let text = selectedTemplate.headerContent;
         Object.entries(variableValues).forEach(([key, value]) => {
             text = text.replace(key, value || key);
         });
@@ -141,18 +161,51 @@ const SendTemplateModal: React.FC<SendTemplateModalProps> = ({
                 return;
             }
 
-            // Prepare params array according to Meta API spec
-            let formattedParams: any[] = [];
-            if (vars.length > 0) {
-                formattedParams = [
-                    {
-                        type: 'body',
-                        parameters: vars.map(v => ({
-                            type: 'text',
-                            text: variableValues[v] || ' ', // fallback to space if empty
-                        }))
+            // Prepare components array according to Meta API spec
+            const components: any[] = [];
+            
+            // 1. Header component
+            if (selectedTemplate.headerType && selectedTemplate.headerType !== 'NONE') {
+                const headerVars = selectedTemplate.headerType === 'TEXT' ? extractVariables(selectedTemplate.headerContent || '') : [];
+                
+                if (['IMAGE', 'VIDEO', 'DOCUMENT'].includes(selectedTemplate.headerType)) {
+                    if (!headerMediaUrl) {
+                        toast.error(`Please provide a ${selectedTemplate.headerType.toLowerCase()} URL`);
+                        setSending(false);
+                        return;
                     }
-                ];
+                    components.push({
+                        type: 'header',
+                        parameters: [
+                            {
+                                type: selectedTemplate.headerType.toLowerCase(),
+                                [selectedTemplate.headerType.toLowerCase()]: {
+                                    link: headerMediaUrl
+                                }
+                            }
+                        ]
+                    });
+                } else if (selectedTemplate.headerType === 'TEXT' && headerVars.length > 0) {
+                    components.push({
+                        type: 'header',
+                        parameters: headerVars.map(v => ({
+                            type: 'text',
+                            text: variableValues[v] || ' '
+                        }))
+                    });
+                }
+            }
+
+            // 2. Body component
+            const bodyVars = extractVariables(selectedTemplate.bodyText);
+            if (bodyVars.length > 0) {
+                components.push({
+                    type: 'body',
+                    parameters: bodyVars.map(v => ({
+                        type: 'text',
+                        text: variableValues[v] || ' ',
+                    }))
+                });
             }
 
             // Send template message
@@ -161,7 +214,7 @@ const SendTemplateModal: React.FC<SendTemplateModalProps> = ({
                 to: contactPhone,
                 templateName: selectedTemplate.name,
                 language: selectedTemplate.language,
-                parameters: formattedParams,
+                parameters: components,
                 conversationId,
             });
 
@@ -311,16 +364,45 @@ const SendTemplateModal: React.FC<SendTemplateModalProps> = ({
                                 </button>
                             </div>
 
+                            {/* Media Header Input */}
+                            {['IMAGE', 'VIDEO', 'DOCUMENT'].includes(selectedTemplate.headerType?.toUpperCase() || '') && (
+                                <div className="space-y-3 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl border border-gray-200 dark:border-gray-700">
+                                    <p className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center">
+                                        {selectedTemplate.headerType === 'IMAGE' && <ImageIcon className="w-4 h-4 mr-2" />}
+                                        {selectedTemplate.headerType === 'VIDEO' && <Video className="w-4 h-4 mr-2" />}
+                                        {selectedTemplate.headerType === 'DOCUMENT' && <FileText className="w-4 h-4 mr-2" />}
+                                        {selectedTemplate.headerType} Header
+                                    </p>
+                                    <div>
+                                        <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">
+                                            Media URL
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={headerMediaUrl}
+                                            onChange={(e) => setHeaderMediaUrl(e.target.value)}
+                                            placeholder={`Enter ${selectedTemplate.headerType?.toLowerCase()} URL (e.g., https://example.com/file.jpg)`}
+                                            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                                        />
+                                        <p className="text-[10px] text-gray-400 mt-1">
+                                            Note: For documents, use PDF, DOCX, or XLSX.
+                                        </p>
+                                    </div>
+                                </div>
+                            )}
+
                             {/* Variables Input */}
-                            {extractVariables(selectedTemplate.bodyText).length > 0 && (
+                            {[...new Set([...extractVariables(selectedTemplate.bodyText), ...(selectedTemplate.headerType === 'TEXT' ? extractVariables(selectedTemplate.headerContent || '') : [])])].length > 0 && (
                                 <div className="space-y-3">
                                     <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
                                         Fill Template Variables
                                     </p>
-                                    {extractVariables(selectedTemplate.bodyText).map((variable, index) => (
+                                    {[...new Set([...extractVariables(selectedTemplate.bodyText), ...(selectedTemplate.headerType === 'TEXT' ? extractVariables(selectedTemplate.headerContent || '') : [])])]
+                                        .sort((a,b) => parseInt(a.replace(/[^\d]/g, '')) - parseInt(b.replace(/[^\d]/g, '')))
+                                        .map((variable, index) => (
                                         <div key={variable}>
                                             <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">
-                                                Variable {index + 1} ({variable})
+                                                Variable {variable}
                                             </label>
                                             <input
                                                 type="text"
@@ -329,7 +411,7 @@ const SendTemplateModal: React.FC<SendTemplateModalProps> = ({
                                                     ...variableValues,
                                                     [variable]: e.target.value,
                                                 })}
-                                                placeholder={`Enter value for ${variable}`}
+                                                placeholder={`Value for ${variable}`}
                                                 className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                                             />
                                         </div>
@@ -343,10 +425,23 @@ const SendTemplateModal: React.FC<SendTemplateModalProps> = ({
                                     Message Preview
                                 </p>
                                 <div className="bg-green-50 dark:bg-green-900/20 rounded-xl p-4 border border-green-200 dark:border-green-800">
-                                    {selectedTemplate.headerContent && (
-                                        <p className="font-semibold text-gray-900 dark:text-white mb-2">
-                                            {selectedTemplate.headerContent}
-                                        </p>
+                                    {(selectedTemplate.headerContent || headerMediaUrl) && (
+                                        <div className="mb-2">
+                                            {selectedTemplate.headerType === 'IMAGE' && headerMediaUrl && (
+                                                <img src={headerMediaUrl} alt="Header" className="w-full h-32 object-cover rounded-lg mb-2" />
+                                            )}
+                                            {selectedTemplate.headerType === 'TEXT' && (
+                                                <p className="font-bold text-gray-900 dark:text-white border-b border-green-100 dark:border-green-800 pb-1 mb-2">
+                                                    {getHeaderPreview()}
+                                                </p>
+                                            )}
+                                            {['VIDEO', 'DOCUMENT'].includes(selectedTemplate.headerType || '') && (
+                                                <div className="bg-green-100 dark:bg-green-900/40 p-2 rounded flex items-center gap-2 text-xs font-medium text-green-700 dark:text-green-300 mb-2">
+                                                    {selectedTemplate.headerType === 'VIDEO' ? <Video className="w-4 h-4" /> : <FileText className="w-4 h-4" />}
+                                                    {selectedTemplate.headerType} ATTACHMENT
+                                                </div>
+                                            )}
+                                        </div>
                                     )}
                                     <p className="text-gray-800 dark:text-gray-200 whitespace-pre-wrap">
                                         {getPreviewText()}

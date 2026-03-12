@@ -74,6 +74,7 @@ interface Message {
   statusUpdatedAt?: string;
   mediaUrl?: string;
   templateName?: string;
+  failureReason?: string;
   metadata?: any;
 }
 
@@ -762,6 +763,7 @@ const Inbox: React.FC = () => {
           return {
             ...m,
             status: newStatus,
+            failureReason: statusUpdate.failureReason,
             statusUpdatedAt: statusUpdate.timestamp,
             ...(newStatus === 'SENT' && { sentAt: statusUpdate.timestamp }),
             ...(newStatus === 'DELIVERED' && { deliveredAt: statusUpdate.timestamp }),
