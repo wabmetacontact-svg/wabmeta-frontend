@@ -21,7 +21,7 @@ import {
   RefreshCw,
   Upload,
 } from 'lucide-react';
-import api, { templates as templateApi, inbox } from '../services/api';
+import api, { templates as templateApi, handleApiError } from '../services/api';
 import TemplatePreview from '../components/templates/TemplatePreview';
 import type { TemplateFormData, HeaderType, TemplateCategory } from '../types/template';
 
@@ -237,9 +237,10 @@ const CreateTemplate: React.FC = () => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Validate size (16MB max)
-    if (file.size > 16 * 1024 * 1024) {
-      setApiError('File is too large. Max size is 16MB.');
+    // Validate size
+    const maxSize = formData.header.type === 'image' ? 5 * 1024 * 1024 : 16 * 1024 * 1024;
+    if (file.size > maxSize) {
+      setApiError(`File too large. Max: ${maxSize / (1024 * 1024)}MB`);
       return;
     }
 
@@ -247,22 +248,29 @@ const CreateTemplate: React.FC = () => {
       setMediaUploading(true);
       setApiError(null);
 
-      // 1. Local preview (instant)
-      const localUrl = URL.createObjectURL(file);
-      updateFormData('header', { ...formData.header, mediaUrl: localUrl });
+      console.log('📤 Uploading media to Meta...', file.name);
 
-      // 2. Upload to server (for persistence)
-      const response = await inbox.uploadMedia(file);
-      if (response.data?.success && response.data?.data?.url) {
+      // ✅ Upload to backend → Meta
+      const response = await templateApi.uploadMedia(file, selectedAccountId);
+
+      if (response.data?.success && response.data?.data?.mediaId) {
+        console.log('✅ Media uploaded:', response.data.data.mediaId);
+
+        // Store Media ID (not URL) and local preview
         updateFormData('header', {
           ...formData.header,
-          mediaUrl: response.data.data.url,
-          fileName: file.name
+          mediaId: response.data.data.mediaId, // ✅ Meta's media ID
+          mediaUrl: URL.createObjectURL(file), // For preview only
+          fileName: file.name,
         });
+
+        // Show success message
+        setSuccessMessage('Media uploaded successfully!');
+        setTimeout(() => setSuccessMessage(null), 3000);
       }
     } catch (error: any) {
       console.error('❌ Upload failed:', error);
-      setApiError('Failed to upload media. Using local preview.');
+      setApiError(handleApiError(error));
     } finally {
       setMediaUploading(false);
     }
@@ -477,22 +485,27 @@ const CreateTemplate: React.FC = () => {
 
       // Build payload with whatsappAccountId
       const payload: Record<string, any> = {
-        name: cleanName, // ✅ Use clean name
+        name: cleanName,
         language: formData.language,
         category: formData.category.toUpperCase(),
         headerType: formData.header.type.toUpperCase(),
         bodyText: formData.body.trim(),
-        whatsappAccountId: selectedAccountId, // ✅ Include WhatsApp Account ID
+        whatsappAccountId: selectedAccountId,
       };
 
-      // Optional fields
+      // ✅ Handle header content
       if (formData.header.type === 'text' && formData.header.text?.trim()) {
         payload.headerContent = formData.header.text.trim();
-      } else if (
-        ['image', 'video', 'document'].includes(formData.header.type) &&
-        formData.header.mediaUrl
-      ) {
-        payload.headerContent = formData.header.mediaUrl;
+      } else if (['image', 'video', 'document'].includes(formData.header.type)) {
+        // ✅ CRITICAL: Send Media ID (not blob URL)
+        if (formData.header.mediaId) {
+          payload.headerMediaId = formData.header.mediaId; // ✅ Meta's media ID
+        } else if (formData.header.mediaUrl && !formData.header.mediaUrl.startsWith('blob:')) {
+          // Fallback: Public URL
+          payload.headerContent = formData.header.mediaUrl;
+        } else if (!asDraft) {
+          throw new Error('Please upload media for the header before submitting');
+        }
       }
 
       if (formData.footer?.trim()) {
@@ -507,14 +520,14 @@ const CreateTemplate: React.FC = () => {
         payload.variables = mappedVariables;
       }
 
-      console.log('📤 Sending template payload:', payload);
+      console.log('📤 Submitting template:', payload);
 
       // Call API
       const response = await templateApi.create(payload);
 
       console.log('✅ Template created:', response.data);
 
-      setSuccessMessage('Template created successfully! It will be reviewed by Meta.');
+      setSuccessMessage('Template submitted for Meta approval!');
 
       // Navigate after short delay
       setTimeout(() => {
@@ -522,23 +535,7 @@ const CreateTemplate: React.FC = () => {
       }, 1500);
     } catch (error: any) {
       console.error('❌ Template creation error:', error);
-
-      let errorMessage = 'Failed to create template. Please try again.';
-      const errorData = error.response?.data;
-
-      if (errorData?.error?.issues && Array.isArray(errorData.error.issues)) {
-        errorMessage = errorData.error.issues
-          .map((issue: any) => `${issue.path?.join('.') || 'field'}: ${issue.message}`)
-          .join('\n');
-      } else if (errorData?.error?.message) {
-        errorMessage = errorData.error.message;
-      } else if (errorData?.message) {
-        errorMessage = errorData.message;
-      } else if (error.message) {
-        errorMessage = error.message;
-      }
-
-      setApiError(errorMessage);
+      setApiError(handleApiError(error));
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } finally {
       setSaving(false);
@@ -833,60 +830,73 @@ const CreateTemplate: React.FC = () => {
 
                     {['image', 'video', 'document'].includes(formData.header.type) && (
                       <div className="space-y-4">
-                        <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-5 border border-dashed border-gray-300 dark:border-gray-600 transition-all hover:bg-gray-100 dark:hover:bg-gray-700/50">
+                        <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-5 border border-dashed border-gray-300 dark:border-gray-600">
                           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">
-                            Header Media (Approval Sample)
+                            Upload Media for Approval Sample
                           </label>
                           
-                          <div className="flex flex-col space-y-4">
-                            {/* URL Input */}
-                            <div className="flex flex-col space-y-1.5">
-                              <span className="text-xs text-gray-500 dark:text-gray-400 font-medium ml-1">Media URL</span>
-                              <input
-                                type="text"
-                                value={formData.header.mediaUrl || ''}
-                                onChange={(e) => updateFormData('header', { ...formData.header, mediaUrl: e.target.value })}
-                                placeholder={`Enter ${formData.header.type} URL`}
-                                className="w-full px-4 py-2.5 border border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-primary-500/20 outline-none"
-                              />
-                            </div>
-
-                            <div className="flex items-center space-x-3">
-                              <div className="h-px flex-1 bg-gray-200 dark:bg-gray-700" />
-                              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">OR</span>
-                              <div className="h-px flex-1 bg-gray-200 dark:bg-gray-700" />
-                            </div>
-
-                            {/* File Upload Button */}
-                            <div className="relative">
-                              <input
-                                type="file"
-                                accept={formData.header.type === 'image' ? 'image/*' : formData.header.type === 'video' ? 'video/*' : '.pdf,.doc,.docx'}
-                                onChange={handleMediaUpload}
-                                className="hidden"
-                                id="header-media-upload"
-                              />
-                              <label
-                                htmlFor="header-media-upload"
-                                className="flex items-center justify-center space-x-2 w-full px-4 py-3 bg-white dark:bg-gray-700 border border-primary-100 dark:border-primary-900 text-primary-600 dark:text-primary-400 rounded-xl hover:bg-primary-50 dark:hover:bg-primary-900/10 cursor-pointer transition-all shadow-sm border-b-2 active:translate-y-px active:border-b-0"
-                              >
-                                {mediaUploading ? (
+                          {/* Upload Button */}
+                          <div className="relative">
+                            <input
+                              type="file"
+                              accept={
+                                formData.header.type === 'image' ? 'image/*' : 
+                                formData.header.type === 'video' ? 'video/*' : 
+                                '.pdf,.doc,.docx'
+                              }
+                              onChange={handleMediaUpload}
+                              className="hidden"
+                              id="header-media-upload"
+                            />
+                            <label
+                              htmlFor="header-media-upload"
+                              className="flex items-center justify-center space-x-2 w-full px-4 py-3 bg-white dark:bg-gray-700 border-2 border-primary-300 dark:border-primary-700 text-primary-600 dark:text-primary-400 rounded-xl hover:bg-primary-50 dark:hover:bg-primary-900/10 cursor-pointer transition-all"
+                            >
+                              {mediaUploading ? (
+                                <>
                                   <Loader2 className="w-5 h-5 animate-spin" />
-                                ) : (
+                                  <span>Uploading to Meta...</span>
+                                </>
+                              ) : formData.header.mediaId ? (
+                                <>
+                                  <CheckCircle className="w-5 h-5 text-green-500" />
+                                  <span>✅ Uploaded - {formData.header.fileName}</span>
+                                </>
+                              ) : (
+                                <>
                                   <Upload className="w-5 h-5" />
-                                )}
-                                <span className="font-semibold">
-                                  {formData.header.mediaUrl ? 'Change Media' : `Upload Approval Sample`}
-                                </span>
-                              </label>
-                            </div>
+                                  <span>Upload {formData.header.type.toUpperCase()}</span>
+                                </>
+                              )}
+                            </label>
                           </div>
+
+                          {/* Preview */}
+                          {formData.header.mediaUrl && (
+                            <div className="mt-3 relative">
+                              {formData.header.type === 'image' && (
+                                <img 
+                                  src={formData.header.mediaUrl} 
+                                  alt="Preview" 
+                                  className="w-full h-48 object-cover rounded-lg"
+                                />
+                              )}
+                              {formData.header.type === 'video' && (
+                                <video 
+                                  src={formData.header.mediaUrl} 
+                                  className="w-full h-48 object-cover rounded-lg"
+                                  controls
+                                />
+                              )}
+                            </div>
+                          )}
                         </div>
                         
                         <div className="bg-blue-50 dark:bg-blue-900/10 rounded-lg p-3 flex items-start space-x-2">
                           <Info className="w-4 h-4 text-blue-500 mt-0.5 shrink-0" />
                           <p className="text-xs text-blue-700 dark:text-blue-300">
-                            This media will be sent to Meta as a sample for template approval. When sending a campaign, you can choose to use this sample or provide different media for each recipient.
+                            This media is uploaded to Meta and will be used as the approval sample. 
+                            Max size: {formData.header.type === 'image' ? '5MB' : '16MB'}
                           </p>
                         </div>
                       </div>

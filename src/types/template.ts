@@ -14,7 +14,8 @@ export interface TemplateButton {
 export interface TemplateHeader {
   type: HeaderType;
   text?: string;
-  mediaUrl?: string;
+  mediaUrl?: string; // For preview only
+  mediaId?: string; // ✅ NEW: Meta's media ID
   fileName?: string;
 }
 

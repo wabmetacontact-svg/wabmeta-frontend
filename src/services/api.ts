@@ -549,6 +549,26 @@ export const templates = {
     api.post<ApiResponse>('/templates/sync', { whatsappAccountId }),
   submitForApproval: (id: string) => api.post<ApiResponse>(`/templates/${id}/submit`),
   stats: () => api.get<ApiResponse>('/templates/stats'),
+
+  // ✅ NEW: Upload media for template
+  uploadMedia: (file: File, whatsappAccountId?: string) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    if (whatsappAccountId) {
+      formData.append('whatsappAccountId', whatsappAccountId);
+    }
+
+    return api.post<ApiResponse<{
+      mediaId: string;
+      filename: string;
+      mimeType: string;
+      size: number;
+    }>>('/templates/upload-media', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+  },
 };
 
 // ---------- CAMPAIGNS ----------
