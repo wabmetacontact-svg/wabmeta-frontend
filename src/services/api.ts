@@ -579,6 +579,8 @@ export const templates = {
       filename: string;
       mimeType: string;
       size: number;
+      whatsappAccountId?: string;
+      wabaId?: string;
     }>>('/templates/upload-media', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',

@@ -17,6 +17,8 @@ export interface TemplateHeader {
   mediaUrl?: string;   // For local preview only
   mediaId?: string;    // ✅ Meta's uploaded media ID
   fileName?: string;
+  uploadedAccountId?: string; // ✅ Track which account the media belongs to
+  uploadedWabaId?: string;    // ✅ Track which WABA the media belongs to
 }
 
 export interface TemplateFormData {

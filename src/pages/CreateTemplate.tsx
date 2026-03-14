@@ -21,7 +21,7 @@ import {
   RefreshCw,
   Upload,
 } from 'lucide-react';
-import api, { templates as templateApi, handleApiError } from '../services/api';
+import api, { templates as templateApi } from '../services/api';
 import TemplatePreview from '../components/templates/TemplatePreview';
 import type { TemplateFormData, HeaderType, TemplateCategory } from '../types/template';
 
@@ -232,7 +232,20 @@ const CreateTemplate: React.FC = () => {
     }
   };
 
-  // ✅ HANDLER: Media Upload for Preview
+  // ✅ EFFECT: Watch for account changes vs uploaded media
+  useEffect(() => {
+    // If account changes and media is already uploaded
+    if (formData.header.mediaId && 
+        formData.header.uploadedAccountId && 
+        formData.header.uploadedAccountId !== selectedAccountId) {
+      
+      setApiError(
+        '⚠️ Warning: Uploaded media belongs to a different account. ' +
+        'Please re-upload media for the currently selected account.'
+      );
+    }
+  }, [selectedAccountId, formData.header.mediaId, formData.header.uploadedAccountId]);
+
   // ✅ HANDLER: Media Upload for Preview
   const handleMediaUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -294,16 +307,22 @@ const CreateTemplate: React.FC = () => {
       console.log('📥 Upload response:', response.data);
 
       if (response.data?.success && response.data?.data?.mediaId) {
-        const { mediaId, filename } = response.data.data;
+        const uploadData = response.data.data;
 
-        console.log('✅ Media uploaded to Meta successfully:', mediaId);
+        console.log('✅ Media uploaded:', {
+          mediaId: uploadData.mediaId,
+          wabaId: uploadData.wabaId,
+          accountId: uploadData.whatsappAccountId,
+        });
 
-        // ✅ Store Media ID (NOT blob URL)
+        // ✅ Store complete upload data
         updateFormData('header', {
           ...formData.header,
-          mediaId: mediaId,                    // ✅ Meta's ID for API
+          mediaId: uploadData.mediaId,
           mediaUrl: URL.createObjectURL(file), // Local preview only
-          fileName: filename || file.name,
+          fileName: uploadData.filename || file.name,
+          uploadedAccountId: uploadData.whatsappAccountId,
+          uploadedWabaId: uploadData.wabaId,
         });
 
         setSuccessMessage('✅ Media uploaded to Meta successfully!');
@@ -534,12 +553,28 @@ const CreateTemplate: React.FC = () => {
         if (formData.header.text?.trim()) {
           payload.headerContent = formData.header.text.trim();
         }
-      } 
+      }
       else if (['image', 'video', 'document'].includes(formData.header.type)) {
         // ✅ CRITICAL: Check for uploaded Media ID
         if (formData.header.mediaId) {
+          // ✅ NEW: Validate media uploaded for same account
+          if (formData.header.uploadedAccountId &&
+              formData.header.uploadedAccountId !== selectedAccountId) {
+            setApiError(
+              `Media was uploaded for a different WhatsApp account. ` +
+              `Please re-upload media or switch to the correct account.`
+            );
+            setActiveTab('settings');
+            setSaving(false);
+            return;
+          }
+
           payload.headerMediaId = formData.header.mediaId;
-          console.log('✅ Using uploaded media ID:', formData.header.mediaId);
+          console.log('✅ Using media from same account:', {
+            mediaId: formData.header.mediaId,
+            accountId: selectedAccountId,
+            uploadedAccountId: formData.header.uploadedAccountId,
+          });
         } else {
           // ❌ No media uploaded - show error
           setApiError(
@@ -789,8 +824,8 @@ const CreateTemplate: React.FC = () => {
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id as any)}
                     className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${activeTab === tab.id
-                        ? 'text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/20 border-b-2 border-primary-500'
-                        : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                      ? 'text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/20 border-b-2 border-primary-500'
+                      : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
                       }`}
                   >
                     {tab.label}
@@ -822,8 +857,8 @@ const CreateTemplate: React.FC = () => {
                         placeholder="e.g., order_confirmation"
                         maxLength={512}
                         className={`w-full px-4 py-2.5 border rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 transition-all ${errors.name
-                            ? 'border-red-300 dark:border-red-600 focus:ring-red-500/20'
-                            : 'border-gray-200 dark:border-gray-600 focus:ring-primary-500/20 focus:border-primary-500'
+                          ? 'border-red-300 dark:border-red-600 focus:ring-red-500/20'
+                          : 'border-gray-200 dark:border-gray-600 focus:ring-primary-500/20 focus:border-primary-500'
                           }`}
                       />
                       {errors.name && (
@@ -846,8 +881,8 @@ const CreateTemplate: React.FC = () => {
                             type="button"
                             onClick={() => updateFormData('header', { type: type.value })}
                             className={`flex flex-col items-center p-3 rounded-xl border-2 transition-all ${formData.header.type === type.value
-                                ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400'
-                                : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500 text-gray-600 dark:text-gray-400'
+                              ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400'
+                              : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500 text-gray-600 dark:text-gray-400'
                               }`}
                           >
                             <type.icon className="w-5 h-5 mb-1" />
@@ -875,8 +910,8 @@ const CreateTemplate: React.FC = () => {
                           placeholder="Enter header text"
                           maxLength={60}
                           className={`w-full px-4 py-2.5 border rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 transition-all ${errors.headerText
-                              ? 'border-red-300 dark:border-red-600 focus:ring-red-500/20'
-                              : 'border-gray-200 dark:border-gray-600 focus:ring-primary-500/20 focus:border-primary-500'
+                            ? 'border-red-300 dark:border-red-600 focus:ring-red-500/20'
+                            : 'border-gray-200 dark:border-gray-600 focus:ring-primary-500/20 focus:border-primary-500'
                             }`}
                         />
                         {errors.headerText && (
@@ -896,15 +931,15 @@ const CreateTemplate: React.FC = () => {
                           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">
                             Upload Media for Approval Sample
                           </label>
-                          
+
                           {/* Upload Button */}
                           <div className="relative">
                             <input
                               type="file"
                               accept={
-                                formData.header.type === 'image' ? 'image/*' : 
-                                formData.header.type === 'video' ? 'video/*' : 
-                                '.pdf,.doc,.docx'
+                                formData.header.type === 'image' ? 'image/*' :
+                                  formData.header.type === 'video' ? 'video/*' :
+                                    '.pdf,.doc,.docx'
                               }
                               onChange={handleMediaUpload}
                               className="hidden"
@@ -937,15 +972,15 @@ const CreateTemplate: React.FC = () => {
                           {formData.header.mediaUrl && (
                             <div className="mt-3 relative">
                               {formData.header.type === 'image' && (
-                                <img 
-                                  src={formData.header.mediaUrl} 
-                                  alt="Preview" 
+                                <img
+                                  src={formData.header.mediaUrl}
+                                  alt="Preview"
                                   className="w-full h-48 object-cover rounded-lg"
                                 />
                               )}
                               {formData.header.type === 'video' && (
-                                <video 
-                                  src={formData.header.mediaUrl} 
+                                <video
+                                  src={formData.header.mediaUrl}
                                   className="w-full h-48 object-cover rounded-lg"
                                   controls
                                 />
@@ -953,11 +988,11 @@ const CreateTemplate: React.FC = () => {
                             </div>
                           )}
                         </div>
-                        
+
                         <div className="bg-blue-50 dark:bg-blue-900/10 rounded-lg p-3 flex items-start space-x-2">
                           <Info className="w-4 h-4 text-blue-500 mt-0.5 shrink-0" />
                           <p className="text-xs text-blue-700 dark:text-blue-300">
-                            This media is uploaded to Meta and will be used as the approval sample. 
+                            This media is uploaded to Meta and will be used as the approval sample.
                             Max size: {formData.header.type === 'image' ? '5MB' : '16MB'}
                           </p>
                         </div>
@@ -976,8 +1011,8 @@ const CreateTemplate: React.FC = () => {
                         rows={6}
                         maxLength={1024}
                         className={`w-full px-4 py-3 border rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 transition-all resize-none ${errors.body
-                            ? 'border-red-300 dark:border-red-600 focus:ring-red-500/20'
-                            : 'border-gray-200 dark:border-gray-600 focus:ring-primary-500/20 focus:border-primary-500'
+                          ? 'border-red-300 dark:border-red-600 focus:ring-red-500/20'
+                          : 'border-gray-200 dark:border-gray-600 focus:ring-primary-500/20 focus:border-primary-500'
                           }`}
                       />
                       {errors.body && (
@@ -1005,8 +1040,8 @@ const CreateTemplate: React.FC = () => {
                         placeholder="e.g., Reply STOP to unsubscribe"
                         maxLength={60}
                         className={`w-full px-4 py-2.5 border rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 transition-all ${errors.footer
-                            ? 'border-red-300 dark:border-red-600 focus:ring-red-500/20'
-                            : 'border-gray-200 dark:border-gray-600 focus:ring-primary-500/20 focus:border-primary-500'
+                          ? 'border-red-300 dark:border-red-600 focus:ring-red-500/20'
+                          : 'border-gray-200 dark:border-gray-600 focus:ring-primary-500/20 focus:border-primary-500'
                           }`}
                       />
                       {errors.footer && (
@@ -1040,8 +1075,8 @@ const CreateTemplate: React.FC = () => {
                                 }
                                 placeholder="Example value"
                                 className={`flex-1 px-3 py-1.5 border rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500/20 ${errors.variables
-                                    ? 'border-red-300 dark:border-red-600'
-                                    : 'border-gray-200 dark:border-gray-600'
+                                  ? 'border-red-300 dark:border-red-600'
+                                  : 'border-gray-200 dark:border-gray-600'
                                   }`}
                               />
                             </div>
@@ -1157,8 +1192,8 @@ const CreateTemplate: React.FC = () => {
                               placeholder="Button text"
                               maxLength={25}
                               className={`w-full px-3 py-2 border rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500/20 ${errors[`button_${index}_text`]
-                                  ? 'border-red-300 dark:border-red-600'
-                                  : 'border-gray-200 dark:border-gray-600'
+                                ? 'border-red-300 dark:border-red-600'
+                                : 'border-gray-200 dark:border-gray-600'
                                 }`}
                             />
                           </div>
@@ -1179,8 +1214,8 @@ const CreateTemplate: React.FC = () => {
                               }}
                               placeholder="https://example.com"
                               className={`w-full px-3 py-2 border rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500/20 ${errors[`button_${index}_url`]
-                                  ? 'border-red-300 dark:border-red-600'
-                                  : 'border-gray-200 dark:border-gray-600'
+                                ? 'border-red-300 dark:border-red-600'
+                                : 'border-gray-200 dark:border-gray-600'
                                 }`}
                             />
                           </div>
@@ -1201,8 +1236,8 @@ const CreateTemplate: React.FC = () => {
                               }}
                               placeholder="+1234567890"
                               className={`w-full px-3 py-2 border rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500/20 ${errors[`button_${index}_phone`]
-                                  ? 'border-red-300 dark:border-red-600'
-                                  : 'border-gray-200 dark:border-gray-600'
+                                ? 'border-red-300 dark:border-red-600'
+                                : 'border-gray-200 dark:border-gray-600'
                                 }`}
                             />
                           </div>
@@ -1283,8 +1318,8 @@ const CreateTemplate: React.FC = () => {
                               }
                             }}
                             className={`w-full px-4 py-2.5 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white ${errors.account
-                                ? 'border-red-300 dark:border-red-600'
-                                : 'border-gray-200 dark:border-gray-600'
+                              ? 'border-red-300 dark:border-red-600'
+                              : 'border-gray-200 dark:border-gray-600'
                               }`}
                           >
                             <option value="">Select an account</option>
@@ -1341,8 +1376,8 @@ const CreateTemplate: React.FC = () => {
                           <label
                             key={category.value}
                             className={`flex items-start space-x-3 p-4 rounded-xl border-2 cursor-pointer transition-all ${formData.category === category.value
-                                ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20'
-                                : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500'
+                              ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20'
+                              : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500'
                               }`}
                           >
                             <input
