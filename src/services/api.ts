@@ -567,6 +567,7 @@ export const templates = {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
+      timeout: 60000, // ✅ Increase timeout for large files
     });
   },
 };

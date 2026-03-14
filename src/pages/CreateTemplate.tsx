@@ -237,8 +237,25 @@ const CreateTemplate: React.FC = () => {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // Validate file type
+    const validTypes: Record<string, string[]> = {
+      image: ['image/jpeg', 'image/png'],
+      video: ['video/mp4'],
+      document: ['application/pdf'],
+    };
+
+    const allowedTypes = validTypes[formData.header.type] || [];
+    
+    if (!allowedTypes.includes(file.type)) {
+      setApiError(`Invalid file type. Allowed: ${allowedTypes.join(', ')}`);
+      return;
+    }
+
     // Validate size
-    const maxSize = formData.header.type === 'image' ? 5 * 1024 * 1024 : 16 * 1024 * 1024;
+    const maxSize = formData.header.type === 'image' 
+      ? 5 * 1024 * 1024   // 5MB for images
+      : 16 * 1024 * 1024; // 16MB for video/doc
+    
     if (file.size > maxSize) {
       setApiError(`File too large. Max: ${maxSize / (1024 * 1024)}MB`);
       return;
@@ -248,29 +265,53 @@ const CreateTemplate: React.FC = () => {
       setMediaUploading(true);
       setApiError(null);
 
-      console.log('📤 Uploading media to Meta...', file.name);
+      console.log('📤 Starting media upload:', {
+        filename: file.name,
+        size: `${(file.size / 1024).toFixed(2)} KB`,
+        type: file.type,
+        accountId: selectedAccountId,
+      });
 
-      // ✅ Upload to backend → Meta
+      // ✅ Upload to Meta via backend
       const response = await templateApi.uploadMedia(file, selectedAccountId);
 
-      if (response.data?.success && response.data?.data?.mediaId) {
-        console.log('✅ Media uploaded:', response.data.data.mediaId);
+      console.log('✅ Upload response:', response.data);
 
-        // Store Media ID (not URL) and local preview
+      if (response.data?.success && response.data?.data?.mediaId) {
+        const { mediaId, filename } = response.data.data;
+
+        console.log('✅ Media uploaded successfully:', mediaId);
+
+        // ✅ Store Media ID (NOT blob URL)
         updateFormData('header', {
           ...formData.header,
-          mediaId: response.data.data.mediaId, // ✅ Meta's media ID
+          mediaId: mediaId,                    // ✅ Meta's ID
           mediaUrl: URL.createObjectURL(file), // For preview only
-          fileName: file.name,
+          fileName: filename,
         });
 
         // Show success message
         setSuccessMessage('Media uploaded successfully!');
         setTimeout(() => setSuccessMessage(null), 3000);
+      } else {
+        throw new Error('Upload failed - no media ID returned');
       }
     } catch (error: any) {
-      console.error('❌ Upload failed:', error);
-      setApiError(handleApiError(error));
+      console.error('❌ Media upload failed:', error);
+      
+      let errorMessage = 'Failed to upload media. ';
+      
+      if (error.response?.status === 400) {
+        errorMessage += error.response?.data?.message || 'Invalid file format.';
+      } else if (error.response?.status === 401) {
+        errorMessage += 'Please login again.';
+      } else if (error.code === 'ECONNABORTED') {
+        errorMessage += 'Upload timed out. File may be too large.';
+      } else {
+        errorMessage += error.response?.data?.message || error.message || 'Please try again.';
+      }
+      
+      setApiError(errorMessage);
     } finally {
       setMediaUploading(false);
     }
@@ -483,7 +524,7 @@ const CreateTemplate: React.FC = () => {
         example: sampleVariables[v]?.trim() || 'example',
       }));
 
-      // Build payload with whatsappAccountId
+      // Build payload
       const payload: Record<string, any> = {
         name: cleanName,
         language: formData.language,
@@ -496,15 +537,24 @@ const CreateTemplate: React.FC = () => {
       // ✅ Handle header content
       if (formData.header.type === 'text' && formData.header.text?.trim()) {
         payload.headerContent = formData.header.text.trim();
-      } else if (['image', 'video', 'document'].includes(formData.header.type)) {
-        // ✅ CRITICAL: Send Media ID (not blob URL)
+      } 
+      else if (['image', 'video', 'document'].includes(formData.header.type)) {
+        // ✅ CRITICAL: Check for Media ID first
         if (formData.header.mediaId) {
-          payload.headerMediaId = formData.header.mediaId; // ✅ Meta's media ID
-        } else if (formData.header.mediaUrl && !formData.header.mediaUrl.startsWith('blob:')) {
-          // Fallback: Public URL
+          payload.headerMediaId = formData.header.mediaId; // ✅ Use Meta's ID
+          console.log('✅ Using uploaded media ID:', formData.header.mediaId);
+        } 
+        else if (formData.header.mediaUrl && !formData.header.mediaUrl.startsWith('blob:')) {
+          // Fallback: Public URL (not recommended)
           payload.headerContent = formData.header.mediaUrl;
-        } else if (!asDraft) {
-          throw new Error('Please upload media for the header before submitting');
+          console.warn('⚠️ Using URL instead of Media ID:', formData.header.mediaUrl);
+        } 
+        else {
+          // ❌ Error: No valid media
+          throw new Error(
+            `Please upload ${formData.header.type} for the header before submitting. ` +
+            'Click the upload button to upload media to Meta.'
+          );
         }
       }
 
@@ -520,7 +570,7 @@ const CreateTemplate: React.FC = () => {
         payload.variables = mappedVariables;
       }
 
-      console.log('📤 Submitting template:', payload);
+      console.log('📤 Submitting template to Meta:', payload);
 
       // Call API
       const response = await templateApi.create(payload);
@@ -534,7 +584,7 @@ const CreateTemplate: React.FC = () => {
         navigate('/dashboard/templates');
       }, 1500);
     } catch (error: any) {
-      console.error('❌ Template creation error:', error);
+      console.error('❌ Template submission failed:', error);
       setApiError(handleApiError(error));
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } finally {
