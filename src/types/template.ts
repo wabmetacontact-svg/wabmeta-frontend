@@ -1,5 +1,5 @@
 export type TemplateCategory = 'marketing' | 'utility' | 'authentication';
-export type TemplateStatus = 'pending' | 'approved' | 'rejected' | 'draft';
+export type TemplateStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'draft';
 export type HeaderType = 'none' | 'text' | 'image' | 'video' | 'document';
 export type ButtonType = 'quick_reply' | 'url' | 'phone';
 
@@ -14,26 +14,9 @@ export interface TemplateButton {
 export interface TemplateHeader {
   type: HeaderType;
   text?: string;
-  mediaUrl?: string; // For preview only
-  mediaId?: string; // ✅ NEW: Meta's media ID
+  mediaUrl?: string;   // For local preview only
+  mediaId?: string;    // ✅ Meta's uploaded media ID
   fileName?: string;
-}
-
-export interface Template {
-  id: string;
-  name: string;
-  category: TemplateCategory;
-  language: string;
-  status: TemplateStatus;
-  header: TemplateHeader;
-  body: string;
-  footer?: string;
-  buttons: TemplateButton[];
-  variables: string[];
-  createdAt: string;
-  updatedAt: string;
-  usageCount: number;
-  rejectionReason?: string;
 }
 
 export interface TemplateFormData {
@@ -44,4 +27,23 @@ export interface TemplateFormData {
   body: string;
   footer: string;
   buttons: TemplateButton[];
+}
+
+export interface Template {
+  id: string;
+  name: string;
+  language: string;
+  category: TemplateCategory;
+  headerType: string | null;
+  headerContent: string | null;
+  headerMediaId: string | null;
+  bodyText: string;
+  footerText: string | null;
+  buttons: TemplateButton[];
+  variables: any[];
+  status: 'PENDING' | 'APPROVED' | 'REJECTED';
+  metaTemplateId: string | null;
+  rejectionReason: string | null;
+  createdAt: string;
+  updatedAt: string;
 }

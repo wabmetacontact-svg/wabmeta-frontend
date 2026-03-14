@@ -233,31 +233,46 @@ const CreateTemplate: React.FC = () => {
   };
 
   // ✅ HANDLER: Media Upload for Preview
+  // ✅ HANDLER: Media Upload for Preview
   const handleMediaUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // Reset input
+    e.target.value = '';
+
     // Validate file type
     const validTypes: Record<string, string[]> = {
-      image: ['image/jpeg', 'image/png'],
-      video: ['video/mp4'],
+      image: ['image/jpeg', 'image/png', 'image/jpg'],
+      video: ['video/mp4', 'video/3gpp'],
       document: ['application/pdf'],
     };
 
     const allowedTypes = validTypes[formData.header.type] || [];
-    
+
     if (!allowedTypes.includes(file.type)) {
-      setApiError(`Invalid file type. Allowed: ${allowedTypes.join(', ')}`);
+      setApiError(`Invalid file type: ${file.type}. Allowed: ${allowedTypes.join(', ')}`);
       return;
     }
 
     // Validate size
-    const maxSize = formData.header.type === 'image' 
-      ? 5 * 1024 * 1024   // 5MB for images
-      : 16 * 1024 * 1024; // 16MB for video/doc
-    
+    const maxSizes: Record<string, number> = {
+      image: 5 * 1024 * 1024,      // 5MB
+      video: 16 * 1024 * 1024,     // 16MB
+      document: 100 * 1024 * 1024, // 100MB
+    };
+
+    const maxSize = maxSizes[formData.header.type] || 5 * 1024 * 1024;
+
     if (file.size > maxSize) {
-      setApiError(`File too large. Max: ${maxSize / (1024 * 1024)}MB`);
+      setApiError(`File too large. Maximum size: ${(maxSize / (1024 * 1024)).toFixed(0)}MB`);
+      return;
+    }
+
+    // Check WhatsApp account selected
+    if (!selectedAccountId) {
+      setApiError('Please select a WhatsApp Business Account first in the Settings tab.');
+      setActiveTab('settings');
       return;
     }
 
@@ -269,48 +284,50 @@ const CreateTemplate: React.FC = () => {
         filename: file.name,
         size: `${(file.size / 1024).toFixed(2)} KB`,
         type: file.type,
+        headerType: formData.header.type,
         accountId: selectedAccountId,
       });
 
       // ✅ Upload to Meta via backend
       const response = await templateApi.uploadMedia(file, selectedAccountId);
 
-      console.log('✅ Upload response:', response.data);
+      console.log('📥 Upload response:', response.data);
 
       if (response.data?.success && response.data?.data?.mediaId) {
         const { mediaId, filename } = response.data.data;
 
-        console.log('✅ Media uploaded successfully:', mediaId);
+        console.log('✅ Media uploaded to Meta successfully:', mediaId);
 
         // ✅ Store Media ID (NOT blob URL)
         updateFormData('header', {
           ...formData.header,
-          mediaId: mediaId,                    // ✅ Meta's ID
-          mediaUrl: URL.createObjectURL(file), // For preview only
-          fileName: filename,
+          mediaId: mediaId,                    // ✅ Meta's ID for API
+          mediaUrl: URL.createObjectURL(file), // Local preview only
+          fileName: filename || file.name,
         });
 
-        // Show success message
-        setSuccessMessage('Media uploaded successfully!');
+        setSuccessMessage('✅ Media uploaded to Meta successfully!');
         setTimeout(() => setSuccessMessage(null), 3000);
       } else {
-        throw new Error('Upload failed - no media ID returned');
+        throw new Error(response.data?.message || 'Upload failed - no media ID returned');
       }
     } catch (error: any) {
       console.error('❌ Media upload failed:', error);
-      
+
       let errorMessage = 'Failed to upload media. ';
-      
+
       if (error.response?.status === 400) {
-        errorMessage += error.response?.data?.message || 'Invalid file format.';
+        errorMessage = error.response?.data?.message || 'Invalid file format or size.';
       } else if (error.response?.status === 401) {
-        errorMessage += 'Please login again.';
+        errorMessage = 'Session expired. Please login again.';
+      } else if (error.response?.status === 500) {
+        errorMessage = error.response?.data?.message || 'Server error. Please try again.';
       } else if (error.code === 'ECONNABORTED') {
-        errorMessage += 'Upload timed out. File may be too large.';
+        errorMessage = 'Upload timed out. File may be too large.';
       } else {
         errorMessage += error.response?.data?.message || error.message || 'Please try again.';
       }
-      
+
       setApiError(errorMessage);
     } finally {
       setMediaUploading(false);
@@ -474,44 +491,22 @@ const CreateTemplate: React.FC = () => {
       return;
     }
 
-    // ✅ Clean name one last time (trim trailing underscores)
-    const cleanName = formData.name.replace(/_+$/, '');
-    if (cleanName.length < 3) {
-      setErrors(prev => ({ ...prev, name: 'Template name too short after cleaning' }));
-      return;
-    }
-    
-    // ✅ Check for forbidden words
-    if (cleanName.includes('meta') || cleanName.includes('whatsapp')) {
-      setApiError('Template name cannot contain "meta" or "whatsapp". Meta will reject these templates.');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-      return;
-    }
-
     setSaving(true);
 
     try {
-      // Map buttons to backend format
+      // Clean name
+      const cleanName = formData.name.replace(/_+$/, '');
+
+      // Map buttons
       const mappedButtons = formData.buttons
         .filter((btn) => btn.text.trim())
         .map((btn) => {
           if (btn.type === 'quick_reply') {
-            return {
-              type: 'QUICK_REPLY' as const,
-              text: btn.text.trim(),
-            };
+            return { type: 'QUICK_REPLY' as const, text: btn.text.trim() };
           } else if (btn.type === 'url') {
-            return {
-              type: 'URL' as const,
-              text: btn.text.trim(),
-              url: btn.url?.trim() || '',
-            };
+            return { type: 'URL' as const, text: btn.text.trim(), url: btn.url?.trim() || '' };
           } else if (btn.type === 'phone') {
-            return {
-              type: 'PHONE_NUMBER' as const,
-              text: btn.text.trim(),
-              phoneNumber: btn.phoneNumber?.trim() || '',
-            };
+            return { type: 'PHONE_NUMBER' as const, text: btn.text.trim(), phoneNumber: btn.phoneNumber?.trim() || '' };
           }
           return null;
         })
@@ -534,58 +529,75 @@ const CreateTemplate: React.FC = () => {
         whatsappAccountId: selectedAccountId,
       };
 
-      // ✅ Handle header content
-      if (formData.header.type === 'text' && formData.header.text?.trim()) {
-        payload.headerContent = formData.header.text.trim();
+      // ✅ Handle header content based on type
+      if (formData.header.type === 'text') {
+        if (formData.header.text?.trim()) {
+          payload.headerContent = formData.header.text.trim();
+        }
       } 
       else if (['image', 'video', 'document'].includes(formData.header.type)) {
-        // ✅ CRITICAL: Check for Media ID first
+        // ✅ CRITICAL: Check for uploaded Media ID
         if (formData.header.mediaId) {
-          payload.headerMediaId = formData.header.mediaId; // ✅ Use Meta's ID
+          payload.headerMediaId = formData.header.mediaId;
           console.log('✅ Using uploaded media ID:', formData.header.mediaId);
-        } 
-        else if (formData.header.mediaUrl && !formData.header.mediaUrl.startsWith('blob:')) {
-          // Fallback: Public URL (not recommended)
-          payload.headerContent = formData.header.mediaUrl;
-          console.warn('⚠️ Using URL instead of Media ID:', formData.header.mediaUrl);
-        } 
-        else {
-          // ❌ Error: No valid media
-          throw new Error(
-            `Please upload ${formData.header.type} for the header before submitting. ` +
+        } else {
+          // ❌ No media uploaded - show error
+          setApiError(
+            `Please upload ${formData.header.type} for the header first. ` +
             'Click the upload button to upload media to Meta.'
           );
+          setSaving(false);
+          return;
         }
       }
 
+      // Footer
       if (formData.footer?.trim()) {
         payload.footerText = formData.footer.trim();
       }
 
+      // Buttons
       if (mappedButtons.length > 0) {
         payload.buttons = mappedButtons;
       }
 
+      // Variables
       if (mappedVariables.length > 0) {
         payload.variables = mappedVariables;
       }
 
-      console.log('📤 Submitting template to Meta:', payload);
+      console.log('📤 Submitting template:', JSON.stringify(payload, null, 2));
 
       // Call API
       const response = await templateApi.create(payload);
 
       console.log('✅ Template created:', response.data);
 
-      setSuccessMessage('Template submitted for Meta approval!');
+      setSuccessMessage('🎉 Template submitted for Meta approval!');
 
       // Navigate after short delay
       setTimeout(() => {
         navigate('/dashboard/templates');
       }, 1500);
     } catch (error: any) {
-      console.error('❌ Template submission failed:', error);
-      setApiError(handleApiError(error));
+      console.error('❌ Template creation failed:', error);
+
+      let errorMessage = 'Failed to create template. ';
+      const errorData = error.response?.data;
+
+      if (errorData?.error?.issues && Array.isArray(errorData.error.issues)) {
+        errorMessage = errorData.error.issues
+          .map((issue: any) => `${issue.path?.join('.') || 'field'}: ${issue.message}`)
+          .join('\n');
+      } else if (errorData?.error?.message) {
+        errorMessage = errorData.error.message;
+      } else if (errorData?.message) {
+        errorMessage = errorData.message;
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+
+      setApiError(errorMessage);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } finally {
       setSaving(false);

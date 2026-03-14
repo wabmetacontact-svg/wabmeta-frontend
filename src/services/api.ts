@@ -541,22 +541,38 @@ export const contacts = {
 // ---------- TEMPLATES ----------
 export const templates = {
   getAll: (params?: any) => api.get<ApiResponse>('/templates', { params }),
+  
   create: (data: any) => api.post<ApiResponse>('/templates', data),
+  
   getById: (id: string) => api.get<ApiResponse>(`/templates/${id}`),
+  
   update: (id: string, data: any) => api.put<ApiResponse>(`/templates/${id}`, data),
+  
   delete: (id: string) => api.delete<ApiResponse>(`/templates/${id}`),
+  
   sync: (whatsappAccountId: string) =>
     api.post<ApiResponse>('/templates/sync', { whatsappAccountId }),
-  submitForApproval: (id: string) => api.post<ApiResponse>(`/templates/${id}/submit`),
+  
+  submitForApproval: (id: string) => 
+    api.post<ApiResponse>(`/templates/${id}/submit`),
+  
   stats: () => api.get<ApiResponse>('/templates/stats'),
 
-  // ✅ NEW: Upload media for template
+  // ✅ NEW: Upload media for template header
   uploadMedia: (file: File, whatsappAccountId?: string) => {
     const formData = new FormData();
     formData.append('file', file);
+    
     if (whatsappAccountId) {
       formData.append('whatsappAccountId', whatsappAccountId);
     }
+
+    console.log('📤 API: Uploading media:', {
+      filename: file.name,
+      size: `${(file.size / 1024).toFixed(2)} KB`,
+      type: file.type,
+      accountId: whatsappAccountId || 'auto',
+    });
 
     return api.post<ApiResponse<{
       mediaId: string;
@@ -567,7 +583,7 @@ export const templates = {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
-      timeout: 60000, // ✅ Increase timeout for large files
+      timeout: 120000, // 2 minutes for large files
     });
   },
 };
