@@ -46,9 +46,11 @@ const SubscriptionManagement: React.FC = () => {
             // Determine status and plan filter based on tab
             let currentStatus = statusFilter;
             let currentPlanType = planFilter;
+            let excludePlanType = undefined;
 
             if (activeTab === 'active') {
                 currentStatus = 'ACTIVE';
+                excludePlanType = 'FREE_DEMO';
             } else if (activeTab === 'expired') {
                 currentStatus = 'EXPIRED';
             } else if (activeTab === 'free') {
@@ -61,6 +63,7 @@ const SubscriptionManagement: React.FC = () => {
                     limit: 20,
                     status: currentStatus || undefined,
                     planType: currentPlanType || undefined,
+                    excludePlanType,
                     search: search || undefined,
                 }),
                 admin.getSubscriptionStats(),

@@ -988,6 +988,7 @@ export const admin = {
     limit?: number;
     status?: string;
     planType?: string;
+    excludePlanType?: string;
     search?: string;
   }) => api.get<ApiResponse>('/admin/subscriptions', { params }),
 
