@@ -126,11 +126,23 @@ const PreviewContent: React.FC<PreviewContentProps> = ({ template, sampleVariabl
                 <div className="relative">
                   {template.header.type === 'image' && (
                     <div className="aspect-video bg-gray-700 flex items-center justify-center">
-                      {template.header.mediaUrl ? (
+                      {/* ✅ Try multiple sources for image */}
+                      {(template.header.mediaUrl || template.header.cloudinaryUrl) ? (
                         <img
-                          src={template.header.mediaUrl}
+                          src={template.header.mediaUrl || template.header.cloudinaryUrl}
                           alt="Header"
                           className="w-full h-full object-cover"
+                          onError={(e) => {
+                            // ✅ Fallback if image fails
+                            const target = e.target as HTMLImageElement;
+                            target.style.display = 'none';
+                            target.parentElement!.innerHTML = `
+                              <div class="text-center text-gray-400 p-4">
+                                <p class="text-sm">📷 Image Header</p>
+                                <p class="text-xs mt-1">Image will show in WhatsApp</p>
+                              </div>
+                            `;
+                          }}
                         />
                       ) : (
                         <div className="text-center text-gray-400">
@@ -140,17 +152,22 @@ const PreviewContent: React.FC<PreviewContentProps> = ({ template, sampleVariabl
                       )}
                     </div>
                   )}
+
                   {template.header.type === 'video' && (
                     <div className="aspect-video bg-gray-700 flex items-center justify-center relative">
-                      {template.header.mediaUrl ? (
-                         <video 
-                           src={template.header.mediaUrl} 
-                           className="w-full h-full object-cover"
-                           controls={false}
-                           autoPlay
-                           muted
-                           loop
-                         />
+                      {(template.header.mediaUrl || template.header.cloudinaryUrl) ? (
+                        <video
+                          src={template.header.mediaUrl || template.header.cloudinaryUrl}
+                          className="w-full h-full object-cover"
+                          controls={false}
+                          autoPlay
+                          muted
+                          loop
+                          onError={(e) => {
+                            const target = e.target as HTMLVideoElement;
+                            target.style.display = 'none';
+                          }}
+                        />
                       ) : (
                         <div className="text-center text-gray-400">
                           <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto">

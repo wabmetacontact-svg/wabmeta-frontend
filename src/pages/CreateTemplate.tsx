@@ -318,11 +318,11 @@ const CreateTemplate: React.FC = () => {
         // ✅ Store complete upload data
         updateFormData('header', {
           ...formData.header,
-          mediaId: uploadData.mediaId,
-          mediaUrl: URL.createObjectURL(file), // Local preview only
+          mediaId: uploadData.mediaId,               // ✅ Meta handle (for API)
+          mediaUrl: URL.createObjectURL(file),        // ✅ Local preview
           fileName: uploadData.filename || file.name,
-          uploadedAccountId: uploadData.whatsappAccountId,
-          uploadedWabaId: uploadData.wabaId,
+          cloudinaryUrl: uploadData.url || '',         // ✅ Cloudinary URL (for DB preview)
+          uploadedAccountId: uploadData.whatsappAccountId || selectedAccountId,
         });
 
         setSuccessMessage('✅ Media uploaded to Meta successfully!');
@@ -555,32 +555,19 @@ const CreateTemplate: React.FC = () => {
         }
       }
       else if (['image', 'video', 'document'].includes(formData.header.type)) {
-        // ✅ CRITICAL: Check for uploaded Media ID
         if (formData.header.mediaId) {
-          // ✅ NEW: Validate media uploaded for same account
-          if (formData.header.uploadedAccountId &&
-              formData.header.uploadedAccountId !== selectedAccountId) {
-            setApiError(
-              `Media was uploaded for a different WhatsApp account. ` +
-              `Please re-upload media or switch to the correct account.`
-            );
-            setActiveTab('settings');
-            setSaving(false);
-            return;
-          }
-
-          payload.headerMediaId = formData.header.mediaId;
-          console.log('✅ Using media from same account:', {
-            mediaId: formData.header.mediaId,
-            accountId: selectedAccountId,
-            uploadedAccountId: formData.header.uploadedAccountId,
+          payload.headerMediaId = formData.header.mediaId;     // ✅ Meta handle
+          // ✅ Store Cloudinary URL as headerContent for preview
+          payload.headerContent = formData.header.cloudinaryUrl 
+            || formData.header.mediaUrl 
+            || '';
+          
+          console.log('✅ Sending both:', {
+            headerMediaId: payload.headerMediaId.substring(0, 30),
+            headerContent: payload.headerContent.substring(0, 60),
           });
         } else {
-          // ❌ No media uploaded - show error
-          setApiError(
-            `Please upload ${formData.header.type} for the header first. ` +
-            'Click the upload button to upload media to Meta.'
-          );
+          setApiError('Please upload media first.');
           setSaving(false);
           return;
         }

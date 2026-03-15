@@ -1,5 +1,5 @@
 export type TemplateCategory = 'marketing' | 'utility' | 'authentication';
-export type TemplateStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'draft';
+export type TemplateStatus = 'approved' | 'pending' | 'rejected' | 'draft';
 export type HeaderType = 'none' | 'text' | 'image' | 'video' | 'document';
 export type ButtonType = 'quick_reply' | 'url' | 'phone';
 
@@ -14,11 +14,11 @@ export interface TemplateButton {
 export interface TemplateHeader {
   type: HeaderType;
   text?: string;
-  mediaUrl?: string;   // For local preview only
-  mediaId?: string;    // ✅ Meta's uploaded media ID
+  mediaUrl?: string;       // Local blob preview
+  mediaId?: string;        // Meta handle (for API)
+  cloudinaryUrl?: string;  // ✅ Cloudinary URL (for DB preview)
   fileName?: string;
-  uploadedAccountId?: string; // ✅ Track which account the media belongs to
-  uploadedWabaId?: string;    // ✅ Track which WABA the media belongs to
+  uploadedAccountId?: string;
 }
 
 export interface TemplateFormData {
@@ -36,16 +36,15 @@ export interface Template {
   name: string;
   language: string;
   category: TemplateCategory;
-  headerType: string | null;
-  headerContent: string | null;
-  headerMediaId: string | null;
-  bodyText: string;
-  footerText: string | null;
+  header: TemplateHeader;
+  body: string;
+  footer: string;
   buttons: TemplateButton[];
   variables: any[];
-  status: 'PENDING' | 'APPROVED' | 'REJECTED';
+  status: TemplateStatus;
   metaTemplateId: string | null;
   rejectionReason: string | null;
   createdAt: string;
   updatedAt: string;
+  usageCount: number;
 }

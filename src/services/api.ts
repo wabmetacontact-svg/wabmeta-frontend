@@ -576,6 +576,8 @@ export const templates = {
 
     return api.post<ApiResponse<{
       mediaId: string;
+      handle?: string;     // ✅ Meta handle
+      url: string;         // ✅ Cloudinary/Preview URL
       filename: string;
       mimeType: string;
       size: number;

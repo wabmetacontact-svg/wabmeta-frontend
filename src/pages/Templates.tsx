@@ -64,6 +64,8 @@ const Templates: React.FC = () => {
     return {
       type: ht.toLowerCase() as any,
       mediaUrl: t.headerContent || undefined,
+      mediaId: t.headerMediaId || undefined,
+      cloudinaryUrl: t.headerContent || undefined,
       text: undefined
     };
   };
@@ -97,6 +99,7 @@ const Templates: React.FC = () => {
     createdAt: t.createdAt || new Date().toISOString(),
     updatedAt: t.updatedAt || new Date().toISOString(),
     usageCount: t.usageCount || 0,
+    metaTemplateId: t.metaTemplateId || null,
     rejectionReason: t.rejectionReason || undefined
   });
 

@@ -184,6 +184,34 @@ const TemplateCard: React.FC<TemplateCardProps> = ({
 
       {/* Body Preview */}
       <div className="bg-gray-50 rounded-xl p-4 mb-4">
+        {/* ✅ Media Preview for Card */}
+        {template.header.type === 'image' && (template.header.cloudinaryUrl || template.header.mediaUrl) && (
+          <div className="mb-3 rounded-lg overflow-hidden h-32 bg-gray-100 flex items-center justify-center">
+            <img 
+              src={template.header.cloudinaryUrl || template.header.mediaUrl} 
+              alt="Preview"
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.style.display = 'none';
+              }}
+            />
+          </div>
+        )}
+        
+        {template.header.type === 'video' && (template.header.cloudinaryUrl || template.header.mediaUrl) && (
+          <div className="mb-3 rounded-lg overflow-hidden h-32 bg-gray-100 flex items-center justify-center relative">
+            <video 
+              src={template.header.cloudinaryUrl || template.header.mediaUrl}
+              className="w-full h-full object-cover"
+              muted
+            />
+            <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+              <Video className="w-8 h-8 text-white opacity-70" />
+            </div>
+          </div>
+        )}
+
         {template.header.type === 'text' && template.header.text && (
           <p className="font-semibold text-gray-900 mb-2">{template.header.text}</p>
         )}
