@@ -72,6 +72,7 @@ const CreateRuleModal: React.FC<CreateRuleModalProps> = ({ isOpen, onClose, onSa
                   <option value="KEYWORD">Incoming Message Matches</option>
                   <option value="NEW_CONTACT">New Contact Added</option>
                   <option value="WEBHOOK">Webhook Received</option>
+                  <option value="UNKNOWN_MESSAGE">Unknown Contact Message</option>
                 </select>
 
                 {triggerType === 'KEYWORD' && (
@@ -102,6 +103,10 @@ const CreateRuleModal: React.FC<CreateRuleModalProps> = ({ isOpen, onClose, onSa
                   className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm"
                 >
                   <option value="send_message">Send Message</option>
+                  <option value="send_text">Send Text</option>
+                  <option value="send_audio">Send Audio</option>
+                  <option value="send_video">Send Video</option>
+                  <option value="send_buttons">Send Buttons</option>
                   <option value="add_tag">Add Tag</option>
                   <option value="assign_agent">Assign to Agent</option>
                 </select>
@@ -113,6 +118,33 @@ const CreateRuleModal: React.FC<CreateRuleModalProps> = ({ isOpen, onClose, onSa
                     onChange={(e) => setActionValue(e.target.value)}
                     rows={3}
                     className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm resize-none"
+                  />
+                )}
+                {actionType === 'send_text' && (
+                  <textarea
+                    placeholder="Enter message text..."
+                    value={actionValue}
+                    onChange={(e) => setActionValue(e.target.value)}
+                    rows={3}
+                    className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm resize-none"
+                  />
+                )}
+                {actionType === 'send_audio' && (
+                  <input
+                    type="url"
+                    placeholder="Audio URL (mp3/wav)"
+                    value={actionValue}
+                    onChange={(e) => setActionValue(e.target.value)}
+                    className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm"
+                  />
+                )}
+                {actionType === 'send_video' && (
+                  <input
+                    type="url"
+                    placeholder="Video URL (mp4)"
+                    value={actionValue}
+                    onChange={(e) => setActionValue(e.target.value)}
+                    className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm"
                   />
                 )}
                 {actionType === 'add_tag' && (

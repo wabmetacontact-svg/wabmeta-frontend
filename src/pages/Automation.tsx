@@ -16,6 +16,7 @@ const triggerIcons: Record<string, React.ReactNode> = {
   SCHEDULE: <Clock className="w-4 h-4" />,
   WEBHOOK: <Webhook className="w-4 h-4" />,
   INACTIVITY: <Clock className="w-4 h-4" />,
+  UNKNOWN_MESSAGE: <Users className="w-4 h-4" />,
 };
 
 const triggerLabels: Record<string, string> = {
@@ -24,6 +25,7 @@ const triggerLabels: Record<string, string> = {
   SCHEDULE: 'Scheduled',
   WEBHOOK: 'Webhook',
   INACTIVITY: 'Inactivity',
+  UNKNOWN_MESSAGE: 'Unknown Message',
 };
 
 const AutomationPage: React.FC = () => {

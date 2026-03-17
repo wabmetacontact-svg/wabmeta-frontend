@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
     ArrowLeft, Save, Plus, Trash2, Loader2, MessageSquare, Users,
-    Clock, Webhook, Tag, Send
+    Clock, Webhook, Tag, Send, Music, Video, Layout
 } from 'lucide-react';
 import { automations as automationsApi, templates as templatesApi } from '../services/api';
 import toast from 'react-hot-toast';
@@ -21,11 +21,22 @@ const triggerOptions = [
     { value: 'SCHEDULE', label: 'Scheduled Time', icon: Clock, description: 'Triggers at a specific time' },
     { value: 'WEBHOOK', label: 'Webhook Received', icon: Webhook, description: 'Triggers when webhook is called' },
     { value: 'INACTIVITY', label: 'Contact Inactivity', icon: Clock, description: 'Triggers after period of no messages' },
+    {
+        value: 'UNKNOWN_MESSAGE',
+        label: 'Unknown Contact Message',
+        icon: Users,
+        description: 'Triggers when unknown number sends first message'
+    },
 ];
 
 const actionOptions = [
     { value: 'send_message', label: 'Send Text Message', icon: MessageSquare },
     { value: 'send_template', label: 'Send Template', icon: Send },
+    { value: 'send_text', label: 'Send Text', icon: MessageSquare },
+    { value: 'send_audio', label: 'Send Audio', icon: Music },
+    { value: 'send_video', label: 'Send Video', icon: Video },
+    { value: 'send_buttons', label: 'Send Buttons (CTA)', icon: Layout },
+    { value: 'wait_for_response', label: 'Wait for Button Click', icon: Clock },
     { value: 'add_tag', label: 'Add Tag', icon: Tag },
     { value: 'remove_tag', label: 'Remove Tag', icon: Tag },
     { value: 'create_lead', label: 'Create CRM Lead', icon: Users },
@@ -313,6 +324,105 @@ const CreateAutomation: React.FC = () => {
                         className="w-full px-3 py-2 border rounded-lg mt-2"
                         placeholder="Lead title (optional)"
                     />
+                );
+
+            case 'send_text':
+                return (
+                    <textarea
+                        value={action.config.message || ''}
+                        onChange={(e) => updateAction(action.id, { message: e.target.value })}
+                        className="w-full px-3 py-2 border rounded-lg mt-2"
+                        rows={3}
+                        placeholder="Enter message text..."
+                    />
+                );
+
+            case 'send_audio':
+                return (
+                    <input
+                        type="url"
+                        value={action.config.audioUrl || ''}
+                        onChange={(e) => updateAction(action.id, { audioUrl: e.target.value })}
+                        className="w-full px-3 py-2 border rounded-lg mt-2"
+                        placeholder="https://example.com/audio.mp3"
+                    />
+                );
+
+            case 'send_video':
+                return (
+                    <div className="space-y-2 mt-2">
+                        <input
+                            type="url"
+                            value={action.config.videoUrl || ''}
+                            onChange={(e) => updateAction(action.id, { ...action.config, videoUrl: e.target.value })}
+                            className="w-full px-3 py-2 border rounded-lg"
+                            placeholder="https://example.com/video.mp4"
+                        />
+                        <input
+                            type="text"
+                            value={action.config.caption || ''}
+                            onChange={(e) => updateAction(action.id, { ...action.config, caption: e.target.value })}
+                            className="w-full px-3 py-2 border rounded-lg"
+                            placeholder="Caption (optional)"
+                        />
+                    </div>
+                );
+
+            case 'send_buttons':
+                return (
+                    <div className="space-y-3 mt-2">
+                        <textarea
+                            value={action.config.text || ''}
+                            onChange={(e) => updateAction(action.id, { ...action.config, text: e.target.value })}
+                            className="w-full px-3 py-2 border rounded-lg"
+                            rows={2}
+                            placeholder="Message before buttons..."
+                        />
+                        <div className="space-y-2">
+                            {(action.config.buttons || []).map((btn: any, i: number) => (
+                                <div key={i} className="flex gap-2">
+                                    <input
+                                        type="text"
+                                        value={btn.text}
+                                        onChange={(e) => {
+                                            const newButtons = [...(action.config.buttons || [])];
+                                            newButtons[i].text = e.target.value;
+                                            updateAction(action.id, { ...action.config, buttons: newButtons });
+                                        }}
+                                        className="flex-1 px-3 py-2 border rounded-lg"
+                                        placeholder={`Button ${i + 1} text`}
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            const newButtons = action.config.buttons.filter((_: any, idx: number) => idx !== i);
+                                            updateAction(action.id, { ...action.config, buttons: newButtons });
+                                        }}
+                                        className="px-3 py-2 text-red-500 hover:bg-red-50 rounded-lg"
+                                    >
+                                        ✕
+                                    </button>
+                                </div>
+                            ))}
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    const newButtons = [...(action.config.buttons || []), { id: `btn_${Date.now()}`, text: '' }];
+                                    updateAction(action.id, { ...action.config, buttons: newButtons });
+                                }}
+                                className="w-full px-3 py-2 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-green-500"
+                            >
+                                + Add Button
+                            </button>
+                        </div>
+                    </div>
+                );
+
+            case 'wait_for_response':
+                return (
+                    <p className="text-sm text-gray-500 mt-2">
+                        ⏸️ Sequence will pause until user clicks a button
+                    </p>
                 );
 
             default:
