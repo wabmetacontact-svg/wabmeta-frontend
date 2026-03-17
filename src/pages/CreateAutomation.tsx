@@ -74,7 +74,8 @@ const CreateAutomation: React.FC = () => {
         try {
             const res = await templatesApi.getAll({});
             if (res.data.success) {
-                setTemplates(res.data.data || []);
+                const templatesData = res.data.data || [];
+                setTemplates(templatesData.filter((t: any) => String(t.status || '').toLowerCase() === 'approved'));
             }
         } catch (err) {
             console.error('Failed to load templates');

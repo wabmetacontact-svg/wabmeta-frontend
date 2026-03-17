@@ -41,6 +41,7 @@ interface MappedTemplate {
   body: string;
   buttons: { text: string }[];
   variables: string[];
+  status: string; // ✅ Added
   whatsappAccountId?: string;
 }
 
@@ -180,9 +181,13 @@ const CreateCampaign: React.FC = () => {
           body: t.bodyText || t.body || "",
           buttons: Array.isArray(t.buttons) ? t.buttons.map((b: any) => ({ text: b.text || "" })) : [],
           variables: extractVariablesFromBody(t.bodyText || t.body || ""),
+          status: String(t.status || "PENDING").toLowerCase(), // ✅ Added
           whatsappAccountId: t.whatsappAccountId,
         }));
-        setTemplates(mappedTemplates);
+
+        // Filter: Only show approved templates
+        const approvedTemplates = mappedTemplates.filter(t => t.status === 'approved');
+        setTemplates(approvedTemplates);
 
         // Contacts
         const contactsArray = parseApiArray<any>(contactsRes, ["contacts", "items", "data"]);
