@@ -23,30 +23,34 @@ import { analytics } from '../services/api';
 import toast from 'react-hot-toast';
 
 // Simple chart component (you can replace with recharts if installed)
-const SimpleBarChart: React.FC<{ data: any[]; dataKey: string; color: string }> = ({
+const SimpleBarChart: React.FC<{ data: any[]; dataKey: string; color: string; height?: number }> = ({
   data,
   dataKey,
   color,
+  height = 128
 }) => {
+  if (!data || data.length === 0) return null;
   const maxValue = Math.max(...data.map((d) => d[dataKey] || 0), 1);
 
   return (
-    <div className="flex items-end justify-between h-32 gap-1">
-      {data.slice(-14).map((item, index) => {
-        const height = ((item[dataKey] || 0) / maxValue) * 100;
-        return (
-          <div key={index} className="flex-1 flex flex-col items-center">
-            <div
-              className={`w-full rounded-t transition-all hover:opacity-80`}
-              style={{
-                height: `${Math.max(height, 2)}%`,
-                backgroundColor: color,
-              }}
-              title={`${item.date}: ${item[dataKey]}`}
-            />
-          </div>
-        );
-      })}
+    <div className="w-full" style={{ height }}>
+      <div className="flex items-end justify-between gap-1 h-full">
+        {data.slice(-30).map((item, index) => {
+          const barHeight = ((item[dataKey] || 0) / maxValue) * 100;
+          return (
+            <div key={index} className="flex-1 flex flex-col items-center h-full justify-end">
+              <div
+                className="w-full rounded-t transition-all hover:opacity-80 cursor-pointer"
+                style={{
+                  height: `${Math.max(barHeight, 2)}%`,
+                  backgroundColor: color,
+                }}
+                title={`${item.date}: ${item[dataKey]}`}
+              />
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 };
