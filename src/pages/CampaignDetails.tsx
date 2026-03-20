@@ -190,13 +190,22 @@ const CampaignDetails: React.FC = () => {
 
       {/* Stats Cards - Identical to Campaigns.tsx layout */}
       {stats && (
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
           <StatCard
-            label="Total Recipients"
-            value={stats.totalContacts}
+            label="Total Attempts"
+            value={stats.sent + stats.failed}
             icon={Users}
             iconBg="bg-blue-50 dark:bg-blue-900/20"
             iconColor="text-blue-600 dark:text-blue-400"
+            onClick={() => setFilterStatus('all')}
+          />
+          <StatCard
+            label="Pending"
+            value={stats.pending + stats.queued}
+            icon={Clock}
+            iconBg="bg-gray-50 dark:bg-gray-800"
+            iconColor="text-gray-500"
+            onClick={() => setFilterStatus('PENDING')}
           />
           <StatCard
             label="Messages Sent"
@@ -204,6 +213,7 @@ const CampaignDetails: React.FC = () => {
             icon={Send}
             iconBg="bg-purple-50 dark:bg-purple-900/20"
             iconColor="text-purple-600 dark:text-purple-400"
+            onClick={() => setFilterStatus('SENT')}
           />
           <StatCard
             label="Delivered"
@@ -211,6 +221,7 @@ const CampaignDetails: React.FC = () => {
             icon={CheckCircle}
             iconBg="bg-green-50 dark:bg-green-900/20"
             iconColor="text-green-600 dark:text-green-400"
+            onClick={() => setFilterStatus('DELIVERED')}
           />
           <StatCard
             label="Read"
@@ -218,6 +229,7 @@ const CampaignDetails: React.FC = () => {
             icon={Eye}
             iconBg="bg-blue-50 dark:bg-blue-900/20"
             iconColor="text-blue-600 dark:text-blue-400"
+            onClick={() => setFilterStatus('READ')}
           />
           <StatCard
             label="Failed"
@@ -284,6 +296,16 @@ const CampaignDetails: React.FC = () => {
           >
             <Search className="w-5 h-5 text-gray-600 dark:text-gray-400" />
           </button>
+        </div>
+      </div>
+
+      {/* Contacts Table Section Header */}
+      <div className="flex items-center justify-between mb-2 px-1">
+        <div className="flex items-center gap-2">
+          <Users className="w-5 h-5 text-gray-500" />
+          <h2 className="text-lg font-bold text-gray-900 dark:text-white">
+            Recipient Contacts <span className="text-gray-400 text-sm font-medium ml-2">({meta.total.toLocaleString()} total)</span>
+          </h2>
         </div>
       </div>
 
