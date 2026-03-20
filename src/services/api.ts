@@ -536,7 +536,7 @@ export const contacts = {
     api.get(`/contacts/export?format=${format}`, { responseType: 'blob' }),
   stats: () => api.get<ApiResponse>('/contacts/stats'),
   getTags: () => api.get<ApiResponse>('/contacts/tags'),
-  getGroups: () => api.get<ApiResponse>('/contacts/groups'),
+  getGroups: () => api.get<ApiResponse>('/contacts/groups/all'),
 };
 
 // ---------- TEMPLATES ----------
