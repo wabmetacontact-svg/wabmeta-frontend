@@ -135,14 +135,14 @@ const CampaignDetails: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen bg-white dark:bg-gray-950">
+      <div className="flex items-center justify-center h-full">
         <Loader2 className="w-8 h-8 animate-spin text-green-600" />
       </div>
     );
   }
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto p-6 transition-colors bg-white dark:bg-gray-950 min-h-screen">
+    <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">

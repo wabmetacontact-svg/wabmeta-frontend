@@ -166,14 +166,14 @@ const CreateAutomation: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen bg-white dark:bg-gray-950">
+      <div className="flex items-center justify-center h-full">
         <Loader2 className="w-8 h-8 animate-spin text-green-600" />
       </div>
     );
   }
 
   return (
-    <div className="p-6 max-w-5xl mx-auto min-h-screen bg-white dark:bg-gray-950 transition-colors">
+    <div className="space-y-6 transition-colors">
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-4">
           <button
