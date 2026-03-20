@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
-  ArrowLeft, RefreshCw, Play, RotateCcw, CheckCircle, XCircle,
+  ArrowLeft, RefreshCw, RotateCcw, CheckCircle, XCircle,
   Clock, Send, Eye, AlertTriangle, Users, Search,
   Loader2
 } from 'lucide-react';
@@ -40,12 +40,12 @@ interface Stats {
 }
 
 const statusConfig: Record<string, { label: string; color: string; icon: any }> = {
-  PENDING: { label: 'Pending', color: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400', icon: Clock },
-  QUEUED: { label: 'Queued', color: 'bg-blue-100 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400', icon: Clock },
-  SENT: { label: 'Sent', color: 'bg-yellow-100 text-yellow-600 dark:bg-yellow-900/20 dark:text-yellow-400', icon: Send },
-  DELIVERED: { label: 'Delivered', color: 'bg-green-100 text-green-600 dark:bg-green-900/20 dark:text-green-400', icon: CheckCircle },
-  READ: { label: 'Read', color: 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400', icon: Eye },
-  FAILED: { label: 'Failed', color: 'bg-red-100 text-red-600 dark:bg-red-900/20 dark:text-red-400', icon: XCircle },
+  PENDING: { label: 'Pending', color: 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300', icon: Clock },
+  QUEUED: { label: 'Queued', color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400', icon: Clock },
+  SENT: { label: 'Sent', color: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400', icon: Send },
+  DELIVERED: { label: 'Delivered', color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400', icon: CheckCircle },
+  READ: { label: 'Read', color: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400', icon: Eye },
+  FAILED: { label: 'Failed', color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400', icon: XCircle },
 };
 
 const CampaignDetails: React.FC = () => {
@@ -59,18 +59,26 @@ const CampaignDetails: React.FC = () => {
   const [stats, setStats] = useState<Stats | null>(null);
   const [meta, setMeta] = useState({ page: 1, limit: 50, total: 0, totalPages: 1 });
 
-  const [filterStatus, setFilterStatus] = useState<string>('');
+  const [filterStatus, setFilterStatus] = useState<string>('all');
   const [search, setSearch] = useState('');
   const [selectedContacts, setSelectedContacts] = useState<string[]>([]);
 
-  const loadCampaign = useCallback(async () => {
+  const loadAll = useCallback(async () => {
     try {
-      const res = await campaignsApi.getById(id!);
-      if (res.data.success) {
-        setCampaign(res.data.data);
-      }
+      setLoading(true);
+      const [campaignRes, statsRes] = await Promise.all([
+        campaignsApi.getById(id!),
+        campaignsApi.getDetailedStats(id!)
+      ]);
+
+      if (campaignRes.data.success) setCampaign(campaignRes.data.data);
+      if (statsRes.data.success) setStats(statsRes.data.data);
+
+      await loadContacts(1);
     } catch (err) {
-      console.error('Failed to load campaign');
+      console.error('Failed to load data');
+    } finally {
+      setLoading(false);
     }
   }, [id]);
 
@@ -79,14 +87,13 @@ const CampaignDetails: React.FC = () => {
       const res = await campaignsApi.getContacts(id!, {
         page,
         limit: meta.limit,
-        status: filterStatus || undefined,
+        status: filterStatus !== 'all' ? filterStatus : undefined,
         search: search || undefined,
       });
 
       if (res.data.success) {
         const data = res.data.data;
-        const contactList = Array.isArray(data) ? data : (data.contacts || []);
-        setContacts(contactList);
+        setContacts(Array.isArray(data) ? data : (data.contacts || []));
         if (data.meta) setMeta(data.meta);
       }
     } catch (err) {
@@ -94,36 +101,18 @@ const CampaignDetails: React.FC = () => {
     }
   }, [id, meta.limit, filterStatus, search]);
 
-  const loadStats = useCallback(async () => {
-    try {
-      const res = await campaignsApi.getDetailedStats(id!);
-      if (res.data.success) {
-        setStats(res.data.data);
-      }
-    } catch (err) {
-      console.error('Failed to load stats');
-    }
-  }, [id]);
-
-  const loadAll = async () => {
-    setLoading(true);
-    await Promise.all([loadCampaign(), loadContacts(), loadStats()]);
-    setLoading(false);
-  };
-
   const refresh = async () => {
     setRefreshing(true);
-    await Promise.all([loadCampaign(), loadContacts(meta.page), loadStats()]);
+    await Promise.all([
+        campaignsApi.getById(id!).then(res => res.data.success && setCampaign(res.data.data)),
+        campaignsApi.getDetailedStats(id!).then(res => res.data.success && setStats(res.data.data)),
+        loadContacts(meta.page)
+    ]);
     setRefreshing(false);
   };
 
-  useEffect(() => {
-    loadAll();
-  }, []);
-
-  useEffect(() => {
-    loadContacts(1);
-  }, [filterStatus, search]);
+  useEffect(() => { loadAll(); }, []);
+  useEffect(() => { loadContacts(1); }, [filterStatus]);
 
   useEffect(() => {
     if (campaign?.status === 'RUNNING') {
@@ -136,30 +125,12 @@ const CampaignDetails: React.FC = () => {
     try {
       const contactIds = selectedContacts.length > 0 ? selectedContacts : undefined;
       await campaignsApi.retryFailed(id!, { contactIds });
-      toast.success('Retrying failed messages...');
+      toast.success('Retrying messages...');
       setSelectedContacts([]);
       refresh();
     } catch (err: any) {
       toast.error(err.response?.data?.message || 'Failed to retry');
     }
-  };
-
-  const handleResume = async () => {
-    try {
-      await campaignsApi.resumePending(id!);
-      toast.success('Campaign resumed');
-      refresh();
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Failed to resume');
-    }
-  };
-
-  const toggleSelectContact = (contactId: string) => {
-    setSelectedContacts((prev) =>
-      prev.includes(contactId)
-        ? prev.filter((id) => id !== contactId)
-        : [...prev, contactId]
-    );
   };
 
   if (loading) {
@@ -170,13 +141,10 @@ const CampaignDetails: React.FC = () => {
     );
   }
 
-  // Consistent card style
-  const cardColor = "bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-gray-900 dark:text-gray-100 hover:border-gray-300 dark:hover:border-gray-700 transition-all shadow-sm";
-
   return (
-    <div className="p-6 max-w-7xl mx-auto min-h-screen bg-white dark:bg-gray-950 transition-colors">
+    <div className="space-y-6 max-w-7xl mx-auto p-6 transition-colors bg-white dark:bg-gray-950 min-h-screen">
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <button
             onClick={() => navigate('/dashboard/campaigns')}
@@ -184,12 +152,12 @@ const CampaignDetails: React.FC = () => {
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
-          <div>
+          <div className="flex flex-col">
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white uppercase tracking-tight">{campaign?.name}</h1>
-            <div className="flex items-center gap-3 mt-1">
-              <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black tracking-widest ${
-                campaign?.status === 'COMPLETED' ? 'bg-green-100 text-green-700 dark:bg-green-900/30' :
-                campaign?.status === 'RUNNING' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30' :
+            <div className="flex items-center gap-2 mt-0.5">
+              <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-widest uppercase ${
+                campaign?.status === 'COMPLETED' ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30' :
+                campaign?.status === 'RUNNING' ? 'bg-green-100 text-green-700 dark:bg-green-900/30' :
                 'bg-gray-100 text-gray-700 dark:bg-gray-800'
               }`}>
                 {campaign?.status}
@@ -202,26 +170,16 @@ const CampaignDetails: React.FC = () => {
           <button
             onClick={refresh}
             disabled={refreshing}
-            className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors shadow-sm"
           >
             <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
             Refresh
           </button>
 
-          {(stats?.pending || 0) > 0 && campaign?.status !== 'RUNNING' && (
-            <button
-              onClick={handleResume}
-              className="flex items-center gap-2 px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 shadow-lg active:scale-95 transition-all font-bold text-sm"
-            >
-              <Play className="w-4 h-4" />
-              Resume Sending
-            </button>
-          )}
-
           {(stats?.failed || 0) > 0 && (
             <button
               onClick={handleRetryFailed}
-              className="flex items-center gap-2 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 shadow-lg active:scale-95 transition-all font-bold text-sm"
+              className="flex items-center gap-2 px-5 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 shadow-md active:scale-95 transition-all font-bold text-sm"
             >
               <RotateCcw className="w-4 h-4" />
               Retry Failed ({selectedContacts.length || stats?.failed})
@@ -230,107 +188,117 @@ const CampaignDetails: React.FC = () => {
         </div>
       </div>
 
-      {/* Stats Cards - Simplified to 5 essentials with same color */}
+      {/* Stats Cards - Identical to Campaigns.tsx layout */}
       {stats && (
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
           <StatCard
-            label="Total contacts"
+            label="Total Recipients"
             value={stats.totalContacts}
             icon={Users}
-            color={cardColor}
+            iconBg="bg-blue-50 dark:bg-blue-900/20"
+            iconColor="text-blue-600 dark:text-blue-400"
           />
           <StatCard
             label="Messages Sent"
             value={stats.sent}
             icon={Send}
-            color={cardColor}
+            iconBg="bg-purple-50 dark:bg-purple-900/20"
+            iconColor="text-purple-600 dark:text-purple-400"
           />
           <StatCard
             label="Delivered"
             value={stats.delivered}
             icon={CheckCircle}
-            color={cardColor}
+            iconBg="bg-green-50 dark:bg-green-900/20"
+            iconColor="text-green-600 dark:text-green-400"
           />
           <StatCard
             label="Read"
             value={stats.read}
             icon={Eye}
-            color={cardColor}
+            iconBg="bg-blue-50 dark:bg-blue-900/20"
+            iconColor="text-blue-600 dark:text-blue-400"
           />
           <StatCard
             label="Failed"
             value={stats.failed}
             icon={XCircle}
-            color="bg-white dark:bg-gray-900 border border-red-100 dark:border-red-900/30 text-red-600 dark:text-red-400 font-bold shadow-sm"
+            iconBg="bg-red-50 dark:bg-red-900/20"
+            iconColor="text-red-600 dark:text-red-400"
             onClick={() => setFilterStatus('FAILED')}
           />
         </div>
       )}
 
-      {/* Failure Reasons - Premium View */}
+      {/* Failure Analysis */}
       {stats && stats.failureReasons.length > 0 && (
-        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-6 mb-8 shadow-sm">
-          <h3 className="text-sm font-black text-gray-400 uppercase tracking-widest flex items-center gap-2 mb-6">
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 shadow-sm">
+          <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-2 mb-4">
             <AlertTriangle className="w-4 h-4 text-red-500" />
             Failure Analysis
           </h3>
-          <div className="space-y-3">
+          <div className="space-y-2">
             {stats.failureReasons.map((fr, i) => (
               <div
                 key={i}
-                className="flex items-center justify-between bg-red-50/30 dark:bg-red-900/10 rounded-xl p-4 border border-red-100/50 dark:border-red-900/20"
+                className="flex items-center justify-between bg-red-50/10 dark:bg-red-900/5 rounded-xl p-4 border border-red-100/20 dark:border-red-900/10"
               >
-                <span className="text-sm font-bold text-gray-700 dark:text-gray-300">
-                  {fr.reason}
-                </span>
-                <span className="text-sm font-black text-red-600 dark:text-red-500 bg-white dark:bg-gray-800 px-3 py-1 rounded-full shadow-sm">
-                  {fr.count} contacts
-                </span>
+                <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">{fr.reason}</span>
+                <span className="text-sm font-black text-red-600 dark:text-red-500 bg-white dark:bg-gray-800 px-3 py-1 rounded-full shadow-sm">{fr.count} contacts</span>
               </div>
             ))}
           </div>
         </div>
       )}
 
-      {/* Filters */}
-      <div className="flex flex-wrap items-center gap-4 mb-6">
-        <div className="flex-1 min-w-[300px] relative">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by phone..."
-            className="w-full pl-11 pr-4 py-3 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-xl text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all placeholder:text-gray-400 shadow-sm"
-          />
-        </div>
+      {/* Filters - Identical to Campaigns.tsx style */}
+      <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700 shadow-sm">
+        <div className="flex flex-col sm:flex-row gap-4">
+          <div className="flex-1 relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search by phone..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900 dark:text-white"
+            />
+          </div>
 
-        <select
-          value={filterStatus}
-          onChange={(e) => setFilterStatus(e.target.value)}
-          className="px-4 py-3 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-xl text-gray-900 dark:text-gray-100 outline-none focus:ring-2 focus:ring-blue-500/20 shadow-sm font-medium"
-        >
-          <option value="">All Statuses</option>
-          <option value="PENDING">Pending</option>
-          <option value="SENT">Sent</option>
-          <option value="DELIVERED">Delivered</option>
-          <option value="READ">Read</option>
-          <option value="FAILED">Failed</option>
-        </select>
+          <select
+            value={filterStatus}
+            onChange={(e) => setFilterStatus(e.target.value)}
+            className="px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900 dark:text-white"
+          >
+            <option value="all">All Status</option>
+            <option value="PENDING">Pending</option>
+            <option value="SENT">Sent</option>
+            <option value="DELIVERED">Delivered</option>
+            <option value="READ">Read</option>
+            <option value="FAILED">Failed</option>
+          </select>
+
+          <button
+            onClick={() => loadContacts(1)}
+            className="px-4 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors border border-gray-200 dark:border-gray-600"
+          >
+            <Search className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+          </button>
+        </div>
       </div>
 
-      {/* Contacts View */}
-      <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 overflow-hidden shadow-sm">
+      {/* Contacts Table */}
+      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead>
-              <tr className="bg-gray-50/50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-800">
+              <tr className="bg-gray-50/50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-700">
                 <th className="px-6 py-4 w-10">
                   <input
                     type="checkbox"
                     checked={selectedContacts.length === contacts.length && contacts.length > 0}
                     onChange={(e) => setSelectedContacts(e.target.checked ? contacts.map(c => c.contactId) : [])}
-                    className="rounded-md border-gray-300 dark:border-gray-700 text-blue-600 focus:ring-blue-500"
+                    className="rounded border-gray-300 dark:border-gray-600 text-green-600 focus:ring-green-500"
                   />
                 </th>
                 <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Contact</th>
@@ -339,53 +307,48 @@ const CampaignDetails: React.FC = () => {
                 <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Error Message</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+            <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
               {contacts.map((contact) => {
                 const config = statusConfig[contact.status] || statusConfig.PENDING;
+                const Icon = config.icon;
                 return (
                   <tr key={contact.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors">
                     <td className="px-6 py-4">
                       <input
                         type="checkbox"
                         checked={selectedContacts.includes(contact.contactId)}
-                        onChange={() => toggleSelectContact(contact.contactId)}
-                        className="rounded-md border-gray-300 dark:border-gray-700 text-blue-600 focus:ring-blue-500"
+                        onChange={() => {
+                          setSelectedContacts(prev => prev.includes(contact.contactId) ? prev.filter(id => id !== contact.contactId) : [...prev, contact.contactId]);
+                        }}
+                        className="rounded border-gray-300 dark:border-gray-600 text-green-600 focus:ring-green-500"
                       />
                     </td>
                     <td className="px-6 py-4">
                         <p className="font-bold text-gray-900 dark:text-gray-100">{contact.name || 'Unknown'}</p>
-                        <p className="text-xs text-gray-400 font-mono mt-0.5">{contact.phone}</p>
+                        <p className="text-xs text-gray-400 font-mono tracking-tighter">{contact.phone}</p>
                     </td>
                     <td className="px-6 py-4">
                       <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black tracking-widest uppercase ${config.color}`}>
+                        <Icon className="w-3 h-3" />
                         {config.label}
                       </span>
                     </td>
                     <td className="px-6 py-4">
                        <div className="flex items-center gap-4 text-[11px] font-medium text-gray-500 dark:text-gray-400">
                           {contact.sentAt && (
-                             <div className="flex flex-col">
-                               <span className="text-[9px] uppercase tracking-tighter opacity-70">Sent</span>
-                               <span>{new Date(contact.sentAt).toLocaleTimeString()}</span>
-                             </div>
+                             <div className="flex flex-col"><span className="text-[8px] uppercase opacity-60">Sent</span><span className="tracking-tight">{new Date(contact.sentAt).toLocaleTimeString()}</span></div>
                           )}
                           {contact.deliveredAt && (
-                             <div className="flex flex-col">
-                               <span className="text-[9px] uppercase tracking-tighter opacity-70">Delv</span>
-                               <span>{new Date(contact.deliveredAt).toLocaleTimeString()}</span>
-                             </div>
+                             <div className="flex flex-col"><span className="text-[8px] uppercase opacity-60">Delv</span><span className="tracking-tight">{new Date(contact.deliveredAt).toLocaleTimeString()}</span></div>
                           )}
                           {contact.readAt && (
-                             <div className="flex flex-col">
-                               <span className="text-[9px] uppercase tracking-tighter opacity-70">Read</span>
-                               <span>{new Date(contact.readAt).toLocaleTimeString()}</span>
-                             </div>
+                             <div className="flex flex-col"><span className="text-[8px] uppercase opacity-60">Read</span><span className="tracking-tight">{new Date(contact.readAt).toLocaleTimeString()}</span></div>
                           )}
                        </div>
                     </td>
                     <td className="px-6 py-4 text-right">
                       {contact.failureReason && (
-                        <div className="inline-block px-3 py-1.5 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-xl text-xs font-bold shadow-sm shadow-red-500/10">
+                        <div className="inline-block px-3 py-1.5 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-xl text-xs font-bold ring-1 ring-red-100 dark:ring-red-900/30 shadow-sm">
                           {contact.failureReason}
                         </div>
                       )}
@@ -393,6 +356,13 @@ const CampaignDetails: React.FC = () => {
                   </tr>
                 );
               })}
+              {contacts.length === 0 && (
+                <tr>
+                  <td colSpan={5} className="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
+                    No contacts found matching your criteria.
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
@@ -401,26 +371,29 @@ const CampaignDetails: React.FC = () => {
   );
 };
 
+// Perfectly matched StatCard component
 const StatCard: React.FC<{
   label: string;
   value: number;
   icon: any;
-  color: string;
+  iconBg: string;
+  iconColor: string;
   onClick?: () => void;
-}> = ({ label, value, icon: Icon, color, onClick }) => (
+}> = ({ label, value, icon: Icon, iconBg, iconColor, onClick }) => (
   <div
     onClick={onClick}
-    className={`p-6 rounded-2xl transition-all ${color} ${onClick ? 'cursor-pointer hover:-translate-y-1' : ''}`}
+    className={`bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm transition-shadow ${onClick ? 'cursor-pointer hover:shadow-md' : ''}`}
   >
-    <div className="flex items-center justify-between mb-2">
-      <div className="p-2 bg-gray-50 dark:bg-gray-800 rounded-xl">
-        <Icon className="w-5 h-5 text-gray-400" />
+    <div className="flex items-center justify-between">
+      <div className="flex-1">
+        <p className="text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap">{label}</p>
+        <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
+          {value.toLocaleString()}
+        </p>
       </div>
-      <span className="text-sm font-black opacity-30">#</span>
-    </div>
-    <div>
-      <span className="text-3xl font-black block tracking-tight">{value.toLocaleString()}</span>
-      <p className="text-[10px] font-black uppercase tracking-widest mt-1 opacity-50">{label}</p>
+      <div className={`flex-none p-3 rounded-lg ${iconBg}`}>
+        <Icon className={`w-6 h-6 ${iconColor}`} />
+      </div>
     </div>
   </div>
 );
