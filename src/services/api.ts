@@ -536,6 +536,7 @@ export const contacts = {
     api.get(`/contacts/export?format=${format}`, { responseType: 'blob' }),
   stats: () => api.get<ApiResponse>('/contacts/stats'),
   getTags: () => api.get<ApiResponse>('/contacts/tags'),
+  getGroups: () => api.get<ApiResponse>('/contacts/groups'),
 };
 
 // ---------- TEMPLATES ----------
@@ -639,8 +640,6 @@ export const campaigns = {
 
   cancel: (id: string) => api.post<ApiResponse>(`/campaigns/${id}/cancel`),
 
-  retry: (id: string, data?: { retryFailed?: boolean; retryPending?: boolean }) =>
-    api.post<ApiResponse>(`/campaigns/${id}/retry`, data),
 
   duplicate: (id: string, name: string) =>
     api.post<ApiResponse>(`/campaigns/${id}/duplicate`, { name }),
@@ -661,9 +660,6 @@ export const campaigns = {
   exportFailedContacts: (campaignId: string) =>
     api.get(`/campaigns/${campaignId}/failed/export`, { responseType: 'blob' }),
 
-  // Retry failed contacts
-  retryFailed: (campaignId: string, contactIds?: string[]) =>
-    api.post<ApiResponse>(`/campaigns/${campaignId}/retry-failed`, { contactIds }),
 
   // Get all recipients with status
   getRecipients: (campaignId: string, params?: { page?: number; limit?: number; status?: string; search?: string }) =>
@@ -675,6 +671,15 @@ export const campaigns = {
       params: { status },
       responseType: 'blob',
     }),
+
+  getDetailedStats: (campaignId: string) =>
+    api.get<ApiResponse>(`/campaigns/${campaignId}/stats`),
+
+  resumePending: (campaignId: string) =>
+    api.post<ApiResponse>(`/campaigns/${campaignId}/resume`),
+
+  retryFailed: (campaignId: string, data: { contactIds?: string[] }) =>
+    api.post<ApiResponse>(`/campaigns/${campaignId}/retry`, data),
 };
 
 // ---------- ANALYTICS ----------

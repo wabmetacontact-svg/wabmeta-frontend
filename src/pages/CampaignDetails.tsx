@@ -1,802 +1,495 @@
-// 📁 src/pages/CampaignDetails.tsx - COMPLETE WITH REAL-TIME SOCKET INTEGRATION
-
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
-  ArrowLeft,
-  Pause,
-  Play,
-  Download,
-  Clock,
-  CheckCircle2,
-  XCircle,
-  Eye,
-  Users,
-  Send,
-  RefreshCw,
-  Loader2,
-  AlertTriangle,
-  CheckCircle,
-  Activity,
+  ArrowLeft, RefreshCw, Play, RotateCcw, CheckCircle, XCircle,
+  Clock, Send, Eye, AlertTriangle, Users, Search,
+  BarChart2, Loader2
 } from 'lucide-react';
 import { campaigns as campaignsApi } from '../services/api';
-import { useCampaignRealtime } from '../hooks/useCampaignRealtime';
-import { formatDistanceToNow } from 'date-fns';
 import toast from 'react-hot-toast';
 
-// Helper for safe numbers
-const safeNumber = (val: any) => (isNaN(Number(val)) ? 0 : Number(val));
-const formatPercent = (val: number, total: number) => {
-  if (!total) return '0%';
-  return `${Math.round((val / total) * 100)}%`;
+interface CampaignContact {
+  id: string;
+  contactId: string;
+  phone: string;
+  name: string;
+  avatar?: string;
+  status: string;
+  waMessageId?: string;
+  sentAt?: string;
+  deliveredAt?: string;
+  readAt?: string;
+  failedAt?: string;
+  failureReason?: string;
+  retryCount: number;
+  updatedAt: string;
+}
+
+interface Stats {
+  totalContacts: number;
+  pending: number;
+  queued: number;
+  sent: number;
+  delivered: number;
+  read: number;
+  failed: number;
+  failureReasons: { reason: string; count: number }[];
+  successRate: number;
+  deliveryRate: number;
+  readRate: number;
+}
+
+const statusConfig: Record<string, { label: string; color: string; icon: any }> = {
+  PENDING: { label: 'Pending', color: 'bg-gray-100 text-gray-600', icon: Clock },
+  QUEUED: { label: 'Queued', color: 'bg-blue-100 text-blue-600', icon: Clock },
+  SENT: { label: 'Sent', color: 'bg-yellow-100 text-yellow-600', icon: Send },
+  DELIVERED: { label: 'Delivered', color: 'bg-green-100 text-green-600', icon: CheckCircle },
+  READ: { label: 'Read', color: 'bg-emerald-100 text-emerald-600', icon: Eye },
+  FAILED: { label: 'Failed', color: 'bg-red-100 text-red-600', icon: XCircle },
 };
 
 const CampaignDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
-  const [campaign, setCampaign] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [campaign, setCampaign] = useState<any>(null);
+  const [contacts, setContacts] = useState<CampaignContact[]>([]);
+  const [stats, setStats] = useState<Stats | null>(null);
+  const [meta, setMeta] = useState({ page: 1, limit: 50, total: 0, totalPages: 1 });
 
-  // ✅ Recipient list state
-  const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
-  const [recipients, setRecipients] = useState<any[]>([]);
-  const [recipientsLoading, setRecipientsLoading] = useState(false);
-  const [recipientsMeta, setRecipientsMeta] = useState<any>(null);
-  const [recipientsPage, setRecipientsPage] = useState(1);
+  const [filterStatus, setFilterStatus] = useState<string>('');
+  const [search, setSearch] = useState('');
+  const [selectedContacts, setSelectedContacts] = useState<string[]>([]);
 
-  // ✅ Real-time socket hook
-  const {
-    progress,
-    isProcessing,
-    completedStats,
-    contactUpdates,
-    isConnected,
-  } = useCampaignRealtime(id || null);
-
-  useEffect(() => {
-    fetchCampaignDetails();
+  const loadCampaign = useCallback(async () => {
+    try {
+      const res = await campaignsApi.getById(id!);
+      if (res.data.success) {
+        setCampaign(res.data.data);
+      }
+    } catch (err) {
+      console.error('Failed to load campaign');
+    }
   }, [id]);
 
-  // ✅ Auto-refresh when campaign completes
-  useEffect(() => {
-    if (completedStats) {
-      console.log('✅ Campaign completed, refreshing details...');
-      fetchCampaignDetails(true);
-    }
-  }, [completedStats]);
-
-  // ✅ Update campaign stats in real-time from progress
-  useEffect(() => {
-    if (progress && campaign) {
-      setCampaign((prev: any) => ({
-        ...prev,
-        sentCount: progress.sent,
-        failedCount: progress.failed,
-        deliveredCount: progress.delivered ?? prev.deliveredCount,
-        readCount: progress.read ?? prev.readCount,
-        status: progress.status || prev.status,
-      }));
-    }
-  }, [progress]);
-
-  const fetchCampaignDetails = async (isRefresh = false) => {
-    if (!id) return;
-    if (isRefresh) setRefreshing(true);
-    else setLoading(true);
-    setError(null);
-
+  const loadContacts = useCallback(async (page = 1) => {
     try {
-      const response = await campaignsApi.getById(id);
-      if (response.data.success) {
-        setCampaign(response.data.data);
-      } else {
-        throw new Error(response.data.message);
-      }
-    } catch (err: any) {
-      setError(err.message || 'Failed to load campaign details');
-      toast.error('Failed to load campaign details');
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  };
-
-  const fetchRecipients = async (status: string | null, page = 1) => {
-    if (!id) return;
-    setRecipientsLoading(true);
-    try {
-      const response = await campaignsApi.getRecipients(id, {
-        status: (status === 'TOTAL' || !status) ? undefined : status,
+      const res = await campaignsApi.getContacts(id!, {
         page,
-        limit: 10,
+        limit: meta.limit,
+        status: filterStatus || undefined,
+        search: search || undefined,
       });
-      if (response.data.success) {
-        // The API returns the list directly in response.data.data
-        const data = response.data.data;
-        const recipientsList = Array.isArray(data) ? data : (data.recipients || data.contacts || []);
-        setRecipients(recipientsList);
-        setRecipientsMeta(response.data.meta);
+
+      if (res.data.success) {
+        setContacts(res.data.data.contacts);
+        setMeta(res.data.data.meta);
       }
-    } catch (err: any) {
-      toast.error('Failed to load recipients');
-    } finally {
-      setRecipientsLoading(false);
+    } catch (err) {
+      console.error('Failed to load contacts');
     }
+  }, [id, meta.limit, filterStatus, search]);
+
+  const loadStats = useCallback(async () => {
+    try {
+      const res = await campaignsApi.getDetailedStats(id!);
+      if (res.data.success) {
+        setStats(res.data.data);
+      }
+    } catch (err) {
+      console.error('Failed to load stats');
+    }
+  }, [id]);
+
+  const loadAll = async () => {
+    setLoading(true);
+    await Promise.all([loadCampaign(), loadContacts(), loadStats()]);
+    setLoading(false);
+  };
+
+  const refresh = async () => {
+    setRefreshing(true);
+    await Promise.all([loadCampaign(), loadContacts(meta.page), loadStats()]);
+    setRefreshing(false);
   };
 
   useEffect(() => {
-    if (selectedStatus) {
-      fetchRecipients(selectedStatus, recipientsPage);
-    } else {
-      setRecipients([]);
-    }
-  }, [selectedStatus, recipientsPage, id]);
+    loadAll();
+  }, []);
 
-  const handleStatusClick = (status: string) => {
-    if (selectedStatus === status) {
-      setSelectedStatus(null);
-    } else {
-      setSelectedStatus(status);
-      setRecipientsPage(1);
+  useEffect(() => {
+    loadContacts(1);
+  }, [filterStatus, search]);
+
+  // Auto-refresh every 5 seconds if campaign is running
+  useEffect(() => {
+    if (campaign?.status === 'RUNNING') {
+      const interval = setInterval(refresh, 5000);
+      return () => clearInterval(interval);
+    }
+  }, [campaign?.status]);
+
+  const handleRetryFailed = async () => {
+    try {
+      const contactIds = selectedContacts.length > 0 ? selectedContacts : undefined;
+      await campaignsApi.retryFailed(id!, { contactIds });
+      toast.success('Retrying failed messages...');
+      setSelectedContacts([]);
+      refresh();
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Failed to retry');
     }
   };
 
-  const handleAction = async (action: 'pause' | 'resume' | 'cancel') => {
-    if (!id) return;
+  const handleResume = async () => {
     try {
-      let response;
-      if (action === 'pause') response = await campaignsApi.pause(id);
-      if (action === 'resume') response = await campaignsApi.resume(id);
-      if (action === 'cancel') response = await campaignsApi.cancel(id);
-
-      if (response?.data.success) {
-        toast.success(`Campaign ${action}d successfully`);
-        fetchCampaignDetails(true);
-      }
+      await campaignsApi.resumePending(id!);
+      toast.success('Campaign resumed');
+      refresh();
     } catch (err: any) {
-      toast.error(err.response?.data?.message || `Failed to ${action} campaign`);
+      toast.error(err.response?.data?.message || 'Failed to resume');
     }
   };
 
-  const handleExport = async () => {
-    if (!id) return;
-    try {
-      toast.success('Export feature coming soon!');
-      // TODO: Implement export functionality
-    } catch (err: any) {
-      toast.error('Failed to export campaign data');
-    }
+  const toggleSelectContact = (contactId: string) => {
+    setSelectedContacts((prev) =>
+      prev.includes(contactId)
+        ? prev.filter((id) => id !== contactId)
+        : [...prev, contactId]
+    );
+  };
+
+  const selectAllFailed = () => {
+    const failedIds = contacts.filter((c) => c.status === 'FAILED').map((c) => c.contactId);
+    setSelectedContacts(failedIds);
   };
 
   if (loading) {
     return (
-      <div className="flex h-screen items-center justify-center">
-        <Loader2 className="w-10 h-10 animate-spin text-green-600" />
+      <div className="flex items-center justify-center h-screen">
+        <Loader2 className="w-8 h-8 animate-spin text-green-600" />
       </div>
     );
   }
-
-  if (error || !campaign) {
-    return (
-      <div className="flex flex-col items-center justify-center h-screen gap-4">
-        <AlertTriangle className="w-12 h-12 text-red-500" />
-        <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-          Error Loading Campaign
-        </h2>
-        <p className="text-gray-600 dark:text-gray-400">{error || 'Campaign not found'}</p>
-        <button
-          onClick={() => navigate('/dashboard/campaigns')}
-          className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg"
-        >
-          Go Back
-        </button>
-      </div>
-    );
-  }
-
-  const total = safeNumber(campaign.totalContacts);
-  const sent = safeNumber(campaign.sentCount);
-  const delivered = safeNumber(campaign.deliveredCount);
-  const read = safeNumber(campaign.readCount);
-  const failed = safeNumber(campaign.failedCount);
-
-  // Use real-time progress if available, otherwise calculate from campaign data
-  const pending = progress
-    ? Math.max(0, progress.total - progress.sent - progress.failed)
-    : Math.max(0, total - sent - failed);
-
-  // Colors for status badge
-  const statusColors: Record<string, string> = {
-    RUNNING: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
-    PAUSED: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
-    COMPLETED: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
-    FAILED: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
-    DRAFT: 'bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400',
-    SCHEDULED: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400',
-  };
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto pb-10">
+    <div className="p-6 max-w-7xl mx-auto">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-4">
           <button
             onClick={() => navigate('/dashboard/campaigns')}
-            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+            className="p-2 hover:bg-gray-100 rounded-lg"
           >
-            <ArrowLeft className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+            <ArrowLeft className="w-5 h-5" />
           </button>
           <div>
-            <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                {campaign.name}
-              </h1>
-              <span
-                className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColors[campaign.status] || 'bg-gray-100 text-gray-700'
-                  }`}
-              >
-                {campaign.status}
+            <h1 className="text-2xl font-bold">{campaign?.name}</h1>
+            <div className="flex items-center gap-3 mt-1">
+              <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                campaign?.status === 'COMPLETED' ? 'bg-green-100 text-green-600' :
+                campaign?.status === 'RUNNING' ? 'bg-blue-100 text-blue-600' :
+                campaign?.status === 'FAILED' ? 'bg-red-100 text-red-600' :
+                'bg-gray-100 text-gray-600'
+              }`}>
+                {campaign?.status}
               </span>
-              {/* ✅ Connection Indicator */}
-              {isConnected && campaign.status === 'RUNNING' && (
-                <div className="flex items-center gap-1.5 px-2 py-0.5 bg-green-50 dark:bg-green-900/20 rounded-full">
-                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                  <span className="text-xs text-green-700 dark:text-green-400">Live</span>
-                </div>
+              {campaign?.status === 'RUNNING' && (
+                <span className="text-sm text-gray-500 flex items-center gap-1">
+                  <Loader2 className="w-3 h-3 animate-spin" />
+                  Sending...
+                </span>
               )}
             </div>
-            {campaign.description && (
-              <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm">
-                {campaign.description}
-              </p>
-            )}
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          {campaign.status === 'RUNNING' && (
-            <button
-              onClick={() => handleAction('pause')}
-              className="flex items-center gap-2 px-4 py-2 bg-yellow-100 text-yellow-700 hover:bg-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-400 dark:hover:bg-yellow-900/50 rounded-lg font-medium transition-colors"
-            >
-              <Pause className="w-4 h-4" /> Pause
-            </button>
-          )}
-          {campaign.status === 'PAUSED' && (
-            <button
-              onClick={() => handleAction('resume')}
-              className="flex items-center gap-2 px-4 py-2 bg-green-100 text-green-700 hover:bg-green-200 dark:bg-green-900/30 dark:text-green-400 dark:hover:bg-green-900/50 rounded-lg font-medium transition-colors"
-            >
-              <Play className="w-4 h-4" /> Resume
-            </button>
-          )}
-
+        <div className="flex items-center gap-3">
           <button
-            onClick={() => fetchCampaignDetails(true)}
+            onClick={refresh}
             disabled={refreshing}
-            className="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg font-medium transition-colors disabled:opacity-50"
+            className="flex items-center gap-2 px-4 py-2 border rounded-lg hover:bg-gray-50"
           >
             <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
             Refresh
           </button>
 
-          <button
-            onClick={handleExport}
-            className="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg font-medium transition-colors"
-          >
-            <Download className="w-4 h-4" /> Export
-          </button>
-        </div>
-      </div>
-
-      {/* ✅ Real-Time Processing Banner */}
-      {isProcessing && progress && (
-        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-6 shadow-sm">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <div className="relative">
-                <Loader2 className="w-8 h-8 text-blue-600 dark:text-blue-400 animate-spin" />
-                <Activity className="w-4 h-4 text-blue-600 dark:text-blue-400 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" />
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                  Campaign In Progress
-                </h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Messages are being sent in real-time
-                </p>
-              </div>
-            </div>
-            <div className="text-right">
-              <div className="text-4xl font-bold text-blue-600 dark:text-blue-400">
-                {progress.percentage}%
-              </div>
-              <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                {progress.sent + progress.failed} / {progress.total} processed
-              </div>
-            </div>
-          </div>
-
-          {/* Animated Progress Bar */}
-          <div className="relative w-full bg-white dark:bg-gray-800 rounded-full h-4 overflow-hidden shadow-inner">
-            <div
-              className="absolute top-0 left-0 h-full bg-gradient-to-r from-blue-500 via-blue-600 to-indigo-600 transition-all duration-500 ease-out rounded-full"
-              style={{ width: `${progress.percentage}%` }}
-            >
-              <div className="absolute inset-0 bg-white/30 animate-pulse" />
-            </div>
-          </div>
-
-          {/* Live Stats Grid */}
-          <div className="grid grid-cols-3 gap-4 mt-4">
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-4 text-center shadow-sm">
-              <div className="flex items-center justify-center gap-2 mb-2">
-                <CheckCircle className="w-5 h-5 text-green-500" />
-                <span className="text-2xl font-bold text-green-600 dark:text-green-400">
-                  {progress.sent}
-                </span>
-              </div>
-              <div className="text-xs text-gray-600 dark:text-gray-400">Sent</div>
-            </div>
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-4 text-center shadow-sm">
-              <div className="flex items-center justify-center gap-2 mb-2">
-                <XCircle className="w-5 h-5 text-red-500" />
-                <span className="text-2xl font-bold text-red-600 dark:text-red-400">
-                  {progress.failed}
-                </span>
-              </div>
-              <div className="text-xs text-gray-600 dark:text-gray-400">Failed</div>
-            </div>
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-4 text-center shadow-sm">
-              <div className="flex items-center justify-center gap-2 mb-2">
-                <Clock className="w-5 h-5 text-gray-500" />
-                <span className="text-2xl font-bold text-gray-600 dark:text-gray-400">
-                  {progress.total - progress.sent - progress.failed}
-                </span>
-              </div>
-              <div className="text-xs text-gray-600 dark:text-gray-400">Pending</div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ✅ Completion Stats Banner */}
-      {completedStats && (
-        <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border border-green-200 dark:border-green-800 rounded-xl p-6 shadow-sm">
-          <div className="flex items-center gap-4 mb-6">
-            <div className="p-3 bg-green-500 rounded-full">
-              <CheckCircle className="w-8 h-8 text-white" />
-            </div>
-            <div>
-              <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
-                Campaign Completed!
-              </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                All messages have been processed successfully
-              </p>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-5 text-center shadow-sm">
-              <div className="text-3xl font-bold text-green-600 dark:text-green-400 mb-1">
-                {completedStats.sentCount}
-              </div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">Total Sent</div>
-            </div>
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-5 text-center shadow-sm">
-              <div className="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-1">
-                {completedStats.deliveredCount}
-              </div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">Delivered</div>
-              <div className="text-xs text-gray-500 mt-1">
-                {formatPercent(completedStats.deliveredCount, completedStats.sentCount)}
-              </div>
-            </div>
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-5 text-center shadow-sm">
-              <div className="text-3xl font-bold text-purple-600 dark:text-purple-400 mb-1">
-                {completedStats.readCount}
-              </div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">Read</div>
-              <div className="text-xs text-gray-500 mt-1">
-                {formatPercent(completedStats.readCount, completedStats.deliveredCount)}
-              </div>
-            </div>
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-5 text-center shadow-sm">
-              <div className="text-3xl font-bold text-red-600 dark:text-red-400 mb-1">
-                {completedStats.failedCount}
-              </div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">Failed</div>
-              <div className="text-xs text-gray-500 mt-1">
-                {formatPercent(completedStats.failedCount, completedStats.totalRecipients)}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Progress Bar (Static - for non-running campaigns) */}
-      {!isProcessing && (
-        <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm">
-          <div className="flex justify-between items-end mb-2">
-            <h3 className="font-medium text-gray-900 dark:text-white">Campaign Progress</h3>
-            <span className="text-sm text-gray-500 dark:text-gray-400">
-              {sent + failed} / {total} processed
-            </span>
-          </div>
-
-          <div className="h-3 w-full bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden flex">
-            {/* Delivered */}
-            <div
-              style={{ width: `${(delivered / total) * 100}%` }}
-              className="bg-green-500 h-full transition-all duration-300"
-            />
-            {/* Sent but not delivered yet */}
-            <div
-              style={{ width: `${((sent - delivered) / total) * 100}%` }}
-              className="bg-blue-500 h-full transition-all duration-300"
-            />
-            {/* Failed */}
-            <div
-              style={{ width: `${(failed / total) * 100}%` }}
-              className="bg-red-500 h-full transition-all duration-300"
-            />
-          </div>
-
-          <div className="flex gap-4 mt-3 text-xs">
-            <div className="flex items-center gap-1.5">
-              <div className="w-2 h-2 rounded-full bg-green-500"></div>
-              <span className="text-gray-600 dark:text-gray-400">Delivered</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <div className="w-2 h-2 rounded-full bg-blue-500"></div>
-              <span className="text-gray-600 dark:text-gray-400">In Progress</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <div className="w-2 h-2 rounded-full bg-red-500"></div>
-              <span className="text-gray-600 dark:text-gray-400">Failed</span>
-            </div>
-            <div className="ml-auto text-gray-500">{pending} pending</div>
-          </div>
-        </div>
-      )}
-
-      {/* Metrics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
-        {/* Total Recipients */}
-        <div
-          onClick={() => handleStatusClick('TOTAL')}
-          className={`cursor-pointer transition-all duration-200 hover:scale-[1.02] ${selectedStatus === 'TOTAL' ? 'ring-2 ring-blue-500 ring-offset-2 dark:ring-offset-gray-900' : ''
-            } bg-gray-900 text-white rounded-xl p-5 shadow-sm`}
-        >
-          <div className="flex items-center justify-between mb-4">
-            <div className="p-2 bg-gray-800 rounded-lg">
-              <Users className="w-5 h-5 text-gray-300" />
-            </div>
-          </div>
-          <div className="text-3xl font-bold">{total.toLocaleString()}</div>
-          <div className="text-sm text-gray-400 mt-1">Total Recipients</div>
-        </div>
-
-        {/* Sent */}
-        <div
-          onClick={() => handleStatusClick('SENT')}
-          className={`cursor-pointer transition-all duration-200 hover:scale-[1.02] ${selectedStatus === 'SENT' ? 'ring-2 ring-blue-400 ring-offset-2 dark:ring-offset-gray-900' : ''
-            } bg-white dark:bg-gray-800 rounded-xl p-5 border border-gray-200 dark:border-gray-700 shadow-sm`}
-        >
-          <div className="flex items-center justify-between mb-4">
-            <div className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-              <Send className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-            </div>
-            <span className="text-xs font-medium text-gray-500">{formatPercent(sent, total)}</span>
-          </div>
-          <div className="text-3xl font-bold text-gray-900 dark:text-white">
-            {sent.toLocaleString()}
-          </div>
-          <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">Sent</div>
-        </div>
-
-        {/* Delivered */}
-        <div
-          onClick={() => handleStatusClick('DELIVERED')}
-          className={`cursor-pointer transition-all duration-200 hover:scale-[1.02] ${selectedStatus === 'DELIVERED' ? 'ring-2 ring-green-400 ring-offset-2 dark:ring-offset-gray-900' : ''
-            } bg-white dark:bg-gray-800 rounded-xl p-5 border border-gray-200 dark:border-gray-700 shadow-sm`}
-        >
-          <div className="flex items-center justify-between mb-4">
-            <div className="p-2 bg-green-50 dark:bg-green-900/20 rounded-lg">
-              <CheckCircle2 className="w-5 h-5 text-green-600 dark:text-green-400" />
-            </div>
-            <span className="text-xs font-medium text-gray-500">
-              {formatPercent(delivered, sent)}
-            </span>
-          </div>
-          <div className="text-3xl font-bold text-gray-900 dark:text-white">
-            {delivered.toLocaleString()}
-          </div>
-          <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">Delivered</div>
-        </div>
-
-        {/* Read */}
-        <div
-          onClick={() => handleStatusClick('READ')}
-          className={`cursor-pointer transition-all duration-200 hover:scale-[1.02] ${selectedStatus === 'READ' ? 'ring-2 ring-purple-400 ring-offset-2 dark:ring-offset-gray-900' : ''
-            } bg-white dark:bg-gray-800 rounded-xl p-5 border border-gray-200 dark:border-gray-700 shadow-sm`}
-        >
-          <div className="flex items-center justify-between mb-4">
-            <div className="p-2 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
-              <Eye className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-            </div>
-            <span className="text-xs font-medium text-gray-500">
-              {formatPercent(read, delivered)}
-            </span>
-          </div>
-          <div className="text-3xl font-bold text-gray-900 dark:text-white">
-            {read.toLocaleString()}
-          </div>
-          <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">Read</div>
-        </div>
-
-        {/* Failed */}
-        <div
-          onClick={() => handleStatusClick('FAILED')}
-          className={`cursor-pointer transition-all duration-200 hover:scale-[1.02] ${selectedStatus === 'FAILED' ? 'ring-2 ring-red-400 ring-offset-2 dark:ring-offset-gray-900' : ''
-            } bg-white dark:bg-gray-800 rounded-xl p-5 border border-gray-200 dark:border-gray-700 shadow-sm`}
-        >
-          <div className="flex items-center justify-between mb-4">
-            <div className="p-2 bg-red-50 dark:bg-red-900/20 rounded-lg">
-              <XCircle className="w-5 h-5 text-red-600 dark:text-red-400" />
-            </div>
-            <span className="text-xs font-medium text-gray-500">{formatPercent(failed, total)}</span>
-          </div>
-          <div className="text-3xl font-bold text-gray-900 dark:text-white">
-            {failed.toLocaleString()}
-          </div>
-          <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">Failed</div>
-        </div>
-      </div>
-
-      {/* ✅ Recipient List Section */}
-      {selectedStatus && (
-        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden animate-fadeIn">
-          <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between bg-gray-50 dark:bg-gray-800/50">
-            <h3 className="font-semibold text-gray-900 dark:text-white">
-              {selectedStatus === 'TOTAL' ? 'All Recipients' : `${selectedStatus} Recipients`}
-            </h3>
+          {(stats?.pending || 0) > 0 && campaign?.status !== 'RUNNING' && (
             <button
-              onClick={() => setSelectedStatus(null)}
-              className="text-sm text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+              onClick={handleResume}
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
             >
-              Close
+              <Play className="w-4 h-4" />
+              Resume ({stats?.pending} pending)
             </button>
-          </div>
+          )}
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-left">
-              <thead className="bg-gray-50 dark:bg-gray-800 text-xs text-gray-500 uppercase">
-                <tr>
-                  <th className="px-6 py-3 font-medium">Recipient</th>
-                  <th className="px-6 py-3 font-medium">Status</th>
-                  <th className="px-6 py-3 font-medium">Sent At</th>
-                  <th className="px-6 py-3 font-medium">Updates</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-                {recipientsLoading && recipients.length === 0 ? (
-                  <tr>
-                    <td colSpan={4} className="px-6 py-10 text-center">
-                      <Loader2 className="w-6 h-6 animate-spin mx-auto text-blue-500" />
-                    </td>
-                  </tr>
-                ) : recipients.length === 0 ? (
-                  <tr>
-                    <td colSpan={4} className="px-6 py-10 text-center text-gray-500">
-                      No recipients found for this status
-                    </td>
-                  </tr>
-                ) : (
-                  recipients.map((rec) => (
-                    <tr key={rec.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
-                      <td className="px-6 py-4">
-                        <div className="font-medium text-gray-900 dark:text-white">{rec.fullName || rec.phone}</div>
-                        <div className="text-xs text-gray-500">{rec.phone}</div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${rec.status === 'SENT' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400' :
-                          rec.status === 'DELIVERED' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' :
-                            rec.status === 'READ' ? 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400' :
-                              rec.status === 'FAILED' ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400' :
-                                'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400'
-                          }`}>
-                          {rec.status}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-xs text-gray-500 dark:text-gray-400">
-                        {rec.sentAt ? new Date(rec.sentAt).toLocaleString() : 'Pending'}
-                      </td>
-                      <td className="px-6 py-4">
-                        {rec.failureReason ? (
-                          <div className="text-[10px] text-red-500 max-w-[200px] truncate" title={rec.failureReason}>
-                            {rec.failureReason}
-                          </div>
-                        ) : (
-                          <div className="flex gap-2">
-                            {rec.deliveredAt && (
-                              <span title={`Delivered: ${new Date(rec.deliveredAt).toLocaleString()}`}>
-                                <CheckCircle2 className="w-4 h-4 text-green-500" />
-                              </span>
-                            )}
-                            {rec.readAt && (
-                              <span title={`Read: ${new Date(rec.readAt).toLocaleString()}`}>
-                                <Eye className="w-4 h-4 text-purple-500" />
-                              </span>
-                            )}
-                          </div>
-                        )}
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Pagination */}
-          {recipientsMeta && recipientsMeta.totalPages > 1 && (
-            <div className="px-6 py-4 bg-gray-50 dark:bg-gray-800/50 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
-              <span className="text-sm text-gray-500">
-                Page {recipientsPage} of {recipientsMeta.totalPages}
-              </span>
-              <div className="flex gap-2">
-                <button
-                  disabled={recipientsPage === 1}
-                  onClick={() => setRecipientsPage(p => p - 1)}
-                  className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm disabled:opacity-50"
-                >
-                  Previous
-                </button>
-                <button
-                  disabled={recipientsPage === recipientsMeta.totalPages}
-                  onClick={() => setRecipientsPage(p => p + 1)}
-                  className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm disabled:opacity-50"
-                >
-                  Next
-                </button>
-              </div>
-            </div>
+          {(stats?.failed || 0) > 0 && (
+            <button
+              onClick={handleRetryFailed}
+              className="flex items-center gap-2 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700"
+            >
+              <RotateCcw className="w-4 h-4" />
+              Retry Failed ({selectedContacts.length || stats?.failed})
+            </button>
           )}
         </div>
-      )}
+      </div>
 
-      {/* ✅ Live Contact Updates Feed */}
-      {contactUpdates.length > 0 && (
-        <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-              Recent Updates
-            </h3>
-            <div className="flex items-center gap-2 text-sm text-gray-500">
-              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-              <span>Live Feed</span>
-            </div>
-          </div>
-          <div className="space-y-2 max-h-96 overflow-y-auto">
-            {contactUpdates
-              .slice(-15)
-              .reverse()
-              .map((update, idx) => (
-                <div
-                  key={`${update.contactId}-${idx}`}
-                  className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors animate-fadeIn"
-                >
-                  <div className="flex items-center gap-3">
-                    {update.status === 'SENT' && (
-                      <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
-                    )}
-                    {update.status === 'FAILED' && (
-                      <XCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
-                    )}
-                    {update.status === 'PENDING' && (
-                      <Clock className="w-5 h-5 text-gray-500 flex-shrink-0" />
-                    )}
-                    <div className="flex-1">
-                      <span className="text-sm font-medium text-gray-900 dark:text-white">
-                        {update.phone}
-                      </span>
-                      {update.messageId && (
-                        <div className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                          ID: {update.messageId}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <span
-                      className={`text-xs font-medium px-2.5 py-1 rounded-full ${update.status === 'SENT'
-                        ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
-                        : update.status === 'FAILED'
-                          ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
-                          : 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400'
-                        }`}
-                    >
-                      {update.status}
-                    </span>
-                    {update.error && (
-                      <div className="text-xs text-red-600 dark:text-red-400 mt-1 max-w-xs truncate">
-                        {update.error}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ))}
-          </div>
+      {/* Stats Cards */}
+      {stats && (
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4 mb-6">
+          <StatCard
+            label="Total"
+            value={stats.totalContacts}
+            icon={Users}
+            color="bg-gray-100 text-gray-600"
+          />
+          <StatCard
+            label="Pending"
+            value={stats.pending + stats.queued}
+            icon={Clock}
+            color="bg-yellow-100 text-yellow-600"
+          />
+          <StatCard
+            label="Sent"
+            value={stats.sent}
+            icon={Send}
+            color="bg-blue-100 text-blue-600"
+          />
+          <StatCard
+            label="Delivered"
+            value={stats.delivered}
+            icon={CheckCircle}
+            color="bg-green-100 text-green-600"
+          />
+          <StatCard
+            label="Read"
+            value={stats.read}
+            icon={Eye}
+            color="bg-emerald-100 text-emerald-600"
+          />
+          <StatCard
+            label="Failed"
+            value={stats.failed}
+            icon={XCircle}
+            color="bg-red-100 text-red-600"
+            onClick={() => setFilterStatus('FAILED')}
+          />
+          <StatCard
+            label="Success Rate"
+            value={`${stats.successRate}%`}
+            icon={BarChart2}
+            color="bg-purple-100 text-purple-600"
+          />
         </div>
       )}
 
-      {/* Info Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm">
-          <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Campaign Details</h3>
-          <div className="space-y-4">
-            <div className="flex justify-between border-b border-gray-100 dark:border-gray-700 pb-3">
-              <span className="text-gray-500 dark:text-gray-400">Template</span>
-              <span className="font-medium text-gray-900 dark:text-white">
-                {campaign.templateName || 'N/A'}
-              </span>
-            </div>
-            <div className="flex justify-between border-b border-gray-100 dark:border-gray-700 pb-3">
-              <span className="text-gray-500 dark:text-gray-400">Audience</span>
-              <span className="font-medium text-gray-900 dark:text-white">
-                {campaign.contactGroupName || 'All Contacts'}
-              </span>
-            </div>
-            <div className="flex justify-between border-b border-gray-100 dark:border-gray-700 pb-3">
-              <span className="text-gray-500 dark:text-gray-400">WhatsApp Account</span>
-              <span className="font-medium text-gray-900 dark:text-white">
-                {campaign.whatsappAccountPhone || 'Default'}
-              </span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-500 dark:text-gray-400">Created At</span>
-              <span className="font-medium text-gray-900 dark:text-white">
-                {new Date(campaign.createdAt).toLocaleString()}
-              </span>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm flex flex-col justify-center items-center text-center">
-          <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-full mb-3">
-            <Clock className="w-8 h-8 text-green-600 dark:text-green-400" />
-          </div>
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
-            {campaign.startedAt
-              ? 'Started'
-              : campaign.scheduledAt
-                ? 'Scheduled'
-                : 'Draft'}
+      {/* Failure Reasons */}
+      {stats && stats.failureReasons.length > 0 && (
+        <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6">
+          <h3 className="font-semibold text-red-800 flex items-center gap-2 mb-3">
+            <AlertTriangle className="w-5 h-5" />
+            Failure Reasons
           </h3>
-          <p className="text-gray-500 dark:text-gray-400">
-            {campaign.startedAt
-              ? formatDistanceToNow(new Date(campaign.startedAt), { addSuffix: true })
-              : campaign.scheduledAt
-                ? new Date(campaign.scheduledAt).toLocaleString()
-                : 'Not started yet'}
-          </p>
-          {campaign.completedAt && (
-            <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 w-full">
-              <p className="text-sm text-gray-500 dark:text-gray-400">Completed</p>
-              <p className="text-sm font-medium text-gray-900 dark:text-white">
-                {formatDistanceToNow(new Date(campaign.completedAt), { addSuffix: true })}
-              </p>
-            </div>
-          )}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+            {stats.failureReasons.map((fr, i) => (
+              <div
+                key={i}
+                className="flex items-center justify-between bg-white rounded-lg p-3 border border-red-100"
+              >
+                <span className="text-sm text-gray-700 truncate flex-1">
+                  {fr.reason}
+                </span>
+                <span className="text-sm font-medium text-red-600 ml-2">
+                  {fr.count} contacts
+                </span>
+              </div>
+            ))}
+          </div>
         </div>
+      )}
+
+      {/* Filters & Search */}
+      <div className="flex flex-wrap items-center gap-4 mb-4">
+        <div className="flex-1 min-w-[200px] max-w-md relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search by phone or name..."
+            className="w-full pl-10 pr-4 py-2 border rounded-lg"
+          />
+        </div>
+
+        <select
+          value={filterStatus}
+          onChange={(e) => setFilterStatus(e.target.value)}
+          className="px-4 py-2 border rounded-lg"
+        >
+          <option value="">All Status</option>
+          <option value="PENDING">Pending</option>
+          <option value="SENT">Sent</option>
+          <option value="DELIVERED">Delivered</option>
+          <option value="READ">Read</option>
+          <option value="FAILED">Failed</option>
+        </select>
+
+        {filterStatus === 'FAILED' && (
+          <button
+            onClick={selectAllFailed}
+            className="px-4 py-2 border rounded-lg hover:bg-gray-50"
+          >
+            Select All Failed
+          </button>
+        )}
+
+        {selectedContacts.length > 0 && (
+          <span className="text-sm text-gray-500">
+            {selectedContacts.length} selected
+          </span>
+        )}
+      </div>
+
+      {/* Contacts Table */}
+      <div className="bg-white rounded-xl border overflow-hidden">
+        <table className="w-full">
+          <thead className="bg-gray-50 border-b">
+            <tr>
+              <th className="px-4 py-3 text-left w-10">
+                <input
+                  type="checkbox"
+                  checked={selectedContacts.length === contacts.length && contacts.length > 0}
+                  onChange={(e) => {
+                    if (e.target.checked) {
+                      setSelectedContacts(contacts.map((c) => c.contactId));
+                    } else {
+                      setSelectedContacts([]);
+                    }
+                  }}
+                  className="rounded"
+                />
+              </th>
+              <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Contact</th>
+              <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Status</th>
+              <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Sent</th>
+              <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Delivered</th>
+              <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Read</th>
+              <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Error</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y">
+            {contacts.map((contact) => {
+              const config = statusConfig[contact.status] || statusConfig.PENDING;
+              const StatusIcon = config.icon;
+
+              return (
+                <tr key={contact.id} className="hover:bg-gray-50">
+                  <td className="px-4 py-3">
+                    <input
+                      type="checkbox"
+                      checked={selectedContacts.includes(contact.contactId)}
+                      onChange={() => toggleSelectContact(contact.contactId)}
+                      className="rounded"
+                    />
+                  </td>
+                  <td className="px-4 py-3">
+                    <div>
+                      <p className="font-medium text-gray-900">{contact.name}</p>
+                      <p className="text-sm text-gray-500">{contact.phone}</p>
+                    </div>
+                  </td>
+                  <td className="px-4 py-3">
+                    <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${config.color}`}>
+                      <StatusIcon className="w-3 h-3" />
+                      {config.label}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-sm text-gray-500">
+                    {contact.sentAt ? new Date(contact.sentAt).toLocaleTimeString() : '-'}
+                  </td>
+                  <td className="px-4 py-3 text-sm text-gray-500">
+                    {contact.deliveredAt ? new Date(contact.deliveredAt).toLocaleTimeString() : '-'}
+                  </td>
+                  <td className="px-4 py-3 text-sm text-gray-500">
+                    {contact.readAt ? new Date(contact.readAt).toLocaleTimeString() : '-'}
+                  </td>
+                  <td className="px-4 py-3">
+                    {contact.failureReason && (
+                      <span className="text-xs text-red-600 max-w-[200px] truncate block" title={contact.failureReason}>
+                        {contact.failureReason}
+                      </span>
+                    )}
+                    {contact.retryCount > 0 && (
+                      <span className="text-xs text-gray-400">
+                        Retry: {contact.retryCount}
+                      </span>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
+
+            {contacts.length === 0 && (
+              <tr>
+                <td colSpan={7} className="px-4 py-12 text-center text-gray-500">
+                  No contacts found
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+
+        {/* Pagination */}
+        {meta.totalPages > 1 && (
+          <div className="flex items-center justify-between px-4 py-3 border-t">
+            <span className="text-sm text-gray-500">
+              Page {meta.page} of {meta.totalPages} ({meta.total} contacts)
+            </span>
+            <div className="flex gap-2">
+              <button
+                onClick={() => loadContacts(meta.page - 1)}
+                disabled={meta.page <= 1}
+                className="px-3 py-1 border rounded disabled:opacity-50"
+              >
+                Previous
+              </button>
+              <button
+                onClick={() => loadContacts(meta.page + 1)}
+                disabled={meta.page >= meta.totalPages}
+                className="px-3 py-1 border rounded disabled:opacity-50"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
 };
+
+// StatCard Component
+const StatCard: React.FC<{
+  label: string;
+  value: number | string;
+  icon: any;
+  color: string;
+  onClick?: () => void;
+}> = ({ label, value, icon: Icon, color, onClick }) => (
+  <div
+    onClick={onClick}
+    className={`p-4 rounded-xl ${color} ${onClick ? 'cursor-pointer hover:opacity-80' : ''}`}
+  >
+    <div className="flex items-center justify-between">
+      <span className="text-2xl font-bold">{value}</span>
+      <Icon className="w-5 h-5 opacity-60" />
+    </div>
+    <p className="text-sm mt-1 opacity-80">{label}</p>
+  </div>
+);
 
 export default CampaignDetails;
