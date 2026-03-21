@@ -13,7 +13,7 @@ import {
 import api from '../../services/api';
 
 // Types
-export type AudienceType = 'all' | 'tags' | 'manual' | 'group';
+export type AudienceType = 'all' | 'tags' | 'manual' | 'group' | 'csv';
 
 interface Contact {
   id: string;
@@ -40,6 +40,9 @@ interface AudienceSelectorProps {
   // Group
   selectedGroup: string;
   onGroupChange: (groupId: string) => void;
+  // CSV
+  csvContacts?: any[];
+  onCsvContactsChange?: (contacts: any[]) => void;
   // Data
   availableTags: string[];
   contacts: Contact[];
@@ -55,6 +58,8 @@ const AudienceSelector: React.FC<AudienceSelectorProps> = ({
   onContactsChange,
   selectedGroup,
   onGroupChange,
+  csvContacts = [],
+  onCsvContactsChange,
   availableTags,
   contacts,
   totalSelected
@@ -107,6 +112,13 @@ const AudienceSelector: React.FC<AudienceSelectorProps> = ({
       description: 'Choose specific contacts',
       icon: UserPlus,
       count: null
+    },
+    {
+      value: 'csv' as AudienceType,
+      label: 'Upload CSV',
+      description: 'Upload custom contacts List',
+      icon: Users,
+      count: csvContacts?.length || 0
     },
   ];
 
@@ -302,6 +314,55 @@ const AudienceSelector: React.FC<AudienceSelectorProps> = ({
           <p className="text-sm text-gray-500 text-center">
             {selectedContacts.length} of {contacts.length} contacts selected
           </p>
+        </div>
+      )}
+
+      {/* CSV Selection */}
+      {audienceType === 'csv' && (
+        <div className="bg-gray-50 rounded-xl p-6 space-y-4 border border-dashed border-gray-300 text-center">
+          <input 
+            type="file" 
+            accept=".csv" 
+            id="csv-upload" 
+            className="hidden" 
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                  try {
+                    const text = event.target?.result as string;
+                    // Basic fallback parser if papaparse is missing
+                    const rows = text.split('\n').map(r => r.trim()).filter(Boolean);
+                    if (rows.length < 2) return alert('CSV must have headers and data');
+                    const headers = rows[0].split(',').map(h => h.trim());
+                    const parsed = rows.slice(1).map(row => {
+                      const values = row.split(',').map(v => v.trim());
+                      const obj: any = {};
+                      headers.forEach((h, i) => { obj[h] = values[i] || ''; });
+                      return obj;
+                    });
+                    
+                    const formatted = parsed.map(p => ({
+                       phone: p['Phone'] || p['phone'] || p['Number'] || p['number'],
+                       customData: p
+                    })).filter(p => p.phone);
+                    
+                    if (onCsvContactsChange) onCsvContactsChange(formatted);
+                  } catch(e) { console.error(e); alert('Failed to parse CSV'); }
+                };
+                reader.readAsText(file);
+              }
+            }}
+          />
+          <h4 className="font-medium text-gray-900">Upload Contacts CSV</h4>
+          <p className="text-sm text-gray-500">Ensure your CSV has a column named "Phone" or "Number".</p>
+          <label htmlFor="csv-upload" className="inline-block mt-4 px-4 py-2 bg-white border border-gray-300 rounded cursor-pointer hover:bg-gray-50">
+            Choose CSV File
+          </label>
+          {csvContacts.length > 0 && (
+             <p className="mt-4 text-green-600 font-medium text-sm text-center">Loaded {csvContacts.length} contacts from CSV!</p>
+          )}
         </div>
       )}
 

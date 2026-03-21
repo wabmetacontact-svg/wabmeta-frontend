@@ -123,6 +123,7 @@ const CreateCampaign: React.FC = () => {
     selectedTags: [],
     selectedContacts: [],
     selectedGroup: "", // ✅ Added
+    csvContacts: [],
     variableMapping: {},
     scheduleType: "now",
     scheduledDate: "",
@@ -239,6 +240,8 @@ const CreateCampaign: React.FC = () => {
         // We don't have group member count locally here without extra API call
         // Assuming user selected a group with members.
         return formData.selectedGroup ? 1 : 0;
+      case "csv":
+        return formData.csvContacts?.length || 0;
       default:
         return 0;
     }
@@ -257,6 +260,7 @@ const CreateCampaign: React.FC = () => {
         return !!formData.name.trim() && !!formData.templateId && !!selectedAccountId;
       case 2:
         if (formData.audienceType === 'group') return !!formData.selectedGroup;
+        if (formData.audienceType === 'csv') return !!(formData.csvContacts && formData.csvContacts.length > 0);
         return totalRecipients > 0;
       case 3:
         if (!selectedTemplate) return true;
@@ -284,6 +288,7 @@ const CreateCampaign: React.FC = () => {
       let contactIds: string[] | undefined = undefined;
       let contactGroupId: string | undefined = undefined;
       let audienceFilter: any = undefined;
+      let csvContactsPayload: any[] | undefined = undefined;
 
       // Logic mapping
       if (formData.audienceType === "all") {
@@ -298,11 +303,14 @@ const CreateCampaign: React.FC = () => {
         contactIds = formData.selectedContacts;
       } else if (formData.audienceType === "group") {
         contactGroupId = formData.selectedGroup;
+      } else if (formData.audienceType === "csv") {
+        csvContactsPayload = formData.csvContacts;
       }
 
       if (
         (formData.audienceType === "manual" && (!contactIds || contactIds.length === 0)) ||
-        (formData.audienceType === "group" && !contactGroupId)
+        (formData.audienceType === "group" && !contactGroupId) ||
+        (formData.audienceType === "csv" && (!csvContactsPayload || csvContactsPayload.length === 0))
       ) {
         throw new Error("No recipients selected.");
       }
@@ -320,7 +328,7 @@ const CreateCampaign: React.FC = () => {
         contactIds,       // Used for manual / tags
         contactGroupId,   // Used for group
         audienceFilter,   // Used for tags / all
-
+        csvContacts: csvContactsPayload, // Used for CSV
         whatsappAccountId: whatsappAccount.id,
         phoneNumberId: whatsappAccount.phoneNumberId,
         variableMapping: Object.keys(formData.variableMapping).length > 0 ? formData.variableMapping : undefined,
@@ -462,6 +470,8 @@ const CreateCampaign: React.FC = () => {
                 onContactsChange={(c) => setFormData({ ...formData, selectedContacts: c })}
                 selectedGroup={formData.selectedGroup || ''}
                 onGroupChange={(g) => setFormData({ ...formData, selectedGroup: g })}
+                csvContacts={formData.csvContacts}
+                onCsvContactsChange={(c) => setFormData({ ...formData, csvContacts: c })}
                 availableTags={availableTags}
                 contacts={contacts}
                 totalSelected={totalRecipients}
