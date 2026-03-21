@@ -320,6 +320,12 @@ const CreateCampaign: React.FC = () => {
           ? new Date(`${formData.scheduledDate}T${formData.scheduledTime}:00`).toISOString()
           : undefined;
 
+      // Format variable mapping to match backend schema
+      const formattedMapping: Record<string, any> = {};
+      Object.entries(formData.variableMapping).forEach(([key, val]) => {
+        formattedMapping[key] = { type: 'field', value: val };
+      });
+
       const payload = {
         name: formData.name.trim(),
         description: formData.description?.trim() || undefined,
@@ -331,7 +337,7 @@ const CreateCampaign: React.FC = () => {
         csvContacts: csvContactsPayload, // Used for CSV
         whatsappAccountId: whatsappAccount.id,
         phoneNumberId: whatsappAccount.phoneNumberId,
-        variableMapping: Object.keys(formData.variableMapping).length > 0 ? formData.variableMapping : undefined,
+        variableMapping: Object.keys(formattedMapping).length > 0 ? formattedMapping : undefined,
         scheduledAt,
       };
 
