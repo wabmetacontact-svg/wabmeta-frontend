@@ -9,6 +9,8 @@ import {
   Check,
   Layers,
   Loader2,
+  FileText,
+  X,
 } from 'lucide-react';
 import api from '../../services/api';
 
@@ -67,6 +69,7 @@ const AudienceSelector: React.FC<AudienceSelectorProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [groups, setGroups] = useState<Group[]>([]);
   const [loadingGroups, setLoadingGroups] = useState(false);
+  const [csvFileName, setCsvFileName] = useState('');
 
   // Load groups on mount
   useEffect(() => {
@@ -349,19 +352,45 @@ const AudienceSelector: React.FC<AudienceSelectorProps> = ({
                     })).filter(p => p.phone);
                     
                     if (onCsvContactsChange) onCsvContactsChange(formatted);
+                    setCsvFileName(file.name);
                   } catch(e) { console.error(e); alert('Failed to parse CSV'); }
                 };
                 reader.readAsText(file);
               }
             }}
           />
-          <h4 className="font-medium text-gray-900">Upload Contacts CSV</h4>
-          <p className="text-sm text-gray-500">Ensure your CSV has a column named "Phone" or "Number".</p>
-          <label htmlFor="csv-upload" className="inline-block mt-4 px-4 py-2 bg-white border border-gray-300 rounded cursor-pointer hover:bg-gray-50">
-            Choose CSV File
-          </label>
-          {csvContacts.length > 0 && (
-             <p className="mt-4 text-green-600 font-medium text-sm text-center">Loaded {csvContacts.length} contacts from CSV!</p>
+          {csvContacts && csvContacts.length > 0 ? (
+            <div className="flex flex-col items-center gap-3">
+              <div className="h-12 w-12 rounded-full bg-green-100 flex items-center justify-center mb-1">
+                <FileText className="w-6 h-6 text-green-600" />
+              </div>
+              <div>
+                <h4 className="font-medium text-gray-900">{csvFileName || 'Uploaded CSV'}</h4>
+                <p className="text-sm text-green-600 font-medium">
+                  {csvContacts.length} recipients loaded
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  if (onCsvContactsChange) onCsvContactsChange([]);
+                  setCsvFileName('');
+                  const fileInput = document.getElementById('csv-upload') as HTMLInputElement;
+                  if (fileInput) fileInput.value = '';
+                }}
+                className="mt-2 flex items-center gap-2 px-4 py-2 text-sm font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors border border-red-200"
+              >
+                <X className="w-4 h-4" />
+                Remove CSV
+              </button>
+            </div>
+          ) : (
+            <>
+              <h4 className="font-medium text-gray-900">Upload Contacts CSV</h4>
+              <p className="text-sm text-gray-500">Ensure your CSV has a column named "Phone" or "Number".</p>
+              <label htmlFor="csv-upload" className="inline-block mt-4 px-4 py-2 bg-white border border-gray-300 rounded cursor-pointer hover:bg-gray-50 font-medium text-gray-700">
+                Choose CSV File
+              </label>
+            </>
           )}
         </div>
       )}
