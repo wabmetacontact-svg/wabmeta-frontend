@@ -270,9 +270,9 @@ const CreateTemplate: React.FC = () => {
 
     // Validate size
     const maxSizes: Record<string, number> = {
-      image: 5 * 1024 * 1024,      // 5MB
-      video: 16 * 1024 * 1024,     // 16MB
-      document: 100 * 1024 * 1024, // 100MB
+      image: 50 * 1024 * 1024,      // 50MB
+      video: 50 * 1024 * 1024,      // 50MB
+      document: 50 * 1024 * 1024,   // 50MB
     };
 
     const maxSize = maxSizes[formData.header.type] || 5 * 1024 * 1024;
@@ -980,7 +980,7 @@ const CreateTemplate: React.FC = () => {
                           <Info className="w-4 h-4 text-blue-500 mt-0.5 shrink-0" />
                           <p className="text-xs text-blue-700 dark:text-blue-300">
                             This media is uploaded to Meta and will be used as the approval sample.
-                            Max size: {formData.header.type === 'image' ? '5MB' : '16MB'}
+                            Max size: 50MB
                           </p>
                         </div>
                       </div>

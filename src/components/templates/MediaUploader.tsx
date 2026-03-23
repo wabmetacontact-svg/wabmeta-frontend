@@ -42,10 +42,10 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
 
   const getMaxSize = () => {
     switch (headerType) {
-      case 'image': return 5 * 1024 * 1024; // 5MB
-      case 'video': return 16 * 1024 * 1024; // 16MB
-      case 'document': return 100 * 1024 * 1024; // 100MB
-      default: return 5 * 1024 * 1024;
+      case 'image': return 50 * 1024 * 1024; // 50MB
+      case 'video': return 50 * 1024 * 1024; // 50MB
+      case 'document': return 50 * 1024 * 1024; // 50MB
+      default: return 50 * 1024 * 1024;
     }
   };
 
@@ -191,9 +191,9 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
               {dragActive ? 'Drop file here' : `Upload ${headerType}`}
             </p>
             <p className="text-xs text-gray-500 mt-1">
-              {headerType === 'image' && 'JPG or PNG, max 5MB'}
-              {headerType === 'video' && 'MP4, max 16MB'}
-              {headerType === 'document' && 'PDF, max 100MB'}
+              {headerType === 'image' && 'JPG or PNG, max 50MB'}
+              {headerType === 'video' && 'MP4, max 50MB'}
+              {headerType === 'document' && 'PDF, max 50MB'}
             </p>
           </div>
           <button
