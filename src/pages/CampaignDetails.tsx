@@ -476,6 +476,55 @@ const CampaignDetails: React.FC = () => {
       )}
 
       {/* ============================== */}
+      {/* ✅ NEW: Quality Warning when ecosystem errors detected */}
+      {displayStats && displayStats.failureReasons?.some(fr => 
+        fr.reason.includes('ecosystem') || fr.reason.includes('healthy')
+      ) && (
+        <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl p-5 shadow-sm">
+          <div className="flex items-start gap-3">
+            <AlertTriangle className="w-6 h-6 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <h3 className="text-base font-bold text-amber-800 dark:text-amber-300 mb-1">
+                ⚠️ Meta Quality Warning
+              </h3>
+              <p className="text-sm text-amber-700 dark:text-amber-400 mb-3">
+                Meta is blocking some messages to protect users. This happens when:
+              </p>
+              <ul className="text-sm text-amber-600 dark:text-amber-400 space-y-1 list-disc list-inside mb-3">
+                <li>Recipients haven't opted-in to receive messages</li>
+                <li>Too many users are blocking or reporting your number</li>
+                <li>Template quality score has dropped</li>
+                <li>Sending to too many inactive/cold contacts</li>
+              </ul>
+              <div className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-amber-200 dark:border-amber-800">
+                <p className="text-xs font-bold text-gray-700 dark:text-gray-300 mb-2">
+                  💡 How to fix:
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-gray-600 dark:text-gray-400">
+                  <div className="flex items-start gap-1.5">
+                    <span className="text-green-500 font-bold">1.</span>
+                    <span>Only send to contacts who opted-in</span>
+                  </div>
+                  <div className="flex items-start gap-1.5">
+                    <span className="text-green-500 font-bold">2.</span>
+                    <span>Send to smaller groups (50-100 at a time)</span>
+                  </div>
+                  <div className="flex items-start gap-1.5">
+                    <span className="text-green-500 font-bold">3.</span>
+                    <span>Wait 24 hours before sending again</span>
+                  </div>
+                  <div className="flex items-start gap-1.5">
+                    <span className="text-green-500 font-bold">4.</span>
+                    <span>Use a different template with better content</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ============================== */}
       {/* ✅ FIXED: STATS CARDS */}
       {/* ============================== */}
       {displayStats && (
