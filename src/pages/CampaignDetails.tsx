@@ -97,29 +97,36 @@ const CampaignDetails: React.FC = () => {
   const [searchInput, setSearchInput] = useState('');
   const [selectedContacts, setSelectedContacts] = useState<string[]>([]);
 
-  // ✅ REAL-TIME HOOK - properly integrated
   const {
     progress,
     isProcessing,
     completedStats,
-    contactUpdates,
     isConnected,
   } = useCampaignRealtime(id || null);
 
-  // ✅ Merge real-time progress into stats
+  // ✅ FIXED: Merge real-time progress with SAFETY CAPS
   const liveStats = useMemo((): Stats | null => {
     if (!stats) return null;
 
-    // If we have real-time progress, use it
     if (progress && isProcessing) {
+      const total = Math.max(progress.total, 1);
+      
+      // ✅ CRITICAL: Never let sent+failed exceed total
+      const sent = Math.min(progress.sent, total);
+      const failed = Math.min(progress.failed, total - sent);
+      const delivered = Math.min(progress.delivered || stats.delivered, sent);
+      const read = Math.min(progress.read || stats.read, delivered);
+      const pending = Math.max(0, total - sent - failed);
+
       return {
         ...stats,
-        sent: progress.sent,
-        failed: progress.failed,
-        delivered: progress.delivered || stats.delivered,
-        read: progress.read || stats.read,
-        pending: Math.max(0, progress.total - progress.sent - progress.failed),
-        totalContacts: progress.total,
+        totalContacts: total,
+        sent,
+        failed,
+        delivered,
+        read,
+        pending,
+        queued: 0,
       };
     }
 
@@ -388,9 +395,7 @@ const CampaignDetails: React.FC = () => {
         </div>
       </div>
 
-      {/* ============================== */}
-      {/* ✅ FIXED: PROGRESS BAR (when RUNNING) */}
-      {/* ============================== */}
+      {/* ✅ FIXED: Progress Bar - capped at 100% */}
       {campaign?.status === 'RUNNING' && displayStats && (
         <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 shadow-sm">
           <div className="flex items-center justify-between mb-2">
@@ -398,35 +403,75 @@ const CampaignDetails: React.FC = () => {
               Campaign Progress
             </span>
             <span className="text-sm text-gray-500 dark:text-gray-400">
-              {displayStats.sent + displayStats.failed} / {displayStats.totalContacts} processed
+              {/* ✅ FIX: Never show more than total */}
+              {Math.min(
+                displayStats.sent + displayStats.failed,
+                displayStats.totalContacts
+              ).toLocaleString()} / {displayStats.totalContacts.toLocaleString()} processed
             </span>
           </div>
-          <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-            <div className="h-full flex transition-all duration-500">
-              <div
-                className="bg-green-500"
-                style={{ width: `${(displayStats.delivered / Math.max(displayStats.totalContacts, 1)) * 100}%` }}
-              />
-              <div
-                className="bg-blue-500"
-                style={{ width: `${(displayStats.sent / Math.max(displayStats.totalContacts, 1)) * 100}%` }}
-              />
-              <div
-                className="bg-red-500"
-                style={{ width: `${(displayStats.failed / Math.max(displayStats.totalContacts, 1)) * 100}%` }}
-              />
-            </div>
-          </div>
-          <div className="flex items-center justify-between mt-2 text-xs text-gray-500">
-            <div className="flex items-center space-x-4">
-              <span className="flex items-center"><span className="w-2 h-2 bg-green-500 rounded-full mr-1" />Delivered</span>
-              <span className="flex items-center"><span className="w-2 h-2 bg-blue-500 rounded-full mr-1" />Sent</span>
-              <span className="flex items-center"><span className="w-2 h-2 bg-red-500 rounded-full mr-1" />Failed</span>
-            </div>
-            <span className="font-bold">
-              {Math.round(((displayStats.sent + displayStats.failed) / Math.max(displayStats.totalContacts, 1)) * 100)}%
-            </span>
-          </div>
+
+          {(() => {
+            const total = Math.max(displayStats.totalContacts, 1);
+            
+            // ✅ Calculate safe percentages that never exceed 100%
+            const deliveredPct = Math.min(
+              (displayStats.delivered / total) * 100, 
+              100
+            );
+            const sentPct = Math.min(
+              ((displayStats.sent - displayStats.delivered) / total) * 100,
+              100 - deliveredPct
+            );
+            const failedPct = Math.min(
+              (displayStats.failed / total) * 100,
+              100 - deliveredPct - sentPct
+            );
+            const totalPct = Math.min(100, deliveredPct + sentPct + failedPct);
+
+            return (
+              <>
+                <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                  <div
+                    className="h-full flex transition-all duration-500"
+                    style={{ width: `${totalPct}%` }}
+                  >
+                    <div
+                      className="bg-green-500 h-full"
+                      style={{ width: `${totalPct > 0 ? (deliveredPct / totalPct) * 100 : 0}%` }}
+                    />
+                    <div
+                      className="bg-blue-500 h-full"
+                      style={{ width: `${totalPct > 0 ? (sentPct / totalPct) * 100 : 0}%` }}
+                    />
+                    <div
+                      className="bg-red-500 h-full"
+                      style={{ width: `${totalPct > 0 ? (failedPct / totalPct) * 100 : 0}%` }}
+                    />
+                  </div>
+                </div>
+                <div className="flex items-center justify-between mt-2 text-xs text-gray-500">
+                  <div className="flex items-center space-x-4">
+                    <span className="flex items-center">
+                      <span className="w-2 h-2 bg-green-500 rounded-full mr-1" />
+                      Delivered ({displayStats.delivered})
+                    </span>
+                    <span className="flex items-center">
+                      <span className="w-2 h-2 bg-blue-500 rounded-full mr-1" />
+                      Sent ({Math.max(0, displayStats.sent - displayStats.delivered)})
+                    </span>
+                    <span className="flex items-center">
+                      <span className="w-2 h-2 bg-red-500 rounded-full mr-1" />
+                      Failed ({displayStats.failed})
+                    </span>
+                  </div>
+                  <span className="font-bold">
+                    {Math.min(100, Math.round(totalPct))}%
+                  </span>
+                </div>
+              </>
+            );
+          })()}
         </div>
       )}
 
