@@ -111,8 +111,13 @@ const CampaignDetails: React.FC = () => {
     setRefreshing(false);
   };
 
-  useEffect(() => { loadAll(); }, []);
-  useEffect(() => { loadContacts(1); }, [filterStatus]);
+  useEffect(() => {
+    loadAll();
+  }, [id, loadAll]);
+
+  useEffect(() => {
+    loadContacts(1);
+  }, [filterStatus, loadContacts]);
 
   useEffect(() => {
     if (campaign?.status === 'RUNNING') {
