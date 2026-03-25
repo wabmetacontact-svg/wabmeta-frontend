@@ -96,7 +96,7 @@ const CampaignRecipients: React.FC<Props> = ({ campaignId, onRetryFailed }) => {
 
     setRetrying(true);
     try {
-      const res = await campaignsApi.retryFailed(campaignId);
+      const res = await campaignsApi.retryFailed(campaignId, {});
       if (res.data.success) {
         toast.success(res.data.data.message);
         fetchRecipients();

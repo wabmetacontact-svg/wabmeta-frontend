@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { campaigns as campaignsApi } from '../services/api';
 import toast from 'react-hot-toast';
+import { useCampaignRealtime } from '../hooks/useCampaignRealtime';
 
 interface CampaignContact {
   id: string;
@@ -58,6 +59,9 @@ const CampaignDetails: React.FC = () => {
   const [contacts, setContacts] = useState<CampaignContact[]>([]);
   const [stats, setStats] = useState<Stats | null>(null);
   const [meta, setMeta] = useState({ page: 1, limit: 50, total: 0, totalPages: 1 });
+
+  // ✅ Real-time socket integration
+  const { progress, isProcessing, contactUpdates } = useCampaignRealtime(id || null);
 
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [search, setSearch] = useState('');
@@ -119,12 +123,38 @@ const CampaignDetails: React.FC = () => {
     loadContacts(1);
   }, [filterStatus, loadContacts]);
 
+  // ✅ Sync socket progress with stats
   useEffect(() => {
-    if (campaign?.status === 'RUNNING') {
-      const interval = setInterval(refresh, 5000);
-      return () => clearInterval(interval);
+    if (progress) {
+      setStats(prev => {
+        if (!prev) return null;
+        return {
+          ...prev,
+          sent: progress.sent,
+          failed: progress.failed,
+          delivered: progress.delivered || prev.delivered,
+          read: progress.read || prev.read,
+          totalContacts: progress.total,
+        };
+      });
+      // Optionally update campaign status if it changed
+      if (progress.status && campaign && progress.status !== campaign.status) {
+        setCampaign((prev: any) => ({ ...prev, status: progress.status }));
+      }
     }
-  }, [campaign?.status]);
+  }, [progress]);
+
+  // ✅ Sync individual contact updates
+  useEffect(() => {
+    if (contactUpdates.length > 0) {
+      const latest = contactUpdates[contactUpdates.length - 1];
+      setContacts(prev => prev.map(c => 
+        c.contactId === latest.contactId 
+          ? { ...c, status: latest.status, waMessageId: latest.messageId || c.waMessageId, failureReason: latest.error || c.failureReason }
+          : c
+      ));
+    }
+  }, [contactUpdates]);
 
   const handleRetryFailed = async () => {
     try {
@@ -167,6 +197,12 @@ const CampaignDetails: React.FC = () => {
               }`}>
                 {campaign?.status}
               </span>
+              {isProcessing && (
+                <span className="flex items-center text-[10px] font-bold text-green-600 dark:text-green-400 animate-pulse tracking-wide italic">
+                  <span className="w-1 h-1 bg-green-600 rounded-full mr-1"></span>
+                  LIVE UPDATES ACTIVE
+                </span>
+              )}
             </div>
           </div>
         </div>
