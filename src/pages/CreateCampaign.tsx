@@ -282,29 +282,30 @@ const CreateCampaign: React.FC = () => {
 
     try {
       const whatsappAccount = whatsappAccounts.find((a) => a.id === selectedAccountId);
-      if (!whatsappAccount?.id || !whatsappAccount.phoneNumberId) throw new Error("Invalid WhatsApp account.");
+      if (!whatsappAccount?.id) throw new Error("Invalid WhatsApp account.");
       if (!formData.templateId) throw new Error("Please select a template.");
 
+      // ✅ FIXED: Build audience payload
       let contactIds: string[] | undefined = undefined;
       let contactGroupId: string | undefined = undefined;
       let audienceFilter: any = undefined;
       let csvContactsPayload: any[] | undefined = undefined;
 
-      // Logic mapping
       if (formData.audienceType === "all") {
         audienceFilter = { all: true };
+        console.log('✅ Using ALL contacts');
       } else if (formData.audienceType === "tags") {
         audienceFilter = { tags: formData.selectedTags };
-        // Optionally resolve IDs here if backend requires IDs
-        contactIds = contacts
-          .filter((c) => formData.selectedTags.some((tag) => c.tags.includes(tag)))
-          .map(c => c.id);
+        console.log('✅ Using tags:', formData.selectedTags);
       } else if (formData.audienceType === "manual") {
         contactIds = formData.selectedContacts;
+        console.log('✅ Using manual selection:', contactIds?.length);
       } else if (formData.audienceType === "group") {
         contactGroupId = formData.selectedGroup;
+        console.log('✅ Using group:', contactGroupId);
       } else if (formData.audienceType === "csv") {
         csvContactsPayload = formData.csvContacts;
+        console.log('✅ Using CSV:', csvContactsPayload?.length);
       }
 
       if (
@@ -330,13 +331,11 @@ const CreateCampaign: React.FC = () => {
         name: formData.name.trim(),
         description: formData.description?.trim() || undefined,
         templateId: formData.templateId,
-
-        contactIds,       // Used for manual / tags
-        contactGroupId,   // Used for group
-        audienceFilter,   // Used for tags / all
-        csvContacts: csvContactsPayload, // Used for CSV
-        whatsappAccountId: whatsappAccount.id,
-        phoneNumberId: whatsappAccount.phoneNumberId,
+        whatsappAccountId: whatsappAccount.id, // ✅ PRIMARY
+        contactIds,
+        contactGroupId,
+        audienceFilter,
+        csvContacts: csvContactsPayload,
         variableMapping: Object.keys(formattedMapping).length > 0 ? formattedMapping : undefined,
         scheduledAt,
       };
