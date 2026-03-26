@@ -864,8 +864,8 @@ export const chatbots = {
 
 // ---------- CRM ----------
 export const crm = {
-  // Stats
   getStats: () => api.get<ApiResponse>('/crm/stats'),
+  syncFromContacts: () => api.post<ApiResponse>('/crm/sync-from-contacts'),
 
   // Pipelines
   getPipelines: () => api.get<ApiResponse>('/crm/pipelines'),

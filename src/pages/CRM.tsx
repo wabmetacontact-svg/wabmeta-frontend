@@ -17,9 +17,26 @@ const CRM: React.FC = () => {
     const [recentLeads, setRecentLeads] = useState<Lead[]>([]);
     const [loading, setLoading] = useState(true);
 
+    const [syncing, setSyncing] = useState(false);
+
     useEffect(() => {
         loadData();
     }, []);
+
+    const handleSync = async () => {
+        setSyncing(true);
+        try {
+            const res = await crmApi.syncFromContacts();
+            if (res.data.success) {
+                toast.success(res.data.message || 'Contacts synced successfully');
+                loadData();
+            }
+        } catch (err) {
+            toast.error('Failed to sync contacts');
+        } finally {
+            setSyncing(false);
+        }
+    };
 
     const loadData = async () => {
         setLoading(true);
@@ -240,8 +257,29 @@ const CRM: React.FC = () => {
                         ))}
 
                         {recentLeads.length === 0 && (
-                            <div className="text-center py-8 text-gray-500">
-                                No leads yet
+                            <div className="text-center py-12 px-4">
+                                <Users className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                                <h3 className="text-gray-900 dark:text-white font-medium">No leads yet</h3>
+                                <p className="text-gray-500 text-sm mt-1 mb-4">
+                                    You haven't added any leads to your sales pipeline.
+                                </p>
+                                <div className="flex flex-col gap-2 max-w-[200px] mx-auto">
+                                    <Link
+                                        to="/dashboard/crm/leads/new"
+                                        className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm"
+                                    >
+                                        <Plus className="w-4 h-4" />
+                                        Add New Lead
+                                    </Link>
+                                    <button
+                                        onClick={handleSync}
+                                        disabled={syncing}
+                                        className="inline-flex items-center justify-center gap-2 px-4 py-2 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-sm disabled:opacity-50"
+                                    >
+                                        {syncing ? <Loader2 className="w-4 h-4 animate-spin" /> : <TrendingUp className="w-4 h-4" />}
+                                        Sync from Contacts
+                                    </button>
+                                </div>
                             </div>
                         )}
                     </div>

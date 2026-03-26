@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
     Plus, Search, LayoutGrid, List, Loader2,
-    MoreVertical, Calendar
+    MoreVertical, Calendar, TrendingUp
 } from 'lucide-react';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { crm as crmApi } from '../services/api';
@@ -23,6 +23,7 @@ const LeadsList: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
     const [showCreateModal, setShowCreateModal] = useState(false);
+    const [syncing, setSyncing] = useState(false);
 
     useEffect(() => {
         loadPipelines();
@@ -80,6 +81,21 @@ const LeadsList: React.FC = () => {
             toast.error('Failed to load leads');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleSync = async () => {
+        setSyncing(true);
+        try {
+            const res = await crmApi.syncFromContacts();
+            if (res.data.success) {
+                toast.success(res.data.message || 'Contacts synced successfully');
+                loadLeads();
+            }
+        } catch (err) {
+            toast.error('Failed to sync contacts');
+        } finally {
+            setSyncing(false);
         }
     };
 
@@ -190,10 +206,20 @@ const LeadsList: React.FC = () => {
                             </button>
                         </div>
 
+                        {/* Sync Contacts */}
+                        <button
+                            onClick={handleSync}
+                            disabled={syncing}
+                            className="flex items-center gap-2 px-4 py-2 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-sm disabled:opacity-50"
+                        >
+                            {syncing ? <Loader2 className="w-4 h-4 animate-spin" /> : <TrendingUp className="w-4 h-4" />}
+                            Sync
+                        </button>
+
                         {/* Add Lead */}
                         <button
                             onClick={() => setShowCreateModal(true)}
-                            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm"
                         >
                             <Plus className="w-4 h-4" />
                             Add Lead
