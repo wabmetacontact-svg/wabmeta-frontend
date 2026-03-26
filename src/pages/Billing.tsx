@@ -393,32 +393,7 @@ const Billing: React.FC = () => {
     }
   };
 
-  const handleCancelSubscription = async () => {
-    const confirmed = confirm(
-      'Are you sure you want to cancel your subscription?\n\n' +
-      '• You will retain access until the end of your billing period\n' +
-      '• You can reactivate anytime before expiration\n' +
-      '• Your data will be preserved'
-    );
 
-    if (!confirmed) return;
-
-    try {
-      const loadingToast = toast.loading('Cancelling subscription...');
-      const response = await billing.cancel();
-      toast.dismiss(loadingToast);
-
-      if (response.data.success) {
-        toast.success('Subscription cancelled. You have access until the end of your billing period.');
-        await fetchBillingData();
-      } else {
-        throw new Error(response.data.message || 'Failed to cancel');
-      }
-    } catch (error: any) {
-      console.error('Cancel error:', error);
-      toast.error(error.message || 'Failed to cancel subscription');
-    }
-  };
 
   // ============================================
   // LOADING STATE
@@ -539,10 +514,15 @@ const Billing: React.FC = () => {
 
             {(subscription.status === 'active' || subscription.status === 'ACTIVE') && (
               <button
-                onClick={handleCancelSubscription}
-                className="px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20 rounded-lg transition-colors border border-red-200 dark:border-red-800"
+                onClick={() => {
+                  const pricingSection = document.getElementById('pricing-plans');
+                  if (pricingSection) {
+                    pricingSection.scrollIntoView({ behavior: 'smooth' });
+                  }
+                }}
+                className="px-4 py-2 text-sm font-medium text-green-600 hover:bg-green-50 dark:text-green-400 dark:hover:bg-green-900/20 rounded-lg transition-colors border border-green-200 dark:border-green-800"
               >
-                Cancel Subscription
+                Upgrade Plan
               </button>
             )}
           </div>
@@ -713,7 +693,7 @@ const Billing: React.FC = () => {
       </div>
 
       {/* Pricing Cards */}
-      <div className="text-center mb-10">
+      <div id="pricing-plans" className="text-center mb-10">
         <h2 className="text-3xl font-extrabold text-gray-900 dark:text-white mb-2">Select Your Tier</h2>
         <div className="h-1.5 w-20 bg-green-500 mx-auto rounded-full"></div>
       </div>
