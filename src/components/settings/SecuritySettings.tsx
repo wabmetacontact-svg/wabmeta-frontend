@@ -1,9 +1,12 @@
 // src/components/settings/SecuritySettings.tsx
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Shield, Key, Smartphone, Clock } from 'lucide-react';
+import ChangePasswordModal from './ChangePasswordModal';
 
 const SecuritySettings: React.FC = () => {
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+
   return (
     <div className="space-y-6">
       <div>
@@ -24,14 +27,23 @@ const SecuritySettings: React.FC = () => {
               <Key className="w-5 h-5 text-gray-500 mr-3" />
               <div>
                 <p className="font-medium text-gray-900 dark:text-white">Password</p>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Last changed 30 days ago</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Regularly update your password for safety</p>
               </div>
             </div>
-            <button className="px-4 py-2 text-sm text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg font-medium">
+            <button 
+              onClick={() => setIsPasswordModalOpen(true)}
+              className="px-4 py-2 text-sm text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg font-medium transition-colors"
+            >
               Change Password
             </button>
           </div>
         </div>
+
+        {/* Change Password Modal */}
+        <ChangePasswordModal 
+          isOpen={isPasswordModalOpen} 
+          onClose={() => setIsPasswordModalOpen(false)} 
+        />
 
         {/* Two Factor */}
         <div className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
