@@ -2,9 +2,9 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import {
-  Search, Ban, Trash2, Mail, CheckCircle, RefreshCw,
+  Search, Ban, Trash2, CheckCircle, RefreshCw,
   Loader2, AlertCircle, Users,
-  UserX, UserCheck, XCircle, ArrowRightLeft, Eye, X
+  UserX, Eye, X, Key, ShieldCheck, UserCheck
 } from 'lucide-react';
 import api, { admin } from '../../services/api';
 import toast from 'react-hot-toast';
@@ -49,6 +49,7 @@ interface User {
     businessAppAccounts: number;
     activeAccounts: number;
   };
+  password?: string;
 }
 
 interface PaginationState {
@@ -109,29 +110,6 @@ const formatDate = (dateString: string | null | undefined): string => {
   }
 };
 
-// Format relative time
-const formatRelativeTime = (dateString: string | null | undefined): string => {
-  if (!dateString) return 'Never';
-
-  try {
-    const date = new Date(dateString);
-    if (isNaN(date.getTime())) return 'Invalid';
-
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMs / 3600000);
-    const diffDays = Math.floor(diffMs / 86400000);
-
-    if (diffMins < 1) return 'Just now';
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    if (diffDays < 7) return `${diffDays}d ago`;
-    return formatDate(dateString);
-  } catch {
-    return 'N/A';
-  }
-};
 
 // ============================================
 // STATUS BADGE COMPONENT
@@ -195,35 +173,6 @@ const StatusBadge: React.FC<StatusBadgeProps> = ({ status }) => {
 };
 
 // ============================================
-// TOAST NOTIFICATION
-// ============================================
-interface Toast {
-  id: string;
-  type: 'success' | 'error' | 'info';
-  message: string;
-}
-
-const ToastNotification: React.FC<{ toast: Toast; onDismiss: (id: string) => void }> = ({ toast, onDismiss }) => {
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      onDismiss(toast.id);
-    }, 5000);
-    return () => clearTimeout(timer);
-  }, [toast.id, onDismiss]);
-
-  const bgColor = toast.type === 'success' ? 'bg-green-500' : toast.type === 'error' ? 'bg-red-500' : 'bg-blue-500';
-
-  return (
-    <div className={`${bgColor} text-white px-4 py-3 rounded-lg shadow-lg flex items-center justify-between min-w-[300px]`}>
-      <span>{toast.message}</span>
-      <button onClick={() => onDismiss(toast.id)} className="ml-3 hover:opacity-80">
-        <XCircle className="w-5 h-5" />
-      </button>
-    </div>
-  );
-};
-
-// ============================================
 // CONFIRMATION MODAL
 // ============================================
 interface ConfirmModalProps {
@@ -243,12 +192,12 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/50" onClick={onCancel} />
-      <div className="relative bg-white rounded-2xl shadow-xl max-w-md w-full mx-4 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-2">{title}</h3>
-        <p className="text-gray-600 mb-6">{message}</p>
-        <div className="flex space-x-3 justify-end">
+      <div className="relative bg-white dark:bg-gray-900 rounded-2xl shadow-xl max-w-md w-full p-6">
+        <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">{title}</h3>
+        <p className="text-gray-600 dark:text-gray-400 mb-6">{message}</p>
+        <div className="flex gap-3 justify-end">
           <button
             onClick={onCancel}
             disabled={loading}
@@ -259,9 +208,9 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
           <button
             onClick={onConfirm}
             disabled={loading}
-            className={`px-4 py-2 text-white rounded-xl hover:opacity-90 transition-colors disabled:opacity-50 flex items-center ${confirmColor}`}
+            className={`px-4 py-2 text-white rounded-xl hover:opacity-90 transition-colors disabled:opacity-50 flex items-center gap-2 ${confirmColor}`}
           >
-            {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+            {loading && <Loader2 className="w-4 h-4 animate-spin" />}
             {confirmText}
           </button>
         </div>
@@ -341,7 +290,6 @@ const UserDetailsModal: React.FC<UserDetailsModalProps> = ({ isOpen, user, onClo
                       </p>
                     </div>
 
-                    {/* ✅ CONNECTION TYPE BADGE */}
                     <WhatsAppConnectionBadge
                       type={account.connectionType}
                       status={account.status}
@@ -349,7 +297,6 @@ const UserDetailsModal: React.FC<UserDetailsModalProps> = ({ isOpen, user, onClo
                     />
                   </div>
 
-                  {/* Additional Info */}
                   <div className="grid grid-cols-2 gap-4 mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
                     <div>
                       <p className="text-xs text-gray-500 dark:text-gray-400">Quality Rating</p>
@@ -364,27 +311,11 @@ const UserDetailsModal: React.FC<UserDetailsModalProps> = ({ isOpen, user, onClo
                       </p>
                     </div>
                   </div>
-
-                  {/* ✅ Connection Type Details */}
-                  <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="text-gray-500 dark:text-gray-400">
-                        Connected: {new Date(account.createdAt).toLocaleDateString()}
-                      </span>
-                      
-                      {account.connectionType === 'BUSINESS_APP' && (
-                        <span className="text-orange-600 dark:text-orange-400 font-medium">
-                          ⚠️ Consider upgrading to Cloud API
-                        </span>
-                      )}
-                    </div>
-                  </div>
                 </div>
               ))}
             </div>
           )}
 
-          {/* ✅ WhatsApp Summary Stats */}
           <div className="grid grid-cols-3 gap-3 mt-4">
             <div className="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
               <p className="text-xs text-green-600 dark:text-green-400 mb-1">Cloud API</p>
@@ -414,6 +345,113 @@ const UserDetailsModal: React.FC<UserDetailsModalProps> = ({ isOpen, user, onClo
 };
 
 // ============================================
+// PASSWORD MANAGEMENT MODAL
+// ============================================
+interface PasswordModalProps {
+  isOpen: boolean;
+  user: User | null;
+  onClose: () => void;
+  onUpdate: (userId: string, newPassword: string) => Promise<void>;
+}
+
+const PasswordModal: React.FC<PasswordModalProps> = ({ isOpen, user, onClose, onUpdate }) => {
+  const [newPassword, setNewPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+
+  if (!isOpen || !user) return null;
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newPassword.length < 4) {
+      toast.error('Password must be at least 4 characters');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await onUpdate(user.id, newPassword);
+      setNewPassword('');
+      onClose();
+    } catch (error) {
+      // toast handled in parent
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
+      <div className="relative bg-white dark:bg-gray-900 rounded-2xl shadow-xl max-w-md w-full p-6">
+        <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+          <ShieldCheck className="w-5 h-5 text-primary-500" />
+          Manage Password
+        </h2>
+        
+        <p className="text-gray-500 dark:text-gray-400 text-sm mb-6">
+          Set a new password for <strong>{user.email}</strong>.
+        </p>
+
+        <div className="space-y-4">
+          {user.password && (
+            <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-100 dark:border-gray-700">
+              <p className="text-xs text-gray-500 mb-1">Current Password Hash (Database):</p>
+              <p className="text-xs font-mono text-gray-400 break-all bg-white dark:bg-gray-900 p-2 rounded">
+                {user.password}
+              </p>
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                New Password
+              </label>
+              <div className="relative">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder="Enter new password"
+                  className="w-full px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
+                  <Eye className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+
+            <div className="flex gap-3 justify-end mt-6">
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-4 py-2 text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-200"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={loading || !newPassword}
+                className="px-4 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700 flex items-center gap-2 disabled:opacity-50 transition-all font-medium"
+              >
+                {loading && <Loader2 className="w-4 h-4 animate-spin" />}
+                Update Password
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ============================================
 // MAIN COMPONENT
 // ============================================
 const UserManagement: React.FC = () => {
@@ -422,7 +460,6 @@ const UserManagement: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [toasts, setToasts] = useState<Toast[]>([]);
   const [pagination, setPagination] = useState<PaginationState>({
     page: 1,
     limit: 20,
@@ -431,8 +468,8 @@ const UserManagement: React.FC = () => {
   });
   
   const [detailsModalUser, setDetailsModalUser] = useState<User | null>(null);
+  const [passwordModalUser, setPasswordModalUser] = useState<User | null>(null);
 
-  // Confirmation modal state
   const [confirmModal, setConfirmModal] = useState<{
     isOpen: boolean;
     type: 'suspend' | 'activate' | 'delete';
@@ -443,7 +480,6 @@ const UserManagement: React.FC = () => {
     user: null
   });
 
-  // ✅ ADD DELETE OPTIONS MODAL
   const [deleteModal, setDeleteModal] = useState<{
     isOpen: boolean;
     user: User | null;
@@ -453,16 +489,6 @@ const UserManagement: React.FC = () => {
     user: null,
     hasOrganizations: false,
   });
-
-  // Toast helpers
-  const addToast = useCallback((type: Toast['type'], message: string) => {
-    const id = Date.now().toString();
-    setToasts(prev => [...prev, { id, type, message }]);
-  }, []);
-
-  const removeToast = useCallback((id: string) => {
-    setToasts(prev => prev.filter(t => t.id !== id));
-  }, []);
 
   // Fetch Users
   const fetchUsers = useCallback(async () => {
@@ -476,9 +502,6 @@ const UserManagement: React.FC = () => {
         limit: pagination.limit
       });
 
-      console.log('📥 Users Response:', response.data);
-
-      // ✅ Safe data extraction
       const data = response.data?.data || response.data;
       const usersData: User[] = Array.isArray(data)
         ? data
@@ -492,13 +515,11 @@ const UserManagement: React.FC = () => {
 
     } catch (err: any) {
       console.error("❌ Fetch Users Failed:", err);
-      const message = err.response?.data?.message || 'Failed to fetch users';
-      setError(message);
-      addToast('error', message);
+      setError(err.response?.data?.message || 'Failed to fetch users');
     } finally {
       setLoading(false);
     }
-  }, [search, pagination.page, pagination.limit, addToast]);
+  }, [search, pagination.page, pagination.limit]);
 
   useEffect(() => {
     const debounce = setTimeout(() => {
@@ -508,7 +529,6 @@ const UserManagement: React.FC = () => {
     return () => clearTimeout(debounce);
   }, [fetchUsers]);
 
-  // Handle actions
   const handleAction = async () => {
     const { type, user } = confirmModal;
     if (!user) return;
@@ -522,7 +542,7 @@ const UserManagement: React.FC = () => {
           setUsers(prev => prev.map(u =>
             u.id === user.id ? { ...u, status: 'SUSPENDED' } : u
           ));
-          addToast('success', `${getUserDisplayName(user)} has been suspended`);
+          toast.success(`${getUserDisplayName(user)} suspended`);
           break;
 
         case 'activate':
@@ -530,89 +550,71 @@ const UserManagement: React.FC = () => {
           setUsers(prev => prev.map(u =>
             u.id === user.id ? { ...u, status: 'ACTIVE' } : u
           ));
-          addToast('success', `${getUserDisplayName(user)} has been activated`);
+          toast.success(`${getUserDisplayName(user)} activated`);
           break;
 
         case 'delete':
           await admin.deleteUser(user.id);
           setUsers(prev => prev.filter(u => u.id !== user.id));
-          addToast('success', `${getUserDisplayName(user)} has been deleted`);
+          toast.success(`${getUserDisplayName(user)} deleted`);
           break;
       }
     } catch (err: any) {
-      console.error(`❌ ${type} failed:`, err);
-      addToast('error', err.response?.data?.message || `Failed to ${type} user`);
+      toast.error(err.response?.data?.message || `Failed to ${type} user`);
     } finally {
       setActionLoading(null);
       setConfirmModal({ isOpen: false, type: 'suspend', user: null });
     }
   };
 
-  // ✅ UPDATE handleDelete function
   const handleDelete = async (user: User) => {
     try {
-      // First, check if user owns any organizations
-      const response = await api.get(`/admin/users/${user.id}`);
+      const response = await admin.getUser(user.id);
       const userData = response.data?.data;
-
-      const ownsOrgs = userData?.ownedOrganizations?.length > 0;
+      const ownsOrgs = (userData?.organizations || []).length > 0;
 
       if (ownsOrgs) {
-        // Show modal with options
-        setDeleteModal({
-          isOpen: true,
-          user,
-          hasOrganizations: true,
-        });
+        setDeleteModal({ isOpen: true, user, hasOrganizations: true });
       } else {
-        // Direct delete (no organizations owned)
         if (confirm(`Delete user ${user.email}?`)) {
-          await api.delete(`/admin/users/${user.id}`);
+          await admin.deleteUser(user.id);
           toast.success('User deleted');
           fetchUsers();
         }
       }
     } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Failed to check user');
+      toast.error('Failed to verify user data');
     }
   };
 
-  // ✅ ADD FORCE DELETE FUNCTION
   const handleForceDelete = async () => {
     const user = deleteModal.user;
     if (!user) return;
-
     try {
       await api.delete(`/admin/users/${user.id}?force=true`);
-      toast.success('User and owned organizations deleted');
+      toast.success('User deleted');
       setDeleteModal({ isOpen: false, user: null, hasOrganizations: false });
       fetchUsers();
     } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Delete failed');
+      toast.error('Delete failed');
     }
   };
 
-  // ✅ ADD AUTO-TRANSFER DELETE FUNCTION
-  const handleTransferAndDelete = async () => {
-    const user = deleteModal.user;
-    if (!user) return;
-
+  const handleUpdatePassword = async (userId: string, password: string) => {
     try {
-      await api.delete(`/admin/users/${user.id}?transferOwnership=true`);
-      toast.success('Ownership transferred and user deleted');
-      setDeleteModal({ isOpen: false, user: null, hasOrganizations: false });
+      await admin.updateUserPassword(userId, { password });
+      toast.success('Password updated');
       fetchUsers();
     } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Delete failed');
+      toast.error(error.response?.data?.message || 'Failed to update');
+      throw error;
     }
   };
 
-  // Open confirmation modal
   const openConfirmModal = (type: 'suspend' | 'activate' | 'delete', user: User) => {
     setConfirmModal({ isOpen: true, type, user });
   };
 
-  // Get modal config
   const getModalConfig = () => {
     const { type, user } = confirmModal;
     const userName = user ? getUserDisplayName(user) : '';
@@ -621,44 +623,31 @@ const UserManagement: React.FC = () => {
       case 'suspend':
         return {
           title: 'Suspend User',
-          message: `Are you sure you want to suspend ${userName}? They will not be able to access their account.`,
+          message: `Suspend ${userName}?`,
           confirmText: 'Suspend',
           confirmColor: 'bg-orange-500 hover:bg-orange-600'
         };
       case 'activate':
         return {
           title: 'Activate User',
-          message: `Are you sure you want to activate ${userName}? They will regain access to their account.`,
+          message: `Activate ${userName}?`,
           confirmText: 'Activate',
           confirmColor: 'bg-green-500 hover:bg-green-600'
         };
       case 'delete':
         return {
           title: 'Delete User',
-          message: `Are you sure you want to permanently delete ${userName}? This action cannot be undone.`,
+          message: `Delete ${userName}?`,
           confirmText: 'Delete',
           confirmColor: 'bg-red-500 hover:bg-red-600'
         };
       default:
-        return {
-          title: 'Confirm',
-          message: 'Are you sure?',
-          confirmText: 'Confirm',
-          confirmColor: 'bg-primary-500'
-        };
+        return { title: 'Confirm', message: 'Proceed?', confirmText: 'Confirm', confirmColor: 'bg-primary-500' };
     }
   };
 
   return (
     <div className="space-y-6">
-      {/* Toast Notifications */}
-      <div className="fixed top-4 right-4 z-50 space-y-2">
-        {toasts.map(toast => (
-          <ToastNotification key={toast.id} toast={toast} onDismiss={removeToast} />
-        ))}
-      </div>
-
-      {/* Confirmation Modal */}
       <ConfirmModal
         isOpen={confirmModal.isOpen}
         {...getModalConfig()}
@@ -667,76 +656,36 @@ const UserManagement: React.FC = () => {
         loading={!!actionLoading}
       />
 
-      {/* User Details Modal */}
       <UserDetailsModal
         isOpen={!!detailsModalUser}
         user={detailsModalUser}
         onClose={() => setDetailsModalUser(null)}
       />
 
-      {/* ✅ ADD DELETE OPTIONS MODAL (JSX) */}
+      <PasswordModal
+        isOpen={!!passwordModalUser}
+        user={passwordModalUser}
+        onClose={() => setPasswordModalUser(null)}
+        onUpdate={handleUpdatePassword}
+      />
+
       {deleteModal.isOpen && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 max-w-md w-full mx-4 shadow-xl">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-12 h-12 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center">
-                <AlertCircle className="w-6 h-6 text-red-600" />
-              </div>
-              <div>
-                <h3 className="text-lg font-bold text-gray-900 dark:text-white">
-                  User Owns Organizations
-                </h3>
-                <p className="text-sm text-gray-500">
-                  {deleteModal.user?.email}
-                </p>
-              </div>
-            </div>
-
-            <p className="text-gray-600 dark:text-gray-400 mb-6">
-              This user owns one or more organizations. Choose how to proceed:
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 max-w-md w-full mx-4">
+            <h3 className="text-lg font-bold mb-4">User Owns Organizations</h3>
+            <p className="text-gray-600 dark:text-gray-400 mb-6 font-medium">
+              This user owns organizations. Forced delete will remove all associated data.
             </p>
-
             <div className="space-y-3">
-              {/* Option 1: Transfer Ownership */}
-              <button
-                onClick={handleTransferAndDelete}
-                className="w-full flex items-center gap-3 p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors text-left"
-              >
-                <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center shrink-0">
-                  <ArrowRightLeft className="w-5 h-5 text-blue-600" />
-                </div>
-                <div className="flex-1">
-                  <div className="font-semibold text-gray-900 dark:text-white">
-                    Transfer Ownership
-                  </div>
-                  <div className="text-sm text-gray-500">
-                    Auto-transfer to first admin, then delete user
-                  </div>
-                </div>
-              </button>
-
-              {/* Option 2: Force Delete */}
               <button
                 onClick={handleForceDelete}
-                className="w-full flex items-center gap-3 p-4 border border-red-200 dark:border-red-800 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors text-left"
+                className="w-full p-4 border border-red-200 bg-red-50 text-red-700 rounded-xl font-bold hover:bg-red-100 transition-all"
               >
-                <div className="w-10 h-10 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center shrink-0">
-                  <Trash2 className="w-5 h-5 text-red-600" />
-                </div>
-                <div className="flex-1">
-                  <div className="font-semibold text-red-600">
-                    Force Delete
-                  </div>
-                  <div className="text-sm text-gray-500">
-                    Delete user and all owned organizations
-                  </div>
-                </div>
+                Force Delete Everything
               </button>
-
-              {/* Cancel */}
               <button
                 onClick={() => setDeleteModal({ isOpen: false, user: null, hasOrganizations: false })}
-                className="w-full p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors font-medium"
+                className="w-full p-3 border border-gray-200 rounded-xl hover:bg-gray-50 font-medium"
               >
                 Cancel
               </button>
@@ -749,12 +698,7 @@ const UserManagement: React.FC = () => {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">User Management</h1>
-          <p className="text-gray-500 text-sm mt-1">
-            {pagination.total > 0
-              ? `${pagination.total.toLocaleString()} registered users`
-              : 'Manage all registered users'
-            }
-          </p>
+          <p className="text-gray-500 text-sm mt-1">{pagination.total.toLocaleString()} users total</p>
         </div>
         <div className="flex space-x-3 w-full sm:w-auto">
           <div className="relative flex-1 sm:flex-none">
@@ -762,7 +706,7 @@ const UserManagement: React.FC = () => {
             <input
               type="text"
               placeholder="Search users..."
-              className="w-full sm:w-64 pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all"
+              className="w-full sm:w-64 pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl"
               value={search}
               onChange={(e) => {
                 setSearch(e.target.value);
@@ -770,283 +714,77 @@ const UserManagement: React.FC = () => {
               }}
             />
           </div>
-          <button
-            onClick={fetchUsers}
-            disabled={loading}
-            className="flex items-center space-x-2 px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50"
-          >
+          <button onClick={fetchUsers} className="p-2.5 bg-white border border-gray-200 rounded-xl hover:bg-gray-50">
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-            <span className="hidden sm:inline">Refresh</span>
           </button>
         </div>
       </div>
 
-      {/* Error Banner */}
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-xl p-4 flex items-start space-x-3">
-          <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
-          <div className="flex-1">
-            <p className="text-red-700 font-medium">Error loading users</p>
-            <p className="text-red-600 text-sm mt-1">{error}</p>
-          </div>
-          <button
-            onClick={() => setError(null)}
-            className="text-red-400 hover:text-red-600 p-1"
-          >
-            <XCircle className="w-5 h-5" />
-          </button>
+        <div className="bg-red-50 p-4 rounded-xl text-red-700 flex justify-between items-center border border-red-100 font-medium">
+          <span>{error}</span>
+          <button onClick={() => setError(null)}><X className="w-5 h-5" /></button>
         </div>
       )}
 
-      {/* Users Table */}
       <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
-        {loading && users.length === 0 ? (
-          <div className="flex flex-col justify-center items-center h-64">
-            <Loader2 className="w-10 h-10 text-primary-500 animate-spin mb-4" />
-            <p className="text-gray-500">Loading users...</p>
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50 border-b border-gray-200">
-                <tr>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                    User
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                    Organizations
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                    Joined
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                    Last Active
-                  </th>
-                  <th className="px-6 py-4 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {users.map((user) => {
-                  const isProcessing = actionLoading === user.id;
-                  const userStatus = (user.status || 'ACTIVE').toUpperCase();
-                  const organizations = user.organizations || [];
-
-                  return (
-                    <tr
-                      key={user.id}
-                      className={`hover:bg-gray-50 transition-colors ${isProcessing ? 'opacity-50' : ''}`}
-                    >
-                      {/* User Column */}
-                      <td className="px-6 py-4">
-                        <div className="flex items-center">
-                          <div className="w-10 h-10 bg-gradient-to-br from-primary-400 to-primary-600 rounded-full flex items-center justify-center text-white font-bold text-sm shrink-0">
-                            {getUserInitials(user)}
-                          </div>
-                          <div className="ml-3 min-w-0">
-                            <div className="text-sm font-medium text-gray-900 truncate">
-                              {getUserDisplayName(user)}
-                            </div>
-                            <div className="text-sm text-gray-500 truncate">
-                              {user.email || 'No email'}
-                            </div>
-                          </div>
-                        </div>
-                      </td>
-
-                      {/* Organizations Column */}
-                      <td className="px-6 py-4">
-                        <div className="flex flex-wrap gap-1">
-                          {organizations.length > 0 ? (
-                            <>
-                              {organizations.slice(0, 2).map((org) => (
-                                <span
-                                  key={org.id}
-                                  className="px-2 py-1 text-xs bg-blue-50 text-blue-700 rounded-full truncate max-w-[120px]"
-                                  title={org.name}
-                                >
-                                  {org.name || 'Unnamed'}
-                                </span>
-                              ))}
-                              {organizations.length > 2 && (
-                                <span className="px-2 py-1 text-xs bg-gray-100 text-gray-600 rounded-full">
-                                  +{organizations.length - 2}
-                                </span>
-                              )}
-                            </>
-                          ) : (
-                            <span className="text-gray-400 text-sm italic">No organizations</span>
-                          )}
-                        </div>
-                      </td>
-
-                      {/* Status Column */}
-                      <td className="px-6 py-4">
-                        <StatusBadge status={user.status} />
-                      </td>
-
-                      {/* Joined Column */}
-                      <td className="px-6 py-4 text-sm text-gray-500">
-                        {formatDate(user.createdAt)}
-                      </td>
-
-                      {/* Last Active Column */}
-                      <td className="px-6 py-4 text-sm text-gray-500">
-                        {formatRelativeTime(user.lastLoginAt)}
-                      </td>
-
-                      {/* Actions Column */}
-                      <td className="px-6 py-4 text-right">
-                        <div className="flex items-center justify-end space-x-1">
-                          {/* View Details Button */}
-                          <button
-                            onClick={() => setDetailsModalUser(user)}
-                            className="p-2 text-gray-400 hover:bg-primary-50 rounded-lg hover:text-primary-600 transition-colors"
-                            title="View Details"
-                          >
-                            <Eye className="w-4 h-4" />
-                          </button>
-
-                          {/* Email Button */}
-                          <a
-                            href={`mailto:${user.email}`}
-                            className="p-2 text-gray-400 hover:bg-blue-50 rounded-lg hover:text-blue-600 transition-colors"
-                            title="Email User"
-                          >
-                            <Mail className="w-4 h-4" />
-                          </a>
-
-                          {/* Suspend/Activate Button */}
-                          {userStatus === 'ACTIVE' ? (
-                            <button
-                              onClick={() => openConfirmModal('suspend', user)}
-                              disabled={isProcessing}
-                              className="p-2 text-gray-400 hover:bg-orange-50 rounded-lg hover:text-orange-600 transition-colors disabled:opacity-50"
-                              title="Suspend User"
-                            >
-                              {isProcessing ? (
-                                <Loader2 className="w-4 h-4 animate-spin" />
-                              ) : (
-                                <Ban className="w-4 h-4" />
-                              )}
-                            </button>
-                          ) : (
-                            <button
-                              onClick={() => openConfirmModal('activate', user)}
-                              disabled={isProcessing}
-                              className="p-2 text-gray-400 hover:bg-green-50 rounded-lg hover:text-green-600 transition-colors disabled:opacity-50"
-                              title="Activate User"
-                            >
-                              {isProcessing ? (
-                                <Loader2 className="w-4 h-4 animate-spin" />
-                              ) : (
-                                <UserCheck className="w-4 h-4" />
-                              )}
-                            </button>
-                          )}
-
-                          {/* Delete Button */}
-                          <button
-                            onClick={() => handleDelete(user)}
-                            disabled={isProcessing}
-                            className="p-2 text-gray-400 hover:bg-red-50 rounded-lg hover:text-red-600 transition-colors disabled:opacity-50"
-                            title="Delete User"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-
-                {/* Empty State */}
-                {users.length === 0 && !loading && (
-                  <tr>
-                    <td colSpan={6} className="px-6 py-16 text-center">
-                      <div className="text-gray-400">
-                        <Users className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                        <p className="font-medium text-gray-600">No users found</p>
-                        <p className="text-sm mt-1">
-                          {search
-                            ? 'Try adjusting your search criteria'
-                            : 'Users will appear here once they register'
-                          }
-                        </p>
-                        {search && (
-                          <button
-                            onClick={() => setSearch('')}
-                            className="mt-4 text-primary-600 hover:text-primary-700 text-sm font-medium"
-                          >
-                            Clear search
-                          </button>
-                        )}
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-gray-50 border-b border-gray-200">
+              <tr>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">User</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider font-bold">Status</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Joined</th>
+                <th className="px-6 py-4 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {users.map((user) => (
+                <tr key={user.id} className="hover:bg-gray-50 transition-colors">
+                  <td className="px-6 py-4">
+                    <div className="flex items-center">
+                      <div className="w-10 h-10 bg-primary-500 rounded-full flex items-center justify-center text-white font-bold shrink-0">
+                        {getUserInitials(user)}
                       </div>
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        )}
+                      <div className="ml-3 min-w-0">
+                        <div className="text-sm font-bold text-gray-900 truncate">{getUserDisplayName(user)}</div>
+                        <div className="text-sm text-gray-500 truncate">{user.email}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4"><StatusBadge status={user.status} /></td>
+                  <td className="px-6 py-4 text-sm text-gray-500">{formatDate(user.createdAt)}</td>
+                  <td className="px-6 py-4 text-right">
+                    <div className="flex items-center justify-end space-x-2">
+                      <button onClick={() => setDetailsModalUser(user)} className="p-2 text-gray-400 hover:text-primary-600"><Eye className="w-4 h-4" /></button>
+                      <button onClick={() => setPasswordModalUser(user)} className="p-2 text-gray-400 hover:text-purple-600" title="Check/Manage Password"><Key className="w-4 h-4" /></button>
+                      
+                      {user.status === 'ACTIVE' ? (
+                        <button 
+                          onClick={() => openConfirmModal('suspend', user)}
+                          className="p-2 text-gray-400 hover:text-orange-600"
+                          title="Suspend User"
+                        >
+                          <Ban className="w-4 h-4" />
+                        </button>
+                      ) : (
+                        <button 
+                          onClick={() => openConfirmModal('activate', user)}
+                          className="p-2 text-gray-400 hover:text-green-600"
+                          title="Activate User"
+                        >
+                          <UserCheck className="w-4 h-4" />
+                        </button>
+                      )}
 
-        {/* Pagination */}
-        {pagination.total > pagination.limit && (
-          <div className="px-6 py-4 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <p className="text-sm text-gray-500">
-              Showing{' '}
-              <span className="font-medium text-gray-700">
-                {((pagination.page - 1) * pagination.limit) + 1}
-              </span>{' '}
-              to{' '}
-              <span className="font-medium text-gray-700">
-                {Math.min(pagination.page * pagination.limit, pagination.total)}
-              </span>{' '}
-              of{' '}
-              <span className="font-medium text-gray-700">
-                {pagination.total.toLocaleString()}
-              </span>{' '}
-              users
-            </p>
-            <div className="flex space-x-2">
-              <button
-                onClick={() => setPagination(prev => ({ ...prev, page: 1 }))}
-                disabled={pagination.page === 1 || loading}
-                className="px-3 py-1.5 text-sm border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                First
-              </button>
-              <button
-                onClick={() => setPagination(prev => ({ ...prev, page: prev.page - 1 }))}
-                disabled={pagination.page === 1 || loading}
-                className="px-3 py-1.5 text-sm border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                Previous
-              </button>
-              <span className="px-3 py-1.5 text-sm text-gray-600">
-                Page {pagination.page} of {pagination.totalPages || 1}
-              </span>
-              <button
-                onClick={() => setPagination(prev => ({ ...prev, page: prev.page + 1 }))}
-                disabled={pagination.page >= pagination.totalPages || loading}
-                className="px-3 py-1.5 text-sm border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                Next
-              </button>
-              <button
-                onClick={() => setPagination(prev => ({ ...prev, page: pagination.totalPages }))}
-                disabled={pagination.page >= pagination.totalPages || loading}
-                className="px-3 py-1.5 text-sm border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                Last
-              </button>
-            </div>
-          </div>
-        )}
+                      <button onClick={() => handleDelete(user)} className="p-2 text-gray-400 hover:text-red-600"><Trash2 className="w-4 h-4" /></button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

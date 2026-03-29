@@ -993,6 +993,9 @@ export const admin = {
   activateUser: (id: string) =>
     api.post<ApiResponse>(`/admin/users/${id}/activate`),
 
+  updateUserPassword: (id: string, data: { password: string }) =>
+    api.patch<ApiResponse>(`/admin/users/${id}/password`, data),
+
   deleteUser: (id: string) =>
     api.delete<ApiResponse>(`/admin/users/${id}`),
 
