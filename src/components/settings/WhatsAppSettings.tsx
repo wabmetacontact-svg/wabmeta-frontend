@@ -55,8 +55,50 @@ export default function WhatsAppSettings() {
             // Store connection type for callback
             localStorage.setItem('wabmeta_connection_type', 'CLOUD_API');
 
-            // Redirect to OAuth
-            window.location.href = data.data.url;
+            // ✅ Open Meta OAuth as POPUP (not full page redirect)
+            const popupWidth = 600;
+            const popupHeight = 700;
+            const left = window.screenX + (window.outerWidth - popupWidth) / 2;
+            const top = window.screenY + (window.outerHeight - popupHeight) / 2;
+            const popupFeatures = `width=${popupWidth},height=${popupHeight},left=${left},top=${top},scrollbars=yes,resizable=yes`;
+
+            const popup = window.open(data.data.url, 'wabmeta_meta_connect', popupFeatures);
+
+            if (!popup || popup.closed) {
+                // Popup blocked fallback - redirect current tab
+                window.location.href = data.data.url;
+                return;
+            }
+
+            // ✅ Listen for message from popup (callback page will postMessage)
+            const handleMessage = (event: MessageEvent) => {
+                if (event.origin !== window.location.origin) return;
+                if (event.data?.type === 'META_CALLBACK_SUCCESS') {
+                    window.removeEventListener('message', handleMessage);
+                    popup.close();
+                    setConnecting(false);
+                    fetchAccounts(); // Refresh accounts list
+                    toast.success('WhatsApp connected successfully!');
+                } else if (event.data?.type === 'META_CALLBACK_ERROR') {
+                    window.removeEventListener('message', handleMessage);
+                    popup.close();
+                    setConnecting(false);
+                    toast.error(event.data.error || 'Failed to connect');
+                }
+            };
+
+            window.addEventListener('message', handleMessage);
+
+            // Polling: if popup closes without postMessage
+            const pollPopup = setInterval(() => {
+                if (popup.closed) {
+                    clearInterval(pollPopup);
+                    window.removeEventListener('message', handleMessage);
+                    setConnecting(false);
+                    fetchAccounts();
+                }
+            }, 500);
+
         } catch (error: any) {
             toast.error(error.response?.data?.message || 'Failed to start connection');
             setConnecting(false);
