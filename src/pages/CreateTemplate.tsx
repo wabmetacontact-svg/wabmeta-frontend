@@ -1,7 +1,7 @@
 // 📁 src/pages/CreateTemplate.tsx - FINAL FIXED VERSION
 
 import React, { useState, useMemo, useEffect } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link, useNavigate, useLocation, useParams } from 'react-router-dom';
 import {
   ArrowLeft,
   Save,
@@ -44,10 +44,16 @@ interface WhatsAppAccount {
 const CreateTemplate: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { id: templateId } = useParams<{ id: string }>(); // ✅ ADD
   const duplicateFrom = location.state?.duplicateFrom;
+
+  // ✅ ADD: Edit mode detect karo
+  const isEditMode = !!templateId && 
+    !['create', 'new'].includes(templateId);
 
   // Loading & Status States
   const [saving, setSaving] = useState(false);
+  const [loadingTemplate, setLoadingTemplate] = useState(false); // ✅ ADD
   const [showPreview, setShowPreview] = useState(false);
   const [activeTab, setActiveTab] = useState<'content' | 'buttons' | 'settings'>('content');
   const [apiError, setApiError] = useState<string | null>(null);
@@ -358,6 +364,95 @@ const CreateTemplate: React.FC = () => {
     loadAccounts();
   }, []);
 
+  // ✅ ADD: Edit mode mein template load karo
+  useEffect(() => {
+    if (!isEditMode || !templateId) return;
+
+    const loadTemplate = async () => {
+      try {
+        setLoadingTemplate(true);
+        setApiError(null);
+
+        console.log('📋 Loading template for edit:', templateId);
+        const response = await templateApi.getById(templateId);
+        
+        // ✅ Handle different response formats
+        const t = response.data?.data || response.data;
+        if (!t) throw new Error('Template not found');
+
+        console.log('✅ Template loaded:', t);
+
+        // ✅ Map header type
+        const headerType = (t.headerType || 'NONE').toUpperCase();
+        let header: any = { type: 'none' };
+
+        if (headerType === 'TEXT') {
+          header = { 
+            type: 'text', 
+            text: t.headerContent || '' 
+          };
+        } else if (['IMAGE', 'VIDEO', 'DOCUMENT'].includes(headerType)) {
+          header = {
+            type: headerType.toLowerCase(),
+            mediaId: t.headerMediaId || undefined,
+            // ✅ Show existing image from DB
+            mediaUrl: t.headerContent || undefined,
+            cloudinaryUrl: t.headerContent || undefined,
+            fileName: t.headerContent 
+              ? t.headerContent.split('/').pop()?.split('?')[0] 
+              : 'Existing media',
+          };
+        }
+
+        // ✅ Map buttons
+        const buttons = (Array.isArray(t.buttons) ? t.buttons : []).map(
+          (b: any, i: number) => ({
+            id: String(i),
+            type: (b.type || 'QUICK_REPLY')
+              .toLowerCase()
+              .replace('phone_number', 'phone'),
+            text: b.text || '',
+            url: b.url || '',
+            phoneNumber: b.phoneNumber || b.phone_number || '',
+          })
+        );
+
+        // ✅ Map variable examples
+        const vars: Record<string, string> = {};
+        if (Array.isArray(t.variables)) {
+          t.variables.forEach((v: any) => {
+            if (v.example) vars[String(v.index)] = String(v.example);
+          });
+        }
+
+        // ✅ Pre-fill form data
+        setFormData({
+          name: t.name || '',
+          category: (t.category || 'UTILITY').toLowerCase() as TemplateCategory,
+          language: t.language || 'en',
+          header,
+          body: t.bodyText || '',
+          footer: t.footerText || '',
+          buttons,
+        });
+
+        setSampleVariables(vars);
+
+      } catch (err: any) {
+        console.error('❌ Failed to load template:', err);
+        setApiError(
+          err.response?.data?.message || 
+          err.message || 
+          'Failed to load template for editing'
+        );
+      } finally {
+        setLoadingTemplate(false);
+      }
+    };
+
+    loadTemplate();
+  }, [templateId, isEditMode]);
+
   // ==========================================
   // CONSTANTS
   // ==========================================
@@ -591,11 +686,15 @@ const CreateTemplate: React.FC = () => {
       console.log('📤 Submitting template:', JSON.stringify(payload, null, 2));
 
       // Call API
-      const response = await templateApi.create(payload);
-
-      console.log('✅ Template created:', response.data);
-
-      setSuccessMessage('🎉 Template submitted for Meta approval!');
+      if (isEditMode && templateId) {
+        console.log('📝 Updating existing template:', templateId);
+        await templateApi.update(templateId, payload);
+        setSuccessMessage('✅ Template updated successfully!');
+      } else {
+        console.log('📤 Creating new template...');
+        await templateApi.create(payload);
+        setSuccessMessage('🎉 Template submitted for Meta approval!');
+      }
 
       // Navigate after short delay
       setTimeout(() => {
@@ -653,6 +752,25 @@ const CreateTemplate: React.FC = () => {
     return account.displayName || account.businessName || 'WhatsApp Account';
   };
 
+  // ✅ ADD: Return statement se bilkul pehle
+  if (loadingTemplate) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 
+                      flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-10 h-10 text-primary-500 
+                             animate-spin mx-auto mb-4" />
+          <p className="text-gray-600 dark:text-gray-400 font-medium">
+            Loading template...
+          </p>
+          <p className="text-gray-400 dark:text-gray-500 text-sm mt-1">
+            Please wait
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   // ==========================================
   // RENDER
   // ==========================================
@@ -671,7 +789,12 @@ const CreateTemplate: React.FC = () => {
               </Link>
               <div>
                 <h1 className="text-xl font-bold text-gray-900 dark:text-white">
-                  {duplicateFrom ? 'Duplicate Template' : 'Create Template'}
+                  {isEditMode 
+                    ? '✏️ Edit Template' 
+                    : duplicateFrom 
+                      ? 'Duplicate Template' 
+                      : 'Create Template'
+                  }
                 </h1>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
                   Design your WhatsApp message template
@@ -705,7 +828,7 @@ const CreateTemplate: React.FC = () => {
                 ) : (
                   <>
                     <Save className="w-4 h-4" />
-                    <span>Submit for Review</span>
+                    <span>{isEditMode ? 'Save Changes' : 'Submit for Review'}</span>
                   </>
                 )}
               </button>

@@ -311,6 +311,8 @@ const AppRoutes: React.FC = () => {
           {/* Templates */}
           <Route path="/dashboard/templates" element={<Templates />} />
           <Route path="/dashboard/templates/create" element={<CreateTemplate />} />
+          <Route path="/dashboard/templates/new" element={<CreateTemplate />} />
+          <Route path="/dashboard/templates/edit/:id" element={<CreateTemplate />} />
           <Route path="/dashboard/templates/:id" element={<CreateTemplate />} />
 
           {/* Campaigns */}
