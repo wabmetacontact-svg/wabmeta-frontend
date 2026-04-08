@@ -62,6 +62,26 @@ const getHeaderIcon = (type: Template['header']['type']) => {
   }
 };
 
+const isMediaExpired = (template: Template): boolean => {
+  const headerType = (template.header.type || '').toUpperCase();
+  if (!['IMAGE', 'VIDEO', 'DOCUMENT'].includes(headerType)) return false;
+  
+  const mediaId = template.header.mediaId;
+  const content = template.header.cloudinaryUrl || template.header.mediaUrl;
+  
+  // Has numeric ID = permanent ✅
+  if (mediaId && /^\d+$/.test(mediaId)) return false;
+  
+  // Has permanent URL = permanent ✅
+  if (content && content.startsWith('http') && !content.includes('scontent.whatsapp')) return false;
+  
+  // Has URL in mediaId = permanent ✅  
+  if (mediaId && mediaId.startsWith('http') && !mediaId.includes('scontent.whatsapp')) return false;
+  
+  // 4:xxx handle only = EXPIRED ❌
+  return true;
+};
+
 const TemplateCard: React.FC<TemplateCardProps> = ({
   template,
   onDelete,
@@ -249,6 +269,21 @@ const TemplateCard: React.FC<TemplateCardProps> = ({
           Updated {template.updatedAt}
         </span>
       </div>
+
+      {/* ✅ NEW: Expired Media Warning */}
+      {isMediaExpired(template) && (
+        <div className="mt-4 p-3 bg-orange-50 border border-orange-200 rounded-xl flex items-center justify-between">
+          <span className="text-sm text-orange-700 font-medium">
+            ⚠️ Media expired - re-upload required
+          </span>
+          <Link
+            to={`/dashboard/templates/edit/${template.id}`}
+            className="text-xs text-blue-600 font-bold hover:underline"
+          >
+            Fix Now →
+          </Link>
+        </div>
+      )}
 
       {/* Rejection Reason */}
       {template.status === 'rejected' && template.rejectionReason && (

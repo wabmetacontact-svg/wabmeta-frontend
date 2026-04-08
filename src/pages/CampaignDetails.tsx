@@ -1,7 +1,7 @@
 // 📁 src/pages/CampaignDetails.tsx - COMPLETE FIXED VERSION
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import {
   ArrowLeft, RefreshCw, RotateCcw, CheckCircle, XCircle,
   Clock, Send, Eye, AlertTriangle, Users, Search,
@@ -65,6 +65,12 @@ const getDisplayName = (contact: CampaignContact): string => {
   }
   // Fallback to phone number
   return cleanPhone(contact.phone);
+};
+
+// ✅ Expired media error detect karo
+const isExpiredMediaError = (reason: string): boolean => {
+  return reason.toLowerCase().includes('expired media handle') ||
+         reason.toLowerCase().includes('re-upload');
 };
 
 // ✅ Status config
@@ -605,11 +611,24 @@ const CampaignDetails: React.FC = () => {
             {displayStats.failureReasons.map((fr, i) => (
               <div
                 key={i}
-                className="flex items-center justify-between bg-red-50/50 dark:bg-red-900/10 rounded-xl p-4 border border-red-100/30 dark:border-red-900/20"
+                className="flex items-start justify-between bg-red-50/50 dark:bg-red-900/10 rounded-xl p-4 border border-red-100/30 dark:border-red-900/20"
               >
-                <span className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex-1 mr-4">
-                  {fr.reason}
-                </span>
+                <div className="flex-1 mr-4">
+                  <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                    {fr.reason}
+                  </p>
+                  
+                  {/* ✅ NEW: Show "Edit Template" button for expired media */}
+                  {isExpiredMediaError(fr.reason) && (
+                    <Link
+                      to={`/dashboard/templates`}
+                      className="inline-flex items-center mt-2 text-xs font-medium 
+                                 text-blue-600 hover:text-blue-800 underline"
+                    >
+                      🔧 Go to Templates → Edit & Re-upload Image
+                    </Link>
+                  )}
+                </div>
                 <span className="text-sm font-black text-red-600 dark:text-red-500 bg-white dark:bg-gray-800 px-3 py-1 rounded-full shadow-sm whitespace-nowrap">
                   {fr.count} contacts
                 </span>
