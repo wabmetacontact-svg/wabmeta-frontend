@@ -698,16 +698,30 @@ const CreateTemplate: React.FC = () => {
           return;
         }
 
-        // ✅ Sirf media update payload
+        // ✅ Extract cloudinary URL from smuggled mediaId if cloudinaryUrl is missing
+        // Backend returns mediaId as "4:handle:::https://cloudinary_url"
+        let cloudinaryUrl = formData.header.cloudinaryUrl || '';
+        if (!cloudinaryUrl && formData.header.mediaId?.includes(':::')) {
+          cloudinaryUrl = formData.header.mediaId.split(':::')[1] || '';
+        }
+        if (!cloudinaryUrl) {
+          cloudinaryUrl = formData.header.mediaUrl || '';
+        }
+
+        console.log('📤 Updating media only for approved template:', {
+          headerMediaId: formData.header.mediaId?.substring(0, 40),
+          headerContent: cloudinaryUrl?.substring(0, 60),
+        });
+
+        // ✅ Sirf media update payload — name/body etc nahi
         const mediaPayload = {
           headerMediaId: formData.header.mediaId,
-          headerContent: formData.header.cloudinaryUrl || 
-                         formData.header.mediaUrl || '',
+          headerContent: cloudinaryUrl,
         };
 
-        console.log('📤 Updating media only for approved template');
         await templateApi.update(templateId, mediaPayload);
         setSuccessMessage('✅ Image updated! Campaign ab chal sakti hai.');
+
         
       } else if (isEditMode && templateId) {
         console.log('📝 Updating existing template:', templateId);
