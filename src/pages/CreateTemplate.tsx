@@ -54,6 +54,7 @@ const CreateTemplate: React.FC = () => {
   // Loading & Status States
   const [saving, setSaving] = useState(false);
   const [loadingTemplate, setLoadingTemplate] = useState(false); // ✅ ADD
+  const [isApprovedTemplate, setIsApprovedTemplate] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [activeTab, setActiveTab] = useState<'content' | 'buttons' | 'settings'>('content');
   const [apiError, setApiError] = useState<string | null>(null);
@@ -380,6 +381,10 @@ const CreateTemplate: React.FC = () => {
         const t = response.data?.data || response.data;
         if (!t) throw new Error('Template not found');
 
+        // ✅ Check approved status
+        const approved = t.status === 'APPROVED' && t.metaTemplateId;
+        setIsApprovedTemplate(Boolean(approved));
+
         console.log('✅ Template loaded:', t);
 
         // ✅ Map header type
@@ -686,7 +691,25 @@ const CreateTemplate: React.FC = () => {
       console.log('📤 Submitting template:', JSON.stringify(payload, null, 2));
 
       // Call API
-      if (isEditMode && templateId) {
+      if (isEditMode && templateId && isApprovedTemplate) {
+        if (!formData.header.mediaId) {
+          setApiError('Please upload a new image first.');
+          setSaving(false);
+          return;
+        }
+
+        // ✅ Sirf media update payload
+        const mediaPayload = {
+          headerMediaId: formData.header.mediaId,
+          headerContent: formData.header.cloudinaryUrl || 
+                         formData.header.mediaUrl || '',
+        };
+
+        console.log('📤 Updating media only for approved template');
+        await templateApi.update(templateId, mediaPayload);
+        setSuccessMessage('✅ Image updated! Campaign ab chal sakti hai.');
+        
+      } else if (isEditMode && templateId) {
         console.log('📝 Updating existing template:', templateId);
         await templateApi.update(templateId, payload);
         setSuccessMessage('✅ Template updated successfully!');
@@ -828,7 +851,14 @@ const CreateTemplate: React.FC = () => {
                 ) : (
                   <>
                     <Save className="w-4 h-4" />
-                    <span>{isEditMode ? 'Save Changes' : 'Submit for Review'}</span>
+                    <span>
+                      {isApprovedTemplate 
+                        ? '🔄 Update Image Only'
+                        : isEditMode 
+                          ? 'Save Changes'
+                          : 'Submit for Review'
+                      }
+                    </span>
                   </>
                 )}
               </button>
@@ -838,6 +868,24 @@ const CreateTemplate: React.FC = () => {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        {/* ✅ Edit page pe approved template warning */}
+        {isApprovedTemplate && (
+          <div className="mb-6 bg-blue-50 dark:bg-blue-900/20 border 
+                          border-blue-200 dark:border-blue-800 
+                          rounded-xl p-4 flex items-start space-x-3">
+            <Info className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
+            <div>
+              <p className="text-blue-800 dark:text-blue-200 font-medium">
+                Approved Template - Limited Editing
+              </p>
+              <p className="text-blue-700 dark:text-blue-300 text-sm mt-1">
+                This template is approved by Meta. You can only 
+                re-upload the expired image. Content cannot be changed.
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Success Message */}
         {successMessage && (
           <div className="mb-6 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl p-4 flex items-start space-x-3 animate-fade-in">
@@ -955,6 +1003,7 @@ const CreateTemplate: React.FC = () => {
                       <input
                         type="text"
                         value={formData.name}
+                        disabled={isApprovedTemplate}
                         onChange={(e) =>
                           updateFormData(
                             'name',
@@ -966,7 +1015,9 @@ const CreateTemplate: React.FC = () => {
                         }
                         placeholder="e.g., order_confirmation"
                         maxLength={512}
-                        className={`w-full px-4 py-2.5 border rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 transition-all ${errors.name
+                        className={`w-full px-4 py-2.5 border rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 transition-all ${isApprovedTemplate 
+                          ? 'opacity-50 cursor-not-allowed bg-gray-100 dark:bg-gray-800' 
+                          : ''} ${errors.name
                           ? 'border-red-300 dark:border-red-600 focus:ring-red-500/20'
                           : 'border-gray-200 dark:border-gray-600 focus:ring-primary-500/20 focus:border-primary-500'
                           }`}
@@ -1116,11 +1167,14 @@ const CreateTemplate: React.FC = () => {
                       </label>
                       <textarea
                         value={formData.body}
+                        disabled={isApprovedTemplate}
                         onChange={(e) => updateFormData('body', e.target.value)}
                         placeholder="Enter your message here. Use {{1}}, {{2}}, etc. for variables."
                         rows={6}
                         maxLength={1024}
-                        className={`w-full px-4 py-3 border rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 transition-all resize-none ${errors.body
+                        className={`w-full px-4 py-3 border rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 transition-all resize-none ${isApprovedTemplate 
+                          ? 'opacity-50 cursor-not-allowed bg-gray-100 dark:bg-gray-800' 
+                          : ''} ${errors.body
                           ? 'border-red-300 dark:border-red-600 focus:ring-red-500/20'
                           : 'border-gray-200 dark:border-gray-600 focus:ring-primary-500/20 focus:border-primary-500'
                           }`}
