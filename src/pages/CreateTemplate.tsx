@@ -720,7 +720,7 @@ const CreateTemplate: React.FC = () => {
         };
 
         await templateApi.update(templateId, mediaPayload);
-        setSuccessMessage('✅ Image updated! Campaign ab chal sakti hai.');
+        setSuccessMessage('Image updated successfully. This template is ready to use in campaigns.');
 
         
       } else if (isEditMode && templateId) {

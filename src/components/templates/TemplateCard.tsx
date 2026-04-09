@@ -65,20 +65,22 @@ const getHeaderIcon = (type: Template['header']['type']) => {
 const isMediaExpired = (template: Template): boolean => {
   const headerType = (template.header.type || '').toUpperCase();
   if (!['IMAGE', 'VIDEO', 'DOCUMENT'].includes(headerType)) return false;
-  
+
   const mediaId = template.header.mediaId;
   const content = template.header.cloudinaryUrl || template.header.mediaUrl;
-  
-  // Has numeric ID = permanent ✅
+
+  // Has numeric ID = permanent, can send campaigns ✅
   if (mediaId && /^\d+$/.test(mediaId)) return false;
-  
-  // Has permanent URL = permanent ✅
+
+  // Has a permanent Cloudinary/hosted URL in content = can send campaigns ✅
   if (content && content.startsWith('http') && !content.includes('scontent.whatsapp')) return false;
-  
-  // Has URL in mediaId = permanent ✅  
+
+  // Has a permanent URL stored inside mediaId ✅
   if (mediaId && mediaId.startsWith('http') && !mediaId.includes('scontent.whatsapp')) return false;
-  
-  // 4:xxx handle only = EXPIRED ❌
+
+  // Only a 4:... resumable handle with no permanent URL = cannot send campaigns
+  if (!mediaId && !content) return false; // No media at all — not an image template in practice
+
   return true;
 };
 
@@ -274,7 +276,7 @@ const TemplateCard: React.FC<TemplateCardProps> = ({
       {isMediaExpired(template) && (
         <div className="mt-4 p-3 bg-orange-50 border border-orange-200 rounded-xl flex items-center justify-between">
           <span className="text-sm text-orange-700 font-medium">
-            ⚠️ Media expired - re-upload required
+            Media expired - re-upload required to use in campaigns
           </span>
           <Link
             to={`/dashboard/templates/edit/${template.id}`}
