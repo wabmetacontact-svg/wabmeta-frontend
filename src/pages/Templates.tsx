@@ -10,6 +10,7 @@ import {
   FileText,
   Image,
   Video,
+  File,
   Edit,
   Trash2,
   Copy,
@@ -21,11 +22,14 @@ import {
   LayoutGrid,
   List,
   Loader2,
+  Type,
 } from 'lucide-react';
 import { templates, whatsapp } from '../services/api';
 import TemplateCard from '../components/templates/TemplateCard';
 import TemplatePreview from '../components/templates/TemplatePreview';
 import type { Template, TemplateCategory, TemplateStatus } from '../types/template';
+
+type TemplateTab = 'text' | 'media';
 
 const Templates: React.FC = () => {
   const navigate = useNavigate();
@@ -42,6 +46,7 @@ const Templates: React.FC = () => {
   const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null);
   const [previewTemplate, setPreviewTemplate] = useState<Template | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [templateTab, setTemplateTab] = useState<TemplateTab>('text');
 
   // Helper Functions
   const extractVariablesFromText = (text: string) => {
@@ -209,6 +214,18 @@ const Templates: React.FC = () => {
 
     return matchesSearch && matchesStatus && matchesCategory;
   });
+
+  // Split into text vs media templates
+  const MEDIA_TYPES = ['image', 'video', 'document'];
+  const textTemplates = filteredTemplates.filter(
+    (t) => !MEDIA_TYPES.includes((t.header?.type || 'none').toLowerCase())
+  );
+  const mediaTemplates = filteredTemplates.filter(
+    (t) => MEDIA_TYPES.includes((t.header?.type || 'none').toLowerCase())
+  );
+
+  // Active tab templates
+  const activeTemplates = templateTab === 'media' ? mediaTemplates : textTemplates;
 
   // Stats
   const stats = [
@@ -464,7 +481,47 @@ const Templates: React.FC = () => {
         )}
       </div>
 
-      {/* Templates Display */}
+      {/* ── Tab Switcher ── */}
+      <div className="flex items-center gap-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-1 w-fit">
+        <button
+          onClick={() => setTemplateTab('text')}
+          className={`flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-medium transition-all ${
+            templateTab === 'text'
+              ? 'bg-green-600 text-white shadow-sm'
+              : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+          }`}
+        >
+          <Type className="w-4 h-4" />
+          Text Templates
+          <span className={`ml-1 px-1.5 py-0.5 rounded-full text-xs font-semibold ${
+            templateTab === 'text'
+              ? 'bg-white/20 text-white'
+              : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
+          }`}>
+            {textTemplates.length}
+          </span>
+        </button>
+        <button
+          onClick={() => setTemplateTab('media')}
+          className={`flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-medium transition-all ${
+            templateTab === 'media'
+              ? 'bg-green-600 text-white shadow-sm'
+              : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+          }`}
+        >
+          <Image className="w-4 h-4" />
+          Media Templates
+          <span className={`ml-1 px-1.5 py-0.5 rounded-full text-xs font-semibold ${
+            templateTab === 'media'
+              ? 'bg-white/20 text-white'
+              : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
+          }`}>
+            {mediaTemplates.length}
+          </span>
+        </button>
+      </div>
+
+      {/* ── Templates Display ── */}
       {loading ? (
         <div className="flex items-center justify-center py-12">
           <div className="text-center">
@@ -472,16 +529,22 @@ const Templates: React.FC = () => {
             <p className="text-gray-500 dark:text-gray-400">Loading templates...</p>
           </div>
         </div>
-      ) : filteredTemplates.length === 0 ? (
+      ) : activeTemplates.length === 0 ? (
         <div className="text-center py-16 bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700">
           <div className="w-20 h-20 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
-            <FileText className="w-10 h-10 text-gray-400" />
+            {templateTab === 'media'
+              ? <Image className="w-10 h-10 text-gray-400" />
+              : <FileText className="w-10 h-10 text-gray-400" />}
           </div>
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">No templates found</h3>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+            No {templateTab === 'media' ? 'media' : 'text'} templates found
+          </h3>
           <p className="text-gray-500 dark:text-gray-400 mb-6 max-w-md mx-auto">
             {searchQuery || statusFilter || categoryFilter
               ? 'Try adjusting your filters or search query'
-              : 'Create your first message template to get started'}
+              : templateTab === 'media'
+                ? 'Create a template with an Image, Video or Document header'
+                : 'Create your first text template to get started'}
           </p>
           {!searchQuery && !statusFilter && !categoryFilter && (
             <Link
@@ -495,7 +558,7 @@ const Templates: React.FC = () => {
         </div>
       ) : viewMode === 'grid' ? (
         <div className="grid gap-6 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
-          {filteredTemplates.map((template) => (
+          {activeTemplates.map((template) => (
             <TemplateCard
               key={template.id}
               template={template}
@@ -511,28 +574,16 @@ const Templates: React.FC = () => {
             <table className="w-full">
               <thead className="bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    Template
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    Category
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    Language
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    Created
-                  </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    Actions
-                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Template</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Category</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Language</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Created</th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                {filteredTemplates.map((template) => (
+                {activeTemplates.map((template) => (
                   <tr key={template.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
                     <td className="px-6 py-4">
                       <div className="flex items-start">
@@ -541,26 +592,16 @@ const Templates: React.FC = () => {
                         </div>
                         <div>
                           <p className="font-medium text-gray-900 dark:text-white">{template.name}</p>
-                          <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-1 max-w-xs">
-                            {template.body}
-                          </p>
+                          <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-1 max-w-xs">{template.body}</p>
                           {template.status === 'rejected' && template.rejectionReason && (
-                            <p className="text-xs text-red-600 dark:text-red-400 mt-1">
-                              Reason: {template.rejectionReason}
-                            </p>
+                            <p className="text-xs text-red-600 dark:text-red-400 mt-1">Reason: {template.rejectionReason}</p>
                           )}
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4">
-                      {getCategoryBadge(template.category)}
-                    </td>
-                    <td className="px-6 py-4">
-                      {getStatusBadge(template.status)}
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="text-gray-600 dark:text-gray-400">{template.language}</span>
-                    </td>
+                    <td className="px-6 py-4">{getCategoryBadge(template.category)}</td>
+                    <td className="px-6 py-4">{getStatusBadge(template.status)}</td>
+                    <td className="px-6 py-4"><span className="text-gray-600 dark:text-gray-400">{template.language}</span></td>
                     <td className="px-6 py-4">
                       <span className="text-gray-500 dark:text-gray-400 text-sm">
                         {new Date(template.createdAt).toLocaleDateString()}
@@ -568,35 +609,16 @@ const Templates: React.FC = () => {
                     </td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-2">
-                        <button
-                          onClick={() => setPreviewTemplate(template)}
-                          className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-                          title="Preview"
-                        >
+                        <button onClick={() => setPreviewTemplate(template)} className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors" title="Preview">
                           <Eye className="w-4 h-4" />
                         </button>
-                        <button
-                          onClick={() => navigate(`/dashboard/templates/edit/${template.id}`)}
-                          className="p-2 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
-                          title="Edit"
-                        >
+                        <button onClick={() => navigate(`/dashboard/templates/edit/${template.id}`)} className="p-2 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors" title="Edit">
                           <Edit className="w-4 h-4" />
                         </button>
-                        <button
-                          onClick={() => handleDuplicateTemplate(template)}
-                          className="p-2 text-gray-400 hover:text-green-600 dark:hover:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-colors"
-                          title="Duplicate"
-                        >
+                        <button onClick={() => handleDuplicateTemplate(template)} className="p-2 text-gray-400 hover:text-green-600 dark:hover:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-colors" title="Duplicate">
                           <Copy className="w-4 h-4" />
                         </button>
-                        <button
-                          onClick={() => {
-                            setSelectedTemplate(template);
-                            setShowDeleteModal(true);
-                          }}
-                          className="p-2 text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-                          title="Delete"
-                        >
+                        <button onClick={() => { setSelectedTemplate(template); setShowDeleteModal(true); }} className="p-2 text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors" title="Delete">
                           <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
