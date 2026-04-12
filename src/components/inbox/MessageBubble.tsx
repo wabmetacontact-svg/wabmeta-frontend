@@ -102,36 +102,21 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, onCopy }) => {
   // ==========================================
 
   const getMediaSrc = (): string | null => {
-    const apiBase = import.meta.env.VITE_API_URL ||
-      (import.meta.env.PROD
-        ? 'https://wabmeta-api.onrender.com/api'
-        : 'http://localhost:10000/api');
+    
+    // ✅ CORRECT API URL - /api/v1 nahi, sirf /api
+    const apiBase = 'https://wabmeta-api.onrender.com/api';
 
-    // ✅ Already base64
+    // ✅ Base64
     if (message.mediaUrl?.startsWith('data:')) {
       return message.mediaUrl;
     }
 
-    // ✅ Already full HTTP URL (not Meta CDN - those expire!)
-    if (
-      message.mediaUrl?.startsWith('http') &&
-      !message.mediaUrl.includes('lookaside.fbsbx.com') &&
-      !message.mediaUrl.includes('mmg.whatsapp.net') &&
-      !message.mediaUrl.includes('cdn.whatsapp.net') &&
-      !message.mediaUrl.includes('scontent') &&
-      !message.mediaUrl.includes('fbcdn.net')
-    ) {
-      // Non-Meta URL (our own uploads) - use directly
-      return message.mediaUrl;
+    // ✅ mediaId field (numeric) → proxy
+    if (message.mediaId && /^\d+$/.test(message.mediaId.trim())) {
+      return `${apiBase}/inbox/media/${message.mediaId.trim()}`;
     }
 
-    // ✅ Use mediaId field if available (stored in DB)
-    if (message.mediaId) {
-      return `${apiBase}/inbox/media/${message.mediaId}`;
-    }
-
-    // ✅ mediaUrl is actually a Meta Media ID (numeric string)
-    // Backend stores mediaId as mediaUrl
+    // ✅ mediaUrl is numeric Meta ID → proxy
     if (
       message.mediaUrl &&
       !message.mediaUrl.startsWith('http') &&
@@ -140,9 +125,17 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, onCopy }) => {
       return `${apiBase}/inbox/media/${message.mediaUrl.trim()}`;
     }
 
-    // ✅ mediaUrl is a Meta CDN URL (expired) → proxy through backend
+    // ✅ Local upload URL → show placeholder (Render pe files nahi rehti)
+    if (message.mediaUrl?.includes('/uploads/')) {
+      return null; // File gone on Render
+    }
+
+    // ✅ Meta CDN URL → proxy
     if (message.mediaUrl?.startsWith('http')) {
-      return `${apiBase}/inbox/media/${message.mediaId || 'proxy'}?url=${encodeURIComponent(message.mediaUrl)}`;
+      if (message.mediaId) {
+        return `${apiBase}/inbox/media/${message.mediaId}`;
+      }
+      return null;
     }
 
     return null;

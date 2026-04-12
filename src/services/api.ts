@@ -71,17 +71,19 @@ export interface AuthResponseData {
 
 const getApiBaseUrl = (): string => {
   const envUrl = import.meta.env.VITE_API_URL;
-
+  
+  console.log('VITE_API_URL:', envUrl); // ← Ye check karo
+  
   if (envUrl) {
-    // Remove trailing slashes and /v1 suffix
+    // ✅ /v1 remove karo
     return envUrl.replace(/\/+$/, '').replace(/\/v1$/, '');
   }
 
   if (import.meta.env.PROD) {
-    return 'https://wabmeta-api.onrender.com/api'; // ✅ NO /v1
+    return 'https://wabmeta-api.onrender.com/api';
   }
 
-  return 'http://localhost:10000/api'; // ✅ NO /v1
+  return 'http://localhost:10000/api';
 };
 
 const API_BASE_URL = getApiBaseUrl();
