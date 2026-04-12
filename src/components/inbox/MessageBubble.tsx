@@ -102,8 +102,6 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, onCopy }) => {
   // ==========================================
 
   const getMediaSrc = (): string | null => {
-    
-    // ✅ CORRECT API URL - /api/v1 nahi, sirf /api
     const apiBase = 'https://wabmeta-api.onrender.com/api';
 
     // ✅ Base64
@@ -111,12 +109,27 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, onCopy }) => {
       return message.mediaUrl;
     }
 
-    // ✅ mediaId field (numeric) → proxy
+    // ✅ Cloudinary - permanent URL
+    if (message.mediaUrl?.includes('cloudinary.com')) {
+      return message.mediaUrl;
+    }
+
+    // ✅ Any stable HTTPS URL (not Meta CDN)
+    if (
+      message.mediaUrl?.startsWith('https://') &&
+      !message.mediaUrl.includes('lookaside.fbsbx.com') &&
+      !message.mediaUrl.includes('mmg.whatsapp.net') &&
+      !message.mediaUrl.includes('fbcdn.net')
+    ) {
+      return message.mediaUrl;
+    }
+
+    // ✅ Meta mediaId → proxy
     if (message.mediaId && /^\d+$/.test(message.mediaId.trim())) {
       return `${apiBase}/inbox/media/${message.mediaId.trim()}`;
     }
 
-    // ✅ mediaUrl is numeric Meta ID → proxy
+    // ✅ Numeric mediaUrl = Meta ID
     if (
       message.mediaUrl &&
       !message.mediaUrl.startsWith('http') &&
@@ -125,17 +138,9 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, onCopy }) => {
       return `${apiBase}/inbox/media/${message.mediaUrl.trim()}`;
     }
 
-    // ✅ Local upload URL → show placeholder (Render pe files nahi rehti)
-    if (message.mediaUrl?.includes('/uploads/')) {
-      return null; // File gone on Render
-    }
-
-    // ✅ Meta CDN URL → proxy
-    if (message.mediaUrl?.startsWith('http')) {
-      if (message.mediaId) {
-        return `${apiBase}/inbox/media/${message.mediaId}`;
-      }
-      return null;
+    // ✅ Meta CDN expired URL
+    if (message.mediaUrl?.startsWith('http') && message.mediaId) {
+      return `${apiBase}/inbox/media/${message.mediaId}`;
     }
 
     return null;
