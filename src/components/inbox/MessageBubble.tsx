@@ -102,31 +102,47 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, onCopy }) => {
   // ==========================================
 
   const getMediaSrc = (): string | null => {
-    if (!message.mediaUrl && !message.mediaId) return null;
+    const apiBase = import.meta.env.VITE_API_URL ||
+      (import.meta.env.PROD
+        ? 'https://wabmeta-api.onrender.com/api'
+        : 'http://localhost:10000/api');
 
-    // If it's already a base64 string
+    // ✅ Already base64
     if (message.mediaUrl?.startsWith('data:')) {
       return message.mediaUrl;
     }
 
-    // If it's a full URL (http/https)
-    if (message.mediaUrl?.startsWith('http')) {
-      // Add retry parameter to bust cache
-      const url = new URL(message.mediaUrl);
-      if (retryCount > 0) {
-        url.searchParams.set('retry', retryCount.toString());
-      }
-      return url.toString();
+    // ✅ Already full HTTP URL (not Meta CDN - those expire!)
+    if (
+      message.mediaUrl?.startsWith('http') &&
+      !message.mediaUrl.includes('lookaside.fbsbx.com') &&
+      !message.mediaUrl.includes('mmg.whatsapp.net') &&
+      !message.mediaUrl.includes('cdn.whatsapp.net') &&
+      !message.mediaUrl.includes('scontent') &&
+      !message.mediaUrl.includes('fbcdn.net')
+    ) {
+      // Non-Meta URL (our own uploads) - use directly
+      return message.mediaUrl;
     }
 
-    // Proxy through backend using mediaId
+    // ✅ Use mediaId field if available (stored in DB)
     if (message.mediaId) {
-      return `${apiUrl}/api/inbox/media/${message.mediaId}${retryCount > 0 ? `?retry=${retryCount}` : ''}`;
+      return `${apiBase}/inbox/media/${message.mediaId}`;
     }
 
-    // Fallback to mediaUrl
-    if (message.mediaUrl) {
-      return `${apiUrl}/api/inbox/media-proxy?url=${encodeURIComponent(message.mediaUrl)}`;
+    // ✅ mediaUrl is actually a Meta Media ID (numeric string)
+    // Backend stores mediaId as mediaUrl
+    if (
+      message.mediaUrl &&
+      !message.mediaUrl.startsWith('http') &&
+      /^\d+$/.test(message.mediaUrl.trim())
+    ) {
+      return `${apiBase}/inbox/media/${message.mediaUrl.trim()}`;
+    }
+
+    // ✅ mediaUrl is a Meta CDN URL (expired) → proxy through backend
+    if (message.mediaUrl?.startsWith('http')) {
+      return `${apiBase}/inbox/media/${message.mediaId || 'proxy'}?url=${encodeURIComponent(message.mediaUrl)}`;
     }
 
     return null;
@@ -172,73 +188,79 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, onCopy }) => {
 
     if (!src) {
       return (
-        <div className="w-full h-32 bg-gray-100 dark:bg-gray-700 rounded-lg flex flex-col items-center justify-center text-gray-500">
-          <ImageIcon className="w-8 h-8 mb-2 opacity-50" />
-          <span className="text-xs">No image available</span>
+        <div className="w-52 h-36 bg-gray-800 rounded-xl flex flex-col items-center justify-center gap-2">
+          <span className="text-3xl">🖼️</span>
+          <span className="text-xs text-gray-400">No image</span>
         </div>
       );
     }
 
     return (
       <div className="relative max-w-xs">
-        {/* Loading State */}
+        {/* Loading */}
         {imageLoading && !imageError && (
-          <div className="w-64 h-48 bg-gray-200 dark:bg-gray-700 rounded-lg flex items-center justify-center">
-            <div className="flex flex-col items-center">
-              <div className="w-8 h-8 border-2 border-green-500 border-t-transparent rounded-full animate-spin mb-2"></div>
-              <span className="text-xs text-gray-500">Loading...</span>
-            </div>
+          <div className="w-52 h-36 bg-gray-700 rounded-xl flex flex-col items-center justify-center gap-2 animate-pulse">
+            <div className="w-8 h-8 border-2 border-green-500 border-t-transparent rounded-full animate-spin" />
+            <span className="text-xs text-gray-400">Loading...</span>
           </div>
         )}
 
         {/* Error State */}
-        {imageError ? (
-          <div className="w-64 h-40 bg-gray-100 dark:bg-gray-700 rounded-lg flex flex-col items-center justify-center text-gray-500 border border-gray-200 dark:border-gray-600">
-            <ImageIcon className="w-10 h-10 mb-2 opacity-40" />
-            <span className="text-sm font-medium">Failed to load image</span>
-            <span className="text-xs text-gray-400 mb-3">Media may have expired</span>
+        {imageError && (
+          <div className="w-52 h-36 bg-gray-800 rounded-xl flex flex-col items-center justify-center gap-2 border border-gray-600">
+            <span className="text-3xl">🖼️</span>
+            <span className="text-xs text-gray-400 font-medium">
+              Media unavailable
+            </span>
             <button
               onClick={handleRetry}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-green-500 hover:bg-green-600 text-white text-xs rounded-lg transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white text-xs rounded-lg transition-colors"
             >
               <RefreshCw className="w-3 h-3" />
               Retry
             </button>
           </div>
-        ) : (
-          <img
-            src={src}
-            alt="Media"
-            className={`max-w-full rounded-lg cursor-pointer hover:opacity-95 transition-all shadow-sm ${imageLoading ? 'hidden' : 'block'
-              }`}
-            onLoad={() => {
-              setImageLoading(false);
-              setImageError(false);
-            }}
-            onError={() => {
-              setImageLoading(false);
-              setImageError(true);
-            }}
-            onClick={() => setShowFullImage(true)}
-          />
         )}
+
+        {/* Actual Image */}
+        <img
+          key={`${src}-${retryCount}`} // ✅ Key change forces re-render on retry
+          src={src}
+          alt="Media"
+          className={`max-w-full rounded-xl cursor-pointer hover:opacity-95 transition-all shadow-sm ${
+            imageLoading || imageError ? 'hidden' : 'block'
+          }`}
+          style={{ maxHeight: '300px', maxWidth: '260px' }}
+          onLoad={() => {
+            setImageLoading(false);
+            setImageError(false);
+          }}
+          onError={() => {
+            console.error('❌ Image load failed:', src);
+            setImageLoading(false);
+            setImageError(true);
+          }}
+          onClick={() => !imageError && setShowFullImage(true)}
+        />
 
         {/* Caption */}
-        {message.content && !['[Image]', '[image]'].includes(message.content) && !message.content.startsWith('{') && (
-          <p className="mt-2 text-sm">{message.content}</p>
-        )}
+        {message.content &&
+          !['[Image]', '[image]'].includes(message.content) &&
+          !message.content.startsWith('{') && (
+            <p className="mt-1.5 text-sm">{message.content}</p>
+          )}
 
-        {/* Full Image Modal */}
+        {/* Full Screen Modal */}
         {showFullImage && !imageError && (
           <div
             className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-4"
             onClick={() => setShowFullImage(false)}
           >
             <button
-              className="absolute top-4 right-4 p-2 text-white hover:text-gray-300 hover:bg-white/10 rounded-full transition-colors"
+              className="absolute top-4 right-4 p-2 text-white bg-white/10 hover:bg-white/20 rounded-full"
               onClick={() => setShowFullImage(false)}
             >
-              <X className="w-8 h-8" />
+              <X className="w-6 h-6" />
             </button>
             <img
               src={src}
@@ -251,10 +273,10 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, onCopy }) => {
               download
               target="_blank"
               rel="noopener noreferrer"
-              className="absolute bottom-4 right-4 p-3 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors"
+              className="absolute bottom-4 right-4 p-3 bg-white/10 hover:bg-white/20 rounded-full text-white"
               onClick={(e) => e.stopPropagation()}
             >
-              <Download className="w-6 h-6" />
+              <Download className="w-5 h-5" />
             </a>
           </div>
         )}
