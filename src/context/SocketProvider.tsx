@@ -1,4 +1,4 @@
-// src/context/SocketProvider.tsx - FINAL WORKING VERSION
+// src/context/SocketProvider.tsx - COMPLETE FIXED
 
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { io, Socket } from 'socket.io-client';
@@ -9,9 +9,9 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     const [isConnected, setIsConnected] = useState(false);
     const socketRef = useRef<Socket | null>(null);
     const connectionAttempted = useRef(false);
+    const orgIdRef = useRef<string | null>(null);
 
     useEffect(() => {
-        // Prevent double connection in React Strict Mode
         if (connectionAttempted.current) return;
         connectionAttempted.current = true;
 
@@ -36,48 +36,36 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
                 organizationId = localStorage.getItem('currentOrganizationId');
             }
         } catch (e) {
-            console.warn('Could not parse org data');
             organizationId = localStorage.getItem('currentOrganizationId');
         }
 
-        // Resolve Socket URL from environment or predefined defaults
-        let socketBase = import.meta.env.PROD
+        orgIdRef.current = organizationId;
+
+        // Socket URL
+        const socketBase = import.meta.env.PROD
             ? 'https://wabmeta-api.onrender.com'
             : 'http://localhost:10000';
-            
-        if (import.meta.env.VITE_API_URL) {
-            // Strip any trailing /api or /v1
-            socketBase = import.meta.env.VITE_API_URL.replace(/\/api\/v1\/?$/, '')
-                                                     .replace(/\/api\/?$/, '')
-                                                     .replace(/\/v1\/?$/, '')
-                                                     .replace(/\/$/, '');
-        }
 
-        const SOCKET_URL = socketBase;
+        const SOCKET_URL = import.meta.env.VITE_API_URL
+            ? import.meta.env.VITE_API_URL
+                .replace(/\/api\/v1\/?$/, '')
+                .replace(/\/api\/?$/, '')
+                .replace(/\/v1\/?$/, '')
+                .replace(/\/$/, '')
+            : socketBase;
 
-        console.log('🔌 Connecting to socket:', SOCKET_URL, 'Org:', organizationId);
+        console.log('🔌 Connecting socket:', SOCKET_URL, '| Org:', organizationId);
 
-        // ✅ FIXED: Simple connection without namespace issues
         const newSocket = io(SOCKET_URL, {
-            // ✅ Auth
-            auth: {
-                token,
-                organizationId,
-            },
-            // ✅ Transport settings
-            transports: ['polling', 'websocket'], // Polling first for reliability
-            // ✅ Path - default socket.io path
+            auth: { token, organizationId },
+            transports: ['polling', 'websocket'],
             path: '/socket.io/',
-            // ✅ Reconnection
             reconnection: true,
-            reconnectionAttempts: 10,
+            reconnectionAttempts: 15,
             reconnectionDelay: 1000,
-            reconnectionDelayMax: 5000,
-            // ✅ Timeout
+            reconnectionDelayMax: 10000,
             timeout: 20000,
-            // ✅ Force new connection
             forceNew: true,
-            // ✅ Auto connect
             autoConnect: true,
         });
 
@@ -87,10 +75,9 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
             console.log('✅ Socket connected:', newSocket.id);
             setIsConnected(true);
 
-            // Join org room after connection
             if (organizationId) {
                 newSocket.emit('org:join', organizationId);
-                console.log(`📂 Joined org: ${organizationId}`);
+                console.log('📂 Joined org room:', organizationId);
             }
         });
 
@@ -100,39 +87,51 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         });
 
         newSocket.on('connect_error', (error) => {
-            console.error('❌ Socket error:', error.message);
+            console.error('❌ Socket connect error:', error.message);
             setIsConnected(false);
         });
 
         newSocket.on('reconnect', (attempt) => {
-            console.log(`🔄 Reconnected after ${attempt} attempts`);
+            console.log(`🔄 Socket reconnected after ${attempt} attempts`);
+            // Re-join org room after reconnect
+            if (orgIdRef.current) {
+                newSocket.emit('org:join', orgIdRef.current);
+            }
         });
 
         setSocket(newSocket);
 
         return () => {
-            console.log('🔌 Cleaning up socket');
+            console.log('🔌 Cleaning up socket...');
             if (socketRef.current) {
                 socketRef.current.disconnect();
                 socketRef.current = null;
             }
+            connectionAttempted.current = false;
         };
     }, []);
 
     const joinConversation = useCallback((conversationId: string) => {
         if (socketRef.current?.connected && conversationId) {
             socketRef.current.emit('join:conversation', conversationId);
+            console.log('📂 Joined conversation room:', conversationId);
         }
     }, []);
 
     const leaveConversation = useCallback((conversationId: string) => {
         if (socketRef.current?.connected && conversationId) {
             socketRef.current.emit('leave:conversation', conversationId);
+            console.log('📤 Left conversation room:', conversationId);
         }
     }, []);
 
     return (
-        <SocketContext.Provider value={{ socket, isConnected, joinConversation, leaveConversation }}>
+        <SocketContext.Provider value={{
+            socket,
+            isConnected,
+            joinConversation,
+            leaveConversation
+        }}>
             {children}
         </SocketContext.Provider>
     );

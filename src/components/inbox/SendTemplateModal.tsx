@@ -96,7 +96,7 @@ const SendTemplateModal: React.FC<SendTemplateModalProps> = ({
         
         const initialValues: Record<string, string> = {};
 
-        allVars.forEach((v, index) => {
+        allVars.forEach((v) => {
             // Pre-fill with contact info if available
             if (v === '{{1}}' && contactName) {
                 initialValues[v] = contactName;
@@ -399,7 +399,7 @@ const SendTemplateModal: React.FC<SendTemplateModalProps> = ({
                                     </p>
                                     {[...new Set([...extractVariables(selectedTemplate.bodyText), ...(selectedTemplate.headerType === 'TEXT' ? extractVariables(selectedTemplate.headerContent || '') : [])])]
                                         .sort((a,b) => parseInt(a.replace(/[^\d]/g, '')) - parseInt(b.replace(/[^\d]/g, '')))
-                                        .map((variable, index) => (
+                                        .map((variable) => (
                                         <div key={variable}>
                                             <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">
                                                 Variable {variable}
