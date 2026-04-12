@@ -10,7 +10,6 @@ import {
   FileText,
   Image,
   Video,
-  File,
   Edit,
   Trash2,
   Copy,
@@ -399,8 +398,8 @@ const Templates: React.FC = () => {
           <button
             onClick={() => setShowFilters(!showFilters)}
             className={`inline-flex items-center px-4 py-2 border rounded-lg transition-colors ${showFilters
-                ? 'bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600'
-                : 'border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
+              ? 'bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600'
+              : 'border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
               }`}
           >
             <Filter className="w-5 h-5 mr-2" />
@@ -417,8 +416,8 @@ const Templates: React.FC = () => {
             <button
               onClick={() => setViewMode('grid')}
               className={`p-2 rounded-lg transition-colors ${viewMode === 'grid'
-                  ? 'bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-400'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-gray-600'
+                ? 'bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-400'
+                : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-gray-600'
                 }`}
             >
               <LayoutGrid className="w-5 h-5" />
@@ -426,8 +425,8 @@ const Templates: React.FC = () => {
             <button
               onClick={() => setViewMode('list')}
               className={`p-2 rounded-lg transition-colors ${viewMode === 'list'
-                  ? 'bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-400'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-gray-600'
+                ? 'bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-400'
+                : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-gray-600'
                 }`}
             >
               <List className="w-5 h-5" />
@@ -485,37 +484,33 @@ const Templates: React.FC = () => {
       <div className="flex items-center gap-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-1 w-fit">
         <button
           onClick={() => setTemplateTab('text')}
-          className={`flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-medium transition-all ${
-            templateTab === 'text'
+          className={`flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-medium transition-all ${templateTab === 'text'
               ? 'bg-green-600 text-white shadow-sm'
               : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-          }`}
+            }`}
         >
           <Type className="w-4 h-4" />
           Text Templates
-          <span className={`ml-1 px-1.5 py-0.5 rounded-full text-xs font-semibold ${
-            templateTab === 'text'
+          <span className={`ml-1 px-1.5 py-0.5 rounded-full text-xs font-semibold ${templateTab === 'text'
               ? 'bg-white/20 text-white'
               : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
-          }`}>
+            }`}>
             {textTemplates.length}
           </span>
         </button>
         <button
           onClick={() => setTemplateTab('media')}
-          className={`flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-medium transition-all ${
-            templateTab === 'media'
+          className={`flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-medium transition-all ${templateTab === 'media'
               ? 'bg-green-600 text-white shadow-sm'
               : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-          }`}
+            }`}
         >
           <Image className="w-4 h-4" />
           Media Templates
-          <span className={`ml-1 px-1.5 py-0.5 rounded-full text-xs font-semibold ${
-            templateTab === 'media'
+          <span className={`ml-1 px-1.5 py-0.5 rounded-full text-xs font-semibold ${templateTab === 'media'
               ? 'bg-white/20 text-white'
               : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
-          }`}>
+            }`}>
             {mediaTemplates.length}
           </span>
         </button>
