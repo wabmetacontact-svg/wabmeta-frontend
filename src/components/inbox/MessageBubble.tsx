@@ -11,7 +11,7 @@ import {
   FileText,
   MapPin,
   User,
-  Image as ImageIcon,
+
   Video,
   Mic,
   X,
@@ -52,7 +52,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, onCopy }) => {
   const [retryCount, setRetryCount] = useState(0);
 
   const isOutbound = message.direction === 'OUTBOUND';
-  const apiUrl = import.meta.env.VITE_API_URL || '';
+
 
   // ==========================================
   // ✅ PARSE TEMPLATE CONTENT
