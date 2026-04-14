@@ -43,8 +43,8 @@ const teamMembers: TeamMember[] = [
         description: 'Passionate full-stack developer specializing in React, Node.js, and cloud architecture. Building scalable solutions that power thousands of businesses.',
         skills: ['React/TypeScript', 'Node.js', 'System Design', 'WhatsApp API'],
         social: {
-            linkedin: 'https://linkedin.com/in/samir-thakur',
-            github: 'https://github.com/Samir Thakur',
+            linkedin: 'https://www.linkedin.com/in/samir-thakur-354a9a392?utm_source=share_via&utm_content=profile&utm_medium=member_android',
+            github: 'https://github.com/Samir-Thakur',
             email: 'samirthakur@wabmeta.com'
         },
         icon: Code,
