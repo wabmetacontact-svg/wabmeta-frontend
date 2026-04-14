@@ -34,7 +34,7 @@ const CTA: React.FC = () => {
 
           {/* Features */}
           <div className="flex flex-wrap items-center justify-center gap-6 mb-10">
-            {['No credit card required', '14-day free trial', 'Cancel anytime'].map((feature) => (
+            {['No credit card required', '2-day free trial', 'Cancel anytime'].map((feature) => (
               <div key={feature} className="flex items-center space-x-2 text-gray-300">
                 <CheckCircle2 className="w-5 h-5 text-primary-400" />
                 <span>{feature}</span>

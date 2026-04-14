@@ -19,7 +19,7 @@ const HowItWorks: React.FC = () => {
       details: [
         'No credit card required',
         'Instant account activation',
-        '14-day free trial included'
+        '2-day free trial included'
       ]
     },
     {
@@ -139,7 +139,7 @@ const HowItWorks: React.FC = () => {
             <span>Start Your Free Trial</span>
             <ArrowRight className="w-5 h-5" />
           </button>
-          <p className="mt-4 text-gray-500">No credit card required • 14-day free trial</p>
+          <p className="mt-4 text-gray-500">No credit card required • 2-day free trial</p>
         </div>
       </div>
     </section>

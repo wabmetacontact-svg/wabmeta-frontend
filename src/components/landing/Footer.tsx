@@ -280,87 +280,95 @@ const Footer: React.FC = () => {
             <div className="h-px flex-1 bg-gradient-to-r from-transparent via-gray-700/80 to-transparent" />
           </div>
 
-          {/* Nexron Card */}
-          <div className="relative bg-gradient-to-br from-gray-800/40 to-gray-900/40 
-                          border border-gray-700/40 rounded-2xl p-5 
-                          hover:border-gray-600/60 transition-all duration-300
-                          backdrop-blur-sm group overflow-hidden">
+          {/* Nexron Premium Card */}
+          <div className="relative group">
+            {/* Animated Border Gradient */}
+            <div className="absolute -inset-[1px] bg-gradient-to-r from-gray-800 via-emerald-500/20 to-gray-800 rounded-[2rem] opacity-50 group-hover:opacity-100 transition-all duration-700" />
+            
+            {/* Background Glow */}
+            <div className="absolute inset-0 bg-emerald-500/5 blur-[100px] rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
 
-            {/* Subtle glow on hover */}
-            <div className="absolute inset-0 bg-gradient-to-br from-green-500/3 
-                            to-transparent opacity-0 group-hover:opacity-100 
-                            transition-opacity duration-500 rounded-2xl" />
+            <div className="relative bg-[#050505]/60 backdrop-blur-2xl rounded-[1.9rem] p-6 lg:p-10 border border-white/5 overflow-hidden">
+              {/* Decorative Corner */}
+              <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-full blur-3xl -mr-16 -mt-16 group-hover:bg-emerald-500/10 transition-colors duration-700" />
 
-            <div className="relative flex flex-col sm:flex-row sm:items-center 
-                            sm:justify-between gap-4">
+              <div className="flex flex-col lg:flex-row lg:items-center gap-10">
+                {/* Left: Company High-Profile */}
+                <div className="flex-1 space-y-6">
+                  <div className="flex items-start gap-5">
+                    <div className="relative flex-shrink-0">
+                      <div className="absolute inset-0 bg-emerald-500/20 blur-xl rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
+                      <div className="relative p-4 bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl border border-white/10 shadow-2xl group-hover:border-emerald-500/30 transition-colors duration-500">
+                        <Building2 className="w-6 h-6 text-emerald-400" />
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="h-px w-4 bg-emerald-500/50" />
+                        <p className="text-[10px] text-emerald-500 uppercase tracking-[0.3em] font-black">
+                          Corporate Headquarters
+                        </p>
+                      </div>
+                      <h4 className="text-xl lg:text-3xl font-black text-white tracking-tight group-hover:text-emerald-50 transition-colors">
+                        Nexron Group <span className="text-emerald-500">Private Limited</span>
+                      </h4>
+                      <p className="text-gray-400 text-sm mt-1 font-medium italic">
+                        Leading the future of digital communication.
+                      </p>
+                    </div>
+                  </div>
 
-              {/* Left: Company */}
-              <div className="flex items-start gap-3">
-                {/* Icon */}
-                <div className="p-2.5 bg-gray-700/60 rounded-xl border border-gray-600/40 
-                                flex-shrink-0 mt-0.5">
-                  <Building2 className="w-4 h-4 text-green-400" />
-                </div>
-
-                {/* Info */}
-                <div>
-                  <p className="text-[11px] text-gray-500 uppercase tracking-wider 
-                                font-medium mb-0.5">
-                    Developed & Operated by
-                  </p>
-                  <h4 className="text-sm font-bold text-white leading-tight">
-                    Nexron Group Private Limited
-                  </h4>
-                  <p className="text-xs text-gray-500 mt-0.5">
-                    Director:{' '}
-                    <span className="text-gray-400 font-medium">
-                      Mirtunjay Thakur
-                    </span>
-                  </p>
-                  {/* Address */}
-                  <div className="flex items-start gap-1.5 mt-2">
-                    <MapPin className="w-3 h-3 text-gray-600 mt-0.5 flex-shrink-0" />
-                    <p className="text-[11px] text-gray-600 leading-relaxed">
-                      Plot No 1/A, KH No 38/22, 23 South Portion Ground Floor,
-                      Rama Vihar, Mohammad Pur Majri, North West Delhi - 110081
-                    </p>
+                  <div className="grid sm:grid-cols-2 gap-6 pt-6 border-t border-white/5">
+                    <div className="space-y-1">
+                      <p className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">Director</p>
+                      <p className="text-gray-200 font-semibold text-lg">Mirtunjay Thakur</p>
+                    </div>
+                    <div className="space-y-2">
+                      <p className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">Registered Address</p>
+                      <div className="flex items-start gap-2">
+                        <MapPin className="w-3.5 h-3.5 text-emerald-500 mt-1 flex-shrink-0" />
+                        <p className="text-xs text-gray-400 leading-relaxed font-medium">
+                          Plot No 1/A, KH No 38/22, 23 South Portion Ground Floor,
+                          Rama Vihar, Mohammad Pur Majri, North West Delhi - 110081
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Divider - desktop */}
-              <div className="hidden sm:block w-px h-16 bg-gray-700/50 flex-shrink-0" />
+                {/* Vertical Divider - Desktop Only */}
+                <div className="hidden lg:block w-px h-32 bg-gradient-to-b from-transparent via-white/10 to-transparent" />
 
-              {/* Right: Contact */}
-              <div className="flex flex-col gap-2 sm:min-w-[220px]">
-                <a
-                  href="tel:"
-                  className="flex items-center gap-2 group/contact"
-                >
-                  <div className="p-1.5 bg-green-500/10 rounded-lg 
-                                  group-hover/contact:bg-green-500/20 transition-colors">
-                    <Phone className="w-3 h-3 text-green-400" />
+                {/* Right: Connect Card */}
+                <div className="lg:w-80 space-y-4">
+                  <p className="text-[10px] text-gray-500 uppercase tracking-widest font-bold mb-4">Direct Contact</p>
+                  
+                  <div className="space-y-3">
+                    <a
+                      href="mailto:gauravthakur1617@gmail.com"
+                      className="group/item flex items-center gap-4 p-3 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 hover:border-emerald-500/20 transition-all duration-300"
+                    >
+                      <div className="p-2 bg-emerald-500/10 rounded-xl group-hover/item:scale-110 transition-transform">
+                        <Mail className="w-4 h-4 text-emerald-400" />
+                      </div>
+                      <div className="overflow-hidden">
+                        <p className="text-[9px] text-gray-500 uppercase font-black tracking-tighter">Support Email</p>
+                        <p className="text-xs text-gray-300 font-medium truncate">gauravthakur1617@gmail.com</p>
+                      </div>
+                    </a>
+
+                    <div className="flex items-center gap-4 p-3 rounded-2xl bg-white/5 border border-white/5 group-hover:border-white/10 transition-colors">
+                      <div className="p-2 bg-blue-500/10 rounded-xl">
+                        <MessageCircle className="w-4 h-4 text-blue-400" />
+                      </div>
+                      <div>
+                        <p className="text-[9px] text-gray-500 uppercase font-black tracking-tighter">Availability</p>
+                        <p className="text-xs text-gray-300 font-medium">24/7 Priority Assistance</p>
+                      </div>
+                    </div>
                   </div>
-                  <span className="text-xs text-gray-500 
-                                   group-hover/contact:text-gray-400 transition-colors 
-                                   font-mono">
-
-                  </span>
-                </a>
-
-                <a
-                  href="mailto:gauravthakur1617@gmail.com"
-                  className="flex items-center gap-2 group/contact"
-                >
-                  <div className="p-1.5 bg-blue-500/10 rounded-lg 
-                                  group-hover/contact:bg-blue-500/20 transition-colors">
-                    <Mail className="w-3 h-3 text-blue-400" />
-                  </div>
-                  <span className="text-xs text-gray-500 
-                                   group-hover/contact:text-gray-400 transition-colors">
-                    gauravthakur1617@gmail.com
-                  </span>
-                </a>
+                </div>
               </div>
             </div>
           </div>

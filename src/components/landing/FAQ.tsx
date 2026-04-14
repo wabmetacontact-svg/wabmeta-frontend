@@ -24,7 +24,7 @@ const FAQ: React.FC = () => {
     },
     {
       question: 'Is there a free trial available?',
-      answer: 'Yes! We offer a 14-day free trial with access to all features. No credit card required to start. You\'ll get 1,000 free messages to test the platform and see how it works for your business.'
+      answer: 'Yes! We offer a 2-day free trial with access to all features. No credit card required to start. You\'ll get 1,000 free messages to test the platform and see how it works for your business.'
     },
     {
       question: 'How secure is my data?',
