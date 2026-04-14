@@ -1,4 +1,5 @@
-// src/components/landing/Footer.tsx
+// src/components/landing/Footer.tsx - COMPLETE FINAL VERSION
+
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
@@ -12,7 +13,8 @@ import {
   MessageCircle,
   ArrowRight,
   Heart,
-  ExternalLink
+  ExternalLink,
+  Building2,
 } from 'lucide-react';
 import logo from '../../assets/logo.png';
 
@@ -46,11 +48,42 @@ const Footer: React.FC = () => {
   };
 
   const socialLinks = [
-    { name: 'WhatsApp', icon: MessageCircle, href: contactInfo.whatsappLink, color: 'hover:text-green-500 hover:bg-green-500/10', hoverBg: 'group-hover:bg-green-500' },
-    { name: 'Facebook', icon: Facebook, href: '#', color: 'hover:text-blue-500 hover:bg-blue-500/10', hoverBg: 'group-hover:bg-blue-500' },
-    { name: 'Twitter', icon: Twitter, href: '#', color: 'hover:text-sky-400 hover:bg-sky-400/10', hoverBg: 'group-hover:bg-sky-400' },
-    { name: 'LinkedIn', icon: Linkedin, href: '#', color: 'hover:text-blue-600 hover:bg-blue-600/10', hoverBg: 'group-hover:bg-blue-600' },
-    { name: 'Instagram', icon: Instagram, href: '#', color: 'hover:text-pink-500 hover:bg-pink-500/10', hoverBg: 'group-hover:bg-pink-500' },
+    {
+      name: 'WhatsApp',
+      icon: MessageCircle,
+      href: contactInfo.whatsappLink,
+      color: 'hover:text-green-500 hover:bg-green-500/10',
+      hoverBg: 'group-hover:bg-green-500',
+    },
+    {
+      name: 'Facebook',
+      icon: Facebook,
+      href: '#',
+      color: 'hover:text-blue-500 hover:bg-blue-500/10',
+      hoverBg: 'group-hover:bg-blue-500',
+    },
+    {
+      name: 'Twitter',
+      icon: Twitter,
+      href: '#',
+      color: 'hover:text-sky-400 hover:bg-sky-400/10',
+      hoverBg: 'group-hover:bg-sky-400',
+    },
+    {
+      name: 'LinkedIn',
+      icon: Linkedin,
+      href: '#',
+      color: 'hover:text-blue-600 hover:bg-blue-600/10',
+      hoverBg: 'group-hover:bg-blue-600',
+    },
+    {
+      name: 'Instagram',
+      // ✅ Instagram link updated
+      href: 'https://www.instagram.com/wabmeta?igsh=MXNtOXpwYzdhanFleA%3D%3D&utm_source=qr',
+      icon: Instagram,
+      color: 'hover:text-pink-500 hover:bg-pink-500/10',
+      hoverBg: 'group-hover:bg-pink-500',
+    },
   ];
 
   const handleScrollLink = (href: string) => {
@@ -60,30 +93,58 @@ const Footer: React.FC = () => {
     }
   };
 
+  // ✅ Reusable link renderer
+  const renderLink = (link: { name: string; href: string; type: string }) => {
+    const linkClass = `text-gray-400 hover:text-green-400 transition-all duration-300 text-sm
+      flex items-center group hover:translate-x-2`;
+
+    const inner = (
+      <>
+        <ArrowRight className="w-3 h-3 mr-2 opacity-0 -translate-x-2 
+          group-hover:opacity-100 group-hover:translate-x-0 
+          transition-all duration-300 text-green-500" />
+        <span className="relative">
+          {link.name}
+          <span className="absolute bottom-0 left-0 w-0 h-px bg-green-500 
+            group-hover:w-full transition-all duration-300" />
+        </span>
+      </>
+    );
+
+    if (link.type === 'scroll') {
+      return (
+        <button onClick={() => handleScrollLink(link.href)} className={linkClass}>
+          {inner}
+        </button>
+      );
+    }
+    return <Link to={link.href} className={linkClass}>{inner}</Link>;
+  };
+
   return (
     <footer className="relative bg-gradient-to-b from-gray-900 to-gray-950 text-white overflow-hidden">
 
-      {/* Animated Background Elements */}
+      {/* Animated Background */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-green-500/5 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-emerald-500/5 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-green-500/5 
+                        rounded-full blur-3xl animate-pulse" />
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-emerald-500/5 
+                        rounded-full blur-3xl animate-pulse"
+          style={{ animationDelay: '1s' }} />
       </div>
 
-      {/* Main Footer */}
+      {/* ============================================ */}
+      {/* MAIN FOOTER CONTENT                         */}
+      {/* ============================================ */}
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 lg:gap-12">
 
           {/* Brand Column */}
           <div className="lg:col-span-2">
-            {/* Animated Logo */}
-            <Link
-              to="/"
-              className="inline-block mb-4 h-16 lg:h-20 overflow-visible group"
-            >
+            <Link to="/" className="inline-block mb-4 h-16 lg:h-20 overflow-visible group">
               <div className="relative">
-                {/* Glow effect */}
                 <div className="absolute inset-0 bg-green-500/20 rounded-full blur-2xl 
-                  opacity-0 group-hover:opacity-100 transition-opacity duration-700 scale-150"></div>
+                  opacity-0 group-hover:opacity-100 transition-opacity duration-700 scale-150" />
                 <img
                   src={logo}
                   alt="WabMeta"
@@ -102,160 +163,100 @@ const Footer: React.FC = () => {
               Connect with your customers like never before.
             </p>
 
-            {/* Animated Contact Info */}
+            {/* Contact Info */}
             <div className="space-y-3">
               <a
                 href={contactInfo.whatsappLink}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center text-gray-400 hover:text-green-400 
-                  transition-all duration-300 text-sm group
-                  hover:translate-x-2"
+                  transition-all duration-300 text-sm group hover:translate-x-2"
               >
                 <span className="relative mr-3">
-                  <Phone className="w-4 h-4 text-green-500 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-12" />
-                  <span className="absolute inset-0 bg-green-500/30 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
+                  <Phone className="w-4 h-4 text-green-500 transition-transform 
+                    duration-300 group-hover:scale-110 group-hover:rotate-12" />
+                  <span className="absolute inset-0 bg-green-500/30 rounded-full blur-md 
+                    opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 </span>
-                <span className="group-hover:underline underline-offset-2">{contactInfo.whatsapp}</span>
-                <ExternalLink className="w-3 h-3 ml-2 opacity-0 group-hover:opacity-100 transition-all duration-300 -translate-x-2 group-hover:translate-x-0" />
+                <span className="group-hover:underline underline-offset-2">
+                  {contactInfo.whatsapp}
+                </span>
+                <ExternalLink className="w-3 h-3 ml-2 opacity-0 group-hover:opacity-100 
+                  transition-all duration-300 -translate-x-2 group-hover:translate-x-0" />
               </a>
 
               <a
                 href={`mailto:${contactInfo.email}`}
                 className="flex items-center text-gray-400 hover:text-green-400 
-                  transition-all duration-300 text-sm group
-                  hover:translate-x-2"
+                  transition-all duration-300 text-sm group hover:translate-x-2"
               >
                 <span className="relative mr-3">
-                  <Mail className="w-4 h-4 text-green-500 transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-12" />
-                  <span className="absolute inset-0 bg-green-500/30 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
+                  <Mail className="w-4 h-4 text-green-500 transition-transform 
+                    duration-300 group-hover:scale-110 group-hover:-rotate-12" />
+                  <span className="absolute inset-0 bg-green-500/30 rounded-full blur-md 
+                    opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 </span>
-                <span className="group-hover:underline underline-offset-2">{contactInfo.email}</span>
+                <span className="group-hover:underline underline-offset-2">
+                  {contactInfo.email}
+                </span>
               </a>
 
-              <div className="flex items-center text-gray-400 text-sm group hover:text-gray-300 transition-colors duration-300">
+              <div className="flex items-center text-gray-400 text-sm group 
+                hover:text-gray-300 transition-colors duration-300">
                 <span className="relative mr-3">
-                  <MapPin className="w-4 h-4 text-green-500 transition-transform duration-300 group-hover:scale-110 group-hover:bounce" />
-                  <span className="absolute inset-0 bg-green-500/30 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
+                  <MapPin className="w-4 h-4 text-green-500 transition-transform 
+                    duration-300 group-hover:scale-110" />
+                  <span className="absolute inset-0 bg-green-500/30 rounded-full blur-md 
+                    opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 </span>
                 <span>{contactInfo.location}</span>
               </div>
             </div>
           </div>
 
-          {/* Product Links - Animated */}
+          {/* Product Links */}
           <div>
             <h3 className="text-base font-semibold mb-4 relative inline-block">
               Product
-              <span className="absolute -bottom-1 left-0 w-8 h-0.5 bg-gradient-to-r from-green-500 to-transparent rounded-full"></span>
+              <span className="absolute -bottom-1 left-0 w-8 h-0.5 bg-gradient-to-r 
+                from-green-500 to-transparent rounded-full" />
             </h3>
             <ul className="space-y-2">
               {footerLinks.product.map((link, index) => (
                 <li key={link.name} style={{ animationDelay: `${index * 100}ms` }}>
-                  {link.type === 'scroll' ? (
-                    <button
-                      onClick={() => handleScrollLink(link.href)}
-                      className="text-gray-400 hover:text-green-400 transition-all duration-300 text-sm
-                        flex items-center group hover:translate-x-2"
-                    >
-                      <ArrowRight className="w-3 h-3 mr-2 opacity-0 -translate-x-2 
-                        group-hover:opacity-100 group-hover:translate-x-0 
-                        transition-all duration-300 text-green-500" />
-                      <span className="relative">
-                        {link.name}
-                        <span className="absolute bottom-0 left-0 w-0 h-px bg-green-500 
-                          group-hover:w-full transition-all duration-300"></span>
-                      </span>
-                    </button>
-                  ) : (
-                    <Link
-                      to={link.href}
-                      className="text-gray-400 hover:text-green-400 transition-all duration-300 text-sm
-                        flex items-center group hover:translate-x-2"
-                    >
-                      <ArrowRight className="w-3 h-3 mr-2 opacity-0 -translate-x-2 
-                        group-hover:opacity-100 group-hover:translate-x-0 
-                        transition-all duration-300 text-green-500" />
-                      <span className="relative">
-                        {link.name}
-                        <span className="absolute bottom-0 left-0 w-0 h-px bg-green-500 
-                          group-hover:w-full transition-all duration-300"></span>
-                      </span>
-                    </Link>
-                  )}
+                  {renderLink(link)}
                 </li>
               ))}
             </ul>
           </div>
 
-          {/* Company Links - Animated */}
+          {/* Company Links */}
           <div>
             <h3 className="text-base font-semibold mb-4 relative inline-block">
               Company
-              <span className="absolute -bottom-1 left-0 w-8 h-0.5 bg-gradient-to-r from-green-500 to-transparent rounded-full"></span>
+              <span className="absolute -bottom-1 left-0 w-8 h-0.5 bg-gradient-to-r 
+                from-green-500 to-transparent rounded-full" />
             </h3>
             <ul className="space-y-2">
               {footerLinks.company.map((link, index) => (
                 <li key={link.name} style={{ animationDelay: `${index * 100}ms` }}>
-                  {link.type === 'scroll' ? (
-                    <button
-                      onClick={() => handleScrollLink(link.href)}
-                      className="text-gray-400 hover:text-green-400 transition-all duration-300 text-sm
-                        flex items-center group hover:translate-x-2"
-                    >
-                      <ArrowRight className="w-3 h-3 mr-2 opacity-0 -translate-x-2 
-                        group-hover:opacity-100 group-hover:translate-x-0 
-                        transition-all duration-300 text-green-500" />
-                      <span className="relative">
-                        {link.name}
-                        <span className="absolute bottom-0 left-0 w-0 h-px bg-green-500 
-                          group-hover:w-full transition-all duration-300"></span>
-                      </span>
-                    </button>
-                  ) : (
-                    <Link
-                      to={link.href}
-                      className="text-gray-400 hover:text-green-400 transition-all duration-300 text-sm
-                        flex items-center group hover:translate-x-2"
-                    >
-                      <ArrowRight className="w-3 h-3 mr-2 opacity-0 -translate-x-2 
-                        group-hover:opacity-100 group-hover:translate-x-0 
-                        transition-all duration-300 text-green-500" />
-                      <span className="relative">
-                        {link.name}
-                        <span className="absolute bottom-0 left-0 w-0 h-px bg-green-500 
-                          group-hover:w-full transition-all duration-300"></span>
-                      </span>
-                    </Link>
-                  )}
+                  {renderLink(link)}
                 </li>
               ))}
             </ul>
           </div>
 
-          {/* Legal Links - Animated */}
+          {/* Legal Links */}
           <div>
             <h3 className="text-base font-semibold mb-4 relative inline-block">
               Legal
-              <span className="absolute -bottom-1 left-0 w-8 h-0.5 bg-gradient-to-r from-green-500 to-transparent rounded-full"></span>
+              <span className="absolute -bottom-1 left-0 w-8 h-0.5 bg-gradient-to-r 
+                from-green-500 to-transparent rounded-full" />
             </h3>
             <ul className="space-y-2">
               {footerLinks.legal.map((link, index) => (
                 <li key={link.name} style={{ animationDelay: `${index * 100}ms` }}>
-                  <Link
-                    to={link.href}
-                    className="text-gray-400 hover:text-green-400 transition-all duration-300 text-sm
-                      flex items-center group hover:translate-x-2"
-                  >
-                    <ArrowRight className="w-3 h-3 mr-2 opacity-0 -translate-x-2 
-                      group-hover:opacity-100 group-hover:translate-x-0 
-                      transition-all duration-300 text-green-500" />
-                    <span className="relative">
-                      {link.name}
-                      <span className="absolute bottom-0 left-0 w-0 h-px bg-green-500 
-                        group-hover:w-full transition-all duration-300"></span>
-                    </span>
-                  </Link>
+                  {renderLink(link)}
                 </li>
               ))}
             </ul>
@@ -263,23 +264,127 @@ const Footer: React.FC = () => {
         </div>
       </div>
 
-      {/* Bottom Bar - Animated */}
+      {/* ============================================ */}
+      {/* ✅ NEXRON GROUP SECTION                     */}
+      {/* ============================================ */}
       <div className="relative border-t border-gray-800/50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
-            {/* Copyright with Animation */}
-            <p className="text-gray-400 text-sm flex items-center gap-1 group">
+          {/* Powered By Divider */}
+          <div className="flex items-center gap-3 mb-6">
+            <div className="h-px flex-1 bg-gradient-to-r from-transparent via-gray-700/80 to-transparent" />
+            <span className="text-[11px] text-gray-500 uppercase tracking-[0.2em] 
+                             font-medium px-2 flex-shrink-0">
+              Powered By
+            </span>
+            <div className="h-px flex-1 bg-gradient-to-r from-transparent via-gray-700/80 to-transparent" />
+          </div>
+
+          {/* Nexron Card */}
+          <div className="relative bg-gradient-to-br from-gray-800/40 to-gray-900/40 
+                          border border-gray-700/40 rounded-2xl p-5 
+                          hover:border-gray-600/60 transition-all duration-300
+                          backdrop-blur-sm group overflow-hidden">
+
+            {/* Subtle glow on hover */}
+            <div className="absolute inset-0 bg-gradient-to-br from-green-500/3 
+                            to-transparent opacity-0 group-hover:opacity-100 
+                            transition-opacity duration-500 rounded-2xl" />
+
+            <div className="relative flex flex-col sm:flex-row sm:items-center 
+                            sm:justify-between gap-4">
+
+              {/* Left: Company */}
+              <div className="flex items-start gap-3">
+                {/* Icon */}
+                <div className="p-2.5 bg-gray-700/60 rounded-xl border border-gray-600/40 
+                                flex-shrink-0 mt-0.5">
+                  <Building2 className="w-4 h-4 text-green-400" />
+                </div>
+
+                {/* Info */}
+                <div>
+                  <p className="text-[11px] text-gray-500 uppercase tracking-wider 
+                                font-medium mb-0.5">
+                    Developed & Operated by
+                  </p>
+                  <h4 className="text-sm font-bold text-white leading-tight">
+                    Nexron Group Private Limited
+                  </h4>
+                  <p className="text-xs text-gray-500 mt-0.5">
+                    Director:{' '}
+                    <span className="text-gray-400 font-medium">
+                      Mirtunjay Thakur
+                    </span>
+                  </p>
+                  {/* Address */}
+                  <div className="flex items-start gap-1.5 mt-2">
+                    <MapPin className="w-3 h-3 text-gray-600 mt-0.5 flex-shrink-0" />
+                    <p className="text-[11px] text-gray-600 leading-relaxed">
+                      Plot No 1/A, KH No 38/22, 23 South Portion Ground Floor,
+                      Rama Vihar, Mohammad Pur Majri, North West Delhi - 110081
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Divider - desktop */}
+              <div className="hidden sm:block w-px h-16 bg-gray-700/50 flex-shrink-0" />
+
+              {/* Right: Contact */}
+              <div className="flex flex-col gap-2 sm:min-w-[220px]">
+                <a
+                  href="tel:"
+                  className="flex items-center gap-2 group/contact"
+                >
+                  <div className="p-1.5 bg-green-500/10 rounded-lg 
+                                  group-hover/contact:bg-green-500/20 transition-colors">
+                    <Phone className="w-3 h-3 text-green-400" />
+                  </div>
+                  <span className="text-xs text-gray-500 
+                                   group-hover/contact:text-gray-400 transition-colors 
+                                   font-mono">
+
+                  </span>
+                </a>
+
+                <a
+                  href="mailto:gauravthakur1617@gmail.com"
+                  className="flex items-center gap-2 group/contact"
+                >
+                  <div className="p-1.5 bg-blue-500/10 rounded-lg 
+                                  group-hover/contact:bg-blue-500/20 transition-colors">
+                    <Mail className="w-3 h-3 text-blue-400" />
+                  </div>
+                  <span className="text-xs text-gray-500 
+                                   group-hover/contact:text-gray-400 transition-colors">
+                    gauravthakur1617@gmail.com
+                  </span>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ============================================ */}
+      {/* BOTTOM BAR                                  */}
+      {/* ============================================ */}
+      <div className="relative border-t border-gray-800/30">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
+          <div className="flex flex-col md:flex-row justify-between items-center 
+                          space-y-4 md:space-y-0">
+
+            {/* Copyright */}
+            <p className="text-gray-500 text-xs flex items-center gap-1 group">
               © {currentYear} WabMeta. Made with
-              <Heart className="w-4 h-4 text-red-500 mx-1 
-                animate-pulse group-hover:scale-125 
-                transition-transform duration-300"
-              />
+              <Heart className="w-3.5 h-3.5 text-red-500 mx-1 animate-pulse 
+                group-hover:scale-125 transition-transform duration-300" />
               in India
             </p>
 
-            {/* Animated Social Links */}
-            <div className="flex items-center space-x-2">
+            {/* Social Links */}
+            <div className="flex items-center space-x-1.5">
               {socialLinks.map((social, index) => (
                 <a
                   key={social.name}
@@ -292,29 +397,27 @@ const Footer: React.FC = () => {
                     transition-all duration-300 ease-out
                     ${social.color}
                     hover:scale-110 hover:-translate-y-1
-                    active:scale-95
-                    group`}
+                    active:scale-95 group`}
                   title={social.name}
-                  style={{
-                    animationDelay: `${index * 100}ms`,
-                  }}
+                  style={{ animationDelay: `${index * 100}ms` }}
                 >
-                  {/* Background glow */}
+                  {/* Glow */}
                   <span className={`absolute inset-0 rounded-full opacity-0 
                     group-hover:opacity-100 transition-opacity duration-300
-                    ${social.hoverBg} blur-md scale-150`}></span>
+                    ${social.hoverBg} blur-md scale-150`} />
 
                   {/* Icon */}
-                  <social.icon className="w-5 h-5 relative z-10 
-                    transition-transform duration-300 
-                    group-hover:rotate-12" />
+                  <social.icon className="w-4 h-4 relative z-10 
+                    transition-transform duration-300 group-hover:rotate-12" />
 
                   {/* Tooltip */}
                   <span className={`absolute -top-8 left-1/2 -translate-x-1/2 
-                    px-2 py-1 bg-gray-800 text-white text-xs rounded 
+                    px-2 py-1 bg-gray-800 text-white text-[10px] rounded 
                     whitespace-nowrap pointer-events-none
                     transition-all duration-300
-                    ${hoveredSocial === social.name ? 'opacity-100 -translate-y-1' : 'opacity-0 translate-y-1'}`}>
+                    ${hoveredSocial === social.name
+                      ? 'opacity-100 -translate-y-1'
+                      : 'opacity-0 translate-y-1'}`}>
                     {social.name}
                   </span>
                 </a>
@@ -324,8 +427,9 @@ const Footer: React.FC = () => {
         </div>
       </div>
 
-      {/* Decorative bottom line */}
-      <div className="h-1 bg-gradient-to-r from-transparent via-green-500 to-transparent opacity-50"></div>
+      {/* Bottom gradient line */}
+      <div className="h-0.5 bg-gradient-to-r from-transparent via-green-500/50 
+                      to-transparent" />
     </footer>
   );
 };
