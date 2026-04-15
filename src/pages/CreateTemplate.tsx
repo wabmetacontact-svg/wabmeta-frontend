@@ -257,11 +257,9 @@ const CreateTemplate: React.FC = () => {
   const handleMediaUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
-    // Reset input
     e.target.value = '';
 
-    // Validate file type
+    // File type validation
     const validTypes: Record<string, string[]> = {
       image: ['image/jpeg', 'image/png', 'image/jpg'],
       video: ['video/mp4', 'video/3gpp'],
@@ -269,29 +267,18 @@ const CreateTemplate: React.FC = () => {
     };
 
     const allowedTypes = validTypes[formData.header.type] || [];
-
     if (!allowedTypes.includes(file.type)) {
-      setApiError(`Invalid file type: ${file.type}. Allowed: ${allowedTypes.join(', ')}`);
+      setApiError(`Invalid file type: ${file.type}`);
       return;
     }
 
-    // Validate size
-    const maxSizes: Record<string, number> = {
-      image: 50 * 1024 * 1024,      // 50MB
-      video: 50 * 1024 * 1024,      // 50MB
-      document: 50 * 1024 * 1024,   // 50MB
-    };
-
-    const maxSize = maxSizes[formData.header.type] || 5 * 1024 * 1024;
-
-    if (file.size > maxSize) {
-      setApiError(`File too large. Maximum size: ${(maxSize / (1024 * 1024)).toFixed(0)}MB`);
+    if (file.size > 50 * 1024 * 1024) {
+      setApiError('File too large. Maximum: 50MB');
       return;
     }
 
-    // Check WhatsApp account selected
     if (!selectedAccountId) {
-      setApiError('Please select a WhatsApp Business Account first in the Settings tab.');
+      setApiError('Please select a WhatsApp Business Account first.');
       setActiveTab('settings');
       return;
     }
@@ -300,61 +287,67 @@ const CreateTemplate: React.FC = () => {
       setMediaUploading(true);
       setApiError(null);
 
-      console.log('📤 Starting media upload:', {
-        filename: file.name,
-        size: `${(file.size / 1024).toFixed(2)} KB`,
-        type: file.type,
-        headerType: formData.header.type,
-        accountId: selectedAccountId,
-      });
-
-      // ✅ Upload to Meta via backend
       const response = await templateApi.uploadMedia(file, selectedAccountId);
 
-      console.log('📥 Upload response:', response.data);
-
-      if (response.data?.success && response.data?.data?.mediaId) {
+      if (response.data?.success && response.data?.data) {
         const uploadData = response.data.data;
 
-        console.log('✅ Media uploaded:', {
-          mediaId: uploadData.mediaId,
-          wabaId: uploadData.wabaId,
-          accountId: uploadData.whatsappAccountId,
+        console.log('✅ Upload response (clean):', {
+          mediaHandle: uploadData.mediaHandle?.substring(0, 30),
+          metaNumericId: uploadData.metaNumericId,
+          cloudinaryUrl: uploadData.cloudinaryUrl?.substring(0, 60),
+          // Confirm: no ::: in any field
+          hasSmuggling:
+            uploadData.mediaId?.includes(':::') ||
+            uploadData.mediaHandle?.includes(':::'),
         });
 
-        // ✅ Store complete upload data
+        // ✅ Store all fields separately - NO smuggling
         updateFormData('header', {
           ...formData.header,
-          mediaId: uploadData.mediaId,               // ✅ Meta handle (for API)
-          mediaUrl: URL.createObjectURL(file),        // ✅ Local preview
+
+          // Template creation ke liye (Meta approval)
+          mediaId: uploadData.mediaHandle || uploadData.mediaId || '',
+
+          // ✅ Permanent numeric ID (campaigns ke liye)
+          metaNumericId: uploadData.metaNumericId || null,
+
+          // ✅ Permanent URL (DB storage + campaign fallback)
+          cloudinaryUrl:
+            uploadData.cloudinaryUrl ||
+            uploadData.permanentUrl ||
+            '',
+
+          // Local preview (blob URL - sirf display ke liye)
+          mediaUrl: URL.createObjectURL(file),
+
           fileName: uploadData.filename || file.name,
-          cloudinaryUrl: uploadData.url || '',         // ✅ Cloudinary URL (for DB preview)
-          uploadedAccountId: uploadData.whatsappAccountId || selectedAccountId,
+          uploadedAccountId:
+            uploadData.whatsappAccountId || selectedAccountId,
         });
 
-        setSuccessMessage('✅ Media uploaded to Meta successfully!');
-        setTimeout(() => setSuccessMessage(null), 3000);
+        setSuccessMessage(
+          `✅ Media uploaded! ${
+            uploadData.metaNumericId
+              ? 'Permanent ID saved - campaigns will work correctly.'
+              : uploadData.cloudinaryUrl
+              ? 'Permanent URL saved - campaigns will re-upload automatically.'
+              : 'Upload complete.'
+          }`
+        );
+        setTimeout(() => setSuccessMessage(null), 4000);
+
       } else {
-        throw new Error(response.data?.message || 'Upload failed - no media ID returned');
+        throw new Error(
+          response.data?.message || 'Upload failed - no data returned'
+        );
       }
     } catch (error: any) {
-      console.error('❌ Media upload failed:', error);
-
-      let errorMessage = 'Failed to upload media. ';
-
-      if (error.response?.status === 400) {
-        errorMessage = error.response?.data?.message || 'Invalid file format or size.';
-      } else if (error.response?.status === 401) {
-        errorMessage = 'Session expired. Please login again.';
-      } else if (error.response?.status === 500) {
-        errorMessage = error.response?.data?.message || 'Server error. Please try again.';
-      } else if (error.code === 'ECONNABORTED') {
-        errorMessage = 'Upload timed out. File may be too large.';
-      } else {
-        errorMessage += error.response?.data?.message || error.message || 'Please try again.';
-      }
-
-      setApiError(errorMessage);
+      setApiError(
+        error.response?.data?.message ||
+          error.message ||
+          'Media upload failed'
+      );
     } finally {
       setMediaUploading(false);
     }
@@ -655,22 +648,30 @@ const CreateTemplate: React.FC = () => {
         }
       }
       else if (['image', 'video', 'document'].includes(formData.header.type)) {
-        if (formData.header.mediaId) {
-          payload.headerMediaId = formData.header.mediaId;     // ✅ Meta handle
-          // ✅ Store Cloudinary URL as headerContent for preview
-          payload.headerContent = formData.header.cloudinaryUrl 
-            || formData.header.mediaUrl 
-            || '';
-          
-          console.log('✅ Sending both:', {
-            headerMediaId: payload.headerMediaId.substring(0, 30),
-            headerContent: payload.headerContent.substring(0, 60),
-          });
-        } else {
+        if (!formData.header.mediaId && !formData.header.metaNumericId) {
           setApiError('Please upload media first.');
           setSaving(false);
           return;
         }
+
+        // ✅ Sab fields alag alag bhejo - NO smuggling
+        payload.headerMediaId =
+          formData.header.mediaId || formData.header.metaNumericId || '';
+
+        // ✅ Agar numeric ID hai toh alag se bhi bhejo
+        if (formData.header.metaNumericId) {
+          payload.metaNumericId = formData.header.metaNumericId;
+        }
+
+        // ✅ Permanent URL DB mein store karo
+        payload.cloudinaryUrl = formData.header.cloudinaryUrl || '';
+        payload.headerContent = formData.header.cloudinaryUrl || '';
+
+        console.log('📤 Clean media payload (no smuggling):', {
+          headerMediaId: payload.headerMediaId?.substring(0, 30),
+          metaNumericId: payload.metaNumericId || 'none',
+          cloudinaryUrl: payload.cloudinaryUrl?.substring(0, 60),
+        });
       }
 
       // Footer

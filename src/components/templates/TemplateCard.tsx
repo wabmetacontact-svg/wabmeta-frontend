@@ -63,25 +63,50 @@ const getHeaderIcon = (type: Template['header']['type']) => {
 };
 
 const isMediaExpired = (template: Template): boolean => {
-  const headerType = (template.header.type || '').toUpperCase();
-  if (!['IMAGE', 'VIDEO', 'DOCUMENT'].includes(headerType)) return false;
+  const headerType = (template.header?.type || '').toUpperCase();
 
-  const mediaId = template.header.mediaId;
-  const content = template.header.cloudinaryUrl || template.header.mediaUrl;
+  // Media template nahi hai
+  if (!['IMAGE', 'VIDEO', 'DOCUMENT'].includes(headerType)) {
+    return false;
+  }
 
-  // Has numeric ID = permanent, can send campaigns ✅
+  const mediaId = template.header?.mediaId;
+  const cloudinaryUrl = template.header?.cloudinaryUrl;
+  const mediaUrl = template.header?.mediaUrl;
+
+  // ✅ Numeric Meta ID = permanent, campaigns work karenge
   if (mediaId && /^\d+$/.test(mediaId)) return false;
 
-  // Has a permanent Cloudinary/hosted URL in content = can send campaigns ✅
-  if (content && content.startsWith('http') && !content.includes('scontent.whatsapp')) return false;
+  // ✅ Cloudinary URL = backend automatically fresh upload karega
+  if (
+    cloudinaryUrl &&
+    cloudinaryUrl.startsWith('http') &&
+    !cloudinaryUrl.includes('scontent.whatsapp')
+  ) {
+    return false; // Backend handles it automatically
+  }
 
-  // Has a permanent URL stored inside mediaId ✅
-  if (mediaId && mediaId.startsWith('http') && !mediaId.includes('scontent.whatsapp')) return false;
+  // ✅ Koi bhi permanent hosted URL
+  if (
+    mediaUrl &&
+    mediaUrl.startsWith('http') &&
+    !mediaUrl.includes('scontent.whatsapp') &&
+    !mediaUrl.startsWith('blob:')
+  ) {
+    return false;
+  }
 
-  // Only a 4:... resumable handle with no permanent URL = cannot send campaigns
-  if (!mediaId && !content) return false; // No media at all — not an image template in practice
+  // ❌ Sirf expired handle hai, koi permanent backup nahi
+  if (mediaId && mediaId.startsWith('4:') && !cloudinaryUrl) {
+    return true;
+  }
 
-  return true;
+  // ❌ Koi media nahi
+  if (!mediaId && !cloudinaryUrl && !mediaUrl) {
+    return true;
+  }
+
+  return false;
 };
 
 const TemplateCard: React.FC<TemplateCardProps> = ({

@@ -14,9 +14,20 @@ export interface TemplateButton {
 export interface TemplateHeader {
   type: HeaderType;
   text?: string;
-  mediaUrl?: string;       // Local blob preview
-  mediaId?: string;        // Meta handle (for API)
-  cloudinaryUrl?: string;  // ✅ Cloudinary URL (for DB preview)
+
+  // Meta template creation ke liye (handle ya numeric ID)
+  mediaId?: string;
+
+  // ✅ NEW: Permanent numeric Meta ID (campaigns ke liye best)
+  metaNumericId?: string | null;
+
+  // ✅ NEW: Permanent Cloudinary URL (DB storage + campaign fallback)
+  cloudinaryUrl?: string;
+  permanentUrl?: string;
+
+  // Local preview only (blob URL - expire hota hai)
+  mediaUrl?: string;
+
   fileName?: string;
   uploadedAccountId?: string;
 }
