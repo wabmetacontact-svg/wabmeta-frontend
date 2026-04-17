@@ -3,8 +3,7 @@ import React from 'react';
 import { Linkedin, Twitter, Mail, Github, Award, Code, Briefcase } from 'lucide-react';
 
 // ✅ Photos import karo
-import ankitPhoto from '../../assets/images/team/ankit.jpg';
-import samirPhoto from '../../assets/images/team/samir.jpg';
+import samirPhoto from '../../assets/images/team/samir.png';
 
 interface TeamMember {
     name: string;
@@ -28,7 +27,7 @@ const teamMembers: TeamMember[] = [
         name: 'Ankit Verma',
         role: 'CEO',
         title: 'Chief Executive Officer',
-        image: ankitPhoto,  // ✅ Local photo
+        image: '',  // Fallback will be triggered
         description: 'Visionary entrepreneur with 8+ years of experience in tech industry. Leading WabMeta to revolutionize WhatsApp Business communication for enterprises worldwide.',
         skills: ['Business Strategy', 'Product Vision', 'Team Leadership', 'Growth Hacking'],
         social: {
