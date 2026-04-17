@@ -70,11 +70,22 @@ const isMediaExpired = (template: Template): boolean => {
     return false;
   }
 
+  // ✅ PERMANENT FIX: Agar template Meta se approved/synced hai toh warning mat dikhao.
+  // Meta-synced templates mein local mediaId/cloudinaryUrl nahi hoti,
+  // lekin campaign ke time backend fresh upload kar leta hai Cloudinary se.
+  if (template.metaTemplateId) {
+    return false;
+  }
+
   const mediaId = template.header?.mediaId;
   const cloudinaryUrl = template.header?.cloudinaryUrl;
   const mediaUrl = template.header?.mediaUrl;
+  const metaNumericId = template.header?.metaNumericId;
 
-  // ✅ Numeric Meta ID = permanent, campaigns work karenge
+  // ✅ Permanent numeric Meta media ID
+  if (metaNumericId && /^\d+$/.test(metaNumericId)) return false;
+
+  // ✅ Numeric Meta ID stored in mediaId = permanent
   if (mediaId && /^\d+$/.test(mediaId)) return false;
 
   // ✅ Cloudinary URL = backend automatically fresh upload karega
@@ -83,7 +94,7 @@ const isMediaExpired = (template: Template): boolean => {
     cloudinaryUrl.startsWith('http') &&
     !cloudinaryUrl.includes('scontent.whatsapp')
   ) {
-    return false; // Backend handles it automatically
+    return false;
   }
 
   // ✅ Koi bhi permanent hosted URL
@@ -97,12 +108,12 @@ const isMediaExpired = (template: Template): boolean => {
   }
 
   // ❌ Sirf expired handle hai, koi permanent backup nahi
-  if (mediaId && mediaId.startsWith('4:') && !cloudinaryUrl) {
+  if (mediaId && mediaId.startsWith('4:') && !cloudinaryUrl && !metaNumericId) {
     return true;
   }
 
-  // ❌ Koi media nahi
-  if (!mediaId && !cloudinaryUrl && !mediaUrl) {
+  // ❌ Koi bhi media reference nahi - naya locally created draft
+  if (!mediaId && !cloudinaryUrl && !mediaUrl && !metaNumericId) {
     return true;
   }
 
