@@ -828,7 +828,7 @@ const CreateTemplate: React.FC = () => {
               <div>
                 <h1 className="text-xl font-bold text-gray-900 dark:text-white">
                   {isEditMode 
-                    ? '✏️ Edit Template' 
+                    ? 'Edit Template' 
                     : duplicateFrom 
                       ? 'Duplicate Template' 
                       : 'Create Template'
@@ -868,7 +868,7 @@ const CreateTemplate: React.FC = () => {
                     <Save className="w-4 h-4" />
                     <span>
                       {isApprovedTemplate 
-                        ? '🔄 Update Image Only'
+                        ? 'Update'
                         : isEditMode 
                           ? 'Save Changes'
                           : 'Submit for Review'
