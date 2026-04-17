@@ -4,6 +4,7 @@ import { Linkedin, Twitter, Mail, Github, Award, Code, Briefcase } from 'lucide-
 
 // ✅ Photos import karo
 import samirPhoto from '../../assets/images/team/samir.png';
+import ankitPhoto from '../../assets/images/team/ankit.png';
 
 interface TeamMember {
     name: string;
@@ -27,7 +28,7 @@ const teamMembers: TeamMember[] = [
         name: 'Ankit Verma',
         role: 'CEO',
         title: 'Chief Executive Officer',
-        image: '',  // Fallback will be triggered
+        image: ankitPhoto,
         description: 'Visionary entrepreneur with 8+ years of experience in tech industry. Leading WabMeta to revolutionize WhatsApp Business communication for enterprises worldwide.',
         skills: ['Business Strategy', 'Product Vision', 'Team Leadership', 'Growth Hacking'],
         social: {
