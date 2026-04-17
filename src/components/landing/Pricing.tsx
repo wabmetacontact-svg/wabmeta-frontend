@@ -205,7 +205,7 @@ const Pricing: React.FC = () => {
         </div>
 
         {/* Pricing Cards */}
-        <div className="flex flex-nowrap lg:grid lg:grid-cols-5 gap-4 lg:gap-6 overflow-x-auto pb-8 lg:pb-0 snap-x snap-mandatory scrollbar-hide">
+        <div className="flex flex-nowrap lg:grid lg:grid-cols-5 gap-4 lg:gap-6 overflow-x-auto lg:overflow-visible py-8 lg:py-6 snap-x snap-mandatory scrollbar-hide items-stretch">
           {plans.map((plan, index) => (
             <div
               key={index}
