@@ -5,7 +5,7 @@ import React, {
 } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
-  Search, MoreVertical, Info, Loader2,
+  Search, MoreVertical, Info, Loader2, Phone,
   MessageSquare, AlertCircle, RefreshCw,
   Pin, PinOff, Tag, Archive, ArchiveRestore, X,
 } from 'lucide-react';
@@ -170,6 +170,7 @@ const Inbox: React.FC = () => {
   const [showLabelPicker, setShowLabelPicker] = useState<string | null>(null);
   const [showConversationMenu, setShowConversationMenu] = useState<string | null>(null);
   const [whatsappAccountId, setWhatsappAccountId] = useState<string | null>(null);
+  const [initiatingCall, setInitiatingCall] = useState(false);
 
   // Selected conversation ref for use in callbacks
   const selectedConvRef = useRef<Conversation | null>(null);
@@ -603,6 +604,34 @@ const Inbox: React.FC = () => {
     }
   }, []);
 
+  // ✅ Call Contact
+  const handleCallContact = useCallback(async () => {
+    const conv = selectedConvRef.current;
+    if (!conv) return;
+    try {
+      setInitiatingCall(true);
+      const response = await api.post('/calling/initiate', {
+        to: conv.contact.phone,
+        contactId: conv.contact.id,
+        conversationId: conv.id,
+      });
+      if (response.data.success) {
+        toast.success('📞 WhatsApp call initiated! Customer will receive a call.');
+      }
+    } catch (error: any) {
+      const msg = error.response?.data?.message || error.message || '';
+      if (msg.includes('2000') || msg.includes('limit')) {
+        toast.error('Calling requires 2000+ daily message limit.');
+      } else if (msg.includes('not enabled')) {
+        toast.error('Enable calling in Settings → WhatsApp first.');
+      } else {
+        toast.error(`Call failed: ${msg || 'Unknown error'}`);
+      }
+    } finally {
+      setInitiatingCall(false);
+    }
+  }, []);
+
   // ============================================
   // ✅ SOCKET HANDLERS - PERFECT DEDUPLICATION
   // ============================================
@@ -979,15 +1008,35 @@ const Inbox: React.FC = () => {
                     </p>
                   </div>
                 </div>
-                <button
-                  onClick={() => setShowContactInfo(!showContactInfo)}
-                  className={`p-2 rounded-lg transition-colors ${showContactInfo
-                      ? 'bg-green-100 text-green-600'
-                      : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500'
-                    }`}
-                >
-                  <Info className="w-5 h-5" />
-                </button>
+                {/* ✅ Action Buttons */}
+                <div className="flex items-center gap-2">
+                  {/* Call Button */}
+                  <button
+                    onClick={handleCallContact}
+                    disabled={initiatingCall}
+                    title="WhatsApp Call"
+                    className="flex items-center gap-1.5 px-3 py-2 bg-green-500 hover:bg-green-600 disabled:opacity-50 text-white rounded-lg transition-colors text-sm font-medium"
+                  >
+                    {initiatingCall ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Phone className="w-4 h-4" />
+                    )}
+                    <span className="hidden sm:inline">
+                      {initiatingCall ? 'Calling...' : 'Call'}
+                    </span>
+                  </button>
+                  {/* Info Button */}
+                  <button
+                    onClick={() => setShowContactInfo(!showContactInfo)}
+                    className={`p-2 rounded-lg transition-colors ${showContactInfo
+                        ? 'bg-green-100 text-green-600'
+                        : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500'
+                      }`}
+                  >
+                    <Info className="w-5 h-5" />
+                  </button>
+                </div>
               </div>
             </div>
 
