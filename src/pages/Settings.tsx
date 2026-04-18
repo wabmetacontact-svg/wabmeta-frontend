@@ -10,6 +10,7 @@ import {
   Code,
   Globe,
   CreditCard,
+  Phone,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -19,8 +20,9 @@ import GeneralSettings from '../components/settings/GeneralSettings';
 import NotificationSettings from '../components/settings/NotificationSettings';
 import SecuritySettings from '../components/settings/SecuritySettings';
 import ApiConfig from '../components/settings/ApiConfig';
+import CallingSettings from '../components/settings/CallingSettings';
 
-type SettingsTab = 'whatsapp' | 'general' | 'notifications' | 'security' | 'api';
+type SettingsTab = 'whatsapp' | 'general' | 'notifications' | 'security' | 'api' | 'calling';
 
 const Settings: React.FC = () => {
   const [activeTab, setActiveTab] = useState<SettingsTab>('whatsapp');
@@ -56,6 +58,12 @@ const Settings: React.FC = () => {
       icon: Code,
       description: 'API keys & webhook config',
     },
+    {
+      id: 'calling',
+      name: 'Calling',
+      icon: Phone,
+      description: 'WhatsApp calling settings',
+    },
   ];
 
   const renderTabContent = () => {
@@ -70,6 +78,8 @@ const Settings: React.FC = () => {
         return <SecuritySettings />;
       case 'api':
         return <ApiConfig />;
+      case 'calling':
+        return <CallingSettings />;
       default:
         return <WhatsAppSettings />;
     }
