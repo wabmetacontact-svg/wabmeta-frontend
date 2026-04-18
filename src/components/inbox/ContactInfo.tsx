@@ -14,9 +14,93 @@ import {
   ChevronUp,
   Image,
   FileText,
-  Link2
+  Link2,
+  Loader2,
+  PhoneOff
 } from 'lucide-react';
 import type { Contact } from '../../types/chat';
+import api from '../../services/api';
+import toast from 'react-hot-toast';
+
+// ✅ Functional Call Button Component
+const CallButton: React.FC<{
+  phone: string;
+  contactId?: string;
+  conversationId?: string;
+}> = ({ phone, contactId, conversationId }) => {
+  const [calling, setCalling] = useState(false);
+  const [callActive, setCallActive] = useState(false);
+
+  const handleCall = async () => {
+    try {
+      setCalling(true);
+
+      const response = await api.post('/calling/initiate', {
+        to: phone,
+        contactId,
+        conversationId,
+      });
+
+      if (response.data.success) {
+        setCallActive(true);
+        toast.success('📞 WhatsApp call initiated! Customer will receive a call.');
+      }
+
+    } catch (error: any) {
+      const errMsg = error.response?.data?.message || error.message || '';
+
+      if (errMsg.includes('permission') || errMsg.includes('131056')) {
+        toast.error('Call permission required. User must approve calls from your business.');
+      } else if (errMsg.includes('2000') || errMsg.includes('limit')) {
+        toast.error('Calling requires 2000+ daily messaging limit. Check your account tier.');
+      } else if (errMsg.includes('not enabled')) {
+        toast.error('Calling not enabled. Enable it in Settings → WhatsApp → Calling.');
+      } else {
+        toast.error(`Call failed: ${errMsg}`);
+      }
+    } finally {
+      setCalling(false);
+    }
+  };
+
+  const handleEndCall = () => {
+    setCallActive(false);
+    toast.success('Call ended');
+  };
+
+  if (callActive) {
+    return (
+      <button
+        onClick={handleEndCall}
+        className="flex flex-col items-center p-2 hover:bg-red-50 rounded-xl transition-colors"
+      >
+        <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center mb-1 animate-pulse">
+          <PhoneOff className="w-5 h-5 text-red-600" />
+        </div>
+        <span className="text-xs text-red-600">Calling...</span>
+      </button>
+    );
+  }
+
+  return (
+    <button
+      onClick={handleCall}
+      disabled={calling}
+      className="flex flex-col items-center p-2 hover:bg-green-50 rounded-xl transition-colors disabled:opacity-50"
+    >
+      <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center mb-1">
+        {calling ? (
+          <Loader2 className="w-5 h-5 text-green-600 animate-spin" />
+        ) : (
+          <Phone className="w-5 h-5 text-green-600" />
+        )}
+      </div>
+      <span className="text-xs text-gray-600">
+        {calling ? 'Calling...' : 'Call'}
+      </span>
+    </button>
+  );
+};
 
 interface ContactInfoProps {
   contact: Contact;
@@ -90,12 +174,11 @@ const ContactInfo: React.FC<ContactInfoProps> = ({
               </div>
               <span className="text-xs text-gray-600">Message</span>
             </button>
-            <button className="flex flex-col items-center p-2 hover:bg-gray-100 rounded-xl transition-colors">
-              <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center mb-1">
-                <Phone className="w-5 h-5 text-green-600" />
-              </div>
-              <span className="text-xs text-gray-600">Call</span>
-            </button>
+            <CallButton
+              phone={contact.phone}
+              contactId={(contact as any).id}
+              conversationId={(contact as any).conversationId}
+            />
             <button className="flex flex-col items-center p-2 hover:bg-gray-100 rounded-xl transition-colors">
               <div className="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center mb-1">
                 <Star className="w-5 h-5 text-yellow-600" />

@@ -8,6 +8,7 @@ import {
   Loader2,
 } from 'lucide-react';
 import { inbox } from '../../services/api';
+import api from '../../services/api';
 import toast from 'react-hot-toast';
 
 // Import components
@@ -62,6 +63,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
   const [loading, setLoading] = useState(false);
   const [showContactInfo, setShowContactInfo] = useState(false);
   const [showTemplateModal, setShowTemplateModal] = useState(false);
+  const [initiatingCall, setInitiatingCall] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -120,6 +122,32 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
     return [firstName, lastName].filter(Boolean).join(' ') || whatsappProfileName || phone || 'Unknown';
   };
 
+  const handleCallContact = async () => {
+    if (!conversation) return;
+    try {
+      setInitiatingCall(true);
+      const response = await api.post('/calling/initiate', {
+        to: conversation.contact.phone,
+        contactId: conversation.contact.id,
+        conversationId: conversation.id,
+      });
+      if (response.data.success) {
+        toast.success('📞 WhatsApp call initiated! Customer will receive a call on WhatsApp.');
+      }
+    } catch (error: any) {
+      const msg = error.response?.data?.message || error.message || '';
+      if (msg.includes('2000') || msg.includes('limit')) {
+        toast.error('Calling requires 2000+ daily message limit. Upgrade your WhatsApp Business account.');
+      } else if (msg.includes('not enabled')) {
+        toast.error('Enable calling in Settings → WhatsApp first.');
+      } else {
+        toast.error(`Call failed: ${msg}`);
+      }
+    } finally {
+      setInitiatingCall(false);
+    }
+  };
+
   // EMPTY STATE
   if (!conversation) {
     return (
@@ -161,6 +189,20 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
           </div>
         </div>
         <div className="flex items-center gap-1">
+          {/* ✅ Call Button */}
+          <button
+            onClick={handleCallContact}
+            disabled={initiatingCall}
+            title="WhatsApp Call"
+            className="p-2 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-full transition-colors disabled:opacity-50"
+          >
+            {initiatingCall ? (
+              <Loader2 className="w-5 h-5 text-green-500 animate-spin" />
+            ) : (
+              <Phone className="w-5 h-5 text-green-500" />
+            )}
+          </button>
+          {/* Info button */}
           <button onClick={() => setShowContactInfo(!showContactInfo)} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full">
             <Info className="w-5 h-5 text-gray-500" />
           </button>
