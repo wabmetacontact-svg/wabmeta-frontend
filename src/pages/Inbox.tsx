@@ -619,13 +619,21 @@ const Inbox: React.FC = () => {
         toast.success('📞 WhatsApp call initiated! Customer will receive a call.');
       }
     } catch (error: any) {
-      const msg = error.response?.data?.message || error.message || '';
-      if (msg.includes('2000') || msg.includes('limit')) {
-        toast.error('Calling requires 2000+ daily message limit.');
-      } else if (msg.includes('not enabled')) {
-        toast.error('Enable calling in Settings → WhatsApp first.');
+      // ✅ Backend now sends clear messages — show them directly
+      const msg =
+        error.response?.data?.message ||
+        error.response?.data?.error ||
+        error.message ||
+        'Failed to initiate call';
+
+      console.error('Call error:', error.response?.data || error.message);
+
+      if (error.response?.status === 401) {
+        toast.error('⚠️ ' + msg + '\nPlease reconnect WhatsApp in Settings.');
+      } else if (error.response?.status === 403) {
+        toast.error('🔒 ' + msg);
       } else {
-        toast.error(`Call failed: ${msg || 'Unknown error'}`);
+        toast.error('📞 ' + msg);
       }
     } finally {
       setInitiatingCall(false);
