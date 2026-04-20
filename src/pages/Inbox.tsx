@@ -18,6 +18,7 @@ import ChatInput from '../components/inbox/ChatInput';
 import MessageBubble from '../components/inbox/MessageBubble';
 import SendTemplateModal from '../components/inbox/SendTemplateModal';
 import { formatMessageDateTime, safeParseDate } from '../utils/dateHelpers';
+import CallScreen from '../components/inbox/CallScreen';
 
 // ============================================
 // TYPES
@@ -171,6 +172,7 @@ const Inbox: React.FC = () => {
   const [showConversationMenu, setShowConversationMenu] = useState<string | null>(null);
   const [whatsappAccountId, setWhatsappAccountId] = useState<string | null>(null);
   const [initiatingCall, setInitiatingCall] = useState(false);
+  const [showCallScreen, setShowCallScreen] = useState(false);
 
   // Selected conversation ref for use in callbacks
   const selectedConvRef = useRef<Conversation | null>(null);
@@ -604,40 +606,11 @@ const Inbox: React.FC = () => {
     }
   }, []);
 
-  // ✅ Call Contact
-  const handleCallContact = useCallback(async () => {
+  // ✅ Open the calling screen overlay
+  const handleCallContact = useCallback(() => {
     const conv = selectedConvRef.current;
     if (!conv) return;
-    try {
-      setInitiatingCall(true);
-      const response = await api.post('/calling/initiate', {
-        to: conv.contact.phone,
-        contactId: conv.contact.id,
-        conversationId: conv.id,
-      });
-      if (response.data.success) {
-        toast.success('📞 WhatsApp call initiated! Customer will receive a call.');
-      }
-    } catch (error: any) {
-      // ✅ Backend now sends clear messages — show them directly
-      const msg =
-        error.response?.data?.message ||
-        error.response?.data?.error ||
-        error.message ||
-        'Failed to initiate call';
-
-      console.error('Call error:', error.response?.data || error.message);
-
-      if (error.response?.status === 401) {
-        toast.error('⚠️ ' + msg + '\nPlease reconnect WhatsApp in Settings.');
-      } else if (error.response?.status === 403) {
-        toast.error('🔒 ' + msg);
-      } else {
-        toast.error('📞 ' + msg);
-      }
-    } finally {
-      setInitiatingCall(false);
-    }
+    setShowCallScreen(true);
   }, []);
 
   // ============================================
@@ -1021,18 +994,11 @@ const Inbox: React.FC = () => {
                   {/* Call Button */}
                   <button
                     onClick={handleCallContact}
-                    disabled={initiatingCall}
                     title="WhatsApp Call"
-                    className="flex items-center gap-1.5 px-3 py-2 bg-green-500 hover:bg-green-600 disabled:opacity-50 text-white rounded-lg transition-colors text-sm font-medium"
+                    className="flex items-center gap-1.5 px-3 py-2 bg-green-500 hover:bg-green-600 active:scale-95 text-white rounded-lg transition-all text-sm font-medium shadow-sm"
                   >
-                    {initiatingCall ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <Phone className="w-4 h-4" />
-                    )}
-                    <span className="hidden sm:inline">
-                      {initiatingCall ? 'Calling...' : 'Call'}
-                    </span>
+                    <Phone className="w-4 h-4" />
+                    <span className="hidden sm:inline">Call</span>
                   </button>
                   {/* Info Button */}
                   <button
@@ -1224,6 +1190,17 @@ const Inbox: React.FC = () => {
               fetchMessages(selectedConversation.id, true);
             }
           }}
+        />
+      )}
+
+      {/* ============================================ */}
+      {/* CALL SCREEN OVERLAY */}
+      {/* ============================================ */}
+      {showCallScreen && selectedConversation && (
+        <CallScreen
+          contact={selectedConversation.contact}
+          conversationId={selectedConversation.id}
+          onClose={() => setShowCallScreen(false)}
         />
       )}
     </div>
