@@ -319,20 +319,10 @@ const Footer: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="grid sm:grid-cols-2 gap-6 pt-6 border-t border-white/5">
+                  <div className="pt-6 border-t border-white/5">
                     <div className="space-y-1">
                       <p className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">Director</p>
                       <p className="text-gray-200 font-semibold text-lg">Mirtunjay Thakur</p>
-                    </div>
-                    <div className="space-y-2">
-                      <p className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">Registered Address</p>
-                      <div className="flex items-start gap-2">
-                        <MapPin className="w-3.5 h-3.5 text-emerald-500 mt-1 flex-shrink-0" />
-                        <p className="text-xs text-gray-400 leading-relaxed font-medium">
-                          Plot No 1/A, KH No 38/22, 23 South Portion Ground Floor,
-                          Rama Vihar, Mohammad Pur Majri, North West Delhi - 110081
-                        </p>
-                      </div>
                     </div>
                   </div>
                 </div>
@@ -345,19 +335,6 @@ const Footer: React.FC = () => {
                   <p className="text-[10px] text-gray-500 uppercase tracking-widest font-bold mb-4">Direct Contact</p>
                   
                   <div className="space-y-3">
-                    <a
-                      href="mailto:gauravthakur1617@gmail.com"
-                      className="group/item flex items-center gap-4 p-3 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 hover:border-emerald-500/20 transition-all duration-300"
-                    >
-                      <div className="p-2 bg-emerald-500/10 rounded-xl group-hover/item:scale-110 transition-transform">
-                        <Mail className="w-4 h-4 text-emerald-400" />
-                      </div>
-                      <div className="overflow-hidden">
-                        <p className="text-[9px] text-gray-500 uppercase font-black tracking-tighter">Support Email</p>
-                        <p className="text-xs text-gray-300 font-medium truncate">gauravthakur1617@gmail.com</p>
-                      </div>
-                    </a>
-
                     <div className="flex items-center gap-4 p-3 rounded-2xl bg-white/5 border border-white/5 group-hover:border-white/10 transition-colors">
                       <div className="p-2 bg-blue-500/10 rounded-xl">
                         <MessageCircle className="w-4 h-4 text-blue-400" />
