@@ -22,8 +22,8 @@ import { chatbots as chatbotsApi } from '../services/api';
 import toast from 'react-hot-toast';
 
 // Custom Node Components & UI
-import {
 import PageSkeleton from '../components/common/PageSkeleton';
+import {
   StartNode, MessageNode, ButtonNode, ConditionNode,
   DelayNode, ActionNode, EndNode,
   NodeSidebar, NodeConfigPanel
