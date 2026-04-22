@@ -22,6 +22,7 @@ import WalletRequestModal from "../components/wallet/WalletRequestModal";
 import TransactionHistory from "../components/wallet/TransactionHistory";
 import WalletStats from "../components/wallet/WalletStats";
 import { usePlanAccess } from "../hooks/usePlanAccess";
+import { useAuth } from "../context/AuthContext";
 import toast from "react-hot-toast";
 import { Link } from "react-router-dom";
 
@@ -597,14 +598,25 @@ const WalletOverview: React.FC<{ walletData: WalletData }> = ({
 
 // ─── Main Wallet Page ──────────────────────────────────────────────────────────
 const WalletPage: React.FC = () => {
+  const { isAuthenticated, isLoading: isAuthLoading } = useAuth();
+  const { hasAccess } = usePlanAccess();
+
   const [walletData, setWalletData] = useState<WalletData | null>(null);
   const [loading, setLoading] = useState(true);
   const [showTopUp, setShowTopUp] = useState(false);
   const [showRequest, setShowRequest] = useState(false);
-  const { hasAccess } = usePlanAccess();
 
   const fetchWallet = useCallback(async () => {
-    // If no access, don't even try to fetch
+    // If auth is still loading, wait
+    if (isAuthLoading) return;
+
+    // If not authenticated, we shouldn't even be here, but safety first
+    if (!isAuthenticated) {
+      setLoading(false);
+      return;
+    }
+
+    // If no plan access, don't fetch from API
     if (!hasAccess('wallet')) {
       setLoading(false);
       return;
@@ -613,21 +625,28 @@ const WalletPage: React.FC = () => {
     try {
       setLoading(true);
       const res = await walletApi.getWallet();
-      setWalletData(res.data.data);
+      if (res.data?.success) {
+        setWalletData(res.data.data);
+      } else {
+        throw new Error(res.data?.message || "Failed to load wallet data");
+      }
     } catch (err: any) {
+      console.error("Wallet Fetch Error:", err);
       toast.error(
-        err?.response?.data?.message || "Failed to load wallet data"
+        err?.response?.data?.message || err.message || "Failed to load wallet data"
       );
     } finally {
       setLoading(false);
     }
-  }, [hasAccess]);
+  }, [hasAccess, isAuthenticated, isAuthLoading]);
 
   useEffect(() => {
     fetchWallet();
   }, [fetchWallet]);
 
-  if (loading) return <WalletSkeleton />;
+  if (isAuthLoading || (loading && !walletData)) {
+    return <WalletSkeleton />;
+  }
 
   // Check access first
   if (!hasAccess('wallet')) {
