@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { automations as automationsApi, templates as templatesApi, contacts as contactsApi } from '../services/api';
 import toast from 'react-hot-toast';
+import PageSkeleton from '../components/common/PageSkeleton';
 
 interface Action {
   id: string;
@@ -165,11 +166,7 @@ const CreateAutomation: React.FC = () => {
   };
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-full">
-        <Loader2 className="w-8 h-8 animate-spin text-green-600" />
-      </div>
-    );
+    return <PageSkeleton />;
   }
 
   return (

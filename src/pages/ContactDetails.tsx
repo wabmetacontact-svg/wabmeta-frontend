@@ -17,6 +17,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { contacts as contactApi } from '../services/api';
+import PageSkeleton from '../components/common/PageSkeleton';
 
 const ContactDetails: React.FC = () => {
   const { id } = useParams();
@@ -97,14 +98,7 @@ const ContactDetails: React.FC = () => {
   };
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="text-center">
-          <Loader2 className="w-10 h-10 text-primary-500 animate-spin mx-auto mb-4" />
-          <p className="text-gray-500">Loading contact details...</p>
-        </div>
-      </div>
-    );
+    return <PageSkeleton />;
   }
 
   if (error || !contact) {

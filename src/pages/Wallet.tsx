@@ -48,7 +48,7 @@ interface WalletData {
 
 // ─── Skeleton Loader ───────────────────────────────────────────────────────────
 const WalletSkeleton: React.FC = () => (
-  <div className="max-w-4xl mx-auto p-6 space-y-6 animate-pulse">
+  <div className="w-full mx-auto p-6 space-y-6 animate-pulse">
     <div className="flex items-center justify-between">
       <div>
         <div className="h-7 w-32 bg-gray-200 dark:bg-gray-700 rounded-lg" />
@@ -232,7 +232,7 @@ const ActiveWalletView: React.FC<ActiveWalletViewProps> = ({
   const isLowBalance = walletData.balance < walletData.lowBalanceThreshold;
 
   return (
-    <div className="max-w-4xl mx-auto p-6 space-y-6">
+    <div className="w-full mx-auto p-6 space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>

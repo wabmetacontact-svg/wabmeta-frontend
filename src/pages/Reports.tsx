@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { analytics } from '../services/api';
 import toast from 'react-hot-toast';
+import PageSkeleton from '../components/common/PageSkeleton';
 
 // Simple chart component (you can replace with recharts if installed)
 const SimpleBarChart: React.FC<{ data: any[]; dataKey: string; color: string; height?: number }> = ({
@@ -142,14 +143,7 @@ const Reports: React.FC = () => {
   };
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="text-center">
-          <Loader2 className="w-10 h-10 animate-spin text-green-600 mx-auto" />
-          <p className="mt-4 text-gray-600 dark:text-gray-400">Loading analytics...</p>
-        </div>
-      </div>
-    );
+    return <PageSkeleton />;
   }
 
   return (

@@ -20,6 +20,7 @@ import {
 import { auth, users } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useApp } from '../context/AppContext';
+import PageSkeleton from '../components/common/PageSkeleton';
 
 interface UserProfile {
   id: string;
@@ -236,14 +237,7 @@ const Profile: React.FC = () => {
   // LOADING STATE
   // ==========================================
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-96">
-        <div className="text-center">
-          <Loader2 className="w-10 h-10 text-primary-500 animate-spin mx-auto mb-4" />
-          <p className="text-gray-500">Loading profile...</p>
-        </div>
-      </div>
-    );
+    return <PageSkeleton />;
   }
 
   // ==========================================

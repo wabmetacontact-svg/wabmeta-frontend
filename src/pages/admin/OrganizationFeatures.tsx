@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Save, Loader2, Upload, FileSpreadsheet, Shield, Building2 } from 'lucide-react';
 import { admin } from '../../services/api';
 import toast from 'react-hot-toast';
+import PageSkeleton from '../../components/common/PageSkeleton';
 
 export default function OrganizationFeatures() {
     const { organizationId } = useParams();
@@ -53,12 +54,8 @@ export default function OrganizationFeatures() {
     };
 
     if (loading) {
-        return (
-            <div className="flex justify-center items-center h-64">
-                <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
-            </div>
-        );
-    }
+    return <PageSkeleton />;
+  }
 
     return (
         <div className="space-y-6">

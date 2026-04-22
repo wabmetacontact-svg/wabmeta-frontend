@@ -10,6 +10,7 @@ import {
 import { campaigns as campaignsApi } from '../services/api';
 import useCampaignRealtime from '../hooks/useCampaignRealtime';
 import toast from 'react-hot-toast';
+import PageSkeleton from '../components/common/PageSkeleton';
 
 // ============================================
 // TYPES
@@ -309,11 +310,7 @@ const CampaignDetails: React.FC = () => {
   // ============================================
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-full min-h-[400px]">
-        <Loader2 className="w-8 h-8 animate-spin text-green-600" />
-      </div>
-    );
+    return <PageSkeleton />;
   }
 
   const displayStats = liveStats || stats;

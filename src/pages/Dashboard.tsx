@@ -11,17 +11,17 @@ import {
   TrendingDown,
   Zap,
   RefreshCw,
-  Loader2,
   ArrowUpRight,
   Mail,
   FileText,
   BarChart3,
 } from 'lucide-react';
-import api, { dashboard } from '../services/api';
+import { dashboard } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useSocket } from '../context/SocketContext';
 import toast from 'react-hot-toast';
 import { Link } from 'react-router-dom';
+import PageSkeleton from '../components/common/PageSkeleton';
 
 // ============================================
 // SIMPLE BAR CHART COMPONENT
@@ -260,14 +260,7 @@ const Dashboard: React.FC = () => {
   };
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="text-center">
-          <Loader2 className="w-10 h-10 animate-spin text-green-600 mx-auto" />
-          <p className="mt-4 text-gray-600 dark:text-gray-400">Loading dashboard...</p>
-        </div>
-      </div>
-    );
+    return <PageSkeleton />;
   }
 
   return (

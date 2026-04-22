@@ -10,6 +10,7 @@ import {
 import { crm as crmApi } from '../services/api';
 import type { CRMStats, Pipeline, Lead } from '../types/crm';
 import toast from 'react-hot-toast';
+import PageSkeleton from '../components/common/PageSkeleton';
 
 const CRM: React.FC = () => {
     const [stats, setStats] = useState<CRMStats | null>(null);
@@ -67,12 +68,8 @@ const CRM: React.FC = () => {
     };
 
     if (loading) {
-        return (
-            <div className="flex items-center justify-center h-screen">
-                <Loader2 className="w-8 h-8 animate-spin text-green-600" />
-            </div>
-        );
-    }
+    return <PageSkeleton />;
+  }
 
     return (
         <div className="space-y-6">

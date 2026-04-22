@@ -9,6 +9,7 @@ import {
 import { automations as automationsApi } from '../services/api';
 import type { Automation } from '../types/automation';
 import toast from 'react-hot-toast';
+import PageSkeleton from '../components/common/PageSkeleton';
 
 const triggerIcons: Record<string, React.ReactNode> = {
   NEW_CONTACT: <Users className="w-4 h-4" />,
@@ -78,11 +79,7 @@ const AutomationPage: React.FC = () => {
   );
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <Loader2 className="w-8 h-8 animate-spin text-green-600" />
-      </div>
-    );
+    return <PageSkeleton />;
   }
 
   return (

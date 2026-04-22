@@ -23,6 +23,7 @@ import toast from 'react-hot-toast';
 
 // Custom Node Components & UI
 import {
+import PageSkeleton from '../components/common/PageSkeleton';
   StartNode, MessageNode, ButtonNode, ConditionNode,
   DelayNode, ActionNode, EndNode,
   NodeSidebar, NodeConfigPanel
@@ -225,11 +226,7 @@ const ChatbotBuilder: React.FC = () => {
   };
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <Loader2 className="w-8 h-8 animate-spin text-green-600" />
-      </div>
-    );
+    return <PageSkeleton />;
   }
 
   return (

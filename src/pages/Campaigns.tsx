@@ -21,6 +21,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { campaigns as campaignsApi } from '../services/api';
 import { useSocket } from '../context/SocketContext';
 import toast from 'react-hot-toast';
+import PageSkeleton from '../components/common/PageSkeleton';
 
 // ✅ Safe number helpers
 const safeNumber = (value: any): number => {
@@ -259,11 +260,7 @@ const Campaigns: React.FC = () => {
   };
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-full">
-        <Loader2 className="w-8 h-8 animate-spin text-green-600" />
-      </div>
-    );
+    return <PageSkeleton />;
   }
 
   if (error) {

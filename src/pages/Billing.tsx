@@ -21,6 +21,7 @@ import { useAuth } from '../context/AuthContext';
 import { billing } from '../services/api';
 import toast from 'react-hot-toast';
 import { loadRazorpayScript } from '../utils/razorpay';
+import PageSkeleton from '../components/common/PageSkeleton';
 
 // ============================================
 // TYPES
@@ -400,14 +401,7 @@ const Billing: React.FC = () => {
   // ============================================
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="text-center">
-          <Loader2 className="w-10 h-10 animate-spin text-green-600 mx-auto" />
-          <p className="mt-4 text-gray-600 dark:text-gray-400">Loading billing information...</p>
-        </div>
-      </div>
-    );
+    return <PageSkeleton />;
   }
 
   // ============================================
