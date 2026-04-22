@@ -1174,6 +1174,52 @@ export const admin = {
     api.patch<ApiResponse>(`/admin/whatsapp-connections/${accountId}/connection-type`, { connectionType }),
   disconnectWhatsApp: (accountId: string) =>
     api.post<ApiResponse>(`/admin/whatsapp-connections/${accountId}/disconnect`),
+
+  // ✅ ADD: Wallet Management
+  getWalletRequests: (params?: {
+    status?: string;
+    page?: number;
+    limit?: number;
+  }) => api.get<ApiResponse>('/admin/wallets/requests', { params }),
+
+  getAllWallets: (params?: {
+    page?: number;
+    limit?: number;
+    flagged?: boolean;
+    isActive?: boolean;
+  }) => api.get<ApiResponse>('/admin/wallets', { params }),
+
+  reviewWalletRequest: (
+    requestId: string,
+    data: { action: 'approve' | 'reject'; note?: string }
+  ) => api.patch<ApiResponse>(
+    `/admin/wallets/requests/${requestId}/review`,
+    data
+  ),
+
+  adjustWalletBalance: (
+    organizationId: string,
+    data: { type: 'admin_credit' | 'admin_debit'; amount: number; note: string }
+  ) => api.patch<ApiResponse>(
+    `/admin/wallets/${organizationId}/adjust`,
+    data
+  ),
+
+  setWalletCredit: (
+    organizationId: string,
+    data: { creditLimit: number; enable: boolean }
+  ) => api.patch<ApiResponse>(
+    `/admin/wallets/${organizationId}/credit`,
+    data
+  ),
+
+  flagWallet: (
+    organizationId: string,
+    data: { reason?: string; unflag?: boolean }
+  ) => api.patch<ApiResponse>(
+    `/admin/wallets/${organizationId}/flag`,
+    data
+  ),
 };
 
 // ============================================

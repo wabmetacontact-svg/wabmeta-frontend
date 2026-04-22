@@ -17,7 +17,9 @@ import {
   AlertCircle,
   RefreshCw,
   BarChart3,
-  UserPlus
+  UserPlus,
+  Wallet,
+  XCircle
 } from 'lucide-react';
 import { admin } from '../../services/api';
 import { formatINR } from '../../utils/currency';
@@ -57,6 +59,11 @@ interface DashboardStats {
     connectedAccounts: number;
     totalContacts: number;
     totalCampaigns: number;
+  };
+  wallet?: {
+    totalActiveWallets: number;
+    pendingRequests: number;
+    totalBalanceHeld: number;
   };
 }
 
@@ -272,6 +279,211 @@ const QuickStats: React.FC<QuickStatsProps> = ({ whatsapp, messages }) => {
 };
 
 // ============================================
+// WALLET REQUESTS WIDGET
+// ============================================
+const WalletRequestsWidget: React.FC = () => {
+  const [requests, setRequests] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [reviewing, setReviewing] = useState<string | null>(null);
+
+  const fetchRequests = async () => {
+    try {
+      setLoading(true);
+      const res = await admin.getWalletRequests({ status: 'pending', limit: 5 });
+      const data = res.data?.data;
+      setRequests(data?.requests || []);
+    } catch (err) {
+      console.error('Failed to fetch wallet requests:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchRequests();
+  }, []);
+
+  const handleReview = async (
+    requestId: string,
+    action: 'approve' | 'reject'
+  ) => {
+    setReviewing(requestId);
+    try {
+      await admin.reviewWalletRequest(requestId, { action });
+      // Remove from list
+      setRequests(prev => prev.filter(r => r.id !== requestId));
+    } catch (err: any) {
+      console.error('Review failed:', err);
+    } finally {
+      setReviewing(null);
+    }
+  };
+
+  return (
+    <div className="bg-white rounded-2xl border border-gray-200 p-6">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
+          <div className="p-2 bg-green-100 rounded-lg">
+            <Wallet className="w-4 h-4 text-green-600" />
+          </div>
+          <h3 className="text-lg font-semibold text-gray-900">
+            Wallet Access Requests
+          </h3>
+          {requests.length > 0 && (
+            <span
+              className="px-2 py-0.5 bg-red-100 text-red-600
+                           text-xs font-bold rounded-full animate-pulse"
+            >
+              {requests.length} pending
+            </span>
+          )}
+        </div>
+        <Link
+          to="/admin/wallets"
+          className="text-sm text-blue-600 hover:text-blue-700
+                     font-medium flex items-center gap-1"
+        >
+          View All
+          <ArrowUpRight className="w-3.5 h-3.5" />
+        </Link>
+      </div>
+
+      {/* Content */}
+      {loading ? (
+        <div className="space-y-3">
+          {[1, 2].map(i => (
+            <div
+              key={i}
+              className="h-20 bg-gray-100 rounded-xl animate-pulse"
+            />
+          ))}
+        </div>
+      ) : requests.length === 0 ? (
+        <div className="text-center py-8">
+          <div
+            className="w-12 h-12 bg-green-50 rounded-full flex
+                          items-center justify-center mx-auto mb-3"
+          >
+            <CheckCircle className="w-6 h-6 text-green-500" />
+          </div>
+          <p className="text-gray-500 text-sm font-medium">
+            No pending requests
+          </p>
+          <p className="text-gray-400 text-xs mt-1">
+            All wallet requests have been reviewed
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {requests.map(request => (
+            <div
+              key={request.id}
+              className="border border-gray-200 rounded-xl p-4
+                           hover:border-gray-300 transition-all"
+            >
+              {/* User & Org Info */}
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <p className="font-semibold text-gray-900 text-sm">
+                      {request.organization?.name || 'Unknown Org'}
+                    </p>
+                    {/* Plan Badge */}
+                    <span
+                      className={`text-xs px-2 py-0.5 rounded-full font-medium
+                      ${request.organization?.planType === 'QUARTERLY' ||
+                        request.organization?.planType === 'BIANNUAL' ||
+                        request.organization?.planType === 'ANNUAL'
+                        ? 'bg-green-100 text-green-700'
+                        : 'bg-yellow-100 text-yellow-700'
+                      }`}
+                    >
+                      {request.organization?.planType || 'Unknown Plan'}
+                    </span>
+                    {/* Plan Verified Badge */}
+                    {request.planVerified ? (
+                      <span
+                        className="text-xs px-2 py-0.5 rounded-full
+                                     bg-blue-100 text-blue-700 font-medium"
+                      >
+                        ✓ Plan OK
+                      </span>
+                    ) : (
+                      <span
+                        className="text-xs px-2 py-0.5 rounded-full
+                                     bg-red-100 text-red-700 font-medium"
+                      >
+                        ⚠ Plan Issue
+                      </span>
+                    )}
+                  </div>
+
+                  <p className="text-xs text-gray-500 mt-0.5">
+                    {request.user?.email || ''}
+                  </p>
+
+                  {/* Reason */}
+                  <p
+                    className="text-xs text-gray-600 mt-2 bg-gray-50
+                                  rounded-lg p-2 line-clamp-2"
+                  >
+                    "{request.reason}"
+                  </p>
+
+                  {/* Time */}
+                  <p className="text-xs text-gray-400 mt-1.5">
+                    <Clock className="w-3 h-3 inline mr-1" />
+                    {new Date(request.requestedAt).toLocaleDateString('en-IN', {
+                      day: 'numeric',
+                      month: 'short',
+                      year: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })}
+                  </p>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-2 mt-3">
+                <button
+                  onClick={() => handleReview(request.id, 'approve')}
+                  disabled={reviewing === request.id}
+                  className="flex-1 py-2 bg-green-600 hover:bg-green-700
+                             disabled:opacity-50 disabled:cursor-not-allowed
+                             text-white text-xs font-semibold rounded-lg
+                             transition-all flex items-center justify-center gap-1"
+                >
+                  {reviewing === request.id ? (
+                    <Loader2 className="w-3 h-3 animate-spin" />
+                  ) : (
+                    <CheckCircle className="w-3 h-3" />
+                  )}
+                  Approve
+                </button>
+                <button
+                  onClick={() => handleReview(request.id, 'reject')}
+                  disabled={reviewing === request.id}
+                  className="flex-1 py-2 bg-red-50 hover:bg-red-100
+                             disabled:opacity-50 disabled:cursor-not-allowed
+                             text-red-600 text-xs font-semibold rounded-lg
+                             transition-all flex items-center justify-center gap-1
+                             border border-red-200"
+                >
+                  <XCircle className="w-3 h-3" />
+                  Reject
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ============================================
 // MAIN COMPONENT
 // ============================================
 const AdminDashboard: React.FC = () => {
@@ -377,6 +589,11 @@ const AdminDashboard: React.FC = () => {
       totalContacts: 0,
       totalCampaigns: 0
     },
+    wallet: {
+      totalActiveWallets: 0,
+      pendingRequests: 0,
+      totalBalanceHeld: 0
+    },
   };
 
   // ✅ FIXED: Ensure nested values exist
@@ -410,6 +627,11 @@ const AdminDashboard: React.FC = () => {
       connectedAccounts: dashboardStats.whatsapp?.connectedAccounts ?? 0,
       totalContacts: dashboardStats.whatsapp?.totalContacts ?? 0,
       totalCampaigns: dashboardStats.whatsapp?.totalCampaigns ?? 0,
+    },
+    wallet: {
+      totalActiveWallets: dashboardStats.wallet?.totalActiveWallets ?? 0,
+      pendingRequests: dashboardStats.wallet?.pendingRequests ?? 0,
+      totalBalanceHeld: dashboardStats.wallet?.totalBalanceHeld ?? 0,
     },
   };
 
@@ -497,6 +719,43 @@ const AdminDashboard: React.FC = () => {
 
         {/* WhatsApp Connection Stats */}
         <WhatsAppConnectionStats />
+        
+        {/* ✅ ADD THIS - Wallet Requests Widget */}
+        <WalletRequestsWidget />
+        
+        {/* ✅ ADD THIS - Wallet Stats Card */}
+        {safeStats.wallet && (
+          <div className="bg-white rounded-2xl border border-gray-200 p-6">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="p-2 bg-green-100 rounded-lg">
+                <Wallet className="w-4 h-4 text-green-600" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900">
+                Wallet Overview
+              </h3>
+            </div>
+            <div className="grid grid-cols-3 gap-4">
+              <div className="text-center p-3 bg-green-50 rounded-xl">
+                <p className="text-2xl font-bold text-green-700">
+                  {safeStats.wallet.totalActiveWallets}
+                </p>
+                <p className="text-xs text-gray-500 mt-1">Active Wallets</p>
+              </div>
+              <div className="text-center p-3 bg-yellow-50 rounded-xl">
+                <p className="text-2xl font-bold text-yellow-700">
+                  {safeStats.wallet.pendingRequests}
+                </p>
+                <p className="text-xs text-gray-500 mt-1">Pending Requests</p>
+              </div>
+              <div className="text-center p-3 bg-blue-50 rounded-xl">
+                <p className="text-2xl font-bold text-blue-700">
+                  ₹{(safeStats.wallet.totalBalanceHeld || 0).toLocaleString('en-IN')}
+                </p>
+                <p className="text-xs text-gray-500 mt-1">Balance Held</p>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Revenue Card */}
