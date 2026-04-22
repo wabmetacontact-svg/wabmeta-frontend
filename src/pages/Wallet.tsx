@@ -25,6 +25,7 @@ import { usePlanAccess } from "../hooks/usePlanAccess";
 import { useAuth } from "../context/AuthContext";
 import toast from "react-hot-toast";
 import { Link } from "react-router-dom";
+import MetaRatesCard from '../components/wallet/MetaRatesCard';
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
 interface WalletData {
@@ -83,8 +84,8 @@ const LockedWalletView: React.FC = () => (
       Wallet Feature Locked
     </h1>
     <p className="text-gray-500 dark:text-gray-400 mb-8 max-w-md mx-auto">
-      The Meta Payment Wallet is a premium feature available for Quarterly (3-month), 
-      Bi-annual, and Annual plans. Upgrade your plan to manage payments with ease.
+      The Meta Payment Wallet is a premium feature available for all paid subscription plans. 
+      Upgrade your plan from Free to manage payments with ease.
     </p>
     <Link
       to="/dashboard/billing"
@@ -161,7 +162,7 @@ const NotActiveView: React.FC<NotActiveViewProps> = ({
               className="mt-4 bg-yellow-50 dark:bg-yellow-900/20
                             rounded-xl p-3 text-sm text-yellow-700 dark:text-yellow-400"
             >
-              💡 Make sure your subscription is 3-month Quarterly or higher.
+              💡 Make sure you are on a paid subscription plan (Monthly or higher).
             </div>
             {walletData?.pendingRequest?.requestedAt && (
               <p className="text-xs text-gray-400 mt-3">
@@ -187,7 +188,7 @@ const NotActiveView: React.FC<NotActiveViewProps> = ({
                 {
                   icon: CheckCircle,
                   color: "text-green-500",
-                  text: "Active 3-month (Quarterly) plan or higher",
+                  text: "Active paid subscription plan required",
                 },
                 {
                   icon: CheckCircle,
@@ -222,29 +223,50 @@ const NotActiveView: React.FC<NotActiveViewProps> = ({
         )}
       </div>
 
-      {/* Why Wallet */}
+      {/* Wallet Feature Description */}
       <div
         className="bg-gradient-to-br from-green-50 to-emerald-50
                       dark:from-green-900/20 dark:to-emerald-900/20
                       rounded-2xl p-6 border border-green-200 dark:border-green-800"
       >
-        <h3 className="font-semibold text-green-800 dark:text-green-300 mb-3">
-          Why use WabMeta Wallet?
+        <h3 className="font-bold text-green-800 dark:text-green-300 mb-4 flex items-center gap-2">
+          <Info className="w-5 h-5" />
+          Wabmeta Wallet Feature Description
         </h3>
-        <ul className="space-y-2 text-sm text-green-700 dark:text-green-400">
-          {[
-            "No international credit/debit card needed",
-            "We handle Meta API billing on your behalf",
-            "Real-time balance tracking & alerts",
-            "Complete transaction history",
-            "Low balance notifications",
-          ].map((point, i) => (point && 
-            <li key={i} className="flex items-center gap-2">
-              <span className="text-green-500">✅</span>
-              {point}
-            </li>
-          ))}
-        </ul>
+        
+        <div className="space-y-4 text-sm text-green-800/80 dark:text-green-400/90 leading-relaxed">
+          <p>
+            If you do not have a credit or debit card, you can use the Wabmeta Wallet to pay for bulk messaging services.
+          </p>
+          
+          <p>
+            According to Meta’s policies, running message templates and sending bulk messages requires payment through Meta, 
+            which typically needs a valid credit or debit card linked to your account.
+          </p>
+          
+          <div className="bg-white/50 dark:bg-black/20 p-4 rounded-xl space-y-2 border border-green-100 dark:border-green-900/50">
+            <p>• If you have a card, you can directly add it to your Meta account and manage payments yourself.</p>
+            <p>• If you do not have a card, you can use the Wabmeta Wallet as an alternative.</p>
+          </div>
+
+          <div>
+            <p className="font-semibold mb-2">With the Wabmeta Wallet:</p>
+            <ul className="space-y-2">
+              <li className="flex gap-2">
+                <span className="text-green-600 font-bold">✓</span>
+                <span>You can add funds to your wallet within the platform.</span>
+              </li>
+              <li className="flex gap-2">
+                <span className="text-green-600 font-bold">✓</span>
+                <span>Wabmeta will use this balance to process your Meta-related payments on your behalf.</span>
+              </li>
+              <li className="flex gap-2">
+                <span className="text-green-600 font-bold">✓</span>
+                <span>It works like a controlled credit line, making it easier for users without international payment methods.</span>
+              </li>
+            </ul>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -465,6 +487,9 @@ const ActiveWalletView: React.FC<ActiveWalletViewProps> = ({
           </div>
         )}
       </div>
+
+      {/* Template Rates Info */}
+      <MetaRatesCard />
 
       {/* Stats Row */}
       <WalletStats

@@ -201,7 +201,7 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, setCollapsed }) => {
     {
       title: "Analytics",
       items: [
-        { name: "Reports", href: "/dashboard/reports", icon: BarChart3, featureKey: "analytics" },
+        { name: "Reports", href: "/dashboard/reports", icon: BarChart3, featureKey: "reports" },
       ],
     },
     {

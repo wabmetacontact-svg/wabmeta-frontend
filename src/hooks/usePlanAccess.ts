@@ -14,13 +14,13 @@ const FEATURES_MATRIX = {
   templates: ['free', 'monthly', '3month', '6month', 'yearly'],
   
   // Advanced Features
-  automation: ['3month', '6month', 'yearly'],
+  automation: ['monthly', '3month', '6month', 'yearly'],
   chatbot: ['monthly', '3month', '6month', 'yearly'],
   flowBuilder: ['monthly', '3month', '6month', 'yearly'],
   
   // Analytics
   analytics: ['monthly', '3month', '6month', 'yearly'],
-  reports: ['free', 'monthly', '3month', '6month', 'yearly'],
+  reports: ['monthly', '3month', '6month', 'yearly'],
   
   // Settings & Utils
   webhooks: ['monthly', '3month', '6month', 'yearly'],
@@ -29,7 +29,7 @@ const FEATURES_MATRIX = {
   prioritySupport: ['6month', 'yearly'],
   team: ['monthly', '3month', '6month', 'yearly'],
   billing: ['free', 'monthly', '3month', '6month', 'yearly'],
-  wallet: ['3month', '6month', 'yearly'],
+  wallet: ['monthly', '3month', '6month', 'yearly'],
   settings: ['free', 'monthly', '3month', '6month', 'yearly'],
 };
 
