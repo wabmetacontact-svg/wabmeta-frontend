@@ -1,0 +1,632 @@
+// src/pages/Wallet.tsx
+
+import React, { useState, useEffect, useCallback } from "react";
+import {
+  Wallet,
+  Plus,
+  Clock,
+  CheckCircle,
+  AlertTriangle,
+  Shield,
+  CreditCard,
+  ArrowUpRight,
+  ArrowDownLeft,
+  Info,
+  RefreshCw,
+} from "lucide-react";
+import { wallet as walletApi } from "../services/api";
+import WalletTopUpModal from "../components/wallet/WalletTopUpModal";
+import WalletRequestModal from "../components/wallet/WalletRequestModal";
+import TransactionHistory from "../components/wallet/TransactionHistory";
+import WalletStats from "../components/wallet/WalletStats";
+import toast from "react-hot-toast";
+
+// ─── Types ─────────────────────────────────────────────────────────────────────
+interface WalletData {
+  exists: boolean;
+  isActive: boolean;
+  balance: number;
+  reservedBalance: number;
+  availableBalance: number;
+  creditEnabled: boolean;
+  creditLimit: number;
+  creditUsed: number;
+  availableCredit: number;
+  currency: string;
+  lowBalanceThreshold: number;
+  maxTopUpAmount: number;
+  maxMonthlyTopUp: number;
+  currentMonthTopUp: number;
+  totalCredited: number;
+  totalDebited: number;
+  lastTransactionAt: string | null;
+  flagged: boolean;
+  flagReason?: string;
+  hasPendingRequest: boolean;
+  pendingRequest: { id: string; status: string; requestedAt: string } | null;
+}
+
+// ─── Skeleton Loader ───────────────────────────────────────────────────────────
+const WalletSkeleton: React.FC = () => (
+  <div className="max-w-4xl mx-auto p-6 space-y-6 animate-pulse">
+    <div className="flex items-center justify-between">
+      <div>
+        <div className="h-7 w-32 bg-gray-200 dark:bg-gray-700 rounded-lg" />
+        <div className="h-4 w-48 bg-gray-200 dark:bg-gray-700 rounded mt-2" />
+      </div>
+      <div className="h-10 w-32 bg-gray-200 dark:bg-gray-700 rounded-xl" />
+    </div>
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="md:col-span-2 h-40 bg-gray-200 dark:bg-gray-700 rounded-2xl" />
+      <div className="h-40 bg-gray-200 dark:bg-gray-700 rounded-2xl" />
+    </div>
+    <div className="grid grid-cols-3 gap-4">
+      {[1, 2, 3].map((i) => (
+        <div key={i} className="h-24 bg-gray-200 dark:bg-gray-700 rounded-2xl" />
+      ))}
+    </div>
+  </div>
+);
+
+// ─── Not Active View ───────────────────────────────────────────────────────────
+interface NotActiveViewProps {
+  walletData: WalletData | null;
+  onRequestAccess: () => void;
+}
+
+const NotActiveView: React.FC<NotActiveViewProps> = ({
+  walletData,
+  onRequestAccess,
+}) => {
+  const isPending = walletData?.hasPendingRequest;
+
+  return (
+    <div className="max-w-2xl mx-auto mt-10 p-6">
+      {/* Header */}
+      <div className="text-center mb-8">
+        <div
+          className="w-20 h-20 bg-green-100 dark:bg-green-900/30
+                        rounded-full flex items-center justify-center mx-auto mb-4"
+        >
+          <Wallet className="w-10 h-10 text-green-600" />
+        </div>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+          Meta Payment Wallet
+        </h1>
+        <p className="text-gray-500 dark:text-gray-400 mt-2 text-sm">
+          Manage your WhatsApp API payments without international cards
+        </p>
+      </div>
+
+      {/* Status Card */}
+      <div
+        className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm
+                      border border-gray-200 dark:border-gray-700 p-6 mb-6"
+      >
+        {isPending ? (
+          /* ── Pending State ── */
+          <div className="text-center">
+            <div className="flex items-center justify-center gap-2 mb-3">
+              <Clock className="w-6 h-6 text-yellow-500 animate-pulse" />
+              <span className="text-lg font-semibold text-yellow-600 dark:text-yellow-400">
+                Request Under Review
+              </span>
+            </div>
+            <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed">
+              Your wallet access request is being reviewed by our team. We'll
+              notify you once it's processed (usually within 24 hours).
+            </p>
+            <div
+              className="mt-4 bg-yellow-50 dark:bg-yellow-900/20
+                            rounded-xl p-3 text-sm text-yellow-700 dark:text-yellow-400"
+            >
+              💡 Make sure your subscription is active & 3+ months old
+            </div>
+            {walletData?.pendingRequest?.requestedAt && (
+              <p className="text-xs text-gray-400 mt-3">
+                Submitted:{" "}
+                {new Date(
+                  walletData.pendingRequest.requestedAt
+                ).toLocaleDateString("en-IN", {
+                  day: "numeric",
+                  month: "long",
+                  year: "numeric",
+                })}
+              </p>
+            )}
+          </div>
+        ) : (
+          /* ── Not Requested State ── */
+          <div>
+            <h3 className="font-semibold text-gray-900 dark:text-white mb-4">
+              Requirements to Enable Wallet:
+            </h3>
+            <div className="space-y-3 mb-6">
+              {[
+                {
+                  icon: CheckCircle,
+                  color: "text-green-500",
+                  text: "Active subscription plan required",
+                },
+                {
+                  icon: CheckCircle,
+                  color: "text-green-500",
+                  text: "Minimum 3-month subscription needed",
+                },
+                {
+                  icon: CheckCircle,
+                  color: "text-green-500",
+                  text: "Admin approval required (24hr review)",
+                },
+                {
+                  icon: Shield,
+                  color: "text-blue-500",
+                  text: "Balance only usable for Meta API payments",
+                },
+              ].map((item, i) => (
+                <div key={i} className="flex items-center gap-3">
+                  <item.icon className={`w-5 h-5 ${item.color} flex-shrink-0`} />
+                  <span className="text-sm text-gray-600 dark:text-gray-300">
+                    {item.text}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            <button
+              onClick={onRequestAccess}
+              className="w-full py-3 bg-green-600 hover:bg-green-700
+                         text-white rounded-xl font-semibold transition-all
+                         flex items-center justify-center gap-2 shadow-sm"
+            >
+              <Plus className="w-5 h-5" />
+              Request Wallet Access
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Why Wallet */}
+      <div
+        className="bg-gradient-to-br from-green-50 to-emerald-50
+                      dark:from-green-900/20 dark:to-emerald-900/20
+                      rounded-2xl p-6 border border-green-200 dark:border-green-800"
+      >
+        <h3 className="font-semibold text-green-800 dark:text-green-300 mb-3">
+          Why use WabMeta Wallet?
+        </h3>
+        <ul className="space-y-2 text-sm text-green-700 dark:text-green-400">
+          {[
+            "No international credit/debit card needed",
+            "We handle Meta API billing on your behalf",
+            "Real-time balance tracking & alerts",
+            "Complete transaction history",
+            "Low balance notifications",
+          ].map((point, i) => (
+            <li key={i} className="flex items-center gap-2">
+              <span className="text-green-500">✅</span>
+              {point}
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  );
+};
+
+// ─── Active Wallet View ────────────────────────────────────────────────────────
+interface ActiveWalletViewProps {
+  walletData: WalletData;
+  onAddMoney: () => void;
+  onRefresh: () => void;
+}
+
+const ActiveWalletView: React.FC<ActiveWalletViewProps> = ({
+  walletData,
+  onAddMoney,
+  onRefresh,
+}) => {
+  const [activeTab, setActiveTab] = useState<"overview" | "transactions">(
+    "overview"
+  );
+  const isLowBalance = walletData.balance < walletData.lowBalanceThreshold;
+
+  return (
+    <div className="max-w-4xl mx-auto p-6 space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+            My Wallet
+          </h1>
+          <p className="text-gray-500 dark:text-gray-400 text-sm">
+            Meta API Payment Balance
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={onRefresh}
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700
+                       rounded-xl transition-all text-gray-500"
+            title="Refresh"
+          >
+            <RefreshCw className="w-5 h-5" />
+          </button>
+          <button
+            onClick={onAddMoney}
+            className="px-4 py-2 bg-green-600 hover:bg-green-700
+                       text-white rounded-xl font-medium transition-all
+                       flex items-center gap-2 shadow-sm"
+          >
+            <Plus className="w-4 h-4" />
+            Add Money
+          </button>
+        </div>
+      </div>
+
+      {/* Flagged Warning */}
+      {walletData.flagged && (
+        <div
+          className="bg-red-50 dark:bg-red-900/20 border border-red-200
+                        dark:border-red-800 rounded-xl p-4 flex items-start gap-3"
+        >
+          <AlertTriangle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+          <div>
+            <p className="text-red-700 dark:text-red-400 font-medium text-sm">
+              Wallet Flagged
+            </p>
+            <p className="text-red-600 dark:text-red-500 text-xs mt-1">
+              {walletData.flagReason ||
+                "Please contact support for more information."}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Balance Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* Main Balance Card */}
+        <div
+          className="md:col-span-2 bg-gradient-to-br from-green-600
+                        to-emerald-700 rounded-2xl p-6 text-white shadow-lg"
+        >
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <Wallet className="w-5 h-5 opacity-80" />
+              <span className="text-sm opacity-80">Available Balance</span>
+            </div>
+            <span className="text-xs bg-white/20 px-2 py-1 rounded-full">
+              {walletData.currency}
+            </span>
+          </div>
+
+          <div className="text-4xl font-bold mb-1">
+            ₹{walletData.balance.toLocaleString("en-IN", {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}
+          </div>
+
+          {walletData.reservedBalance > 0 && (
+            <p className="text-sm opacity-70 mt-1">
+              ₹
+              {walletData.reservedBalance.toLocaleString("en-IN", {
+                minimumFractionDigits: 2,
+              })}{" "}
+              reserved
+            </p>
+          )}
+
+          {isLowBalance && (
+            <div
+              className="mt-4 bg-white/20 backdrop-blur-sm rounded-xl p-3
+                            flex items-center gap-2 text-sm"
+            >
+              <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+              <span>
+                Low balance! Add money to avoid service interruption.
+              </span>
+            </div>
+          )}
+
+          {/* Month Usage Bar */}
+          {walletData.maxMonthlyTopUp > 0 && (
+            <div className="mt-4">
+              <div className="flex items-center justify-between text-xs opacity-70 mb-1">
+                <span>Monthly top-up</span>
+                <span>
+                  ₹{walletData.currentMonthTopUp.toLocaleString("en-IN")} /
+                  ₹{walletData.maxMonthlyTopUp.toLocaleString("en-IN")}
+                </span>
+              </div>
+              <div className="bg-white/20 rounded-full h-1.5">
+                <div
+                  className="bg-white rounded-full h-1.5 transition-all"
+                  style={{
+                    width: `${Math.min(
+                      (walletData.currentMonthTopUp /
+                        walletData.maxMonthlyTopUp) *
+                        100,
+                      100
+                    )}%`,
+                  }}
+                />
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Credit Card (if enabled) */}
+        {walletData.creditEnabled ? (
+          <div
+            className="bg-white dark:bg-gray-800 rounded-2xl p-6
+                          border border-gray-200 dark:border-gray-700 shadow-sm"
+          >
+            <div className="flex items-center gap-2 mb-3">
+              <CreditCard className="w-4 h-4 text-blue-500" />
+              <span className="text-sm text-gray-500 dark:text-gray-400">
+                Credit Line
+              </span>
+            </div>
+            <div className="text-2xl font-bold text-gray-900 dark:text-white">
+              ₹
+              {walletData.availableCredit.toLocaleString("en-IN", {
+                minimumFractionDigits: 2,
+              })}
+            </div>
+            <div className="text-xs text-gray-400 mt-1">
+              of ₹{walletData.creditLimit.toLocaleString("en-IN")} limit
+            </div>
+            <div className="mt-3 bg-gray-100 dark:bg-gray-700 rounded-full h-2">
+              <div
+                className="bg-blue-500 rounded-full h-2 transition-all"
+                style={{
+                  width: `${walletData.creditLimit > 0
+                      ? (walletData.creditUsed / walletData.creditLimit) * 100
+                      : 0
+                    }%`,
+                }}
+              />
+            </div>
+            <p className="text-xs text-gray-400 mt-2">
+              ₹{walletData.creditUsed.toLocaleString("en-IN")} used
+            </p>
+          </div>
+        ) : (
+          /* Wallet Info Card (when no credit) */
+          <div
+            className="bg-white dark:bg-gray-800 rounded-2xl p-6
+                          border border-gray-200 dark:border-gray-700 shadow-sm"
+          >
+            <div className="flex items-center gap-2 mb-3">
+              <Info className="w-4 h-4 text-gray-400" />
+              <span className="text-sm text-gray-500 dark:text-gray-400">
+                Wallet Info
+              </span>
+            </div>
+            <div className="space-y-3">
+              <div>
+                <p className="text-xs text-gray-400">Alert Threshold</p>
+                <p className="font-semibold text-gray-900 dark:text-white text-sm">
+                  ₹{walletData.lowBalanceThreshold.toLocaleString("en-IN")}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-gray-400">Max Per Top-up</p>
+                <p className="font-semibold text-gray-900 dark:text-white text-sm">
+                  ₹{walletData.maxTopUpAmount.toLocaleString("en-IN")}
+                </p>
+              </div>
+              <div className="pt-2 border-t border-gray-100 dark:border-gray-700">
+                <div className="flex items-center gap-1.5">
+                  <div className="w-2 h-2 bg-green-500 rounded-full" />
+                  <span className="text-xs text-green-600 dark:text-green-400 font-medium">
+                    Active
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Stats Row */}
+      <WalletStats
+        totalCredited={walletData.totalCredited}
+        totalDebited={walletData.totalDebited}
+        lastTransactionAt={walletData.lastTransactionAt}
+        availableBalance={walletData.availableBalance}
+      />
+
+      {/* Tabs */}
+      <div
+        className="bg-white dark:bg-gray-800 rounded-2xl border
+                      border-gray-200 dark:border-gray-700 overflow-hidden shadow-sm"
+      >
+        {/* Tab Headers */}
+        <div className="flex border-b border-gray-200 dark:border-gray-700">
+          {(["overview", "transactions"] as const).map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`flex-1 py-3.5 text-sm font-medium capitalize
+                          transition-all
+                ${activeTab === tab
+                  ? "text-green-600 border-b-2 border-green-600 bg-green-50 dark:bg-green-900/20"
+                  : "text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50"
+                }`}
+            >
+              {tab === "overview" ? "📊 Overview" : "📋 Transactions"}
+            </button>
+          ))}
+        </div>
+
+        {/* Tab Content */}
+        <div className="p-6">
+          {activeTab === "overview" ? (
+            <WalletOverview walletData={walletData} />
+          ) : (
+            <TransactionHistory />
+          )}
+        </div>
+      </div>
+
+      {/* Note */}
+      <div
+        className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4
+                      border border-blue-200 dark:border-blue-800
+                      flex items-start gap-3"
+      >
+        <Shield className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
+        <p className="text-sm text-blue-700 dark:text-blue-300">
+          <strong>Security Note:</strong> Wallet balance can only be used for
+          Meta API payments. Direct withdrawals are not allowed. All
+          transactions are logged and audited.
+        </p>
+      </div>
+    </div>
+  );
+};
+
+// ─── Overview Tab Content ──────────────────────────────────────────────────────
+const WalletOverview: React.FC<{ walletData: WalletData }> = ({
+  walletData,
+}) => (
+  <div className="space-y-4">
+    <h3 className="font-semibold text-gray-900 dark:text-white text-sm">
+      Wallet Details
+    </h3>
+
+    <div className="grid grid-cols-2 gap-3">
+      {[
+        {
+          label: "Total Added",
+          value: `₹${walletData.totalCredited.toLocaleString("en-IN", { minimumFractionDigits: 2 })}`,
+          icon: ArrowUpRight,
+          color: "text-green-600",
+          bg: "bg-green-50 dark:bg-green-900/20",
+        },
+        {
+          label: "Total Used",
+          value: `₹${walletData.totalDebited.toLocaleString("en-IN", { minimumFractionDigits: 2 })}`,
+          icon: ArrowDownLeft,
+          color: "text-red-600",
+          bg: "bg-red-50 dark:bg-red-900/20",
+        },
+        {
+          label: "Low Balance Alert",
+          value: `Below ₹${walletData.lowBalanceThreshold.toLocaleString("en-IN")}`,
+          icon: AlertTriangle,
+          color: "text-yellow-600",
+          bg: "bg-yellow-50 dark:bg-yellow-900/20",
+        },
+        {
+          label: "Monthly Limit",
+          value: `₹${walletData.maxMonthlyTopUp.toLocaleString("en-IN")}`,
+          icon: CreditCard,
+          color: "text-blue-600",
+          bg: "bg-blue-50 dark:bg-blue-900/20",
+        },
+      ].map((item, i) => (
+        <div
+          key={i}
+          className={`${item.bg} rounded-xl p-4 border border-transparent`}
+        >
+          <div className="flex items-center gap-2 mb-1">
+            <item.icon className={`w-4 h-4 ${item.color}`} />
+            <span className="text-xs text-gray-500 dark:text-gray-400">
+              {item.label}
+            </span>
+          </div>
+          <div className="font-semibold text-gray-900 dark:text-white text-sm">
+            {item.value}
+          </div>
+        </div>
+      ))}
+    </div>
+
+    {walletData.lastTransactionAt && (
+      <p className="text-xs text-gray-400 text-center">
+        Last transaction:{" "}
+        {new Date(walletData.lastTransactionAt).toLocaleDateString("en-IN", {
+          day: "numeric",
+          month: "short",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        })}
+      </p>
+    )}
+  </div>
+);
+
+// ─── Main Wallet Page ──────────────────────────────────────────────────────────
+const WalletPage: React.FC = () => {
+  const [walletData, setWalletData] = useState<WalletData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [showTopUp, setShowTopUp] = useState(false);
+  const [showRequest, setShowRequest] = useState(false);
+
+  const fetchWallet = useCallback(async () => {
+    try {
+      setLoading(true);
+      const res = await walletApi.getWallet();
+      setWalletData(res.data.data);
+    } catch (err: any) {
+      toast.error(
+        err?.response?.data?.message || "Failed to load wallet data"
+      );
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchWallet();
+  }, [fetchWallet]);
+
+  if (loading) return <WalletSkeleton />;
+
+  // Not active
+  if (!walletData?.isActive) {
+    return (
+      <>
+        <NotActiveView
+          walletData={walletData}
+          onRequestAccess={() => setShowRequest(true)}
+        />
+        {showRequest && (
+          <WalletRequestModal
+            onClose={() => setShowRequest(false)}
+            onSuccess={fetchWallet}
+          />
+        )}
+      </>
+    );
+  }
+
+  // Active wallet
+  return (
+    <>
+      <ActiveWalletView
+        walletData={walletData}
+        onAddMoney={() => setShowTopUp(true)}
+        onRefresh={fetchWallet}
+      />
+
+      {showTopUp && (
+        <WalletTopUpModal
+          currentBalance={walletData.balance}
+          maxTopUp={walletData.maxTopUpAmount}
+          maxMonthlyRemaining={
+            walletData.maxMonthlyTopUp - walletData.currentMonthTopUp
+          }
+          onClose={() => setShowTopUp(false)}
+          onSuccess={fetchWallet}
+        />
+      )}
+    </>
+  );
+};
+
+export default WalletPage;

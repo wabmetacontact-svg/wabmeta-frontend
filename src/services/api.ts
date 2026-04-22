@@ -925,6 +925,67 @@ export const billing = {
   }) => api.post<ApiResponse>('/billing/razorpay/verify', data),
 };
 
+// ---------- WALLET ----------
+export const wallet = {
+  // User endpoints
+  getWallet: () => api.get<ApiResponse>('/wallet'),
+
+  requestAccess: (data: { reason: string; additionalInfo?: string }) =>
+    api.post<ApiResponse>('/wallet/request-access', data),
+
+  getTransactions: (params?: {
+    page?: number;
+    limit?: number;
+    type?: string;
+    startDate?: string;
+    endDate?: string;
+  }) => api.get<ApiResponse>('/wallet/transactions', { params }),
+
+  createTopUpOrder: (amount: number) =>
+    api.post<ApiResponse>('/wallet/topup/create-order', { amount }),
+
+  verifyTopUp: (data: {
+    razorpayOrderId: string;
+    razorpayPaymentId: string;
+    razorpaySignature: string;
+    amount: number;
+  }) => api.post<ApiResponse>('/wallet/topup/verify', data),
+
+  // Admin endpoints
+  adminGetAllWallets: (params?: {
+    page?: number;
+    limit?: number;
+    flagged?: boolean;
+    isActive?: boolean;
+  }) => api.get<ApiResponse>('/admin/wallets', { params }),
+
+  adminGetRequests: (params?: {
+    status?: string;
+    page?: number;
+    limit?: number;
+  }) => api.get<ApiResponse>('/admin/wallets/requests', { params }),
+
+  adminReviewRequest: (
+    requestId: string,
+    data: { action: 'approve' | 'reject'; note?: string }
+  ) => api.patch<ApiResponse>(`/admin/wallets/requests/${requestId}/review`, data),
+
+  adminAdjustBalance: (
+    organizationId: string,
+    data: { type: 'admin_credit' | 'admin_debit'; amount: number; note: string }
+  ) => api.patch<ApiResponse>(`/admin/wallets/${organizationId}/adjust`, data),
+
+  adminSetCredit: (
+    organizationId: string,
+    data: { creditLimit: number; enable: boolean }
+  ) => api.patch<ApiResponse>(`/admin/wallets/${organizationId}/credit`, data),
+
+  adminFlagWallet: (
+    organizationId: string,
+    data: { reason?: string; unflag?: boolean }
+  ) => api.patch<ApiResponse>(`/admin/wallets/${organizationId}/flag`, data),
+};
+
 // ---------- SETTINGS ----------
 export const settings = {
   getAll: () => api.get<ApiResponse>('/settings'),

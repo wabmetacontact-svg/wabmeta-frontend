@@ -17,6 +17,7 @@ import {
   CreditCard,
   UserCircle,
   Lock,
+  Wallet,
 } from "lucide-react";
 import Logo from "../common/Logo";
 import { useApp } from "../../context/AppContext";
@@ -71,6 +72,9 @@ const prefetchRouteChunk = (href: string) => {
       break;
     case "/dashboard/billing":
       import("../../pages/Billing");
+      break;
+    case "/dashboard/wallet":
+      import("../../pages/Wallet");
       break;
     case "/dashboard/team":
       import("../../pages/Team");
@@ -205,6 +209,7 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, setCollapsed }) => {
       items: [
         { name: "Team", href: "/dashboard/team", icon: UserCircle },
         { name: "Billing", href: "/dashboard/billing", icon: CreditCard },
+        { name: "Wallet", href: "/dashboard/wallet", icon: Wallet },
         { name: "Settings", href: "/dashboard/settings", icon: Settings },
       ],
     },

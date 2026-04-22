@@ -66,6 +66,7 @@ const Settings = lazy(() => import('./pages/Settings'));
 const Profile = lazy(() => import('./pages/Profile'));
 const Team = lazy(() => import('./pages/Team'));
 const Billing = lazy(() => import('./pages/Billing'));
+const Wallet = lazy(() => import('./pages/Wallet'));
 const Notifications = lazy(() => import('./pages/Notifications'));
 
 // Legal & errors
@@ -202,6 +203,7 @@ const PageTitleUpdater: React.FC = () => {
       '/dashboard/settings/profile': 'Profile | WabMeta',
       '/dashboard/settings/team': 'Team | WabMeta',
       '/dashboard/settings/billing': 'Billing | WabMeta',
+      '/dashboard/wallet': 'Wallet | WabMeta',
       '/admin/login': 'Admin Login | WabMeta',
       '/admin/dashboard': 'Admin Dashboard | WabMeta',
       '/privacy': 'Privacy Policy | WabMeta',
@@ -344,6 +346,9 @@ const AppRoutes: React.FC = () => {
           <Route path="/dashboard/settings/profile" element={<Profile />} />
           <Route path="/dashboard/settings/team" element={<Team />} />
           <Route path="/dashboard/settings/billing" element={<Billing />} />
+
+          {/* ✅ NEW: Wallet */}
+          <Route path="/dashboard/wallet" element={<Wallet />} />
 
           {/* Notifications & Help */}
           <Route path="/dashboard/notifications" element={<Notifications />} />
