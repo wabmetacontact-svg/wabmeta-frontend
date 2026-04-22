@@ -1,13 +1,22 @@
-import { useState } from 'react';
+import { useAuth } from '../context/AuthContext';
 
 // Define Plan Types explicitly
 type PlanType = 'free' | 'monthly' | '3month' | '6month' | 'yearly';
 
 export const usePlanAccess = () => {
-  // 🟢 TODO: Replace with real user plan from Context/API before production
-  // For now, keep 'yearly' to test all features, or change to 'free' to test locking.
-  const [userPlan] = useState<PlanType>('yearly'); 
+  const { organization } = useAuth();
 
+  // Map Backend PlanType to Frontend PlanType
+  const getMappedPlan = (): PlanType => {
+    const type = organization?.planType;
+    if (type === 'MONTHLY') return 'monthly';
+    if (type === 'QUARTERLY') return '3month';
+    if (type === 'BIANNUAL') return '6month';
+    if (type === 'ANNUAL') return 'yearly';
+    return 'free'; // Default/FREE_DEMO
+  };
+
+  const userPlan = getMappedPlan();
   // Feature Access Matrix
   // Keys must match what you use in hasAccess('key')
   const features = {
@@ -34,6 +43,7 @@ export const usePlanAccess = () => {
     prioritySupport: ['6month', 'yearly'],
     team: ['monthly', '3month', '6month', 'yearly'],
     billing: ['free', 'monthly', '3month', '6month', 'yearly'],
+    wallet: ['3month', '6month', 'yearly'],
     settings: ['free', 'monthly', '3month', '6month', 'yearly'],
   };
 

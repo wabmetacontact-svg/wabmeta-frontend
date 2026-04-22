@@ -209,7 +209,7 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, setCollapsed }) => {
       items: [
         { name: "Team", href: "/dashboard/team", icon: UserCircle },
         { name: "Billing", href: "/dashboard/billing", icon: CreditCard },
-        { name: "Wallet", href: "/dashboard/wallet", icon: Wallet },
+        { name: "Wallet", href: "/dashboard/wallet", icon: Wallet, featureKey: "wallet" },
         { name: "Settings", href: "/dashboard/settings", icon: Settings },
       ],
     },

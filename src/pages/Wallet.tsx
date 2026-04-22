@@ -13,13 +13,17 @@ import {
   ArrowDownLeft,
   Info,
   RefreshCw,
+  Lock,
+  Zap
 } from "lucide-react";
 import { wallet as walletApi } from "../services/api";
 import WalletTopUpModal from "../components/wallet/WalletTopUpModal";
 import WalletRequestModal from "../components/wallet/WalletRequestModal";
 import TransactionHistory from "../components/wallet/TransactionHistory";
 import WalletStats from "../components/wallet/WalletStats";
+import { usePlanAccess } from "../hooks/usePlanAccess";
 import toast from "react-hot-toast";
+import { Link } from "react-router-dom";
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
 interface WalletData {
@@ -63,6 +67,42 @@ const WalletSkeleton: React.FC = () => (
     <div className="grid grid-cols-3 gap-4">
       {[1, 2, 3].map((i) => (
         <div key={i} className="h-24 bg-gray-200 dark:bg-gray-700 rounded-2xl" />
+      ))}
+    </div>
+  </div>
+);
+
+// ─── Locked View ───────────────────────────────────────────────────────────────
+const LockedWalletView: React.FC = () => (
+  <div className="max-w-2xl mx-auto mt-20 p-8 text-center">
+    <div className="w-24 h-24 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-6">
+      <Lock className="w-12 h-12 text-gray-400" />
+    </div>
+    <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+      Wallet Feature Locked
+    </h1>
+    <p className="text-gray-500 dark:text-gray-400 mb-8 max-w-md mx-auto">
+      The Meta Payment Wallet is a premium feature available for Quarterly (3-month), 
+      Bi-annual, and Annual plans. Upgrade your plan to manage payments with ease.
+    </p>
+    <Link
+      to="/dashboard/billing"
+      className="inline-flex items-center gap-2 px-8 py-3 bg-green-600 hover:bg-green-700 
+                 text-white rounded-xl font-semibold transition-all shadow-lg shadow-green-200 dark:shadow-none"
+    >
+      <Zap className="w-5 h-5" />
+      Upgrade Now
+    </Link>
+    
+    <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-4 text-left">
+      {[
+        { title: "No International Cards", desc: "Pay in INR without needing international credit cards." },
+        { title: "Automated Billing", desc: "We handle Meta's direct billing so you don't have to." }
+      ].map((f, i) => (
+        <div key={i} className="p-4 bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700">
+          <h3 className="font-semibold text-gray-900 dark:text-white text-sm mb-1">{f.title}</h3>
+          <p className="text-xs text-gray-500">{f.desc}</p>
+        </div>
       ))}
     </div>
   </div>
@@ -120,7 +160,7 @@ const NotActiveView: React.FC<NotActiveViewProps> = ({
               className="mt-4 bg-yellow-50 dark:bg-yellow-900/20
                             rounded-xl p-3 text-sm text-yellow-700 dark:text-yellow-400"
             >
-              💡 Make sure your subscription is active & 3+ months old
+              💡 Make sure your subscription is 3-month Quarterly or higher.
             </div>
             {walletData?.pendingRequest?.requestedAt && (
               <p className="text-xs text-gray-400 mt-3">
@@ -146,12 +186,7 @@ const NotActiveView: React.FC<NotActiveViewProps> = ({
                 {
                   icon: CheckCircle,
                   color: "text-green-500",
-                  text: "Active subscription plan required",
-                },
-                {
-                  icon: CheckCircle,
-                  color: "text-green-500",
-                  text: "Minimum 3-month subscription needed",
+                  text: "Active 3-month (Quarterly) plan or higher",
                 },
                 {
                   icon: CheckCircle,
@@ -202,7 +237,7 @@ const NotActiveView: React.FC<NotActiveViewProps> = ({
             "Real-time balance tracking & alerts",
             "Complete transaction history",
             "Low balance notifications",
-          ].map((point, i) => (
+          ].map((point, i) => (point && 
             <li key={i} className="flex items-center gap-2">
               <span className="text-green-500">✅</span>
               {point}
@@ -566,8 +601,15 @@ const WalletPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [showTopUp, setShowTopUp] = useState(false);
   const [showRequest, setShowRequest] = useState(false);
+  const { hasAccess } = usePlanAccess();
 
   const fetchWallet = useCallback(async () => {
+    // If no access, don't even try to fetch
+    if (!hasAccess('wallet')) {
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
       const res = await walletApi.getWallet();
@@ -579,13 +621,18 @@ const WalletPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [hasAccess]);
 
   useEffect(() => {
     fetchWallet();
   }, [fetchWallet]);
 
   if (loading) return <WalletSkeleton />;
+
+  // Check access first
+  if (!hasAccess('wallet')) {
+    return <LockedWalletView />;
+  }
 
   // Not active
   if (!walletData?.isActive) {
