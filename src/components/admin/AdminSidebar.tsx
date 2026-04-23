@@ -6,7 +6,8 @@ import {
   CreditCard,
   Settings,
   LogOut,
-  Phone
+  Phone,
+  Wallet
 } from 'lucide-react';
 import Logo from '../common/Logo';
 
@@ -19,6 +20,7 @@ const AdminSidebar: React.FC = () => {
     { name: 'WhatsApp', href: '/admin/whatsapp', icon: Phone },
     { name: 'Users', href: '/admin/users', icon: Users },
     { name: 'Subscriptions', href: '/admin/subscriptions', icon: CreditCard },
+    { name: 'Wallets', href: '/admin/wallets', icon: Wallet },
     { name: 'Settings', href: '/admin/settings', icon: Settings },
   ];
 

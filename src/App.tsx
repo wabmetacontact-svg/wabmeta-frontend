@@ -83,6 +83,7 @@ const SubscriptionManagement = lazy(() => import('./pages/admin/SubscriptionMana
 const SystemSettings = lazy(() => import('./pages/admin/SystemSettings'));
 const WhatsAppConnections = lazy(() => import('./pages/admin/WhatsAppConnections'));
 const OrganizationFeatures = lazy(() => import('./pages/admin/OrganizationFeatures'));
+const WalletManagement = lazy(() => import('./pages/admin/WalletManagement'));
 
 // ============================================
 // ROUTE GUARDS
@@ -388,6 +389,7 @@ const AppRoutes: React.FC = () => {
           <Route path="/admin/subscriptions" element={<SubscriptionManagement />} />
           <Route path="/admin/settings" element={<SystemSettings />} />
           <Route path="/admin/whatsapp" element={<WhatsAppConnections />} />
+          <Route path="/admin/wallets" element={<WalletManagement />} />
           <Route path="/admin/organizations/:organizationId/features" element={<OrganizationFeatures />} />
         </Route>
 
