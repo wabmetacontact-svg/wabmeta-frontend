@@ -916,7 +916,7 @@ const PricingCard: React.FC<PricingCardProps> = ({
           </span>
         </div>
         <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 mt-2">
-          {plan.slug === 'free' ? 'TOTAL' : plan.slug.includes('3') ? 'PER 3 MONTHS' : plan.slug.includes('6') ? 'PER 6 MONTHS' : plan.slug.includes('year') ? 'PER YEAR' : 'PER MONTH'}
+          {plan.type === 'FREE_DEMO' || plan.slug === 'free' || plan.slug === 'free-demo' ? 'TOTAL' : plan.slug.includes('3') ? 'PER 3 MONTHS' : plan.slug.includes('6') ? 'PER 6 MONTHS' : plan.slug.includes('year') ? 'PER YEAR' : 'PER MONTH'}
         </p>
       </div>
 
@@ -928,7 +928,7 @@ const PricingCard: React.FC<PricingCardProps> = ({
               <Check className="w-3 h-3 text-green-600 dark:text-green-400" />
             </div>
             <span className="text-gray-700 dark:text-gray-300">
-              {plan.slug === 'free' ? '2 Days' : plan.slug.includes('3') ? '3 Months' : plan.slug.includes('6') ? '6 Months' : plan.slug.includes('year') ? '12 Months' : '1 Month'} Validity
+              {plan.type === 'FREE_DEMO' || plan.slug === 'free' || plan.slug === 'free-demo' ? '2 Days' : plan.slug.includes('3') ? '3 Months' : plan.slug.includes('6') ? '6 Months' : plan.slug.includes('year') ? '12 Months' : '1 Month'} Validity
             </span>
           </li>
           <li className="flex items-center text-sm">
@@ -964,7 +964,7 @@ const PricingCard: React.FC<PricingCardProps> = ({
               <Shield className="w-3 h-3 text-blue-600 dark:text-blue-400" />
             </div>
             <span className="text-gray-600 dark:text-gray-400 text-xs font-medium uppercase tracking-tighter">
-              {plan.slug === 'free' ? 'Basic' : plan.slug.includes('3') ? 'Good' : plan.slug.includes('6') ? 'High' : plan.slug.includes('year') ? 'Maximum' : 'Standard'} Safety
+              {plan.type === 'FREE_DEMO' || plan.slug === 'free' || plan.slug === 'free-demo' ? 'Basic' : plan.slug.includes('3') ? 'Good' : plan.slug.includes('6') ? 'High' : plan.slug.includes('year') ? 'Maximum' : 'Standard'} Safety
             </span>
           </li>
         </ul>
