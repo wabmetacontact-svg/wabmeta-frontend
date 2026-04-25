@@ -134,6 +134,43 @@ const sortConversations = (convs: Conversation[]): Conversation[] => {
   });
 };
 
+// ✅ Clean preview text - no [button] or raw JSON
+const getMessagePreview = (raw?: string, type?: string): string => {
+  if (!raw) return 'No messages yet';
+
+  // Interactive / button messages
+  if (raw === '[button]' || raw === '[Button]') return '🔘 Button message';
+  if (type === 'interactive' || type === 'INTERACTIVE') return '🔘 Interactive message';
+
+  // Template multi-line: "Campaign: X\nTemplate: Y"
+  if (raw.startsWith('Campaign:') || raw.startsWith('Template:')) {
+    const tplLine = raw.split('\n').find(l => l.startsWith('Template:'));
+    const name = tplLine?.replace('Template:', '').trim() || 'Template';
+    return `📋 ${name.replace(/_/g, ' ')}`;
+  }
+
+  // Template JSON
+  if (raw.startsWith('{') && raw.includes('templateName')) {
+    try {
+      const p = JSON.parse(raw);
+      const name = p.templateName || p.name || 'Template';
+      const body = p.body || p.bodyText || '';
+      return `📋 ${body || name.replace(/_/g, ' ')}`;
+    } catch { }
+  }
+
+  // Media type emojis
+  if (raw === '[Image]' || raw === '[image]') return '📷 Photo';
+  if (raw === '[Video]' || raw === '[video]') return '🎥 Video';
+  if (raw === '[Audio]' || raw === '[audio]') return '🎵 Audio';
+  if (raw === '[Document]' || raw === '[document]') return '📄 Document';
+  if (raw === '[Sticker]' || raw === '[sticker]') return '🎭 Sticker';
+  if (raw === '[Location]' || raw === '[location]') return '📍 Location';
+  if (raw === '[Contact]' || raw === '[contact]') return '👤 Contact';
+
+  return raw.substring(0, 60);
+};
+
 // ============================================
 // MAIN COMPONENT
 // ============================================
@@ -171,7 +208,6 @@ const Inbox: React.FC = () => {
   const [showLabelPicker, setShowLabelPicker] = useState<string | null>(null);
   const [showConversationMenu, setShowConversationMenu] = useState<string | null>(null);
   const [whatsappAccountId, setWhatsappAccountId] = useState<string | null>(null);
-  const [initiatingCall, setInitiatingCall] = useState(false);
   const [showCallScreen, setShowCallScreen] = useState(false);
 
   // Selected conversation ref for use in callbacks
@@ -1059,9 +1095,20 @@ const Inbox: React.FC = () => {
                         )}
                         <MessageBubble
                           message={m as any}
+                          conversationId={selectedConversation.id}
                           onCopy={(text) => {
                             navigator.clipboard.writeText(text);
                             toast.success('Copied!');
+                          }}
+                          onDeleted={(msgId) => {
+                            setMessages((prev) => prev.filter((msg) => msg.id !== msgId));
+                          }}
+                          onEdited={(msgId, newContent) => {
+                            setMessages((prev) =>
+                              prev.map((msg) =>
+                                msg.id === msgId ? { ...msg, content: newContent } : msg
+                              )
+                            );
                           }}
                         />
                       </React.Fragment>
@@ -1283,7 +1330,7 @@ const ConversationItem: React.FC<ConversationItemProps> = ({
 
           <p className={`text-xs truncate ${hasUnread ? 'text-gray-800 dark:text-gray-200 font-medium' : 'text-gray-500 dark:text-gray-400'
             }`}>
-            {conv.lastMessagePreview || 'No messages yet'}
+            {getMessagePreview(conv.lastMessagePreview)}
           </p>
 
           {/* Labels */}
