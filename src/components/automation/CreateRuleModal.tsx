@@ -104,6 +104,7 @@ const CreateRuleModal: React.FC<CreateRuleModalProps> = ({ isOpen, onClose, onSa
                 >
                   <option value="send_message">Send Message</option>
                   <option value="send_text">Send Text</option>
+                  <option value="send_template">Send Template</option>
                   <option value="send_audio">Send Audio</option>
                   <option value="send_video">Send Video</option>
                   <option value="send_buttons">Send Buttons</option>
