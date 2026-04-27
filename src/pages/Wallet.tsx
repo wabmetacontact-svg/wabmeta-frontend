@@ -20,6 +20,7 @@ import { wallet as walletApi } from "../services/api";
 import WalletTopUpModal from "../components/wallet/WalletTopUpModal";
 import WalletRequestModal from "../components/wallet/WalletRequestModal";
 import TransactionHistory from "../components/wallet/TransactionHistory";
+import WalletAnalytics from "../components/wallet/WalletAnalytics";
 import WalletStats from "../components/wallet/WalletStats";
 import { usePlanAccess } from "../hooks/usePlanAccess";
 import { useAuth } from "../context/AuthContext";
@@ -284,7 +285,7 @@ const ActiveWalletView: React.FC<ActiveWalletViewProps> = ({
   onAddMoney,
   onRefresh,
 }) => {
-  const [activeTab, setActiveTab] = useState<"overview" | "transactions">(
+  const [activeTab, setActiveTab] = useState<"overview" | "transactions" | "analytics">(
     "overview"
   );
   const isLowBalance = walletData.balance < walletData.lowBalanceThreshold;
@@ -506,18 +507,22 @@ const ActiveWalletView: React.FC<ActiveWalletViewProps> = ({
       >
         {/* Tab Headers */}
         <div className="flex border-b border-gray-200 dark:border-gray-700">
-          {(["overview", "transactions"] as const).map((tab) => (
+          {([
+            { id: "overview",     label: "📊 Overview" },
+            { id: "transactions", label: "📋 Transactions" },
+            { id: "analytics",   label: "📈 Analytics" },
+          ] as const).map((tab) => (
             <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
               className={`flex-1 py-3.5 text-sm font-medium capitalize
                           transition-all
-                ${activeTab === tab
+                ${activeTab === tab.id
                   ? "text-green-600 border-b-2 border-green-600 bg-green-50 dark:bg-green-900/20"
                   : "text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50"
                 }`}
             >
-              {tab === "overview" ? "📊 Overview" : "📋 Transactions"}
+              {tab.label}
             </button>
           ))}
         </div>
@@ -526,6 +531,8 @@ const ActiveWalletView: React.FC<ActiveWalletViewProps> = ({
         <div className="p-6">
           {activeTab === "overview" ? (
             <WalletOverview walletData={walletData} />
+          ) : activeTab === "analytics" ? (
+            <WalletAnalytics />
           ) : (
             <TransactionHistory />
           )}
