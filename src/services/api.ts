@@ -951,6 +951,8 @@ export const wallet = {
     amount: number;
   }) => api.post<ApiResponse>('/wallet/topup/verify', data),
 
+  getAnalytics: () => api.get<ApiResponse>('/wallet/analytics'),
+
   // Admin endpoints
   adminGetAllWallets: (params?: {
     page?: number;
