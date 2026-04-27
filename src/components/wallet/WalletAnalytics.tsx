@@ -41,7 +41,7 @@ interface PanelProps {
   tooltip?: string;
   accentColor?: string;
 }
-const Panel: React.FC<PanelProps> = ({ title, total, totalLabel, rows, tooltip, accentColor = "border-green-500" }) => (
+const Panel: React.FC<PanelProps> = ({ title, total, rows, tooltip, accentColor = "border-green-500" }) => (
   <div className={`bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden`}>
     {/* Panel Header */}
     <div className={`flex items-center justify-between px-4 pt-4 pb-3 border-b-2 ${accentColor}`}>
@@ -72,11 +72,10 @@ const Panel: React.FC<PanelProps> = ({ title, total, totalLabel, rows, tooltip, 
             <span className="text-gray-300 dark:text-gray-600 font-mono text-xs tracking-wider">—</span>
             <span className="text-xs text-gray-600 dark:text-gray-300">{row.label}</span>
           </div>
-          <span className={`text-xs font-semibold ${
-            typeof row.value === "number" && row.value > 0
+          <span className={`text-xs font-semibold ${typeof row.value === "number" && row.value > 0
               ? "text-gray-900 dark:text-white"
               : "text-gray-400 dark:text-gray-500"
-          }`}>
+            }`}>
             {typeof row.value === "number" ? fmt(row.value) : row.value}
           </span>
         </div>
@@ -89,10 +88,10 @@ const Panel: React.FC<PanelProps> = ({ title, total, totalLabel, rows, tooltip, 
 const Skeleton: React.FC = () => (
   <div className="space-y-4 animate-pulse">
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-      {[1,2,3].map(i => <div key={i} className="h-40 bg-gray-100 dark:bg-gray-700 rounded-xl" />)}
+      {[1, 2, 3].map(i => <div key={i} className="h-40 bg-gray-100 dark:bg-gray-700 rounded-xl" />)}
     </div>
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      {[1,2].map(i => <div key={i} className="h-44 bg-gray-100 dark:bg-gray-700 rounded-xl" />)}
+      {[1, 2].map(i => <div key={i} className="h-44 bg-gray-100 dark:bg-gray-700 rounded-xl" />)}
     </div>
   </div>
 );
@@ -177,9 +176,9 @@ const WalletAnalytics: React.FC = () => {
           tooltip="Total messages sent and received via WhatsApp"
           accentColor="border-gray-400"
           rows={[
-            { label: "Messages sent",      value: allMessages.sent      },
+            { label: "Messages sent", value: allMessages.sent },
             { label: "Messages delivered", value: allMessages.delivered },
-            { label: "Messages received",  value: allMessages.received  },
+            { label: "Messages received", value: allMessages.received },
           ]}
         />
 
@@ -202,7 +201,7 @@ const WalletAnalytics: React.FC = () => {
           accentColor="border-teal-500"
           rows={[
             { label: "Free customer service", value: freeMessagesDelivered.freeCustomerService },
-            { label: "Free entry point",      value: freeMessagesDelivered.freeEntryPoint      },
+            { label: "Free entry point", value: freeMessagesDelivered.freeEntryPoint },
           ]}
         />
       </div>
@@ -242,10 +241,10 @@ const WalletAnalytics: React.FC = () => {
         </p>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {[
-            { label: "Marketing",             rate: data.rates.MARKETING                    || 0.90 },
-            { label: "Utility",               rate: data.rates.UTILITY                      || 0.15 },
-            { label: "Authentication",        rate: data.rates.AUTHENTICATION               || 0.15 },
-            { label: "Auth (International)",  rate: data.rates.AUTHENTICATION_INTERNATIONAL || 2.50 },
+            { label: "Marketing", rate: data.rates.MARKETING || 0.90 },
+            { label: "Utility", rate: data.rates.UTILITY || 0.15 },
+            { label: "Authentication", rate: data.rates.AUTHENTICATION || 0.15 },
+            { label: "Auth (International)", rate: data.rates.AUTHENTICATION_INTERNATIONAL || 2.50 },
           ].map((r, i) => (
             <div key={i} className="bg-white dark:bg-gray-800 rounded-lg p-3 text-center border border-green-100 dark:border-green-900">
               <p className="text-xs text-gray-500 dark:text-gray-400">{r.label}</p>

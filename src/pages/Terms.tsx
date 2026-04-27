@@ -1,7 +1,7 @@
 // src/pages/Terms.tsx
 
 import React, { useState, useEffect } from "react";
-import { FileText, ChevronRight, Mail, Shield, AlertTriangle, CreditCard, Ban, Zap, Globe, XCircle, RefreshCw, Phone } from "lucide-react";
+import { FileText, ChevronRight, Mail, Shield, AlertTriangle, CreditCard, Ban, Zap, Globe, XCircle, RefreshCw } from "lucide-react";
 
 const LAST_UPDATED = "April 27, 2025";
 
@@ -13,18 +13,18 @@ interface Section {
 }
 
 const sections: Section[] = [
-  { id: "introduction",          number: "1",  title: "Introduction",            icon: FileText      },
-  { id: "services",              number: "2",  title: "Services Offered",        icon: Zap           },
-  { id: "user-responsibility",   number: "3",  title: "User Responsibility",     icon: Shield        },
-  { id: "payment",               number: "4",  title: "Payment & Billing",       icon: CreditCard    },
-  { id: "refund",                number: "5",  title: "Refund Policy",           icon: RefreshCw     },
-  { id: "onboarding",            number: "6",  title: "Onboarding Disclaimer",   icon: AlertTriangle },
-  { id: "limitations",           number: "7",  title: "Service Limitations",     icon: Ban           },
-  { id: "third-party",           number: "8",  title: "Third-Party Dependency",  icon: Globe         },
-  { id: "termination",           number: "9",  title: "Termination of Service",  icon: XCircle       },
-  { id: "liability",             number: "10", title: "Limitation of Liability", icon: Shield        },
-  { id: "changes",               number: "11", title: "Changes to Terms",        icon: RefreshCw     },
-  { id: "contact",               number: "12", title: "Contact Us",              icon: Mail          },
+  { id: "introduction", number: "1", title: "Introduction", icon: FileText },
+  { id: "services", number: "2", title: "Services Offered", icon: Zap },
+  { id: "user-responsibility", number: "3", title: "User Responsibility", icon: Shield },
+  { id: "payment", number: "4", title: "Payment & Billing", icon: CreditCard },
+  { id: "refund", number: "5", title: "Refund Policy", icon: RefreshCw },
+  { id: "onboarding", number: "6", title: "Onboarding Disclaimer", icon: AlertTriangle },
+  { id: "limitations", number: "7", title: "Service Limitations", icon: Ban },
+  { id: "third-party", number: "8", title: "Third-Party Dependency", icon: Globe },
+  { id: "termination", number: "9", title: "Termination of Service", icon: XCircle },
+  { id: "liability", number: "10", title: "Limitation of Liability", icon: Shield },
+  { id: "changes", number: "11", title: "Changes to Terms", icon: RefreshCw },
+  { id: "contact", number: "12", title: "Contact Us", icon: Mail },
 ];
 
 const Terms: React.FC = () => {
@@ -99,11 +99,10 @@ const Terms: React.FC = () => {
                     <button
                       key={s.id}
                       onClick={() => scrollTo(s.id)}
-                      className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-left text-sm transition-all ${
-                        isActive
+                      className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-left text-sm transition-all ${isActive
                           ? "bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-400 font-medium"
                           : "text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700/50 hover:text-gray-800 dark:hover:text-gray-200"
-                      }`}
+                        }`}
                     >
                       <Icon className={`w-3.5 h-3.5 flex-shrink-0 ${isActive ? "text-green-600" : "text-gray-400"}`} />
                       <span className="leading-tight">{s.number}. {s.title}</span>
