@@ -77,8 +77,10 @@ interface Invoice {
   id: string;
   amount: number;
   currency: string;
-  status: 'paid' | 'pending' | 'failed';
+  status: 'paid' | 'pending' | 'failed' | string;
   date: string;
+  description?: string;
+  type?: string;
   downloadUrl?: string;
 }
 
@@ -731,16 +733,22 @@ const Billing: React.FC = () => {
                     <CreditCard className="w-5 h-5 text-gray-500 dark:text-gray-400" />
                   </div>
                   <div>
-                    <p className="font-medium text-gray-900 dark:text-white">
-                      ₹{((invoice.amount ?? 0) / 100).toFixed(2)}
+                    <p className="font-medium text-gray-900 dark:text-white capitalize">
+                      {invoice.description || 'Payment'}
                     </p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                      {new Date(invoice.date).toLocaleDateString('en-IN', {
-                        year: 'numeric',
-                        month: 'short',
-                        day: 'numeric',
-                      })}
-                    </p>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                        ₹{((invoice.amount ?? 0) / 100).toFixed(2)}
+                      </p>
+                      <span className="text-gray-300 dark:text-gray-600 text-xs">•</span>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        {new Date(invoice.date).toLocaleDateString('en-IN', {
+                          year: 'numeric',
+                          month: 'short',
+                          day: 'numeric',
+                        })}
+                      </p>
+                    </div>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
