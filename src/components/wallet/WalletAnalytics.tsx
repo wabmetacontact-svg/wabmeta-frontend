@@ -237,7 +237,7 @@ const WalletAnalytics: React.FC = () => {
       {/* ── Rates Reference Card ── */}
       <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-xl p-4 border border-green-200 dark:border-green-800">
         <p className="text-xs font-semibold text-green-800 dark:text-green-300 mb-3">
-          📋 Wabmeta Wallet Rates (per message)
+          📋 Meta Wallet Rates (per message)
         </p>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {[
