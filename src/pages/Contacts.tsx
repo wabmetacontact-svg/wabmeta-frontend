@@ -845,13 +845,13 @@ const Contacts: React.FC = () => {
           <button
             onClick={handleBulkPasteClick}
             disabled={featuresLoading}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium transition-all ${features.simpleBulkPaste
-              ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/30 border border-blue-200 dark:border-blue-800'
-              : 'bg-gray-100 dark:bg-gray-800 text-gray-400 cursor-not-allowed border border-gray-200 dark:border-gray-700'
-              }`}
+            className={`flex items-center space-x-2 px-4 py-2.5 rounded-xl font-medium transition-colors ${
+              features.simpleBulkPaste
+                ? 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+            }`}
           >
-            {!features.simpleBulkPaste && <Lock className="w-4 h-4" />}
-            <Upload className="w-4 h-4" />
+            {!features.simpleBulkPaste ? <Lock className="w-4 h-4" /> : <Upload className="w-4 h-4" />}
             <span className="hidden sm:inline">Bulk Paste</span>
             {!features.simpleBulkPaste && (
               <span className="text-xs bg-yellow-100 text-yellow-700 px-1.5 py-0.5 rounded-full">
@@ -864,13 +864,13 @@ const Contacts: React.FC = () => {
           <button
             onClick={handleCsvUploadClick}
             disabled={featuresLoading}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium transition-all ${features.csvUpload
-              ? 'bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 hover:bg-purple-100 dark:hover:bg-purple-900/30 border border-purple-200 dark:border-purple-800'
-              : 'bg-gray-100 dark:bg-gray-800 text-gray-400 cursor-not-allowed border border-gray-200 dark:border-gray-700'
-              }`}
+            className={`flex items-center space-x-2 px-4 py-2.5 rounded-xl font-medium transition-colors ${
+              features.csvUpload
+                ? 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+            }`}
           >
-            {!features.csvUpload && <Lock className="w-4 h-4" />}
-            <FileSpreadsheet className="w-4 h-4" />
+            {!features.csvUpload ? <Lock className="w-4 h-4" /> : <FileSpreadsheet className="w-4 h-4" />}
             <span className="hidden sm:inline">CSV Import</span>
             {!features.csvUpload && (
               <span className="text-xs bg-yellow-100 text-yellow-700 px-1.5 py-0.5 rounded-full">
@@ -930,21 +930,7 @@ const Contacts: React.FC = () => {
         </div>
       )}
 
-      {/* Feature Access Info (for eligible users) */}
-      {!featuresLoading && !features.upgradeRequired && (
-        <div className="flex items-center gap-4 p-4 bg-green-50 dark:bg-green-900/20 rounded-xl border border-green-200 dark:border-green-800">
-          <Users className="w-5 h-5 text-green-600" />
-          <div className="text-sm">
-            <span className="font-medium text-green-800 dark:text-green-400">
-              Plan: {features.currentPlan}
-            </span>
-            <span className="text-green-600 dark:text-green-500 ml-2">
-              • Bulk Paste: {features.simpleBulkPaste ? '✅' : '❌'}
-              • CSV Import: {features.csvUpload ? '✅' : '❌'}
-            </span>
-          </div>
-        </div>
-      )}
+      {/* Feature Access Info hidden per user request */}
 
       {/* Error Banner */}
       {error && (
