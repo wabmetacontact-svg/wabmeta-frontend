@@ -25,7 +25,7 @@ import toast from 'react-hot-toast';
 import PageSkeleton from '../components/common/PageSkeleton';
 import {
   StartNode, MessageNode, ButtonNode, ConditionNode,
-  DelayNode, ActionNode, EndNode,
+  DelayNode, ActionNode, EndNode, ListNode,
   NodeSidebar, NodeConfigPanel
 } from '../components/chatbot';
 
@@ -36,6 +36,7 @@ const nodeTypes: NodeTypes = {
   start: StartNode,
   message: MessageNode,
   button: ButtonNode,
+  list: ListNode,
   condition: ConditionNode,
   delay: DelayNode,
   action: ActionNode,
@@ -402,7 +403,7 @@ const ChatbotBuilder: React.FC = () => {
   const getDefaultNodeData = (type: string) => {
     switch (type) {
       case 'message':
-        return { label: 'Message', message: 'Apna message yahan likhein...' };
+        return { label: 'Message', message: 'Apna message yahan likhein...', messageType: 'text' };
       case 'button':
         return {
           label: 'Buttons',
@@ -411,6 +412,20 @@ const ChatbotBuilder: React.FC = () => {
             { id: `btn-${Date.now()}-1`, text: 'Option 1' },
             { id: `btn-${Date.now()}-2`, text: 'Option 2' },
           ],
+        };
+      case 'list':
+        return {
+          label: 'List',
+          message: 'Please choose from the menu:',
+          listButtonText: 'View Options',
+          listSections: [
+            {
+              title: 'Section 1',
+              rows: [
+                { id: `row-${Date.now()}-1`, title: 'Option 1', description: 'Description here' }
+              ]
+            }
+          ]
         };
       case 'condition':
         return {
@@ -665,6 +680,7 @@ const ChatbotBuilder: React.FC = () => {
                   case 'start': return '#22c55e';
                   case 'message': return '#3b82f6';
                   case 'button': return '#a855f7';
+                  case 'list': return '#6366f1';
                   case 'condition': return '#eab308';
                   case 'delay': return '#f97316';
                   case 'action': return '#ec4899';

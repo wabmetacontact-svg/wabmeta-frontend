@@ -27,17 +27,48 @@ const NodeConfigPanel: React.FC<Props> = ({ node, onUpdate, onDelete, onClose })
 
       // ─────────────────────────────────
       case 'message':
+        const msgType = node.data.messageType || 'text';
         return (
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
-                Message Text
+                Message Type
+              </label>
+              <select
+                value={msgType}
+                onChange={(e) => onUpdate({ messageType: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white mb-4"
+              >
+                <option value="text">Text</option>
+                <option value="image">Image</option>
+                <option value="video">Video</option>
+                <option value="audio">Audio</option>
+                <option value="document">Document</option>
+              </select>
+
+              {msgType !== 'text' && (
+                <div className="mb-4">
+                  <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
+                    Media URL
+                  </label>
+                  <input
+                    type="url"
+                    value={node.data.mediaUrl || ''}
+                    onChange={(e) => onUpdate({ mediaUrl: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    placeholder="https://example.com/media.jpg"
+                  />
+                </div>
+              )}
+
+              <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
+                {msgType === 'text' ? 'Message Text' : 'Media Caption (Optional)'}
               </label>
               <textarea
                 value={node.data.message || ''}
                 onChange={(e) => onUpdate({ message: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg resize-none h-32 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                placeholder="Apna message likho..."
+                placeholder={msgType === 'text' ? "Apna message likho..." : "Caption likho..."}
               />
               <p className="text-xs text-gray-400 mt-1">
                 Variables: {'{{phone}}'}, {'{{lastInput}}'}
@@ -117,6 +148,140 @@ const NodeConfigPanel: React.FC<Props> = ({ node, onUpdate, onDelete, onClose })
                 <Info className="w-3 h-3 inline mr-1" />
                 Har button ke liye alag edge connect karo
               </div>
+            </div>
+          </div>
+        );
+
+      // ─────────────────────────────────
+      case 'list':
+        const sections = node.data.listSections || [{ title: 'Section 1', rows: [{ id: `row-${Date.now()}`, title: 'Option 1' }] }];
+        return (
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
+                Message Body
+              </label>
+              <textarea
+                value={node.data.message || ''}
+                onChange={(e) => onUpdate({ message: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg resize-none h-16 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                placeholder="Please select an option:"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
+                Menu Button Text (max 20 chars)
+              </label>
+              <input
+                type="text"
+                value={node.data.listButtonText || 'View Options'}
+                maxLength={20}
+                onChange={(e) => onUpdate({ listButtonText: e.target.value })}
+                className="w-full px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
+                List Sections (max 10)
+              </label>
+              <div className="space-y-4">
+                {sections.map((sec: any, sIdx: number) => (
+                  <div key={sIdx} className="p-3 border border-gray-200 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700/50">
+                    <div className="flex items-center gap-2 mb-2">
+                      <input
+                        type="text"
+                        value={sec.title || ''}
+                        maxLength={24}
+                        placeholder="Section Title"
+                        onChange={(e) => {
+                          const newSecs = [...sections];
+                          newSecs[sIdx].title = e.target.value;
+                          onUpdate({ listSections: newSecs });
+                        }}
+                        className="flex-1 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm font-medium bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                      />
+                      <button
+                        onClick={() => {
+                          const newSecs = sections.filter((_: any, i: number) => i !== sIdx);
+                          onUpdate({ listSections: newSecs });
+                        }}
+                        className="p-1 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+
+                    <div className="space-y-2">
+                      {(sec.rows || []).map((row: any, rIdx: number) => (
+                        <div key={rIdx} className="relative pl-2 border-l-2 border-indigo-200 dark:border-indigo-600">
+                          <div className="flex items-center gap-2 mb-1">
+                            <input
+                              type="text"
+                              value={row.title || ''}
+                              maxLength={24}
+                              placeholder="Row Title"
+                              onChange={(e) => {
+                                const newSecs = [...sections];
+                                newSecs[sIdx].rows[rIdx].title = e.target.value;
+                                onUpdate({ listSections: newSecs });
+                              }}
+                              className="flex-1 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-xs bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                            />
+                            <button
+                              onClick={() => {
+                                const newSecs = [...sections];
+                                newSecs[sIdx].rows = newSecs[sIdx].rows.filter((_: any, i: number) => i !== rIdx);
+                                onUpdate({ listSections: newSecs });
+                              }}
+                              className="text-red-400 hover:text-red-500 p-0.5"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          </div>
+                          <input
+                            type="text"
+                            value={row.description || ''}
+                            maxLength={72}
+                            placeholder="Description (Optional)"
+                            onChange={(e) => {
+                              const newSecs = [...sections];
+                              newSecs[sIdx].rows[rIdx].description = e.target.value;
+                              onUpdate({ listSections: newSecs });
+                            }}
+                            className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-xs bg-white dark:bg-gray-700 text-gray-500 dark:text-gray-400"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                    {(sec.rows || []).length < 10 && (
+                      <button
+                        onClick={() => {
+                          const newSecs = [...sections];
+                          if (!newSecs[sIdx].rows) newSecs[sIdx].rows = [];
+                          newSecs[sIdx].rows.push({ id: `row-${Date.now()}-${Math.random()}`, title: 'New Option' });
+                          onUpdate({ listSections: newSecs });
+                        }}
+                        className="flex items-center gap-1 text-xs text-indigo-600 hover:text-indigo-700 mt-2"
+                      >
+                        <Plus className="w-3 h-3" /> Add Row
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              {sections.length < 10 && (
+                <button
+                  onClick={() => {
+                    const newSecs = [...sections, { title: `Section ${sections.length + 1}`, rows: [] }];
+                    onUpdate({ listSections: newSecs });
+                  }}
+                  className="flex items-center justify-center w-full gap-1 p-2 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-400 dark:hover:border-gray-500 mt-3"
+                >
+                  <Plus className="w-4 h-4" /> Add Section
+                </button>
+              )}
             </div>
           </div>
         );

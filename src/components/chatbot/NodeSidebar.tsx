@@ -1,9 +1,10 @@
 import React from 'react';
-import { MessageSquare, MousePointer, GitBranch, Clock, Zap, StopCircle } from 'lucide-react';
+import { MessageSquare, MousePointer, GitBranch, Clock, Zap, StopCircle, List } from 'lucide-react';
 
 const nodeTypes = [
   { type: 'message', label: 'Message', icon: MessageSquare, color: 'bg-blue-500' },
   { type: 'button', label: 'Buttons', icon: MousePointer, color: 'bg-purple-500' },
+  { type: 'list', label: 'List Options', icon: List, color: 'bg-indigo-500' },
   { type: 'condition', label: 'Condition', icon: GitBranch, color: 'bg-yellow-500' },
   { type: 'delay', label: 'Delay', icon: Clock, color: 'bg-orange-500' },
   { type: 'action', label: 'Action', icon: Zap, color: 'bg-pink-500' },
