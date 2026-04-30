@@ -38,6 +38,7 @@ export const useCampaignRealtime = (campaignId: string | null) => {
     const [isProcessing, setIsProcessing] = useState(false);
     const [completedStats, setCompletedStats] = useState<CompletedStats | null>(null);
     const [contactUpdates, setContactUpdates] = useState<ContactUpdate[]>([]);
+    const [campaignError, setCampaignError] = useState<{ message: string; code?: string } | null>(null);
 
     // Join campaign room
     useEffect(() => {
@@ -130,12 +131,24 @@ export const useCampaignRealtime = (campaignId: string | null) => {
             setIsProcessing(false);
         };
 
+        const handleCampaignError = (data: any) => {
+            console.log('❌ [REALTIME] campaign:error', data);
+            if (data.campaignId !== campaignId) return;
+            
+            setCampaignError({
+                message: data.message,
+                code: data.code
+            });
+            setIsProcessing(false);
+        };
+
         // Register listeners
         socket.on('campaign:update', handleUpdate);
         socket.on('campaign:progress', handleProgress);
         socket.on('campaign:contact', handleContactStatus);
         socket.on('campaign:contact:status', handleContactStatus);
         socket.on('campaign:completed', handleCompleted);
+        socket.on('campaign:error', handleCampaignError);
 
         console.log(`✅ [SOCKET] Subscribed to campaign events: ${campaignId}`);
 
@@ -145,6 +158,7 @@ export const useCampaignRealtime = (campaignId: string | null) => {
             socket.off('campaign:contact', handleContactStatus);
             socket.off('campaign:contact:status', handleContactStatus);
             socket.off('campaign:completed', handleCompleted);
+            socket.off('campaign:error', handleCampaignError);
         };
     }, [socket, campaignId]);
 
@@ -164,6 +178,7 @@ export const useCampaignRealtime = (campaignId: string | null) => {
         isProcessing,
         completedStats,
         contactUpdates,
+        campaignError,
         isConnected,
         clearUpdates,
         resetStats,

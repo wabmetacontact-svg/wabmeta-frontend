@@ -109,6 +109,7 @@ const CampaignDetails: React.FC = () => {
     isProcessing,
     completedStats,
     isConnected,
+    campaignError,
   } = useCampaignRealtime(id || null);
 
   // ✅ FIXED: Merge real-time progress with SAFETY CAPS
@@ -259,6 +260,19 @@ const CampaignDetails: React.FC = () => {
       setCampaign((prev: any) => prev ? { ...prev, status: 'COMPLETED' } : prev);
     }
   }, [isProcessing, completedStats]);
+
+  // ✅ REAL-TIME: Handle campaign errors (e.g. Low Balance)
+  useEffect(() => {
+    if (campaignError) {
+      toast.error(campaignError.message, { 
+        duration: 8000,
+        icon: '⚠️'
+      });
+      // Refresh to get updated status (PAUSED)
+      loadCampaign();
+      loadStats();
+    }
+  }, [campaignError]);
 
   // ============================================
   // ACTIONS

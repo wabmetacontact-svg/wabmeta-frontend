@@ -118,8 +118,16 @@ const Campaigns: React.FC = () => {
       ));
     };
 
+    const handleCampaignError = (data: any) => {
+      console.error('❌ [REAL-TIME] Campaign error:', data);
+      toast.error(data.message, { duration: 8000 });
+      fetchCampaigns();
+      fetchStats();
+    };
+
     socket.on('campaign:update', handleCampaignUpdate);
     socket.on('campaign:progress', handleCampaignProgress);
+    socket.on('campaign:error', handleCampaignError);
     socket.on('campaign:completed', (_data) => {
       fetchCampaigns(); // Full refresh on completion
       fetchStats();
@@ -128,6 +136,7 @@ const Campaigns: React.FC = () => {
     return () => {
       socket.off('campaign:update', handleCampaignUpdate);
       socket.off('campaign:progress', handleCampaignProgress);
+      socket.off('campaign:error', handleCampaignError);
       socket.off('campaign:completed');
     };
   }, [socket, isConnected]);
