@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, Trash2, Plus, Info } from 'lucide-react';
+import { X, Trash2, Plus, Info, Sparkles } from 'lucide-react';
 import type { Node } from 'reactflow';
 
 interface Props {
@@ -282,6 +282,27 @@ const NodeConfigPanel: React.FC<Props> = ({ node, onUpdate, onDelete, onClose })
                   <Plus className="w-4 h-4" /> Add Section
                 </button>
               )}
+            </div>
+          </div>
+        );
+
+      // ─────────────────────────────────
+      case 'ai':
+        return (
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium mb-1 text-emerald-700 dark:text-emerald-300 flex items-center gap-2">
+                <Sparkles className="w-4 h-4" /> AI System Prompt
+              </label>
+              <textarea
+                value={node.data.systemPrompt || ''}
+                onChange={(e) => onUpdate({ systemPrompt: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg resize-none h-48 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                placeholder="Ex: You are a sales assistant for WabMeta. You sell our software. Be polite and concise."
+              />
+              <p className="text-xs text-gray-500 mt-2">
+                This prompt tells the AI how to behave. The AI will read the user's message and generate a response based on these instructions.
+              </p>
             </div>
           </div>
         );

@@ -21,7 +21,7 @@ export interface FlowData {
 
 export interface FlowNode {
   id: string;
-  type: 'start' | 'message' | 'button' | 'condition' | 'delay' | 'action' | 'end';
+  type: 'start' | 'message' | 'button' | 'list' | 'condition' | 'delay' | 'action' | 'ai' | 'end';
   position: { x: number; y: number };
   data: NodeData;
 }
@@ -33,6 +33,7 @@ export interface NodeData {
   condition?: { variable: string; operator: string; value: string };
   delay?: number;
   action?: { type: string; params: any };
+  systemPrompt?: string;
   nextNodeId?: string;
 }
 

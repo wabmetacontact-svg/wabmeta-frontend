@@ -25,7 +25,7 @@ import toast from 'react-hot-toast';
 import PageSkeleton from '../components/common/PageSkeleton';
 import {
   StartNode, MessageNode, ButtonNode, ConditionNode,
-  DelayNode, ActionNode, EndNode, ListNode,
+  DelayNode, ActionNode, EndNode, ListNode, AiNode,
   NodeSidebar, NodeConfigPanel
 } from '../components/chatbot';
 
@@ -37,6 +37,7 @@ const nodeTypes: NodeTypes = {
   message: MessageNode,
   button: ButtonNode,
   list: ListNode,
+  ai: AiNode,
   condition: ConditionNode,
   delay: DelayNode,
   action: ActionNode,
@@ -427,6 +428,11 @@ const ChatbotBuilder: React.FC = () => {
             }
           ]
         };
+      case 'ai':
+        return {
+          label: 'AI Response',
+          systemPrompt: 'You are a helpful customer support agent. Answer questions politely.',
+        };
       case 'condition':
         return {
           label: 'Condition',
@@ -681,6 +687,7 @@ const ChatbotBuilder: React.FC = () => {
                   case 'message': return '#3b82f6';
                   case 'button': return '#a855f7';
                   case 'list': return '#6366f1';
+                  case 'ai': return '#10b981';
                   case 'condition': return '#eab308';
                   case 'delay': return '#f97316';
                   case 'action': return '#ec4899';
