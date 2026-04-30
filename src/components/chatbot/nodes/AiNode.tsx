@@ -8,7 +8,7 @@ const AiNode: React.FC<{ data: any }> = ({ data }) => {
       <Handle type="target" position={Position.Top} className="w-3 h-3 bg-emerald-500" />
       <div className="flex items-center gap-2 mb-2">
         <Sparkles className="w-4 h-4 text-emerald-500" />
-        <span className="font-medium text-gray-900 dark:text-white">AI Response</span>
+        <span className="font-medium text-gray-900 dark:text-white">Meta AI (Llama 3)</span>
       </div>
       <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">System Prompt:</p>
       <div className="text-xs text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-800 p-2 rounded max-h-16 overflow-hidden line-clamp-3">

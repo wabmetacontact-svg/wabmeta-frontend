@@ -5,7 +5,7 @@ const nodeTypes = [
   { type: 'message', label: 'Message', icon: MessageSquare, color: 'bg-blue-500' },
   { type: 'button', label: 'Buttons', icon: MousePointer, color: 'bg-purple-500' },
   { type: 'list', label: 'List Options', icon: List, color: 'bg-indigo-500' },
-  { type: 'ai', label: 'AI Response', icon: Sparkles, color: 'bg-emerald-500' },
+  { type: 'ai', label: 'Meta AI', icon: Sparkles, color: 'bg-emerald-500' },
   { type: 'condition', label: 'Condition', icon: GitBranch, color: 'bg-yellow-500' },
   { type: 'delay', label: 'Delay', icon: Clock, color: 'bg-orange-500' },
   { type: 'action', label: 'Action', icon: Zap, color: 'bg-pink-500' },
