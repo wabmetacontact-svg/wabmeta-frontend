@@ -1,5 +1,5 @@
 import React, { Suspense, useState, useEffect } from "react";
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import TopBar from "./TopBar";
 
@@ -27,6 +27,10 @@ const RouteLoader: React.FC = () => {
 const DashboardLayout: React.FC = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const location = useLocation();
+
+  // Inbox needs full-height layout with no outer padding
+  const isInbox = location.pathname.startsWith('/dashboard/inbox');
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-slate-950">
@@ -59,19 +63,26 @@ const DashboardLayout: React.FC = () => {
 
       {/* Main Content */}
       <main
-        className={`pt-16 min-h-screen transition-all duration-300 ${
+        className={`pt-16 transition-all duration-300 ${
           sidebarCollapsed ? "lg:pl-20" : "lg:pl-64"
-        }`}
+        } ${isInbox ? 'overflow-hidden' : 'min-h-screen'}`}
       >
-        <div className="p-4 lg:p-6">
-          {/* ✅ CONTENT-ONLY suspense: no full-screen overlay on route change */}
-          <Suspense fallback={<RouteLoader />}>
-            <Outlet />
-          </Suspense>
-        </div>
+        {isInbox ? (
+          <div className="h-[calc(100vh-4rem)]">
+            <Suspense fallback={<RouteLoader />}>
+              <Outlet />
+            </Suspense>
+          </div>
+        ) : (
+          <div className="p-4 lg:p-6">
+            <Suspense fallback={<RouteLoader />}>
+              <Outlet />
+            </Suspense>
+          </div>
+        )}
       </main>
     </div>
   );
 };
 
-export default DashboardLayout;
+export default DashboardLayout;

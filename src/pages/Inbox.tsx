@@ -7,7 +7,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import {
   Search, MoreVertical, Info, Loader2, Phone,
   MessageSquare, AlertCircle, RefreshCw,
-  Pin, PinOff, Tag, Archive, ArchiveRestore, X,
+  Pin, PinOff, Tag, Archive, ArchiveRestore, X, ArrowLeft,
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { useInboxSocket } from '../hooks/useInboxSocket';
@@ -209,6 +209,8 @@ const Inbox: React.FC = () => {
   const [showConversationMenu, setShowConversationMenu] = useState<string | null>(null);
   const [whatsappAccountId, setWhatsappAccountId] = useState<string | null>(null);
   const [showCallScreen, setShowCallScreen] = useState(false);
+  // Mobile: show chat panel instead of list
+  const [showMobileChat, setShowMobileChat] = useState(false);
 
   // Selected conversation ref for use in callbacks
   const selectedConvRef = useRef<Conversation | null>(null);
@@ -355,7 +357,11 @@ const Inbox: React.FC = () => {
   // SELECT CONVERSATION
   // ============================================
   const selectConversation = useCallback((conv: Conversation) => {
-    if (selectedConvRef.current?.id === conv.id) return;
+    if (selectedConvRef.current?.id === conv.id) {
+      // On mobile, still switch to chat view even if same conv
+      setShowMobileChat(true);
+      return;
+    }
 
     setMessages([]);
     lastFetchedConvId.current = null;
@@ -363,6 +369,7 @@ const Inbox: React.FC = () => {
     tempToRealIdMap.current.clear();
     setSelectedConversation(conv);
     setShowContactInfo(false);
+    setShowMobileChat(true);
     navigate(`/dashboard/inbox/${conv.id}`);
     fetchMessages(conv.id);
   }, [navigate, fetchMessages]);
@@ -882,7 +889,7 @@ const Inbox: React.FC = () => {
   // MAIN RENDER
   // ============================================
   return (
-    <div className="flex h-[calc(100vh-4rem)] bg-gray-100 dark:bg-gray-900 overflow-hidden">
+    <div className="flex h-full bg-gray-100 dark:bg-gray-900 overflow-hidden relative">
       {/* Hidden file input */}
       <input
         type="file"
@@ -898,7 +905,11 @@ const Inbox: React.FC = () => {
       {/* ============================================ */}
       {/* LEFT SIDEBAR */}
       {/* ============================================ */}
-      <div className="w-96 flex-shrink-0 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col">
+      <div className={`
+        flex-shrink-0 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col
+        w-full md:w-96
+        ${showMobileChat ? 'hidden md:flex' : 'flex'}
+      `}>
 
         {/* Header */}
         <div className="p-4 border-b border-gray-200 dark:border-gray-700">
@@ -1003,35 +1014,48 @@ const Inbox: React.FC = () => {
       {/* ============================================ */}
       {/* CHAT AREA */}
       {/* ============================================ */}
-      <div className="flex-1 flex flex-col h-full overflow-hidden">
+      <div className={`
+        flex-1 flex flex-col h-full overflow-hidden
+        ${!showMobileChat ? 'hidden md:flex' : 'flex'}
+      `}>
         {selectedConversation ? (
           <>
             {/* Chat Header */}
-            <div className="flex-shrink-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4">
-              <div className="flex items-center justify-between">
-                <div
-                  className="flex items-center gap-3 cursor-pointer"
-                  onClick={() => setShowContactInfo(!showContactInfo)}
-                >
-                  <div className="w-10 h-10 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center text-white font-bold shadow-sm">
-                    {getContactInitial(selectedConversation.contact)}
-                  </div>
-                  <div>
-                    <h2 className="font-semibold text-gray-900 dark:text-white">
-                      {getContactName(selectedConversation.contact)}
-                    </h2>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                      {selectedConversation.contact.phone}
-                    </p>
+            <div className="flex-shrink-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-3 sm:px-6 py-3 sm:py-4">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                  {/* Mobile back button */}
+                  <button
+                    onClick={() => setShowMobileChat(false)}
+                    className="md:hidden p-1.5 -ml-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 flex-shrink-0"
+                    aria-label="Back to conversations"
+                  >
+                    <ArrowLeft className="w-5 h-5" />
+                  </button>
+                  <div
+                    className="flex items-center gap-2 sm:gap-3 cursor-pointer min-w-0"
+                    onClick={() => setShowContactInfo(!showContactInfo)}
+                  >
+                    <div className="w-9 h-9 sm:w-10 sm:h-10 flex-shrink-0 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center text-white font-bold shadow-sm">
+                      {getContactInitial(selectedConversation.contact)}
+                    </div>
+                    <div className="min-w-0">
+                      <h2 className="font-semibold text-sm sm:text-base text-gray-900 dark:text-white truncate">
+                        {getContactName(selectedConversation.contact)}
+                      </h2>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                        {selectedConversation.contact.phone}
+                      </p>
+                    </div>
                   </div>
                 </div>
                 {/* ✅ Action Buttons */}
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
                   {/* Call Button */}
                   <button
                     onClick={handleCallContact}
                     title="WhatsApp Call"
-                    className="flex items-center gap-1.5 px-3 py-2 bg-green-500 hover:bg-green-600 active:scale-95 text-white rounded-lg transition-all text-sm font-medium shadow-sm"
+                    className="flex items-center gap-1.5 px-2 sm:px-3 py-2 bg-green-500 hover:bg-green-600 active:scale-95 text-white rounded-lg transition-all text-sm font-medium shadow-sm"
                   >
                     <Phone className="w-4 h-4" />
                     <span className="hidden sm:inline">Call</span>
@@ -1039,10 +1063,11 @@ const Inbox: React.FC = () => {
                   {/* Info Button */}
                   <button
                     onClick={() => setShowContactInfo(!showContactInfo)}
-                    className={`p-2 rounded-lg transition-colors ${showContactInfo
+                    className={`p-2 rounded-lg transition-colors ${
+                      showContactInfo
                         ? 'bg-green-100 text-green-600'
                         : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500'
-                      }`}
+                    }`}
                   >
                     <Info className="w-5 h-5" />
                   </button>
