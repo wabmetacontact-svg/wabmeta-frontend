@@ -74,6 +74,40 @@ const NodeConfigPanel: React.FC<Props> = ({ node, onUpdate, onDelete, onClose })
                 Variables: {'{{phone}}'}, {'{{lastInput}}'}
               </p>
             </div>
+
+            {/* Wait for user reply toggle */}
+            <div className="border border-orange-200 dark:border-orange-800 rounded-lg p-3 bg-orange-50 dark:bg-orange-900/20">
+              <label className="flex items-center gap-3 cursor-pointer">
+                <div className="relative">
+                  <input
+                    type="checkbox"
+                    checked={!!node.data.waitForInput}
+                    onChange={(e) => onUpdate({ waitForInput: e.target.checked })}
+                    className="sr-only"
+                  />
+                  <div
+                    className={`w-10 h-5 rounded-full transition-colors ${
+                      node.data.waitForInput ? 'bg-orange-500' : 'bg-gray-300 dark:bg-gray-600'
+                    }`}
+                  >
+                    <div
+                      className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${
+                        node.data.waitForInput ? 'translate-x-5' : 'translate-x-0'
+                      }`}
+                    />
+                  </div>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-orange-800 dark:text-orange-200">
+                    User reply ka wait karo
+                  </p>
+                  <p className="text-xs text-orange-600 dark:text-orange-400 mt-0.5">
+                    ON: Message bhejne ke baad ruk jao, user ke reply ka wait karo<br/>
+                    OFF: Seedha agle node pe chale jao (default)
+                  </p>
+                </div>
+              </label>
+            </div>
           </div>
         );
 
