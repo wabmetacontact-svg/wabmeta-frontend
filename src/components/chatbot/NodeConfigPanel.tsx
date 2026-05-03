@@ -19,7 +19,7 @@ const NodeConfigPanel: React.FC<Props> = ({ node, onUpdate, onDelete, onClose })
           <div className="space-y-4">
             <div className="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
               <p className="text-sm text-green-700 dark:text-green-300">
-                Flow yahan se start hoga. Trigger keywords chatbot settings mein set karo.
+                The flow starts here. Set trigger keywords in chatbot settings.
               </p>
             </div>
           </div>
@@ -68,7 +68,7 @@ const NodeConfigPanel: React.FC<Props> = ({ node, onUpdate, onDelete, onClose })
                 value={node.data.message || ''}
                 onChange={(e) => onUpdate({ message: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg resize-none h-32 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                placeholder={msgType === 'text' ? "Apna message likho..." : "Caption likho..."}
+                placeholder={msgType === 'text' ? "Enter your message..." : "Enter caption..."}
               />
               <p className="text-xs text-gray-400 mt-1">
                 Variables: {'{{phone}}'}, {'{{lastInput}}'}
@@ -99,11 +99,11 @@ const NodeConfigPanel: React.FC<Props> = ({ node, onUpdate, onDelete, onClose })
                 </div>
                 <div>
                   <p className="text-sm font-medium text-orange-800 dark:text-orange-200">
-                    User reply ka wait karo
+                    Wait for user reply
                   </p>
                   <p className="text-xs text-orange-600 dark:text-orange-400 mt-0.5">
-                    ON: Message bhejne ke baad ruk jao, user ke reply ka wait karo<br/>
-                    OFF: Seedha agle node pe chale jao (default)
+                    ON: Pause after sending message and wait for user's reply<br/>
+                    OFF: Automatically advance to the next node (default)
                   </p>
                 </div>
               </label>
@@ -173,14 +173,14 @@ const NodeConfigPanel: React.FC<Props> = ({ node, onUpdate, onDelete, onClose })
                     className="flex items-center gap-1 text-sm text-green-600 hover:text-green-700 mt-1"
                   >
                     <Plus className="w-4 h-4" />
-                    Button Add Karo
+                    Add Button
                   </button>
                 )}
               </div>
 
               <div className="mt-3 p-2 bg-blue-50 dark:bg-blue-900/20 rounded text-xs text-blue-600 dark:text-blue-300">
                 <Info className="w-3 h-3 inline mr-1" />
-                Har button ke liye alag edge connect karo
+                Connect a separate edge for each button
               </div>
             </div>
           </div>
@@ -409,7 +409,7 @@ const NodeConfigPanel: React.FC<Props> = ({ node, onUpdate, onDelete, onClose })
 
             <div className="p-2 bg-yellow-50 dark:bg-yellow-900/20 rounded text-xs text-yellow-700 dark:text-yellow-300">
               <Info className="w-3 h-3 inline mr-1" />
-              Yes edge = true handle | No edge = false handle se connect karo
+              Connect: Yes edge → true handle | No edge → false handle
             </div>
           </div>
         );
@@ -431,7 +431,7 @@ const NodeConfigPanel: React.FC<Props> = ({ node, onUpdate, onDelete, onClose })
                 max={300}
               />
               <p className="text-xs text-gray-400 mt-1">
-                Max 5 seconds engine mein execute hoga (production limit)
+                Maximum 5 seconds will be applied in the engine (production limit)
               </p>
             </div>
           </div>
@@ -452,10 +452,10 @@ const NodeConfigPanel: React.FC<Props> = ({ node, onUpdate, onDelete, onClose })
                 }
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               >
-                <option value="tagContact">Contact ko Tag Karo</option>
-                <option value="setVariable">Variable Set Karo</option>
-                <option value="createLead">CRM Lead Banao</option>
-                <option value="webhook">Webhook Call Karo</option>
+                <option value="tagContact">Tag a Contact</option>
+                <option value="setVariable">Set a Variable</option>
+                <option value="createLead">Create CRM Lead</option>
+                <option value="webhook">Call a Webhook</option>
               </select>
             </div>
 
@@ -603,7 +603,7 @@ const NodeConfigPanel: React.FC<Props> = ({ node, onUpdate, onDelete, onClose })
         return (
           <div className="p-3 bg-red-50 dark:bg-red-900/20 rounded-lg">
             <p className="text-sm text-red-700 dark:text-red-300">
-              Flow yahan khatam hoga. Session delete ho jayega.
+              The flow ends here. The session will be deleted.
             </p>
           </div>
         );
@@ -636,7 +636,7 @@ const NodeConfigPanel: React.FC<Props> = ({ node, onUpdate, onDelete, onClose })
         {renderConfig()}
       </div>
 
-      {/* Delete button - start/end pe nahi */}
+      {/* Delete button - not shown for start node */}
       {node.type !== 'start' && (
         <div className="p-4 border-t border-gray-200 dark:border-gray-700">
           <button
