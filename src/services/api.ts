@@ -986,6 +986,11 @@ export const wallet = {
     organizationId: string,
     data: { reason?: string; unflag?: boolean }
   ) => api.patch<ApiResponse>(`/admin/wallets/${organizationId}/flag`, data),
+
+  adminToggleWallet: (
+    organizationId: string,
+    data: { activate: boolean; reason?: string }
+  ) => api.patch<ApiResponse>(`/admin/wallets/${organizationId}/toggle`, data),
 };
 
 // ---------- SETTINGS ----------
@@ -1220,6 +1225,14 @@ export const admin = {
     data: { reason?: string; unflag?: boolean }
   ) => api.patch<ApiResponse>(
     `/admin/wallets/${organizationId}/flag`,
+    data
+  ),
+
+  toggleWalletActive: (
+    organizationId: string,
+    data: { activate: boolean; reason?: string }
+  ) => api.patch<ApiResponse>(
+    `/admin/wallets/${organizationId}/toggle`,
     data
   ),
 };
