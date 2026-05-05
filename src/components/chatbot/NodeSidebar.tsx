@@ -2,14 +2,62 @@ import React from 'react';
 import { MessageSquare, MousePointer, GitBranch, Clock, Zap, StopCircle, List, Sparkles } from 'lucide-react';
 
 const nodeTypes = [
-  { type: 'message', label: 'Message', icon: MessageSquare, color: 'bg-blue-500' },
-  { type: 'button', label: 'Buttons', icon: MousePointer, color: 'bg-purple-500' },
-  { type: 'list', label: 'List Options', icon: List, color: 'bg-indigo-500' },
-  { type: 'ai', label: 'Meta AI', icon: Sparkles, color: 'bg-emerald-500' },
-  { type: 'condition', label: 'Condition', icon: GitBranch, color: 'bg-yellow-500' },
-  { type: 'delay', label: 'Delay', icon: Clock, color: 'bg-orange-500' },
-  { type: 'action', label: 'Action', icon: Zap, color: 'bg-pink-500' },
-  { type: 'end', label: 'End', icon: StopCircle, color: 'bg-red-500' },
+  {
+    type: 'message',
+    label: 'Message',
+    icon: MessageSquare,
+    color: 'bg-blue-500',
+    desc: 'Text ya media bhejo',
+  },
+  {
+    type: 'button',
+    label: 'Buttons',
+    icon: MousePointer,
+    color: 'bg-purple-500',
+    desc: 'Max 3 reply buttons',
+  },
+  {
+    type: 'list',
+    label: 'List Menu',
+    icon: List,
+    color: 'bg-indigo-500',
+    desc: 'Multiple options menu',
+  },
+  {
+    type: 'ai',
+    label: 'Meta AI',
+    icon: Sparkles,
+    color: 'bg-emerald-500',
+    desc: 'AI se baat karo',
+  },
+  {
+    type: 'condition',
+    label: 'Condition',
+    icon: GitBranch,
+    color: 'bg-yellow-500',
+    desc: 'If/else branch',
+  },
+  {
+    type: 'delay',
+    label: 'Delay',
+    icon: Clock,
+    color: 'bg-orange-500',
+    desc: 'Wait before next step',
+  },
+  {
+    type: 'action',
+    label: 'Action',
+    icon: Zap,
+    color: 'bg-pink-500',
+    desc: 'Tag, variable, webhook',
+  },
+  {
+    type: 'end',
+    label: 'End',
+    icon: StopCircle,
+    color: 'bg-red-500',
+    desc: 'Flow khatam karo',
+  },
 ];
 
 const NodeSidebar: React.FC = () => {
@@ -19,22 +67,35 @@ const NodeSidebar: React.FC = () => {
   };
 
   return (
-    <div className="w-56 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 p-4">
-      <h3 className="text-sm font-medium text-gray-500 mb-3">DRAG TO ADD</h3>
-      <div className="space-y-2">
-        {nodeTypes.map(({ type, label, icon: Icon, color }) => (
+    <div className="w-52 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 p-3 flex flex-col">
+      <h3 className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-3 px-1">
+        Nodes — Drag to Add
+      </h3>
+      <div className="space-y-1.5 flex-1 overflow-y-auto">
+        {nodeTypes.map(({ type, label, icon: Icon, color, desc }) => (
           <div
             key={type}
             draggable
             onDragStart={(e) => onDragStart(e, type)}
-            className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg cursor-move hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
+            className="flex items-center gap-2.5 p-2.5 bg-gray-50 dark:bg-gray-700/60 rounded-lg cursor-move hover:bg-gray-100 dark:hover:bg-gray-600/80 transition-all hover:shadow-sm group"
+            title={`Drag to add: ${label}`}
           >
-            <div className={`w-8 h-8 ${color} rounded-lg flex items-center justify-center`}>
-              <Icon className="w-4 h-4 text-white" />
+            <div className={`w-7 h-7 flex-shrink-0 ${color} rounded-md flex items-center justify-center shadow-sm`}>
+              <Icon className="w-3.5 h-3.5 text-white" />
             </div>
-            <span className="font-medium text-gray-700 dark:text-gray-300">{label}</span>
+            <div className="min-w-0">
+              <p className="font-medium text-gray-700 dark:text-gray-200 text-xs leading-tight">{label}</p>
+              <p className="text-[10px] text-gray-400 dark:text-gray-500 truncate">{desc}</p>
+            </div>
           </div>
         ))}
+      </div>
+
+      {/* Tip */}
+      <div className="mt-3 p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+        <p className="text-[10px] text-blue-500 dark:text-blue-400 text-center">
+          🖱️ Canvas pe drag karo, phir connect karo
+        </p>
       </div>
     </div>
   );

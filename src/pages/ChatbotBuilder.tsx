@@ -405,15 +405,17 @@ const ChatbotBuilder: React.FC = () => {
     switch (type) {
       case 'message':
         return { label: 'Message', message: 'Apna message yahan likhein...', messageType: 'text' };
-      case 'button':
+      case 'button': {
+        const uid = () => Math.random().toString(36).substring(2, 8);
         return {
           label: 'Buttons',
           message: 'Kya chahiye aapko?',
           buttons: [
-            { id: `btn-${Date.now()}-1`, text: 'Option 1' },
-            { id: `btn-${Date.now()}-2`, text: 'Option 2' },
+            { id: `btn-${uid()}`, text: 'Option 1' },
+            { id: `btn-${uid()}`, text: 'Option 2' },
           ],
         };
+      }
       case 'list':
         return {
           label: 'List',
@@ -496,6 +498,16 @@ const ChatbotBuilder: React.FC = () => {
       return;
     }
 
+    // ✅ Warn if start node has no connection
+    const startNode = nodes.find(n => n.type === 'start');
+    if (startNode) {
+      const startConnected = edges.some(e => e.source === startNode.id);
+      if (!startConnected) {
+        toast.error('Start node kisi node se connected nahi hai! Flow kaam nahi karega.');
+        return;
+      }
+    }
+
     setSaving(true);
     try {
       const flowData = { nodes, edges };
@@ -516,7 +528,11 @@ const ChatbotBuilder: React.FC = () => {
           navigate(`/dashboard/chatbots/${res.data.data.id}`);
         }
       } else {
-        await chatbotsApi.update(id!, payload);
+        const res = await chatbotsApi.update(id!, payload);
+        if (res.data.success) {
+          // ✅ Refresh chatbot state so status badge stays correct
+          setChatbot((prev: any) => ({ ...prev, ...res.data.data }));
+        }
         toast.success('Chatbot saved! ✅');
       }
     } catch (err: any) {
@@ -531,6 +547,36 @@ const ChatbotBuilder: React.FC = () => {
       toast.error('Pehle save karo');
       return;
     }
+
+    // ✅ Validate: chatbot mein flow hona chahiye
+    const hasStartNode = nodes.some(n => n.type === 'start');
+    const hasAnyOtherNode = nodes.some(n => n.type !== 'start');
+    if (!hasStartNode || !hasAnyOtherNode) {
+      toast.error('Flow mein kam se kam ek Start aur ek aur node hona chahiye');
+      return;
+    }
+
+    // ✅ Auto-save before activating
+    setSaving(true);
+    try {
+      const flowData = { nodes, edges };
+      await chatbotsApi.update(id!, {
+        name: chatbot.name,
+        description: chatbot.description,
+        triggerKeywords: chatbot.triggerKeywords || [],
+        isDefault: chatbot.isDefault || false,
+        welcomeMessage: chatbot.welcomeMessage || '',
+        fallbackMessage: chatbot.fallbackMessage || '',
+        flowData,
+      });
+    } catch {
+      toast.error('Save failed — activate nahi ho sakta');
+      setSaving(false);
+      return;
+    } finally {
+      setSaving(false);
+    }
+
     try {
       await chatbotsApi.activate(id!);
       toast.success('Chatbot activated! 🚀');

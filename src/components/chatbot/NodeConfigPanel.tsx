@@ -324,6 +324,19 @@ const NodeConfigPanel: React.FC<Props> = ({ node, onUpdate, onDelete, onClose })
       case 'ai':
         return (
           <div className="space-y-4">
+            {/* Conversation Mode Info */}
+            <div className="p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg border border-emerald-200 dark:border-emerald-800">
+              <div className="flex items-start gap-2">
+                <Sparkles className="w-4 h-4 text-emerald-500 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-xs font-semibold text-emerald-700 dark:text-emerald-300">Conversation Mode</p>
+                  <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-0.5">
+                    AI automatically user se baat karta rahega. Har user message pe AI response dega aur conversation continue hogi.
+                  </p>
+                </div>
+              </div>
+            </div>
+
             <div>
               <label className="block text-sm font-medium mb-1 text-emerald-700 dark:text-emerald-300 flex items-center gap-2">
                 <Sparkles className="w-4 h-4" /> AI System Prompt
@@ -331,12 +344,32 @@ const NodeConfigPanel: React.FC<Props> = ({ node, onUpdate, onDelete, onClose })
               <textarea
                 value={node.data.systemPrompt || ''}
                 onChange={(e) => onUpdate({ systemPrompt: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg resize-none h-48 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                placeholder="Ex: You are a sales assistant for WabMeta. You sell our software. Be polite and concise."
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg resize-none h-40 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                placeholder="Ex: You are a sales assistant for WabMeta. You help customers with their queries. Be polite and concise. Always respond in Hindi."
               />
-              <p className="text-xs text-gray-500 mt-2">
-                This prompt tells the AI how to behave. The AI will read the user's message and generate a response based on these instructions.
+              <p className="text-xs text-gray-500 mt-1">
+                AI is prompt ke hisab se behave karega. Jitna specific prompt utna better response.
               </p>
+            </div>
+
+            {/* Sample prompts */}
+            <div>
+              <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">💡 Sample Prompts:</p>
+              <div className="space-y-1">
+                {[
+                  'You are a helpful customer support agent. Answer questions politely in Hindi.',
+                  'You are a sales agent. Help customers understand our products and guide them to purchase.',
+                  'You are a FAQ bot. Only answer questions related to our services.',
+                ].map((prompt, i) => (
+                  <button
+                    key={i}
+                    onClick={() => onUpdate({ systemPrompt: prompt })}
+                    className="w-full text-left text-xs p-2 bg-gray-50 dark:bg-gray-700/50 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded border border-gray-200 dark:border-gray-600 hover:border-emerald-300 transition-colors text-gray-600 dark:text-gray-400"
+                  >
+                    {prompt}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         );
