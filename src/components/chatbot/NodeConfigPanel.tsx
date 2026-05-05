@@ -331,7 +331,7 @@ const NodeConfigPanel: React.FC<Props> = ({ node, onUpdate, onDelete, onClose })
                 <div>
                   <p className="text-xs font-semibold text-emerald-700 dark:text-emerald-300">Conversation Mode</p>
                   <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-0.5">
-                    AI automatically user se baat karta rahega. Har user message pe AI response dega aur conversation continue hogi.
+                    AI will automatically keep conversing with the user. Every message will get an AI response and the conversation will continue.
                   </p>
                 </div>
               </div>
@@ -348,7 +348,7 @@ const NodeConfigPanel: React.FC<Props> = ({ node, onUpdate, onDelete, onClose })
                 placeholder="Ex: You are a helpful customer support agent. Answer questions politely in Hindi."
               />
               <p className="text-xs text-gray-500 mt-1">
-                AI is prompt ke hisab se behave karega. Jitna specific prompt utna better response.
+                The AI will behave according to this prompt. The more specific your prompt, the better the responses.
               </p>
             </div>
 
@@ -357,8 +357,8 @@ const NodeConfigPanel: React.FC<Props> = ({ node, onUpdate, onDelete, onClose })
               <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">💡 Sample Prompts (Click to use):</p>
               <div className="space-y-1">
                 {[
-                  'You are a helpful customer support agent. Answer questions politely in Hindi.',
-                  'You are a FAQ bot. Only answer questions related to our services. If question is out of scope, politely redirect.',
+                  'You are a helpful customer support agent. Answer questions politely.',
+                  'You are a FAQ bot. Only answer questions related to our services. If the question is out of scope, politely redirect.',
                 ].map((prompt, i) => (
                   <button
                     key={i}

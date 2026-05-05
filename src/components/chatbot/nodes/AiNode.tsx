@@ -21,7 +21,7 @@ const AiNode: React.FC<{ data: any }> = ({ data }) => {
       </div>
       {/* ✅ Conversation mode info */}
       <div className="mt-2 text-[10px] text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 px-2 py-1 rounded">
-        💬 AI user se baat karta rahega
+        💬 AI will keep chatting with the user
       </div>
       <Handle type="source" position={Position.Bottom} className="w-3 h-3 bg-emerald-500" />
     </div>

@@ -156,21 +156,21 @@ const CallingSettings: React.FC = () => {
         {[
           {
             label: 'Enable WhatsApp Calling',
-            desc: 'Business se customers ko call karo via WhatsApp',
+            desc: 'Call customers directly via WhatsApp',
             icon: PhoneCall,
             value: callingEnabled,
             set: setCallingEnabled,
           },
           {
             label: 'Allow Inbound Calls',
-            desc: 'Customers aapko call kar sakein',
+            desc: 'Allow customers to call you',
             icon: Phone,
             value: inboundEnabled,
             set: setInboundEnabled,
           },
           {
             label: 'Callback Requests',
-            desc: 'Missed calls pe customer callback request kar sake',
+            desc: 'Customers can request a callback for missed calls',
             icon: PhoneCall,
             value: callbackEnabled,
             set: setCallbackEnabled,
@@ -218,7 +218,7 @@ const CallingSettings: React.FC = () => {
               🇮🇳 Restrict to India Only
             </p>
             <p className="text-xs text-gray-500 dark:text-gray-400">
-              Call button sirf India ke users ko dikhega
+              Call button will only be shown to users in India
             </p>
           </div>
           <button onClick={() => setRestrictIndia(!restrictIndia)}>
@@ -258,8 +258,8 @@ const CallingSettings: React.FC = () => {
           </div>
           <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
             {callHoursEnabled
-              ? 'Call button sirf in hours mein dikhega'
-              : 'OFF — Call button 24/7 dikhega'}
+              ? 'Call button will only be visible during these hours'
+              : 'OFF — Call button is visible 24/7'}
           </p>
         </div>
 

@@ -141,7 +141,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ chatbot, onChange, onClos
             🎯 Trigger Keywords
           </label>
           <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
-            User in words mein se kuch bhi bhejega toh ye chatbot start hoga
+            If a user sends any of these words, this chatbot will start
           </p>
 
           {/* Input */}
@@ -183,7 +183,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ chatbot, onChange, onClos
           ) : (
             <div className="p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg text-center">
               <p className="text-xs text-gray-400">
-                Koi keyword nahi hai
+                No keywords added
               </p>
             </div>
           )}
@@ -193,10 +193,10 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ chatbot, onChange, onClos
             <div className="flex gap-2">
               <Info className="w-4 h-4 text-blue-500 flex-shrink-0 mt-0.5" />
               <div className="text-xs text-blue-600 dark:text-blue-300 space-y-1">
-                <p><strong>Keywords kaise kaam karte hain:</strong></p>
-                <p>• User "hi" ya "hello" bhejega → bot start</p>
-                <p>• Case-insensitive matching hoti hai</p>
-                <p>• Partial match bhi work karta hai</p>
+                <p><strong>How keywords work:</strong></p>
+                <p>• User sends "hi" or "hello" → bot starts</p>
+                <p>• Matching is case-insensitive</p>
+                <p>• Partial matches also work</p>
               </div>
             </div>
           </div>
@@ -208,7 +208,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ chatbot, onChange, onClos
             ⚡ Default Chatbot
           </label>
           <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
-            Naye users jo pehli baar message karein, unhe automatically ye chatbot milega
+            New users who message for the first time will automatically get this chatbot
           </p>
 
           <button
@@ -232,8 +232,8 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ chatbot, onChange, onClos
               </p>
               <p className="text-xs text-gray-500">
                 {chatbot.isDefault
-                  ? 'Naye conversations pe automatically trigger hoga'
-                  : 'Sirf keywords se trigger hoga'}
+                  ? 'Will automatically trigger for new conversations'
+                  : 'Only triggered by keywords'}
               </p>
             </div>
           </button>
@@ -245,7 +245,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ chatbot, onChange, onClos
             👋 Welcome Message
           </label>
           <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
-            Flow start hone se pehle send hoga (optional)
+            Sent before the flow starts (optional)
           </p>
           <textarea
             value={chatbot.welcomeMessage || ''}
@@ -261,13 +261,13 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ chatbot, onChange, onClos
             🔄 Fallback Message
           </label>
           <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
-            Jab bot samajh na paye tab send hoga
+            Sent when the bot cannot understand the user
           </p>
           <textarea
             value={chatbot.fallbackMessage || ''}
             onChange={(e) => onChange({ fallbackMessage: e.target.value })}
             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none h-20 focus:ring-2 focus:ring-green-500"
-            placeholder="e.g., Sorry, main samajh nahi paya. Please dobara try karo."
+            placeholder="e.g., Sorry, I didn't understand that. Please try again."
           />
         </div>
 
@@ -282,15 +282,15 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ chatbot, onChange, onClos
               <span>
                 {(chatbot.triggerKeywords || []).length > 0
                   ? `Keywords: ${(chatbot.triggerKeywords || []).join(', ')}`
-                  : 'Koi keyword set nahi hai'}
+                  : 'No keywords set'}
               </span>
             </div>
             <div className="flex items-start gap-2 text-xs text-gray-600 dark:text-gray-400">
               <GitBranch className="w-4 h-4 text-blue-500 flex-shrink-0 mt-0.5" />
               <span>
                 {chatbot.isDefault
-                  ? 'Naye users ke liye default hai'
-                  : 'Default nahi hai'}
+                  ? 'Set as default for new users'
+                  : 'Not set as default'}
               </span>
             </div>
           </div>
@@ -404,12 +404,12 @@ const ChatbotBuilder: React.FC = () => {
   const getDefaultNodeData = (type: string) => {
     switch (type) {
       case 'message':
-        return { label: 'Message', message: 'Apna message yahan likhein...', messageType: 'text' };
+        return { label: 'Message', message: 'Type your message here...', messageType: 'text' };
       case 'button': {
         const uid = () => Math.random().toString(36).substring(2, 8);
         return {
           label: 'Buttons',
-          message: 'Kya chahiye aapko?',
+          message: 'What can I help you with?',
           buttons: [
             { id: `btn-${uid()}`, text: 'Option 1' },
             { id: `btn-${uid()}`, text: 'Option 2' },
@@ -494,16 +494,16 @@ const ChatbotBuilder: React.FC = () => {
   // ─────────────────────────────────────────
   const handleSave = async () => {
     if (!chatbot?.name?.trim()) {
-      toast.error('Chatbot name required hai');
+      toast.error('Chatbot name is required');
       return;
     }
 
-    // ✅ Warn if start node has no connection
+    // Warn if start node has no connection
     const startNode = nodes.find(n => n.type === 'start');
     if (startNode) {
       const startConnected = edges.some(e => e.source === startNode.id);
       if (!startConnected) {
-        toast.error('Start node kisi node se connected nahi hai! Flow kaam nahi karega.');
+        toast.error('Start node is not connected to any node! The flow will not work.');
         return;
       }
     }
@@ -544,15 +544,15 @@ const ChatbotBuilder: React.FC = () => {
 
   const handleActivate = async () => {
     if (isNewChatbot) {
-      toast.error('Pehle save karo');
+      toast.error('Please save the chatbot first');
       return;
     }
 
-    // ✅ Validate: chatbot mein flow hona chahiye
+    // Validate: flow must have a Start node and at least one other node
     const hasStartNode = nodes.some(n => n.type === 'start');
     const hasAnyOtherNode = nodes.some(n => n.type !== 'start');
     if (!hasStartNode || !hasAnyOtherNode) {
-      toast.error('Flow mein kam se kam ek Start aur ek aur node hona chahiye');
+      toast.error('Flow must have at least a Start node and one other node');
       return;
     }
 
@@ -570,7 +570,7 @@ const ChatbotBuilder: React.FC = () => {
         flowData,
       });
     } catch {
-      toast.error('Save failed — activate nahi ho sakta');
+      toast.error('Save failed — cannot activate');
       setSaving(false);
       return;
     } finally {
@@ -749,13 +749,13 @@ const ChatbotBuilder: React.FC = () => {
           {nodes.length <= 1 && (
             <div className="absolute bottom-8 left-1/2 -translate-x-1/2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-6 py-4 shadow-lg pointer-events-none">
               <p className="text-sm text-gray-500 text-center">
-                👈 Left sidebar se nodes drag karo canvas pe
+                👈 Drag nodes from the left sidebar onto the canvas
               </p>
             </div>
           )}
         </div>
 
-        {/* Right Panel - Settings ya Node Config */}
+        {/* Right Panel - Settings or Node Config */}
         {activePanel === 'settings' && (
           <SettingsPanel
             chatbot={chatbot}

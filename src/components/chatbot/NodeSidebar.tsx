@@ -7,14 +7,14 @@ const nodeTypes = [
     label: 'Message',
     icon: MessageSquare,
     color: 'bg-blue-500',
-    desc: 'Text ya media bhejo',
+    desc: 'Send text or media',
   },
   {
     type: 'button',
     label: 'Buttons',
     icon: MousePointer,
     color: 'bg-purple-500',
-    desc: 'Max 3 reply buttons',
+    desc: 'Up to 3 reply buttons',
   },
   {
     type: 'list',
@@ -28,14 +28,14 @@ const nodeTypes = [
     label: 'Meta AI',
     icon: Sparkles,
     color: 'bg-emerald-500',
-    desc: 'AI se baat karo',
+    desc: 'Chat with AI',
   },
   {
     type: 'condition',
     label: 'Condition',
     icon: GitBranch,
     color: 'bg-yellow-500',
-    desc: 'If/else branch',
+    desc: 'If / else branch',
   },
   {
     type: 'delay',
@@ -56,7 +56,7 @@ const nodeTypes = [
     label: 'End',
     icon: StopCircle,
     color: 'bg-red-500',
-    desc: 'Flow khatam karo',
+    desc: 'End the flow',
   },
 ];
 
@@ -94,7 +94,7 @@ const NodeSidebar: React.FC = () => {
       {/* Tip */}
       <div className="mt-3 p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
         <p className="text-[10px] text-blue-500 dark:text-blue-400 text-center">
-          🖱️ Canvas pe drag karo, phir connect karo
+          🖱️ Drag to canvas, then connect nodes
         </p>
       </div>
     </div>

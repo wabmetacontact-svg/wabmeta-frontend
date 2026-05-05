@@ -100,7 +100,7 @@ const ChatbotList: React.FC = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Chatbots</h1>
-          <p className="text-gray-600 dark:text-gray-400">Automated conversation flows banao</p>
+          <p className="text-gray-600 dark:text-gray-400">Build and manage automated conversation flows</p>
         </div>
         <Link
           to="/dashboard/chatbots/new"
@@ -120,11 +120,11 @@ const ChatbotList: React.FC = () => {
           </span>
           <span className="text-blue-400">→</span>
           <span className="flex items-center gap-1 bg-white dark:bg-blue-900/40 px-2 py-1 rounded-full border border-blue-200 dark:border-blue-600">
-            2️⃣ Flow Builder mein Nodes add karo
+          2️⃣ Add nodes in the Flow Builder
           </span>
           <span className="text-blue-400">→</span>
           <span className="flex items-center gap-1 bg-white dark:bg-blue-900/40 px-2 py-1 rounded-full border border-blue-200 dark:border-blue-600">
-            3️⃣ Settings mein Keywords set karo
+          3️⃣ Set Keywords in Settings
           </span>
           <span className="text-blue-400">→</span>
           <span className="flex items-center gap-1 bg-white dark:bg-blue-900/40 px-2 py-1 rounded-full border border-blue-200 dark:border-blue-600">
@@ -245,7 +245,7 @@ const ChatbotList: React.FC = () => {
             {/* ✅ Setup hint for DRAFT chatbots */}
             {chatbot.status === 'DRAFT' && (
               <div className="mt-2 px-2 py-1.5 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded text-xs text-amber-700 dark:text-amber-300">
-                ⚠️ Flow banao → Keywords set karo → Activate karo
+                ⚠️ Build your flow → Set keywords → Activate
               </div>
             )}
           </div>
@@ -255,7 +255,7 @@ const ChatbotList: React.FC = () => {
           <div className="col-span-full text-center py-12">
             <Bot className="w-16 h-16 mx-auto text-gray-300 mb-4" />
             <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No chatbots yet</h3>
-            <p className="text-gray-500 dark:text-gray-400 mb-4">Apna pehla chatbot banao aur conversations automate karo</p>
+            <p className="text-gray-500 dark:text-gray-400 mb-4">Create your first chatbot and start automating conversations</p>
             <Link
               to="/dashboard/chatbots/new"
               className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
