@@ -567,9 +567,9 @@ const Contacts: React.FC = () => {
 
   const handleSaveContact = async (contactData: any) => {
     try {
-      // Validate Indian phone
+      // Validate phone
       if (!validateIndianPhone(contactData.phone)) {
-        throw new Error('Only Indian phone numbers (+91) starting with 6-9 are allowed');
+        throw new Error('Invalid phone number format. Must include country code.');
       }
 
       const payload: any = {

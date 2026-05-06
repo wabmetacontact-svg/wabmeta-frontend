@@ -50,17 +50,22 @@ export type ParseError = {
 // ============================================
 
 /**
- * Indian phone number regex
- * Must start with 6-9 and be 10 digits (after country code)
+ * International phone number regex
+ * Must start with + and have 7-15 digits
  */
-const INDIAN_PHONE_REGEX = /^(\+91|91|0091|0)?[6-9]\d{9}$/;
+const INTERNATIONAL_PHONE_REGEX = /^\+\d{7,15}$/;
 
 /**
- * Validate if phone number is valid Indian format
+ * Validate if phone number is valid
  */
 export function validateIndianPhone(phone: string): boolean {
   const cleaned = phone.replace(/[\s\-\(\)]/g, '');
-  return INDIAN_PHONE_REGEX.test(cleaned);
+  // Adding '+' if it's purely digits and >= 10
+  let toTest = cleaned;
+  if (!toTest.startsWith('+') && /^\d{10,15}$/.test(toTest)) {
+    toTest = '+' + toTest;
+  }
+  return INTERNATIONAL_PHONE_REGEX.test(toTest);
 }
 
 /**
@@ -75,27 +80,28 @@ export function normalizePhone(
 ): { phone: string; countryCode: string } {
   const input = (raw || '').trim();
 
-  // 1. Remove non-numeric characters EXCEPT '+'
-  let cleaned = input.replace(/[^\d+]/g, '');
+  // 1. Remove spaces, hyphens, parentheses
+  let cleaned = input.replace(/[\s\-\(\)]/g, '');
+  
+  // 2. Extract country code if starts with '+'
+  let phone = '';
+  let countryCode = '';
 
-  // 2. Remove + if present
   if (cleaned.startsWith('+')) {
-    cleaned = cleaned.substring(1);
+    phone = cleaned;
+    // We don't need to perfectly parse the country code here since the backend does it.
+    // Just pass the full number with '+' to the backend.
+    countryCode = '+91'; // Fallback, backend overrides this
+  } else if (/^\d{10,15}$/.test(cleaned)) {
+    phone = '+' + cleaned;
+    countryCode = '+91'; // Fallback, backend overrides this
   }
 
-  // 3. Remove leading zeros (e.g., 098..., 0091...)
-  cleaned = cleaned.replace(/^0+/, '');
-
-  // 4. Handle 91 prefix
-  if (cleaned.startsWith('91') && cleaned.length === 12) {
-    cleaned = cleaned.substring(2);
-  }
-
-  // 5. Final validation for 10-digit Indian Mobile
-  if (/^[6-9]\d{9}$/.test(cleaned)) {
+  // 3. Final validation
+  if (INTERNATIONAL_PHONE_REGEX.test(phone)) {
     return {
-      phone: `+91${cleaned}`,
-      countryCode: '+91',
+      phone,
+      countryCode,
     };
   }
 
@@ -129,14 +135,14 @@ export function validatePhoneInput(phone: string): {
   if (!validateIndianPhone(phone)) {
     return {
       valid: false,
-      message: 'Only Indian numbers (+91) starting with 6-9 are allowed',
+      message: 'Invalid phone number format. Must include country code.',
     };
   }
 
   const { phone: normalized } = normalizePhone(phone);
   return {
     valid: true,
-    message: 'Valid Indian phone number',
+    message: 'Valid phone number',
     normalized,
   };
 }
@@ -268,12 +274,12 @@ export function parseCsvText(text: string): ParseResult {
       return;
     }
 
-    // Validate Indian phone format
+    // Validate phone format
     if (!validateIndianPhone(String(phoneRaw))) {
       errors.push({
         row: rowNum,
         phone: String(phoneRaw),
-        error: 'Only Indian numbers (+91) starting with 6-9 are allowed',
+        error: 'Invalid phone format',
       });
       return;
     }

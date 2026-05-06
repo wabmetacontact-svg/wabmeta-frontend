@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import {
     X,
     Upload,
@@ -39,14 +39,14 @@ export default function SimpleBulkPasteModal({ isOpen, onClose, onSuccess, group
 
     const getPreviewCount = () => {
         if (!phoneNumbers.trim()) return 0;
-        // Normalize spaced phone formats: +91 98765 43210 → +919876543210
-        const normalized = phoneNumbers.replace(
-            /(\+\d{1,4})\s+(\d[\d\s]{6,14}\d)/g,
-            (_match: string, cc: string, rest: string) => cc + rest.replace(/\s+/g, '')
-        );
-        return normalized
-            .split(/[\n,;]+/)
-            .flatMap((line: string) => line.trim().split(/\s+/).filter((p: string) => p.length > 0))
+        
+        let preprocessed = phoneNumbers.replace(/\s*[\-\(\)\.]\s*/g, ''); 
+        preprocessed = preprocessed.replace(/(\d)\s+(\d)/g, '$1$2');
+        preprocessed = preprocessed.replace(/(\+)\s+(\d)/g, '$1$2');
+
+        return preprocessed
+            .split(/[\n,;\s]+/)
+            .map((n: string) => n.trim())
             .filter((n: string) => n.length > 0)
             .length;
     };

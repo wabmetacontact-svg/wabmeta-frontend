@@ -27,18 +27,16 @@ type Step = "upload" | "mapping" | "preview" | "importing" | "complete";
 
 type Failure = { row: number; error: string };
 
-const normalizeIndianPhone = (v: any) => {
+const normalizeInternationalPhone = (v: any) => {
   if (!v) return "";
-  let cleaned = String(v).trim().replace(/[^\d+]/g, "");
-  if (cleaned.startsWith("+")) cleaned = cleaned.substring(1);
-  cleaned = cleaned.replace(/^0+/, "");
-
-  if (cleaned.startsWith("91") && cleaned.length === 12) {
-    cleaned = cleaned.substring(2);
+  let cleaned = String(v).trim().replace(/[\s\-\(\)]/g, "");
+  // Try to prepend + if it looks like a valid international number but misses +
+  if (!cleaned.startsWith('+') && /^\d{10,15}$/.test(cleaned)) {
+    // We can't safely assume the country code if it's not provided, but the backend 
+    // will throw an error if we send without it. We'll leave it as is and let it fail 
+    // in preview, or user should fix it.
   }
-
-  if (/^[6-9]\d{9}$/.test(cleaned)) return cleaned;
-  return "";
+  return cleaned;
 };
 
 const isValidEmail = (v: any) => {
@@ -156,14 +154,13 @@ const ImportContacts: React.FC = () => {
       const rawEmail = fieldMapping.email ? row[fieldMapping.email] : "";
       const rawCompany = fieldMapping.company ? row[fieldMapping.company] : "";
 
-      const phone = normalizeIndianPhone(rawPhone);
+      const phone = normalizeInternationalPhone(rawPhone);
       const email = isValidEmail(rawEmail) ? String(rawEmail).trim() : undefined;
       const { firstName, lastName } = splitName(String(rawName || "").trim());
 
       return {
         __rowIndex: idx + 2,
         phone,
-        countryCode: "+91",
         firstName,
         lastName,
         email,
@@ -180,7 +177,7 @@ const ImportContacts: React.FC = () => {
   const stats = useMemo(() => {
     const total = normalizedContacts.length;
     const valid = normalizedContacts.filter(
-      (c) => c.phone && /^[6-9]\d{9}$/.test(c.phone)
+      (c) => c.phone && /^\+\d{7,15}$/.test(c.phone)
     ).length;
     return { total, valid, invalid: total - valid };
   }, [normalizedContacts]);
@@ -227,11 +224,10 @@ const ImportContacts: React.FC = () => {
 
     try {
       const contacts = normalizedContacts
-        .filter(c => c.phone && /^[6-9]\d{9}$/.test(c.phone))
+        .filter(c => c.phone && /^\+\d{7,15}$/.test(c.phone))
         .slice(0, importStats.remainingSlots) // Limit to available slots
         .map((c) => ({
           phone: c.phone,
-          countryCode: c.countryCode || "+91",
           firstName: c.firstName,
           lastName: c.lastName,
           ...(c.email ? { email: c.email } : {}),
@@ -507,7 +503,7 @@ const ImportContacts: React.FC = () => {
           <>
             <h2 className="text-lg font-semibold text-gray-900 mb-2">Preview Import</h2>
             <p className="text-gray-500 mb-4">
-              Contacts will be normalized to <span className="font-medium">10-digit Indian numbers</span>. Non-Indian or invalid numbers will be skipped.
+              Contacts will be validated for <span className="font-medium">International format (with +)</span>. Invalid numbers will be skipped.
             </p>
 
             <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
@@ -551,7 +547,7 @@ const ImportContacts: React.FC = () => {
                 </thead>
                 <tbody className="divide-y divide-gray-100">
                   {previewRows.map((c, idx) => {
-                    const ok = c.phone && /^[6-9]\d{9}$/.test(c.phone);
+                    const ok = c.phone && /^\+\d{7,15}$/.test(c.phone);
                     return (
                       <tr key={idx}>
                         <td className="px-4 py-3 text-gray-600">{c.__rowIndex}</td>

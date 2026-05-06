@@ -18,7 +18,7 @@ interface AddContactModalProps {
 interface FormData {
   firstName: string;
   lastName: string;
-  phone: string;
+  phone: string; // Full phone number including + and country code
   email: string;
   company: string;
   address: string;
@@ -126,11 +126,22 @@ const AddContactModal: React.FC<AddContactModalProps> = ({
    * Validate phone number in real-time
    */
   const handlePhoneChange = (value: string) => {
-    setFormData({ ...formData, phone: value });
+    // Basic formatting: ensure it starts with + if they are typing an international number
+    let formatted = value;
+    if (formatted.length > 0 && !formatted.startsWith('+') && /^\d/.test(formatted)) {
+      formatted = '+' + formatted;
+    }
+    
+    setFormData({ ...formData, phone: formatted });
 
-    if (value.trim()) {
-      const validation = validatePhoneInput(value);
-      setPhoneValidation(validation);
+    if (formatted.trim()) {
+      // Simple regex for international phone numbers
+      const isValid = /^\+\d{7,15}$/.test(formatted.replace(/[\s\-\(\)]/g, ''));
+      setPhoneValidation({
+        valid: isValid,
+        message: isValid ? '' : 'Please enter a valid international phone number with country code (e.g. +919876543210)',
+        normalized: formatted.replace(/[\s\-\(\)]/g, '')
+      });
     } else {
       setPhoneValidation(null);
     }
@@ -147,11 +158,13 @@ const AddContactModal: React.FC<AddContactModalProps> = ({
       newErrors.firstName = 'First name is required';
     }
 
-    // Phone required and must be valid Indian number
+    // Phone required and must be valid international number
     if (!formData.phone.trim()) {
       newErrors.phone = 'Phone number is required';
     } else if (!phoneValidation?.valid) {
       newErrors.phone = phoneValidation?.message || 'Invalid phone number';
+    } else if (!formData.phone.trim().startsWith('+')) {
+      newErrors.phone = 'Phone number must start with a country code (e.g. +91)';
     }
 
     // Email validation (optional but must be valid if provided)
@@ -184,19 +197,11 @@ const AddContactModal: React.FC<AddContactModalProps> = ({
     setFetchingProfile(true);
 
     try {
-      // ✅ CRITICAL FIX: Extract ONLY 10 digits (remove +91)
-      let cleanPhone = formData.phone.replace(/[\s\-\(\)]/g, ''); // Remove spaces/hyphens
+      // Extract clean phone number
+      const cleanPhone = formData.phone.replace(/[\s\-\(\)]/g, ''); // e.g. +919876543210
 
-      // Remove country code if present
-      if (cleanPhone.startsWith('+91')) {
-        cleanPhone = cleanPhone.substring(3); // "9876543210"
-      } else if (cleanPhone.startsWith('91') && cleanPhone.length === 12) {
-        cleanPhone = cleanPhone.substring(2); // "9876543210"
-      }
-
-      // Validate it's exactly 10 digits
-      if (!/^\d{10}$/.test(cleanPhone)) {
-        throw new Error('Phone number must be exactly 10 digits');
+      if (!cleanPhone.startsWith('+')) {
+        throw new Error('Phone number must start with a country code (e.g. +91)');
       }
 
       console.log('📤 Sending contact payload:', {
@@ -205,10 +210,9 @@ const AddContactModal: React.FC<AddContactModalProps> = ({
         lastName: formData.lastName.trim() || undefined,
       });
 
-      // ✅ FIXED PAYLOAD - phone WITHOUT country code
+      // ✅ FIXED PAYLOAD - phone WITH country code
       const payload = {
-        phone: cleanPhone,                          // ✅ "9876543210"
-        countryCode: '+91',                         // ✅ Separate field
+        phone: cleanPhone,                          // ✅ "+919876543210"
         firstName: formData.firstName.trim(),
         lastName: formData.lastName.trim() || undefined,
         email: formData.email.trim() || undefined,
@@ -290,7 +294,7 @@ const AddContactModal: React.FC<AddContactModalProps> = ({
             <p className="text-sm text-gray-500 mt-1">
               {editContact
                 ? 'Update contact information'
-                : 'Only Indian phone numbers (+91) are accepted'}
+                : 'Enter phone number with country code (e.g. +91)'}
             </p>
           </div>
           <button
@@ -369,7 +373,7 @@ const AddContactModal: React.FC<AddContactModalProps> = ({
                     ? 'border-green-300 focus:ring-green-500'
                     : 'border-gray-200 focus:ring-primary-500'
                   }`}
-                placeholder="+91 9876543210 or 9876543210"
+                placeholder="+919876543210"
                 disabled={loading}
               />
               {phoneValidation?.valid && (
@@ -384,7 +388,7 @@ const AddContactModal: React.FC<AddContactModalProps> = ({
                 {phoneValidation.valid ? (
                   <>
                     <CheckCircle className="w-3 h-3" />
-                    Valid Indian number: {phoneValidation.normalized}
+                    Valid number: {phoneValidation.normalized}
                   </>
                 ) : (
                   <>
