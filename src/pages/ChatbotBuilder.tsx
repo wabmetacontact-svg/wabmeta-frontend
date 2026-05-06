@@ -367,11 +367,15 @@ const ChatbotBuilder: React.FC = () => {
 
   // ─────────────────────────────────────────
   const onConnect = useCallback(
-    (params: Connection) => setEdges((eds) => addEdge({
-      ...params,
-      animated: true,
-      style: { stroke: '#22c55e', strokeWidth: 2 },
-    }, eds)),
+    (params: Connection) => {
+      setEdges((eds) => addEdge({
+        ...params,
+        animated: true,
+        style: { stroke: '#22c55e', strokeWidth: 2 },
+        // ✅ sourceHandle automatically params mein hota hai
+        // Button ID ya List Row ID yahan save hoga
+      }, eds));
+    },
     [setEdges]
   );
 

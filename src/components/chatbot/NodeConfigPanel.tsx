@@ -70,9 +70,19 @@ const NodeConfigPanel: React.FC<Props> = ({ node, onUpdate, onDelete, onClose })
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg resize-none h-32 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-transparent"
                 placeholder={msgType === 'text' ? "Enter your message..." : "Enter caption..."}
               />
-              <p className="text-xs text-gray-400 mt-1">
-                Variables: {'{{phone}}'}, {'{{lastInput}}'}
-              </p>
+              <div className="mt-2 p-2 bg-gray-50 dark:bg-gray-700/50 rounded text-xs">
+                <p className="font-medium text-gray-500 dark:text-gray-400 mb-1">
+                  📝 Variables use kar sakte ho:
+                </p>
+                <div className="flex flex-wrap gap-1">
+                  {['{{phone}}', '{{lastInput}}', '{{selectedButton}}', 
+                    '{{selectedOption}}', '{{userName}}'].map(v => (
+                    <code key={v} className="bg-white dark:bg-gray-600 border border-gray-200 dark:border-gray-500 text-green-600 dark:text-green-400 px-1.5 py-0.5 rounded text-[10px]">
+                      {v}
+                    </code>
+                  ))}
+                </div>
+              </div>
             </div>
 
             {/* Wait for user reply toggle */}
@@ -350,6 +360,50 @@ const NodeConfigPanel: React.FC<Props> = ({ node, onUpdate, onDelete, onClose })
               <p className="text-xs text-gray-500 mt-1">
                 The AI will behave according to this prompt. The more specific your prompt, the better the responses.
               </p>
+            </div>
+
+            {/* Context Settings */}
+            <div className="p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-600">
+              <p className="text-xs font-semibold text-gray-600 dark:text-gray-300 mb-2">
+                📊 AI Capabilities (Auto-enabled)
+              </p>
+              <div className="space-y-1">
+                {[
+                  { icon: '✅', text: 'Conversation history yaad rakhega' },
+                  { icon: '✅', text: 'Hindi + English (Hinglish) support' },
+                  { icon: '✅', text: 'Context-aware replies' },
+                  { icon: '✅', text: 'Auto conversation summary (long chats)' },
+                  { icon: '✅', text: 'Off-topic questions handle karega' },
+                ].map((item, i) => (
+                  <div key={i} className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
+                    <span>{item.icon}</span>
+                    <span>{item.text}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Variable Reference */}
+            <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+              <p className="text-xs font-semibold text-blue-700 dark:text-blue-300 mb-2">
+                📝 Available Variables in Prompt
+              </p>
+              <div className="space-y-1">
+                {[
+                  { var: '{{phone}}', desc: 'User phone number' },
+                  { var: '{{lastInput}}', desc: 'User ka last message' },
+                  { var: '{{conversationId}}', desc: 'Conversation ID' },
+                ].map((item, i) => (
+                  <div key={i} className="flex items-center gap-2 text-xs">
+                    <code className="bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 px-1 rounded">
+                      {item.var}
+                    </code>
+                    <span className="text-gray-500 dark:text-gray-400">
+                      {item.desc}
+                    </span>
+                  </div>
+                ))}
+              </div>
             </div>
 
             {/* Sample prompts */}
