@@ -578,23 +578,27 @@ export const templates = {
     });
 
     return api.post<ApiResponse<{
-      mediaId: string;
-      mediaHandle?: string;
-      metaNumericId?: string | null;
-      cloudinaryUrl?: string;
-      permanentUrl?: string;
-      handle?: string;     // ✅ Meta handle
-      url: string;         // ✅ Cloudinary/Preview URL
+      // ✅ Permanent fields (DB mein store karo)
+      cloudinaryUrl: string;     // "https://res.cloudinary.com/..." PERMANENT ✅
+      permanentUrl?: string;     // Same as cloudinaryUrl
+      
+      // ✅ Template creation ke liye (sirf ek baar use hota hai)
+      mediaHandle?: string;      // "4:V2hh..." expires in 10 min
+      metaNumericId?: string;    // "12345..." numeric ID (rare)
+      
+      // ✅ Meta info
+      mediaId: string;           // Could be handle or numeric
       filename: string;
       mimeType: string;
       size: number;
       whatsappAccountId?: string;
       wabaId?: string;
+      
+      // ✅ Preview ke liye
+      url: string;               // Blob ya cloudinary URL
     }>>('/templates/upload-media', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-      timeout: 120000, // 2 minutes for large files
+      headers: { 'Content-Type': 'multipart/form-data' },
+      timeout: 120000,
     });
   },
 };

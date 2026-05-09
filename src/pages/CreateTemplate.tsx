@@ -253,7 +253,8 @@ const CreateTemplate: React.FC = () => {
     }
   }, [selectedAccountId, formData.header.mediaId, formData.header.uploadedAccountId]);
 
-  // ✅ HANDLER: Media Upload for Preview
+  // ✅ REPLACE handleMediaUpload function completely
+
   const handleMediaUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -261,14 +262,14 @@ const CreateTemplate: React.FC = () => {
 
     // File type validation
     const validTypes: Record<string, string[]> = {
-      image: ['image/jpeg', 'image/png', 'image/jpg'],
+      image: ['image/jpeg', 'image/png', 'image/jpg', 'image/webp'],
       video: ['video/mp4', 'video/3gpp'],
       document: ['application/pdf'],
     };
 
     const allowedTypes = validTypes[formData.header.type] || [];
     if (!allowedTypes.includes(file.type)) {
-      setApiError(`Invalid file type: ${file.type}`);
+      setApiError(`Invalid file type: ${file.type}. Allowed: ${allowedTypes.join(', ')}`);
       return;
     }
 
@@ -287,66 +288,66 @@ const CreateTemplate: React.FC = () => {
       setMediaUploading(true);
       setApiError(null);
 
+      // ✅ Local preview immediately (blob URL)
+      const localPreviewUrl = URL.createObjectURL(file);
+
       const response = await templateApi.uploadMedia(file, selectedAccountId);
 
       if (response.data?.success && response.data?.data) {
         const uploadData = response.data.data;
 
-        console.log('✅ Upload response (clean):', {
+        console.log('✅ Upload response:', {
+          cloudinaryUrl: uploadData.cloudinaryUrl?.substring(0, 60),
           mediaHandle: uploadData.mediaHandle?.substring(0, 30),
           metaNumericId: uploadData.metaNumericId,
-          cloudinaryUrl: uploadData.cloudinaryUrl?.substring(0, 60),
-          // Confirm: no ::: in any field
-          hasSmuggling:
-            uploadData.mediaId?.includes(':::') ||
-            uploadData.mediaHandle?.includes(':::'),
         });
 
-        // ✅ Store all fields separately - NO smuggling
+        // ✅ CRITICAL: Cloudinary URL ko PRIMARY mano
+        // mediaHandle sirf template CREATION ke liye use hoga
+        // DB mein cloudinaryUrl save hoga (PERMANENT)
+        
+        const cloudinaryUrl = uploadData.cloudinaryUrl || uploadData.permanentUrl || '';
+        const mediaHandle = uploadData.mediaHandle || uploadData.mediaId || '';
+        const metaNumericId = uploadData.metaNumericId || null;
+
         updateFormData('header', {
           ...formData.header,
-
-          // Template creation ke liye (Meta approval)
-          mediaId: uploadData.mediaHandle || uploadData.mediaId || '',
-
-          // ✅ Permanent numeric ID (campaigns ke liye)
-          metaNumericId: uploadData.metaNumericId || null,
-
-          // ✅ Permanent URL (DB storage + campaign fallback)
-          cloudinaryUrl:
-            uploadData.cloudinaryUrl ||
-            uploadData.permanentUrl ||
-            '',
-
-          // Local preview (blob URL - sirf display ke liye)
-          mediaUrl: URL.createObjectURL(file),
-
+          
+          // ✅ Template CREATION ke liye (Meta approval)
+          // "4:V2hh..." handle - sirf ek baar use hoga
+          mediaId: mediaHandle,
+          
+          // ✅ PERMANENT: DB mein ye save hoga
+          cloudinaryUrl: cloudinaryUrl,
+          
+          // ✅ Numeric ID if available (most permanent)
+          metaNumericId: metaNumericId,
+          
+          // ✅ Preview ke liye (local blob URL)
+          mediaUrl: localPreviewUrl,
+          
           fileName: uploadData.filename || file.name,
-          uploadedAccountId:
-            uploadData.whatsappAccountId || selectedAccountId,
+          uploadedAccountId: uploadData.whatsappAccountId || selectedAccountId,
         });
 
-        setSuccessMessage(
-          `✅ Media uploaded! ${
-            uploadData.metaNumericId
-              ? 'Permanent ID saved - campaigns will work correctly.'
-              : uploadData.cloudinaryUrl
-              ? 'Permanent URL saved - campaigns will re-upload automatically.'
-              : 'Upload complete.'
-          }`
-        );
-        setTimeout(() => setSuccessMessage(null), 4000);
+        const successMsg = cloudinaryUrl 
+          ? `✅ Media uploaded! Permanent URL saved - no re-upload needed for campaigns.`
+          : metaNumericId
+          ? `✅ Media uploaded! Numeric ID saved - permanent.`
+          : `✅ Media uploaded successfully!`;
+          
+        setSuccessMessage(successMsg);
+        setTimeout(() => setSuccessMessage(null), 5000);
 
       } else {
-        throw new Error(
-          response.data?.message || 'Upload failed - no data returned'
-        );
+        throw new Error(response.data?.message || 'Upload failed - no data returned');
       }
     } catch (error: any) {
+      console.error('❌ Media upload failed:', error);
       setApiError(
         error.response?.data?.message ||
-          error.message ||
-          'Media upload failed'
+        error.message ||
+        'Media upload failed. Please try again.'
       );
     } finally {
       setMediaUploading(false);
@@ -648,29 +649,39 @@ const CreateTemplate: React.FC = () => {
         }
       }
       else if (['image', 'video', 'document'].includes(formData.header.type)) {
-        if (!formData.header.mediaId && !formData.header.metaNumericId) {
-          setApiError('Please upload media first.');
+        
+        const cloudinaryUrl = formData.header.cloudinaryUrl || '';
+        const mediaHandle = formData.header.mediaId || '';      // "4:V2hh..." 
+        const metaNumericId = formData.header.metaNumericId;   // "12345..."
+        
+        // ✅ Validation: Kuch toh hona chahiye
+        if (!cloudinaryUrl && !mediaHandle && !metaNumericId) {
+          setApiError('Please upload media first before creating the template.');
           setSaving(false);
           return;
         }
 
-        // ✅ Sab fields alag alag bhejo - NO smuggling
-        payload.headerMediaId =
-          formData.header.mediaId || formData.header.metaNumericId || '';
-
-        // ✅ Agar numeric ID hai toh alag se bhi bhejo
-        if (formData.header.metaNumericId) {
-          payload.metaNumericId = formData.header.metaNumericId;
+        // ✅ CORRECT STRATEGY:
+        // Template CREATION: mediaHandle (4:V2hh...) use karo → Meta approve kare
+        // DB mein: cloudinaryUrl PERMANENT save karo → campaigns ke liye
+        // headerMediaId: null save karo DB mein (handle expire ho jaata hai)
+        
+        // Backend ko ye bhejo:
+        payload.headerMediaId = mediaHandle || metaNumericId || '';  // Template creation ke liye
+        payload.headerContent = cloudinaryUrl;                        // DB permanent storage ✅
+        payload.cloudinaryUrl = cloudinaryUrl;                        // Extra confirmation ✅
+        
+        // Agar numeric ID hai toh alag se
+        if (metaNumericId) {
+          payload.metaNumericId = metaNumericId;
         }
 
-        // ✅ Permanent URL DB mein store karo
-        payload.cloudinaryUrl = formData.header.cloudinaryUrl || '';
-        payload.headerContent = formData.header.cloudinaryUrl || '';
-
-        console.log('📤 Clean media payload (no smuggling):', {
-          headerMediaId: payload.headerMediaId?.substring(0, 30),
-          metaNumericId: payload.metaNumericId || 'none',
-          cloudinaryUrl: payload.cloudinaryUrl?.substring(0, 60),
+        console.log('📤 Media payload:', {
+          headerMediaId: payload.headerMediaId?.substring(0, 30) + '...',
+          headerContent: cloudinaryUrl?.substring(0, 60),
+          hasCloudinaryUrl: !!cloudinaryUrl,
+          hasHandle: !!mediaHandle,
+          hasNumericId: !!metaNumericId,
         });
       }
 
