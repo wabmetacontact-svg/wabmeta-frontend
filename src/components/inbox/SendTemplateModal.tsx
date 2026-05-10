@@ -12,7 +12,7 @@ import {
     Image as ImageIcon,
     Video,
 } from 'lucide-react';
-import { templates, whatsapp } from '../../services/api';
+import { templates, whatsapp, inbox } from '../../services/api';
 import toast from 'react-hot-toast';
 
 interface Template {
@@ -138,10 +138,9 @@ const SendTemplateModal: React.FC<SendTemplateModalProps> = ({
             return;
         }
 
-        // Check if all variables are filled
+        // Variables check
         const vars = extractVariables(selectedTemplate.bodyText);
         const emptyVars = vars.filter(v => !variableValues[v]?.trim());
-
         if (emptyVars.length > 0) {
             toast.error('Please fill all template variables');
             return;
@@ -150,10 +149,13 @@ const SendTemplateModal: React.FC<SendTemplateModalProps> = ({
         try {
             setSending(true);
 
-            // Get WhatsApp account
+            // ── WhatsApp account dhundo ─────────────────────────────────
             const accountsRes = await whatsapp.accounts();
             const accountsData = accountsRes.data?.data;
-            const accounts = (accountsData?.accounts || (Array.isArray(accountsData) ? accountsData : [])) as any[];
+            const accounts = (
+                accountsData?.accounts ||
+                (Array.isArray(accountsData) ? accountsData : [])
+            ) as any[];
             const defaultAccount = accounts.find((a: any) => a.isDefault) || accounts[0];
 
             if (!defaultAccount) {
@@ -161,38 +163,97 @@ const SendTemplateModal: React.FC<SendTemplateModalProps> = ({
                 return;
             }
 
-            // Prepare components array according to Meta API spec
+            // ── Build components ────────────────────────────────────────
             const components: any[] = [];
-            
+
             // 1. Header component
-            if (selectedTemplate.headerType && selectedTemplate.headerType !== 'NONE') {
-                const headerVars = selectedTemplate.headerType === 'TEXT' ? extractVariables(selectedTemplate.headerContent || '') : [];
-                
-                if (['IMAGE', 'VIDEO', 'DOCUMENT'].includes(selectedTemplate.headerType)) {
-                    if (!headerMediaUrl) {
-                        toast.error(`Please provide a ${selectedTemplate.headerType.toLowerCase()} URL`);
+            if (
+                selectedTemplate.headerType &&
+                selectedTemplate.headerType !== 'NONE'
+            ) {
+                const hType = selectedTemplate.headerType.toUpperCase();
+
+                if (['IMAGE', 'VIDEO', 'DOCUMENT'].includes(hType)) {
+                    // ✅ SMART MEDIA RESOLUTION
+                    // Priority 1: User ne custom URL diya hai
+                    // Priority 2: Template ka stored media (auto-resolve)
+
+                    let resolvedMediaId: string | null = null;
+                    let resolvedMediaUrl: string | null = headerMediaUrl || null;
+
+                    // ✅ Auto-resolve: Template ka media fresh upload karo
+                    if (selectedTemplate.id) {
+                        try {
+                            const resolveToast = toast.loading('Preparing media...');
+
+                            const resolveRes = await inbox.resolveTemplateMedia(selectedTemplate.id);
+                            toast.dismiss(resolveToast);
+
+                            if (resolveRes.data?.data?.mediaId) {
+                                resolvedMediaId = resolveRes.data.data.mediaId;
+                                console.log('✅ Media resolved - numeric ID:', resolvedMediaId);
+                            }
+                        } catch (resolveErr: any) {
+                            toast.dismiss();
+                            console.warn('⚠️ Auto-resolve failed, using URL fallback:', resolveErr.message);
+                            // URL fallback use karenge
+                        }
+                    }
+
+                    // ── Build header parameter ──────────────────────────────
+                    if (resolvedMediaId && /^\d+$/.test(resolvedMediaId)) {
+                        // ✅ BEST: Numeric ID use karo (most reliable)
+                        components.push({
+                            type: 'header',
+                            parameters: [{
+                                type: hType.toLowerCase(),
+                                [hType.toLowerCase()]: {
+                                    id: resolvedMediaId,   // ✅ id field - Meta preferred
+                                },
+                            }],
+                        });
+                        console.log('📎 Using numeric mediaId:', resolvedMediaId);
+
+                    } else if (resolvedMediaUrl) {
+                        // ⚠️ FALLBACK: URL use karo
+                        if (!resolvedMediaUrl.startsWith('http')) {
+                            toast.error(`Please provide a valid ${hType.toLowerCase()} URL`);
+                            setSending(false);
+                            return;
+                        }
+                        components.push({
+                            type: 'header',
+                            parameters: [{
+                                type: hType.toLowerCase(),
+                                [hType.toLowerCase()]: {
+                                    link: resolvedMediaUrl,  // Fallback URL
+                                },
+                            }],
+                        });
+                        console.log('📎 Using media URL (fallback):', resolvedMediaUrl.substring(0, 50));
+
+                    } else {
+                        // ❌ No media available
+                        toast.error(
+                            `No media available for this template. ` +
+                            `Please re-upload the ${hType.toLowerCase()} in Templates page.`
+                        );
                         setSending(false);
                         return;
                     }
-                    components.push({
-                        type: 'header',
-                        parameters: [
-                            {
-                                type: selectedTemplate.headerType.toLowerCase(),
-                                [selectedTemplate.headerType.toLowerCase()]: {
-                                    link: headerMediaUrl
-                                }
-                            }
-                        ]
-                    });
-                } else if (selectedTemplate.headerType === 'TEXT' && headerVars.length > 0) {
-                    components.push({
-                        type: 'header',
-                        parameters: headerVars.map(v => ({
-                            type: 'text',
-                            text: variableValues[v] || ' '
-                        }))
-                    });
+
+                } else if (selectedTemplate.headerType === 'TEXT') {
+                    // Text header
+                    const headerVars = extractVariables(selectedTemplate.headerContent || '');
+                    if (headerVars.length > 0) {
+                        components.push({
+                            type: 'header',
+                            parameters: headerVars.map(v => ({
+                                type: 'text',
+                                text: variableValues[v] || ' ',
+                            })),
+                        });
+                    }
                 }
             }
 
@@ -204,11 +265,11 @@ const SendTemplateModal: React.FC<SendTemplateModalProps> = ({
                     parameters: bodyVars.map(v => ({
                         type: 'text',
                         text: variableValues[v] || ' ',
-                    }))
+                    })),
                 });
             }
 
-            // Send template message
+            // ── Send template ───────────────────────────────────────────
             const response = await whatsapp.sendTemplate({
                 whatsappAccountId: defaultAccount.id,
                 to: contactPhone,
@@ -219,15 +280,20 @@ const SendTemplateModal: React.FC<SendTemplateModalProps> = ({
             });
 
             if (response.data.success) {
-                toast.success('Template message sent! 24h window reopened.');
+                toast.success('Template sent! ✅ 24h window reopened.');
                 onSuccess();
                 onClose();
             } else {
-                throw new Error(response.data.message);
+                throw new Error(response.data.message || 'Send failed');
             }
+
         } catch (error: any) {
             console.error('Send template error:', error);
-            toast.error(error.message || 'Failed to send template');
+            const errMsg =
+                error.response?.data?.message ||
+                error.message ||
+                'Failed to send template';
+            toast.error(errMsg);
         } finally {
             setSending(false);
         }

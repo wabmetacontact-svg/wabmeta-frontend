@@ -858,6 +858,9 @@ export const inbox = {
     });
   },
   stats: () => api.get<ApiResponse>('/inbox/stats'),
+  // ✅ NEW: Template media resolve
+  resolveTemplateMedia: (templateId: string) =>
+    api.post('/inbox/template/resolve-media', { templateId }),
 };
 
 // ---------- CHATBOT ----------
