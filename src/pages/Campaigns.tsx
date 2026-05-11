@@ -15,7 +15,8 @@ import {
   Play,
   Eye,
   Loader2,
-  AlertCircle
+  AlertCircle,
+  AlertTriangle
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { campaigns as campaignsApi } from '../services/api';
@@ -78,6 +79,11 @@ const Campaigns: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
+  // ✅ NEW: Wallet low balance state
+  const [walletBlockData, setWalletBlockData] = useState<{
+    balance: number;
+  } | null>(null);
+
   const { socket, isConnected } = useSocket();
 
   useEffect(() => {
@@ -92,14 +98,12 @@ const Campaigns: React.FC = () => {
     const handleCampaignUpdate = (data: any) => {
       console.log('📡 [REAL-TIME] Campaign update:', data);
 
-      // Update specific campaign in list
       setCampaigns(prev => prev.map(c =>
         c.id === data.campaignId
           ? { ...c, status: data.status, sentCount: data.sent || c.sentCount }
           : c
       ));
 
-      // Refresh stats silently
       fetchStats();
     };
 
@@ -129,7 +133,7 @@ const Campaigns: React.FC = () => {
     socket.on('campaign:progress', handleCampaignProgress);
     socket.on('campaign:error', handleCampaignError);
     socket.on('campaign:completed', (_data) => {
-      fetchCampaigns(); // Full refresh on completion
+      fetchCampaigns();
       fetchStats();
     });
 
@@ -160,7 +164,6 @@ const Campaigns: React.FC = () => {
         throw new Error(response.data.message || 'Failed to load campaigns');
       }
     } catch (error: any) {
-      console.error('Fetch campaigns error:', error);
       setError(error.message || 'Failed to load campaigns');
       setCampaigns([]);
     } finally {
@@ -184,13 +187,13 @@ const Campaigns: React.FC = () => {
       }
     } catch (error) {
       console.error('Fetch stats error:', error);
-      // Keep default values
     }
   };
 
   const handleAction = async (action: 'start' | 'pause' | 'resume' | 'cancel', campaignId: string) => {
     try {
       setActionLoading(campaignId);
+      setWalletBlockData(null); // Clear previous warning
 
       let response;
       switch (action) {
@@ -214,7 +217,15 @@ const Campaigns: React.FC = () => {
         fetchStats();
       }
     } catch (error: any) {
-      toast.error(error.response?.data?.message || `Failed to ${action} campaign`);
+      const msg = error?.response?.data?.message || error?.message || '';
+
+      // ✅ Wallet low balance check
+      if (msg.startsWith('WALLET_LOW_BALANCE::')) {
+        const balance = parseFloat(msg.split('::')[1]);
+        setWalletBlockData({ balance });
+      } else {
+        toast.error(msg || `Failed to ${action} campaign`);
+      }
     } finally {
       setActionLoading(null);
     }
@@ -309,7 +320,55 @@ const Campaigns: React.FC = () => {
         </Link>
       </div>
 
-      {/* Stats - ✅ Safe numbers */}
+      {/* ✅ NEW: Wallet Low Balance Warning Banner */}
+      {walletBlockData && (
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200
+                        dark:border-red-800 rounded-2xl p-4
+                        flex items-start gap-3">
+
+          {/* Icon */}
+          <div className="w-10 h-10 bg-red-100 dark:bg-red-900/40
+                          rounded-xl flex items-center justify-center flex-shrink-0">
+            <AlertTriangle className="w-5 h-5 text-red-600" />
+          </div>
+
+          {/* Text */}
+          <div className="flex-1">
+            <p className="font-semibold text-red-700 dark:text-red-400 text-sm">
+              Campaign Blocked - Wallet Balance Low
+            </p>
+            <p className="text-red-600 dark:text-red-500 text-xs mt-0.5">
+              Your wallet balance is{' '}
+              <span className="font-bold">
+                ₹{walletBlockData.balance.toFixed(2)}
+              </span>
+              . Minimum <span className="font-bold">₹50</span> required
+              to run a campaign. Please add money to your wallet.
+            </p>
+
+            {/* Button */}
+            <Link
+              to="/dashboard/wallet"
+              className="inline-flex items-center gap-1.5 mt-2
+                         px-3 py-1.5 bg-red-600 hover:bg-red-700
+                         text-white text-xs font-semibold
+                         rounded-lg transition-all"
+            >
+              Add Money to Wallet →
+            </Link>
+          </div>
+
+          {/* Close */}
+          <button
+            onClick={() => setWalletBlockData(null)}
+            className="text-red-400 hover:text-red-600 transition-all"
+          >
+            <XCircle className="w-5 h-5" />
+          </button>
+        </div>
+      )}
+
+      {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between">
@@ -405,7 +464,7 @@ const Campaigns: React.FC = () => {
         </div>
       </div>
 
-      {/* Campaigns List - ✅ Safe numbers */}
+      {/* Campaigns List */}
       <div className="space-y-4">
         {campaigns.length > 0 ? (
           campaigns.map((campaign) => (
@@ -483,7 +542,7 @@ const Campaigns: React.FC = () => {
                 </div>
               </div>
 
-              {/* Stats - ✅ Safe numbers */}
+              {/* Stats */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
                 <div>
                   <p className="text-xs text-gray-500 dark:text-gray-500">Recipients</p>
