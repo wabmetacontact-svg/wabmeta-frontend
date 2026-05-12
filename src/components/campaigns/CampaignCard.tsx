@@ -21,6 +21,7 @@ interface CampaignCardProps {
   onDuplicate: (campaign: Campaign) => void;
   onPause?: (id: string) => void;
   onResume?: (id: string) => void;
+  onStart?: (id: string, name: string) => void;
 }
 
 const CampaignCard: React.FC<CampaignCardProps> = ({
@@ -28,7 +29,8 @@ const CampaignCard: React.FC<CampaignCardProps> = ({
   onDelete,
   onDuplicate,
   onPause,
-  onResume
+  onResume,
+  onStart
 }) => {
   const [showMenu, setShowMenu] = React.useState(false);
   const menuRef = React.useRef<HTMLDivElement>(null);
@@ -103,6 +105,19 @@ const CampaignCard: React.FC<CampaignCardProps> = ({
                 <BarChart2 className="w-4 h-4" />
                 <span>View Analytics</span>
               </Link>
+              
+              {campaign.status === 'draft' && onStart && (
+                <button
+                  onClick={() => {
+                    onStart(campaignId, campaign.name);
+                    setShowMenu(false);
+                  }}
+                  className="flex items-center space-x-2 px-4 py-2 text-sm text-green-600 hover:bg-green-50 w-full text-left transition-colors"
+                >
+                  <Play className="w-4 h-4" />
+                  <span>Start Campaign</span>
+                </button>
+              )}
               
               {campaign.status === 'running' && onPause && (
                 <button

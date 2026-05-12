@@ -690,6 +690,8 @@ export const campaigns = {
 
   retryFailed: (campaignId: string, data: { contactIds?: string[] }) =>
     api.post<ApiResponse>(`/campaigns/${campaignId}/retry`, data),
+  estimateCost: (campaignId: string) =>
+    api.get<ApiResponse>(`/campaigns/${campaignId}/estimate-cost`),
 };
 
 // ---------- ANALYTICS ----------

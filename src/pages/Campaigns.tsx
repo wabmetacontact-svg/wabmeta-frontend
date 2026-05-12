@@ -23,6 +23,9 @@ import { campaigns as campaignsApi } from '../services/api';
 import { useSocket } from '../context/SocketContext';
 import toast from 'react-hot-toast';
 import PageSkeleton from '../components/common/PageSkeleton';
+import WalletCostModal from '../components/campaigns/WalletCostModal';
+import { campaigns as campaignApi } from '../services/api';
+
 
 // ✅ Safe number helpers
 const safeNumber = (value: any): number => {
@@ -78,6 +81,14 @@ const Campaigns: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [error, setError] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+
+  // ✅ Wallet Cost Estimation states
+  const [costModalOpen, setCostModalOpen] = useState(false);
+  const [costEstimate, setCostEstimate] = useState<any>(null);
+  const [costLoading, setCostLoading] = useState(false);
+  const [pendingStartId, setPendingStartId] = useState<string | null>(null);
+  const [pendingCampaignName, setPendingCampaignName] = useState('');
+
 
   // ✅ NEW: Wallet low balance state
   const [walletBlockData, setWalletBlockData] = useState<{
@@ -241,6 +252,64 @@ const Campaigns: React.FC = () => {
       setActionLoading(null);
     }
   };
+
+  const handleStartCampaign = async (campaignId: string, campaignName: string) => {
+    setPendingStartId(campaignId);
+    setPendingCampaignName(campaignName);
+    setCostEstimate(null);
+    setCostLoading(true);
+    setCostModalOpen(true);
+
+    try {
+      const res = await campaignApi.estimateCost(campaignId);
+      const estimate = res.data?.data || res.data;
+      setCostEstimate(estimate);
+    } catch (err: any) {
+      console.error('Cost estimation failed:', err);
+      // Error pe bhi modal open rakho with null estimate
+      setCostEstimate(null);
+    } finally {
+      setCostLoading(false);
+    }
+  };
+
+  const handleConfirmStart = async () => {
+    if (!pendingStartId) return;
+    setCostModalOpen(false);
+
+    try {
+      await campaignsApi.start(pendingStartId);
+      // Refresh campaigns list
+      fetchCampaigns();
+      fetchStats();
+      toast.success('Campaign started successfully!');
+    } catch (err: any) {
+      const msg = err?.response?.data?.message || err?.message || '';
+      
+      // ── Wallet error parse karo ────────────────────────────────
+      if (msg.startsWith('WALLET_INSUFFICIENT::')) {
+        const parts = msg.split('::');
+        const needed = parseFloat(parts[1]) || 0;
+        const available = parseFloat(parts[2]) || 0;
+        toast.error(
+          `Insufficient balance! Need ₹${needed.toFixed(2)}, have ₹${available.toFixed(2)}. Please top up.`,
+          { duration: 6000 }
+        );
+      } else if (msg.startsWith('WALLET_LOW_BALANCE::')) {
+        const parts = msg.split('::');
+        const available = parseFloat(parts[2]) || 0;
+        toast.error(
+          `Wallet balance too low (₹${available.toFixed(2)}). Minimum ₹20 required.`,
+          { duration: 6000 }
+        );
+      } else {
+        toast.error(msg || 'Failed to start campaign');
+      }
+    } finally {
+      setPendingStartId(null);
+    }
+  };
+
 
   const handleDelete = async (campaignId: string) => {
     if (!confirm('Are you sure you want to delete this campaign?')) return;
@@ -509,7 +578,7 @@ const Campaigns: React.FC = () => {
 
                   {campaign.status === 'DRAFT' && (
                     <button
-                      onClick={() => handleAction('start', campaign.id)}
+                      onClick={() => handleStartCampaign(campaign.id, campaign.name)}
                       disabled={actionLoading === campaign.id}
                       className="p-2 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-colors"
                       title="Start Campaign"
@@ -642,6 +711,15 @@ const Campaigns: React.FC = () => {
           </div>
         )}
       </div>
+
+      <WalletCostModal
+        isOpen={costModalOpen}
+        onClose={() => { setCostModalOpen(false); setPendingStartId(null); }}
+        onConfirm={handleConfirmStart}
+        estimate={costEstimate}
+        loading={costLoading}
+        campaignName={pendingCampaignName}
+      />
     </div>
   );
 };
