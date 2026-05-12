@@ -12,6 +12,32 @@ import {
 } from "lucide-react";
 import { wallet as walletApi } from "../../services/api";
 
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+const formatTransactionDescription = (desc: string): string => {
+  if (!desc) return '';
+  
+  // Old → New mapping
+  const replacements: Record<string, string> = {
+    'Manual debit by admin': 'Debit by WabMeta',
+    'manual debit by admin': 'Debit by WabMeta',
+    'Manual credit by admin': 'Credit by WabMeta',
+    'manual credit by admin': 'Credit by WabMeta',
+    'Manual debit': 'Debit by WabMeta',
+    'Manual credit': 'Credit by WabMeta',
+  };
+
+  let result = desc;
+  for (const [oldText, newText] of Object.entries(replacements)) {
+    result = result.replace(new RegExp(oldText, 'gi'), newText);
+  }
+  return result;
+};
+
+const formatTransactionNote = (note: string | null | undefined): string => {
+  if (!note) return '';
+  return formatTransactionDescription(note);
+};
+
 // ─── Types ─────────────────────────────────────────────────────────────────────
 interface Transaction {
   id: string;
@@ -131,7 +157,7 @@ const TransactionItem: React.FC<{ txn: Transaction }> = ({ txn }) => {
           className="text-sm font-medium text-gray-900 dark:text-white
                         truncate"
         >
-          {txn.description}
+          {formatTransactionDescription(txn.description)}
         </p>
         <div className="flex items-center gap-2 mt-0.5 flex-wrap">
           <span
@@ -149,7 +175,7 @@ const TransactionItem: React.FC<{ txn: Transaction }> = ({ txn }) => {
         </div>
         {txn.note && (
           <p className="text-xs text-gray-400 mt-0.5 truncate">
-            Note: {txn.note}
+            Note: {formatTransactionNote(txn.note)}
           </p>
         )}
       </div>

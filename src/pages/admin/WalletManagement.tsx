@@ -86,9 +86,16 @@ const WalletManagement: React.FC = () => {
   const openAdjustModal = (orgId: string) => {
     setAdjustingWallet(orgId);
     setAdjustAmount('');
-    setAdjustNote('');
+    setAdjustNote('Credit by WabMeta');
     setAdjustType('admin_credit');
     setShowAdjustModal(true);
+  };
+
+  const handleTypeChange = (type: 'admin_credit' | 'admin_debit') => {
+    setAdjustType(type);
+    setAdjustNote(type === 'admin_credit' 
+      ? 'Credit by WabMeta' 
+      : 'Debit by WabMeta');
   };
 
   const handleAdjustBalance = async () => {
@@ -376,7 +383,7 @@ const WalletManagement: React.FC = () => {
                 <div className="grid grid-cols-2 gap-3">
                   <button
                     type="button"
-                    onClick={() => setAdjustType('admin_credit')}
+                    onClick={() => handleTypeChange('admin_credit')}
                     className={`flex items-center justify-center gap-2 py-2 rounded-xl border ${
                       adjustType === 'admin_credit' 
                         ? 'border-green-500 bg-green-50 text-green-700 font-semibold' 
@@ -388,7 +395,7 @@ const WalletManagement: React.FC = () => {
                   </button>
                   <button
                     type="button"
-                    onClick={() => setAdjustType('admin_debit')}
+                    onClick={() => handleTypeChange('admin_debit')}
                     className={`flex items-center justify-center gap-2 py-2 rounded-xl border ${
                       adjustType === 'admin_debit' 
                         ? 'border-red-500 bg-red-50 text-red-700 font-semibold' 
@@ -413,14 +420,21 @@ const WalletManagement: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Admin Note (Optional)</label>
-                <textarea
+                <label className="block text-sm font-medium text-gray-700 mb-1">Admin Note *</label>
+                <input
+                  type="text"
                   value={adjustNote}
                   onChange={(e) => setAdjustNote(e.target.value)}
                   className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                  placeholder="Reason for adjustment..."
-                  rows={2}
+                  placeholder={
+                    adjustType === 'admin_credit'
+                      ? 'Credit by WabMeta'
+                      : 'Debit by WabMeta'
+                  }
                 />
+                <p className="text-xs text-gray-500 mt-1">
+                  This will appear in user's transaction history
+                </p>
               </div>
             </div>
             
