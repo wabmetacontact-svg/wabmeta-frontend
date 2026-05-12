@@ -82,6 +82,8 @@ const Campaigns: React.FC = () => {
   // ✅ NEW: Wallet low balance state
   const [walletBlockData, setWalletBlockData] = useState<{
     balance: number;
+    required?: number;
+    type?: 'low' | 'insufficient';
   } | null>(null);
 
   const { socket, isConnected } = useSocket();
@@ -219,11 +221,20 @@ const Campaigns: React.FC = () => {
     } catch (error: any) {
       const msg = error?.response?.data?.message || error?.message || '';
 
-      // ✅ Wallet low balance check
+      // ✅ Wallet balance checks
       if (msg.startsWith('WALLET_LOW_BALANCE::')) {
-        const balance = parseFloat(msg.split('::')[1]);
-        setWalletBlockData({ balance });
-      } else {
+        const parts = msg.split('::');
+        const minReq = parseFloat(parts[1]);
+        const balance = parseFloat(parts[2]);
+        setWalletBlockData({ balance, required: minReq, type: 'low' });
+      } 
+      else if (msg.startsWith('WALLET_INSUFFICIENT::')) {
+        const parts = msg.split('::');
+        const estCost = parseFloat(parts[1]);
+        const balance = parseFloat(parts[2]);
+        setWalletBlockData({ balance, required: estCost, type: 'insufficient' });
+      }
+      else {
         toast.error(msg || `Failed to ${action} campaign`);
       }
     } finally {
@@ -320,11 +331,11 @@ const Campaigns: React.FC = () => {
         </Link>
       </div>
 
-      {/* ✅ NEW: Wallet Low Balance Warning Banner */}
+      {/* ✅ NEW: Dynamic Wallet Balance Warning Banner */}
       {walletBlockData && (
         <div className="bg-red-50 dark:bg-red-900/20 border border-red-200
                         dark:border-red-800 rounded-2xl p-4
-                        flex items-start gap-3">
+                        flex items-start gap-3 animate-in fade-in slide-in-from-top-4 duration-300">
 
           {/* Icon */}
           <div className="w-10 h-10 bg-red-100 dark:bg-red-900/40
@@ -335,15 +346,10 @@ const Campaigns: React.FC = () => {
           {/* Text */}
           <div className="flex-1">
             <p className="font-semibold text-red-700 dark:text-red-400 text-sm">
-              Campaign Blocked - Wallet Balance Low
+              Insufficient Wallet Balance
             </p>
             <p className="text-red-600 dark:text-red-500 text-xs mt-0.5">
-              Your wallet balance is{' '}
-              <span className="font-bold">
-                ₹{walletBlockData.balance.toFixed(2)}
-              </span>
-              . Minimum <span className="font-bold">₹50</span> required
-              to run a campaign. Please add money to your wallet.
+              Your current wallet balance (₹{walletBlockData.balance.toFixed(2)}) is insufficient to run this campaign. Please add money to your wallet to proceed.
             </p>
 
             {/* Button */}
@@ -352,7 +358,7 @@ const Campaigns: React.FC = () => {
               className="inline-flex items-center gap-1.5 mt-2
                          px-3 py-1.5 bg-red-600 hover:bg-red-700
                          text-white text-xs font-semibold
-                         rounded-lg transition-all"
+                         rounded-lg shadow-sm shadow-red-200 transition-all active:scale-95"
             >
               Add Money to Wallet →
             </Link>
@@ -361,7 +367,7 @@ const Campaigns: React.FC = () => {
           {/* Close */}
           <button
             onClick={() => setWalletBlockData(null)}
-            className="text-red-400 hover:text-red-600 transition-all"
+            className="text-red-400 hover:text-red-600 transition-all p-1"
           >
             <XCircle className="w-5 h-5" />
           </button>
@@ -370,10 +376,10 @@ const Campaigns: React.FC = () => {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+        <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Total Campaigns</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">Total Campaigns</p>
               <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
                 {safeNumber(stats.total)}
               </p>
@@ -384,10 +390,10 @@ const Campaigns: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+        <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Active</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">Active</p>
               <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
                 {safeNumber(stats.active)}
               </p>
@@ -398,10 +404,10 @@ const Campaigns: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+        <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Messages Sent</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">Messages Sent</p>
               <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
                 {safeLocaleString(stats.totalSent)}
               </p>
@@ -412,10 +418,10 @@ const Campaigns: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+        <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Delivered</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">Delivered</p>
               <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
                 {safeLocaleString(stats.totalDelivered)}
               </p>
@@ -428,7 +434,7 @@ const Campaigns: React.FC = () => {
       </div>
 
       {/* Filters */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
+      <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700 shadow-sm">
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -437,14 +443,14 @@ const Campaigns: React.FC = () => {
               placeholder="Search campaigns..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full pl-10 pr-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 transition-all"
             />
           </div>
 
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+            className="px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 transition-all"
           >
             <option value="all">All Status</option>
             <option value="DRAFT">Draft</option>
@@ -457,7 +463,7 @@ const Campaigns: React.FC = () => {
 
           <button
             onClick={fetchCampaigns}
-            className="px-4 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors"
+            className="px-4 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors flex items-center justify-center"
           >
             <Search className="w-5 h-5" />
           </button>
@@ -470,32 +476,33 @@ const Campaigns: React.FC = () => {
           campaigns.map((campaign) => (
             <div
               key={campaign.id}
-              className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow"
+              className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all group"
             >
               <div className="flex items-start justify-between mb-4">
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-3 mb-2 flex-wrap">
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white truncate max-w-[250px] sm:max-w-none">
                       {campaign.name}
                     </h3>
                     {getStatusBadge(campaign.status)}
                   </div>
                   {campaign.description && (
-                    <p className="text-gray-600 dark:text-gray-400 text-sm">
+                    <p className="text-gray-600 dark:text-gray-400 text-sm line-clamp-1">
                       {campaign.description}
                     </p>
                   )}
                   {campaign.template?.name && (
-                    <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                    <p className="text-xs text-gray-500 dark:text-gray-500 mt-1 font-medium">
                       Template: {campaign.template.name}
                     </p>
                   )}
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5 ml-4">
                   <Link
                     to={`/dashboard/campaigns/${campaign.id}`}
                     className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                    title="View Details"
                   >
                     <Eye className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                   </Link>
@@ -505,6 +512,7 @@ const Campaigns: React.FC = () => {
                       onClick={() => handleAction('start', campaign.id)}
                       disabled={actionLoading === campaign.id}
                       className="p-2 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-colors"
+                      title="Start Campaign"
                     >
                       {actionLoading === campaign.id ? (
                         <Loader2 className="w-5 h-5 animate-spin text-green-600" />
@@ -519,6 +527,7 @@ const Campaigns: React.FC = () => {
                       onClick={() => handleAction('pause', campaign.id)}
                       disabled={actionLoading === campaign.id}
                       className="p-2 hover:bg-yellow-50 dark:hover:bg-yellow-900/20 rounded-lg transition-colors"
+                      title="Pause Campaign"
                     >
                       <Pause className="w-5 h-5 text-yellow-600" />
                     </button>
@@ -527,7 +536,9 @@ const Campaigns: React.FC = () => {
                   {campaign.status === 'PAUSED' && (
                     <button
                       onClick={() => handleAction('resume', campaign.id)}
+                      disabled={actionLoading === campaign.id}
                       className="p-2 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-colors"
+                      title="Resume Campaign"
                     >
                       <Play className="w-5 h-5 text-green-600" />
                     </button>
@@ -535,87 +546,98 @@ const Campaigns: React.FC = () => {
 
                   <button
                     onClick={() => handleDelete(campaign.id)}
-                    className="p-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                    className="p-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors opacity-0 group-hover:opacity-100 transition-opacity"
+                    title="Delete"
                   >
-                    <XCircle className="w-5 h-5 text-red-600" />
+                    <XCircle className="w-5 h-5 text-red-500" />
                   </button>
                 </div>
               </div>
 
-              {/* Stats */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-                <div>
-                  <p className="text-xs text-gray-500 dark:text-gray-500">Recipients</p>
-                  <p className="text-lg font-semibold text-gray-900 dark:text-white">
+              {/* Stats Grid */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-5">
+                <div className="bg-gray-50 dark:bg-gray-900/40 p-3 rounded-xl border border-gray-100 dark:border-gray-800/50">
+                  <p className="text-[10px] uppercase tracking-wider font-bold text-gray-500 dark:text-gray-500 mb-1">Recipients</p>
+                  <p className="text-lg font-bold text-gray-900 dark:text-white">
                     {safeLocaleString(campaign.totalContacts)}
                   </p>
                 </div>
-                <div>
-                  <p className="text-xs text-gray-500 dark:text-gray-500">Sent</p>
-                  <p className="text-lg font-semibold text-green-600 dark:text-green-400">
+                <div className="bg-gray-50 dark:bg-gray-900/40 p-3 rounded-xl border border-gray-100 dark:border-gray-800/50">
+                  <p className="text-[10px] uppercase tracking-wider font-bold text-gray-500 dark:text-gray-500 mb-1">Sent</p>
+                  <p className="text-lg font-bold text-green-600 dark:text-green-400">
                     {safeLocaleString(campaign.sentCount)}
                   </p>
                 </div>
-                <div>
-                  <p className="text-xs text-gray-500 dark:text-gray-500">Delivered</p>
-                  <p className="text-lg font-semibold text-blue-600 dark:text-blue-400">
+                <div className="bg-gray-50 dark:bg-gray-900/40 p-3 rounded-xl border border-gray-100 dark:border-gray-800/50">
+                  <p className="text-[10px] uppercase tracking-wider font-bold text-gray-500 dark:text-gray-500 mb-1">Delivered</p>
+                  <p className="text-lg font-bold text-blue-600 dark:text-blue-400">
                     {safeLocaleString(campaign.deliveredCount)}
                   </p>
                 </div>
-                <div>
-                  <p className="text-xs text-gray-500 dark:text-gray-500">Read</p>
-                  <p className="text-lg font-semibold text-purple-600 dark:text-purple-400">
+                <div className="bg-gray-50 dark:bg-gray-900/40 p-3 rounded-xl border border-gray-100 dark:border-gray-800/50">
+                  <p className="text-[10px] uppercase tracking-wider font-bold text-gray-500 dark:text-gray-500 mb-1">Read</p>
+                  <p className="text-lg font-bold text-purple-600 dark:text-purple-400">
                     {safeLocaleString(campaign.readCount)}
                   </p>
                 </div>
               </div>
 
               {/* Progress Bar */}
-              {campaign.status === 'RUNNING' && (
-                <div>
-                  <div className="flex items-center justify-between text-xs text-gray-600 dark:text-gray-400 mb-1">
-                    <span>Progress</span>
-                    <span>{getProgress(campaign)}%</span>
+              {(campaign.status === 'RUNNING' || (campaign.sentCount || 0) > 0) && (
+                <div className="mb-4">
+                  <div className="flex items-center justify-between text-xs text-gray-600 dark:text-gray-400 mb-1.5">
+                    <span className="font-medium">Campaign Progress</span>
+                    <span className="font-bold">{getProgress(campaign)}%</span>
                   </div>
-                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                  <div className="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-2 shadow-inner">
                     <div
-                      className="bg-green-600 h-2 rounded-full transition-all duration-300"
+                      className={`h-2 rounded-full transition-all duration-700 ease-out ${
+                        campaign.status === 'COMPLETED' ? 'bg-purple-600' : 'bg-green-500'
+                      }`}
                       style={{ width: `${getProgress(campaign)}%` }}
                     />
                   </div>
                 </div>
               )}
 
-              {/* Meta */}
-              <div className="flex items-center gap-4 mt-4 text-xs text-gray-500 dark:text-gray-500">
-                <span className="flex items-center gap-1">
-                  <Calendar className="w-3 h-3" />
+              {/* Meta Info */}
+              <div className="flex items-center gap-4 mt-2 text-[11px] text-gray-500 dark:text-gray-500 border-t border-gray-100 dark:border-gray-800 pt-3">
+                <span className="flex items-center gap-1.5">
+                  <Calendar className="w-3.5 h-3.5" />
                   Created {formatDistanceToNow(new Date(campaign.createdAt), { addSuffix: true })}
                 </span>
                 {campaign.scheduledAt && (
-                  <span className="flex items-center gap-1">
-                    <Clock className="w-3 h-3" />
+                  <span className="flex items-center gap-1.5">
+                    <Clock className="w-3.5 h-3.5" />
                     Scheduled for {new Date(campaign.scheduledAt).toLocaleString()}
+                  </span>
+                )}
+                {campaign.startedAt && (
+                  <span className="flex items-center gap-1.5">
+                    <Play className="w-3.5 h-3.5" />
+                    Started {formatDistanceToNow(new Date(campaign.startedAt), { addSuffix: true })}
                   </span>
                 )}
               </div>
             </div>
           ))
         ) : (
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-12 text-center border border-gray-200 dark:border-gray-700">
-            <Send className="w-16 h-16 mx-auto mb-4 text-gray-400" />
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-16 text-center border border-gray-200 dark:border-gray-700 shadow-sm">
+            <div className="w-20 h-20 bg-gray-50 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Send className="w-10 h-10 text-gray-300 dark:text-gray-500" />
+            </div>
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
               No campaigns yet
             </h3>
-            <p className="text-gray-600 dark:text-gray-400 mb-4">
-              Create your first campaign to start sending bulk messages
+            <p className="text-gray-600 dark:text-gray-400 mb-8 max-w-xs mx-auto">
+              Create your first campaign to start sending bulk messages and reach your customers.
             </p>
             <Link
               to="/dashboard/campaigns/create"
-              className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl transition-all shadow-lg shadow-green-200 active:scale-95"
             >
               <Plus className="w-5 h-5" />
-              Create Campaign
+              Create Your First Campaign
             </Link>
           </div>
         )}

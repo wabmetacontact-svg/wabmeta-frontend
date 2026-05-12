@@ -51,13 +51,13 @@ const TYPE_CONFIG: Record<
     isCredit: false,
   },
   admin_credit: {
-    label: "Admin Credit",
+    label: "Adjustment by Meta",
     textColor: "text-blue-600",
     bgColor: "bg-blue-100 dark:bg-blue-900/30",
     isCredit: true,
   },
   admin_debit: {
-    label: "Admin Debit",
+    label: "Adjustment by Meta",
     textColor: "text-orange-600",
     bgColor: "bg-orange-100 dark:bg-orange-900/30",
     isCredit: false,
@@ -86,7 +86,7 @@ const FILTER_OPTIONS = [
   { value: "", label: "All" },
   { value: "credit", label: "Added" },
   { value: "debit", label: "Meta Charges" },
-  { value: "admin_credit", label: "Admin Credit" },
+  { value: "admin_credit", label: "Adjustment by Meta" },
   { value: "refund", label: "Refunds" },
 ];
 
