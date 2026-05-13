@@ -430,7 +430,8 @@ export const auth = {
     lastName?: string;
     phone?: string;
     organizationName?: string;
-  }) => api.post<ApiResponse<AuthResponseData>>('/auth/register', data),
+  }) =>
+    api.post<ApiResponse<AuthResponseData>>('/auth/register', data),
 
   login: (data: { email: string; password: string }) =>
     api.post<ApiResponse<AuthResponseData>>('/auth/login', data),
@@ -441,35 +442,81 @@ export const auth = {
   me: () => api.get<ApiResponse<AuthUser>>('/auth/me'),
 
   verifyEmail: (data: { token: string }) =>
-    api.post<ApiResponse<{ message: string }>>('/auth/verify-email', data),
+    api.post<ApiResponse<{ message: string }>>(
+      '/auth/verify-email',
+      data
+    ),
 
   resendVerification: (data: { email: string }) =>
-    api.post<ApiResponse<{ message: string }>>('/auth/resend-verification', data),
+    api.post<ApiResponse<{ message: string }>>(
+      '/auth/resend-verification',
+      data
+    ),
 
   forgotPassword: (data: { email: string }) =>
-    api.post<ApiResponse<{ message: string }>>('/auth/forgot-password', data),
+    api.post<ApiResponse<{ message: string }>>(
+      '/auth/forgot-password',
+      data
+    ),
 
-  resetPassword: (data: { token: string; password: string; confirmPassword: string }) =>
-    api.post<ApiResponse<{ message: string }>>('/auth/reset-password', data),
+  resetPassword: (data: {
+    token: string;
+    password: string;
+    confirmPassword: string;
+  }) =>
+    api.post<ApiResponse<{ message: string }>>(
+      '/auth/reset-password',
+      data
+    ),
 
+  // Email OTP (existing)
   sendOTP: (data: { email: string }) =>
     api.post<ApiResponse<{ message: string }>>('/auth/send-otp', data),
 
   verifyOTP: (data: { email: string; otp: string }) =>
     api.post<ApiResponse<AuthResponseData>>('/auth/verify-otp', data),
 
+  // ✅ NEW: Phone OTP (WhatsApp based signup)
+  sendPhoneOTP: (data: { phone: string }) =>
+    api.post<ApiResponse<{ message: string }>>(
+      '/auth/send-phone-otp',
+      data
+    ),
+
+  verifyPhoneOTPAndRegister: (data: {
+    phone: string;
+    otp: string;
+    firstName: string;
+    lastName?: string;
+    email: string;
+    password: string;
+    organizationName?: string;
+  }) =>
+    api.post<ApiResponse<AuthResponseData>>(
+      '/auth/verify-phone-otp',
+      data
+    ),
+
   refresh: (refreshToken?: string) =>
-    api.post<ApiResponse<RefreshTokenResponse>>('/auth/refresh', { refreshToken }),
+    api.post<ApiResponse<RefreshTokenResponse>>('/auth/refresh', {
+      refreshToken,
+    }),
 
-  logout: () => api.post<ApiResponse<{ message: string }>>('/auth/logout'),
+  logout: () =>
+    api.post<ApiResponse<{ message: string }>>('/auth/logout'),
 
-  logoutAll: () => api.post<ApiResponse<{ message: string }>>('/auth/logout-all'),
+  logoutAll: () =>
+    api.post<ApiResponse<{ message: string }>>('/auth/logout-all'),
 
   changePassword: (data: {
     currentPassword: string;
     newPassword: string;
-    confirmPassword: string
-  }) => api.post<ApiResponse<{ message: string }>>('/auth/change-password', data),
+    confirmPassword: string;
+  }) =>
+    api.post<ApiResponse<{ message: string }>>(
+      '/auth/change-password',
+      data
+    ),
 };
 
 // ---------- USERS ----------
@@ -800,6 +847,22 @@ export const whatsapp = {
 
     return response;
   },
+
+  // ✅ NEW: Quality Rating Sync
+  syncAccountQuality: (accountId: string) =>
+    api.post<ApiResponse>(
+      `/whatsapp/accounts/${accountId}/sync-quality`
+    ),
+
+  syncAllAccountsQuality: () =>
+    api.post<ApiResponse<{
+      accounts: any[];
+      syncStats: {
+        total: number;
+        synced: number;
+        failed: number;
+      };
+    }>>('/whatsapp/accounts/sync-all'),
 };
 
 // ---------- META ----------
