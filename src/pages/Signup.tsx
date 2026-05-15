@@ -1,3 +1,4 @@
+// src/pages/Signup.tsx
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
@@ -20,9 +21,8 @@ import Button from '../components/common/Button';
 import Checkbox from '../components/common/Checkbox';
 import PasswordStrengthMeter from '../components/auth/PasswordStrengthMeter';
 import OTPInput from '../components/auth/OTPInput';
-import { auth } from '../services/api';
+import { auth, setAuthToken } from '../services/api';
 
-// Backend se match karta hai
 const PASSWORD_REGEX =
   /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#]).{8,}$/;
 
@@ -61,14 +61,17 @@ const Signup: React.FC = () => {
     agreeToTerms: false,
   });
 
-  // ─── Countdown timer ────────────────────────────────────────────────────────
+  // ─── Countdown timer ──────────────────────────────
   useEffect(() => {
     if (countdown <= 0) return;
-    const timer = setTimeout(() => setCountdown((c) => c - 1), 1000);
+    const timer = setTimeout(
+      () => setCountdown((c) => c - 1),
+      1000
+    );
     return () => clearTimeout(timer);
   }, [countdown]);
 
-  // ─── Field update helper ─────────────────────────────────────────────────────
+  // ─── Field update helper ──────────────────────────
   const update = (
     field: keyof FormData,
     value: string | boolean
@@ -78,7 +81,7 @@ const Signup: React.FC = () => {
     setApiError(null);
   };
 
-  // ─── Validations ─────────────────────────────────────────────────────────────
+  // ─── Validations ──────────────────────────────────
 
   const validateStep1 = () => {
     const errs: Record<string, string> = {};
@@ -86,7 +89,8 @@ const Signup: React.FC = () => {
     if (!formData.phone) {
       errs.phone = 'Phone number is required';
     } else if (!/^[6-9]\d{9}$/.test(digits)) {
-      errs.phone = 'Enter a valid 10-digit Indian mobile number';
+      errs.phone =
+        'Enter a valid 10-digit Indian mobile number';
     }
     setErrors(errs);
     return Object.keys(errs).length === 0;
@@ -114,7 +118,9 @@ const Signup: React.FC = () => {
 
     if (!formData.email) {
       errs.email = 'Email is required';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+    } else if (
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)
+    ) {
       errs.email = 'Enter a valid email address';
     }
 
@@ -140,19 +146,22 @@ const Signup: React.FC = () => {
 
     if (!formData.confirmPassword) {
       errs.confirmPassword = 'Please confirm your password';
-    } else if (formData.password !== formData.confirmPassword) {
+    } else if (
+      formData.password !== formData.confirmPassword
+    ) {
       errs.confirmPassword = 'Passwords do not match';
     }
 
     if (!formData.agreeToTerms) {
-      errs.agreeToTerms = 'You must agree to the terms and conditions';
+      errs.agreeToTerms =
+        'You must agree to the terms and conditions';
     }
 
     setErrors(errs);
     return Object.keys(errs).length === 0;
   };
 
-  // ─── Handlers ────────────────────────────────────────────────────────────────
+  // ─── Handlers ─────────────────────────────────────
 
   const handleSendOTP = async () => {
     if (!validateStep1()) return;
@@ -160,15 +169,23 @@ const Signup: React.FC = () => {
     setApiError(null);
 
     try {
-      await auth.sendPhoneOTP({ phone: `+91${formData.phone}` });
+      await auth.sendPhoneOTP({
+        phone: `+91${formData.phone}`,
+      });
       setCountdown(60);
       setStep(2);
     } catch (err: any) {
       const status = err?.response?.status;
       if (status === 429) {
+        const waitMatch =
+          err?.response?.data?.message?.match(/(\d+)\s*second/);
+        const waitSecs = waitMatch
+          ? parseInt(waitMatch[1])
+          : 60;
+        setCountdown(waitSecs);
         setApiError(
           err?.response?.data?.message ||
-            'Too many requests. Please wait before trying again.'
+            'Please wait before requesting another OTP.'
         );
       } else {
         setApiError(
@@ -187,10 +204,21 @@ const Signup: React.FC = () => {
     setApiError(null);
 
     try {
-      await auth.sendPhoneOTP({ phone: `+91${formData.phone}` });
+      await auth.sendPhoneOTP({
+        phone: `+91${formData.phone}`,
+      });
       setCountdown(60);
       update('otp', '');
     } catch (err: any) {
+      const status = err?.response?.status;
+      if (status === 429) {
+        const waitMatch =
+          err?.response?.data?.message?.match(/(\d+)\s*second/);
+        const waitSecs = waitMatch
+          ? parseInt(waitMatch[1])
+          : 60;
+        setCountdown(waitSecs);
+      }
       setApiError(
         err?.response?.data?.message ||
           'Failed to resend OTP. Please try again.'
@@ -200,6 +228,8 @@ const Signup: React.FC = () => {
     }
   };
 
+  // ✅ Step 2 - Sirf local validation (OTP backend pe
+  // final submit pe verify hoga - sahi approach)
   const handleVerifyOTP = () => {
     if (validateStep2()) setStep(3);
   };
@@ -232,42 +262,56 @@ const Signup: React.FC = () => {
       const organization = result?.organization;
 
       if (!accessToken || !user) {
-        setApiError('Registration failed. Please try again.');
+        setApiError(
+          'Registration failed. Please try again.'
+        );
         return;
       }
 
-      // Tokens store karo
-      localStorage.setItem('accessToken', accessToken);
-      localStorage.setItem('token', accessToken);
-      localStorage.setItem('wabmeta_token', accessToken);
+      // ✅ api.ts ka setAuthToken use karo
+      // (internally sab 3 keys set karta hai)
+      setAuthToken(accessToken, refreshToken);
 
-      if (refreshToken) {
-        localStorage.setItem('refreshToken', refreshToken);
-      }
-
-      localStorage.setItem('wabmeta_user', JSON.stringify(user));
+      // User + Org store karo
+      localStorage.setItem(
+        'wabmeta_user',
+        JSON.stringify(user)
+      );
 
       if (organization) {
-        localStorage.setItem('wabmeta_org', JSON.stringify(organization));
-        localStorage.setItem('currentOrganizationId', organization.id);
+        localStorage.setItem(
+          'wabmeta_org',
+          JSON.stringify(organization)
+        );
+        localStorage.setItem(
+          'currentOrganizationId',
+          organization.id
+        );
       }
 
-      navigate('/dashboard');
+      // ✅ Small delay - context ko settle hone do
+      await new Promise((r) => setTimeout(r, 100));
+
+      navigate('/dashboard', { replace: true });
     } catch (err: any) {
       const status = err?.response?.status;
-      const message = err?.response?.data?.message || 'Registration failed.';
+      const message =
+        err?.response?.data?.message ||
+        'Registration failed.';
 
       if (
         status === 400 &&
         message.toLowerCase().includes('otp')
       ) {
-        // OTP invalid - step 2 pe wapas bhejo
+        // OTP invalid - step 2 pe wapas
         setApiError(
           'OTP is invalid or expired. Please request a new one.'
         );
         setStep(2);
         update('otp', '');
+        setCountdown(0);
       } else if (status === 409) {
+        // Email already exists
         setApiError(
           'This email is already registered. Please login instead.'
         );
@@ -284,7 +328,7 @@ const Signup: React.FC = () => {
     }
   };
 
-  // ─── Render ──────────────────────────────────────────────────────────────────
+  // ─── Render ───────────────────────────────────────
 
   return (
     <AuthLayout
@@ -313,8 +357,9 @@ const Signup: React.FC = () => {
           {[1, 2, 3, 4].map((s) => (
             <div key={s} className="flex items-center">
               <div
-                className={`w-9 h-9 rounded-full flex items-center justify-center
-                  font-semibold text-sm transition-all duration-300
+                className={`w-9 h-9 rounded-full flex items-center
+                  justify-center font-semibold text-sm
+                  transition-all duration-300
                   ${
                     s < step
                       ? 'bg-green-500 text-white'
@@ -323,12 +368,21 @@ const Signup: React.FC = () => {
                       : 'bg-gray-200 text-gray-400'
                   }`}
               >
-                {s < step ? <Check className="w-4 h-4" /> : s}
+                {s < step ? (
+                  <Check className="w-4 h-4" />
+                ) : (
+                  s
+                )}
               </div>
               {s < 4 && (
                 <div
-                  className={`w-12 h-1 mx-1 rounded transition-all duration-300
-                    ${s < step ? 'bg-green-500' : 'bg-gray-200'}`}
+                  className={`w-12 h-1 mx-1 rounded
+                    transition-all duration-300
+                    ${
+                      s < step
+                        ? 'bg-green-500'
+                        : 'bg-gray-200'
+                    }`}
                 />
               )}
             </div>
@@ -351,12 +405,11 @@ const Signup: React.FC = () => {
 
       <form onSubmit={handleSubmit} className="space-y-6">
 
-        {/* ══════════════════════════════════════════
+        {/* ════════════════════════════════
             STEP 1 — Phone Number
-        ══════════════════════════════════════════ */}
+        ════════════════════════════════ */}
         {step === 1 && (
           <div className="space-y-5 animate-fade-in">
-            {/* Info card */}
             <div className="flex items-start space-x-3 p-4 bg-green-50 border border-green-200 rounded-xl">
               <MessageCircle className="w-5 h-5 text-green-600 shrink-0 mt-0.5" />
               <div>
@@ -364,22 +417,18 @@ const Signup: React.FC = () => {
                   WhatsApp Verification
                 </p>
                 <p className="text-xs text-green-600 mt-0.5">
-                  You'll receive a 6-digit OTP on your WhatsApp number
+                  You'll receive a 6-digit OTP on WhatsApp
                 </p>
               </div>
             </div>
 
-            {/* Phone Input */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                WhatsApp Number <span className="text-red-500">*</span>
+                WhatsApp Number{' '}
+                <span className="text-red-500">*</span>
               </label>
               <div className="flex">
-                <div
-                  className="flex items-center px-4 bg-gray-100 border
-                  border-r-0 border-gray-200 rounded-l-xl min-w-[80px]
-                  justify-center"
-                >
+                <div className="flex items-center px-4 bg-gray-100 border border-r-0 border-gray-200 rounded-l-xl min-w-[80px] justify-center">
                   <span className="text-gray-600 font-semibold text-sm">
                     🇮🇳 +91
                   </span>
@@ -418,7 +467,9 @@ const Signup: React.FC = () => {
               fullWidth
               loading={loading}
               onClick={handleSendOTP}
-              icon={<MessageCircle className="w-5 h-5" />}
+              icon={
+                <MessageCircle className="w-5 h-5" />
+              }
               iconPosition="right"
             >
               Send OTP on WhatsApp
@@ -436,23 +487,26 @@ const Signup: React.FC = () => {
           </div>
         )}
 
-        {/* ══════════════════════════════════════════
+        {/* ════════════════════════════════
             STEP 2 — OTP Verify
-        ══════════════════════════════════════════ */}
+        ════════════════════════════════ */}
         {step === 2 && (
           <div className="space-y-6 animate-fade-in">
-            {/* Phone display card */}
             <div className="text-center p-5 bg-green-50 rounded-xl border border-green-200">
               <div className="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
                 <MessageCircle className="w-7 h-7 text-green-600" />
               </div>
-              <p className="text-sm text-gray-600">OTP sent to WhatsApp</p>
+              <p className="text-sm text-gray-600">
+                OTP sent to WhatsApp
+              </p>
               <p className="font-bold text-gray-900 text-xl mt-1">
                 +91 {formData.phone}
               </p>
+              <p className="text-xs text-gray-400 mt-1">
+                Check your WhatsApp messages
+              </p>
             </div>
 
-            {/* OTP Input */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-4 text-center">
                 Enter 6-digit verification code
@@ -460,9 +514,7 @@ const Signup: React.FC = () => {
               <OTPInput
                 length={6}
                 value={formData.otp}
-                onChange={(val) => {
-                  update('otp', val);
-                }}
+                onChange={(val) => update('otp', val)}
                 error={!!errors.otp}
                 disabled={loading}
               />
@@ -482,7 +534,7 @@ const Signup: React.FC = () => {
               icon={<Shield className="w-5 h-5" />}
               iconPosition="right"
             >
-              Verify OTP
+              Verify & Continue
             </Button>
 
             {/* Resend */}
@@ -502,9 +554,7 @@ const Signup: React.FC = () => {
                   type="button"
                   onClick={handleResendOTP}
                   disabled={loading}
-                  className="inline-flex items-center space-x-2 text-primary-600
-                    hover:text-primary-700 font-semibold text-sm transition-colors
-                    disabled:opacity-50"
+                  className="inline-flex items-center space-x-2 text-primary-600 hover:text-primary-700 font-semibold text-sm transition-colors disabled:opacity-50"
                 >
                   <RefreshCw className="w-4 h-4" />
                   <span>Resend OTP</span>
@@ -512,7 +562,6 @@ const Signup: React.FC = () => {
               )}
             </div>
 
-            {/* Change number */}
             <p className="text-center text-sm text-gray-500">
               Wrong number?{' '}
               <button
@@ -530,9 +579,9 @@ const Signup: React.FC = () => {
           </div>
         )}
 
-        {/* ══════════════════════════════════════════
+        {/* ════════════════════════════════
             STEP 3 — Personal Info
-        ══════════════════════════════════════════ */}
+        ════════════════════════════════ */}
         {step === 3 && (
           <div className="space-y-5 animate-fade-in">
             <div className="grid grid-cols-2 gap-4">
@@ -541,7 +590,9 @@ const Signup: React.FC = () => {
                 placeholder="John"
                 icon={<User className="w-5 h-5" />}
                 value={formData.firstName}
-                onChange={(e) => update('firstName', e.target.value)}
+                onChange={(e) =>
+                  update('firstName', e.target.value)
+                }
                 error={errors.firstName}
                 autoFocus
               />
@@ -549,7 +600,9 @@ const Signup: React.FC = () => {
                 label="Last Name"
                 placeholder="Doe"
                 value={formData.lastName}
-                onChange={(e) => update('lastName', e.target.value)}
+                onChange={(e) =>
+                  update('lastName', e.target.value)
+                }
                 error={errors.lastName}
               />
             </div>
@@ -560,7 +613,9 @@ const Signup: React.FC = () => {
               placeholder="john@company.com"
               icon={<Mail className="w-5 h-5" />}
               value={formData.email}
-              onChange={(e) => update('email', e.target.value)}
+              onChange={(e) =>
+                update('email', e.target.value)
+              }
               error={errors.email}
             />
 
@@ -569,7 +624,9 @@ const Signup: React.FC = () => {
               placeholder="Acme Inc."
               icon={<Building2 className="w-5 h-5" />}
               value={formData.companyName}
-              onChange={(e) => update('companyName', e.target.value)}
+              onChange={(e) =>
+                update('companyName', e.target.value)
+              }
               error={errors.companyName}
             />
 
@@ -586,7 +643,9 @@ const Signup: React.FC = () => {
               <Button
                 type="button"
                 onClick={handleStep3Next}
-                icon={<ArrowRight className="w-5 h-5" />}
+                icon={
+                  <ArrowRight className="w-5 h-5" />
+                }
                 iconPosition="right"
                 className="flex-1"
               >
@@ -596,9 +655,9 @@ const Signup: React.FC = () => {
           </div>
         )}
 
-        {/* ══════════════════════════════════════════
+        {/* ════════════════════════════════
             STEP 4 — Password
-        ══════════════════════════════════════════ */}
+        ════════════════════════════════ */}
         {step === 4 && (
           <div className="space-y-5 animate-fade-in">
             <div>
@@ -608,11 +667,15 @@ const Signup: React.FC = () => {
                 placeholder="Create a strong password"
                 icon={<Lock className="w-5 h-5" />}
                 value={formData.password}
-                onChange={(e) => update('password', e.target.value)}
+                onChange={(e) =>
+                  update('password', e.target.value)
+                }
                 error={errors.password}
                 autoFocus
               />
-              <PasswordStrengthMeter password={formData.password} />
+              <PasswordStrengthMeter
+                password={formData.password}
+              />
             </div>
 
             <Input
@@ -630,7 +693,9 @@ const Signup: React.FC = () => {
             <Checkbox
               id="agree-terms"
               checked={formData.agreeToTerms}
-              onChange={(checked) => update('agreeToTerms', checked)}
+              onChange={(checked) =>
+                update('agreeToTerms', checked)
+              }
               error={errors.agreeToTerms}
               label={
                 <span>
@@ -667,7 +732,9 @@ const Signup: React.FC = () => {
               <Button
                 type="submit"
                 loading={loading}
-                icon={<Sparkles className="w-5 h-5" />}
+                icon={
+                  <Sparkles className="w-5 h-5" />
+                }
                 iconPosition="right"
                 className="flex-1"
               >

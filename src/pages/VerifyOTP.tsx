@@ -1,35 +1,52 @@
 // src/pages/VerifyOTP.tsx
-
 import React, { useState, useEffect } from 'react';
-import { useLocation, useNavigate, Link } from 'react-router-dom';
-import { RefreshCw, ShieldCheck, AlertCircle, CheckCircle2, ArrowRight } from 'lucide-react';
+import {
+  useLocation,
+  useNavigate,
+  Link,
+} from 'react-router-dom';
+import {
+  RefreshCw,
+  ShieldCheck,
+  AlertCircle,
+  CheckCircle2,
+  ArrowRight,
+} from 'lucide-react';
 import AuthLayout from '../components/auth/AuthLayout';
 import Button from '../components/common/Button';
-import { auth } from '../services/api';
+import { auth, setAuthToken } from '../services/api';
 import OTPInput from '../components/auth/OTPInput';
 
 const VerifyOTP: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const email = location.state?.email as string | undefined;
+  const email = location.state?.email as
+    | string
+    | undefined;
 
   const [otp, setOtp] = useState('');
   const [loading, setLoading] = useState(false);
-  const [resendLoading, setResendLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
+  const [resendLoading, setResendLoading] =
+    useState(false);
+  const [error, setError] = useState<string | null>(
+    null
+  );
+  const [success, setSuccess] = useState<string | null>(
+    null
+  );
   const [countdown, setCountdown] = useState(60);
 
   useEffect(() => {
-    if (!email) {
-      navigate('/login');
-    }
+    if (!email) navigate('/login');
   }, [email, navigate]);
 
   useEffect(() => {
     let timer: NodeJS.Timeout;
     if (countdown > 0) {
-      timer = setTimeout(() => setCountdown((c) => c - 1), 1000);
+      timer = setTimeout(
+        () => setCountdown((c) => c - 1),
+        1000
+      );
     }
     return () => clearTimeout(timer);
   }, [countdown]);
@@ -56,42 +73,66 @@ const VerifyOTP: React.FC = () => {
         throw new Error('Access token not received');
       }
 
-      // Store all tokens
-      localStorage.setItem('accessToken', tokens.accessToken);
-      localStorage.setItem('token', tokens.accessToken);
-      localStorage.setItem('wabmeta_token', tokens.accessToken);
+      // ✅ api.ts ka setAuthToken use karo
+      setAuthToken(
+        tokens.accessToken,
+        tokens.refreshToken
+      );
 
-      if (tokens.refreshToken) {
-        localStorage.setItem('refreshToken', tokens.refreshToken);
-      }
-
+      // User + Org store karo
       if (payload?.user) {
-        localStorage.setItem('wabmeta_user', JSON.stringify(payload.user));
+        localStorage.setItem(
+          'wabmeta_user',
+          JSON.stringify(payload.user)
+        );
       }
 
       if (payload?.organization) {
-        localStorage.setItem('wabmeta_org', JSON.stringify(payload.organization));
-        localStorage.setItem('currentOrganizationId', payload.organization.id);
+        localStorage.setItem(
+          'wabmeta_org',
+          JSON.stringify(payload.organization)
+        );
+        localStorage.setItem(
+          'currentOrganizationId',
+          payload.organization.id
+        );
       }
 
-      setSuccess('Verification successful! Redirecting...');
+      setSuccess(
+        'Email verified! Welcome to WabMeta 🎉'
+      );
 
+      // ✅ Context settle hone do phir navigate
       setTimeout(() => {
-        navigate('/dashboard');
-      }, 1000);
+        navigate('/dashboard', { replace: true });
+      }, 1200);
     } catch (err: any) {
-      console.error('Verify Error:', err);
+      const message =
+        err?.response?.data?.message ||
+        err?.response?.data?.error;
+      const status = err?.response?.status;
 
-      const message = err?.response?.data?.message || err?.response?.data?.error;
-
-      if (err?.response?.status === 429) {
-        setError('Too many attempts. Please request a new OTP.');
-      } else if (message?.toLowerCase().includes('expired')) {
-        setError('OTP has expired. Please request a new one.');
-      } else if (message?.toLowerCase().includes('invalid')) {
-        setError('Invalid OTP. Please check and try again.');
+      if (status === 429) {
+        setError(
+          'Too many attempts. Please request a new OTP.'
+        );
+      } else if (
+        message?.toLowerCase().includes('expired')
+      ) {
+        setError(
+          'OTP has expired. Please request a new one.'
+        );
+      } else if (
+        message?.toLowerCase().includes('invalid')
+      ) {
+        setError(
+          'Invalid OTP. Please check and try again.'
+        );
       } else {
-        setError(message || 'Verification failed. Please try again.');
+        setError(
+          message ||
+            'Verification failed. Please try again.'
+        );
       }
     } finally {
       setLoading(false);
@@ -107,43 +148,60 @@ const VerifyOTP: React.FC = () => {
 
     try {
       await auth.sendOTP({ email });
-      setSuccess('New OTP sent successfully!');
+      setSuccess('New OTP sent to your email!');
       setCountdown(60);
       setOtp('');
-    } catch (err: any) {
-      const message = err?.response?.data?.message || err?.response?.data?.error;
 
-      if (err?.response?.status === 429) {
-        setError('Please wait before requesting another OTP.');
+      // Success message 3s baad clear karo
+      setTimeout(() => setSuccess(null), 3000);
+    } catch (err: any) {
+      const status = err?.response?.status;
+      const message =
+        err?.response?.data?.message ||
+        err?.response?.data?.error;
+
+      if (status === 429) {
+        setError(
+          'Please wait before requesting another OTP.'
+        );
         setCountdown(60);
       } else {
-        setError(message || 'Failed to resend OTP. Please try again.');
+        setError(
+          message ||
+            'Failed to resend OTP. Please try again.'
+        );
       }
     } finally {
       setResendLoading(false);
     }
   };
 
-  if (!email) {
-    return null;
-  }
+  if (!email) return null;
 
   return (
-    <AuthLayout title="Verify Your Account" subtitle="">
+    <AuthLayout
+      title="Verify Your Account"
+      subtitle={`Enter the code sent to ${email}`}
+    >
       <div className="space-y-6">
+        {/* Icon */}
         <div className="flex justify-center py-4">
           <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center">
             <ShieldCheck className="w-10 h-10 text-green-600" />
           </div>
         </div>
 
+        {/* Email display */}
         <div className="text-center">
-          <p className="text-gray-600 mb-1">We've sent a 6-digit verification code to</p>
+          <p className="text-gray-600 mb-1">
+            Verification code sent to
+          </p>
           <p className="font-semibold text-primary-600 text-lg bg-primary-50 py-2 px-4 rounded-lg inline-block">
             {email}
           </p>
         </div>
 
+        {/* Error */}
         {error && (
           <div className="p-3 bg-red-50 border border-red-200 rounded-lg flex items-center space-x-2 text-red-600 text-sm">
             <AlertCircle className="w-4 h-4 shrink-0" />
@@ -151,6 +209,7 @@ const VerifyOTP: React.FC = () => {
           </div>
         )}
 
+        {/* Success */}
         {success && (
           <div className="p-3 bg-green-50 border border-green-200 rounded-lg flex items-center space-x-2 text-green-700 text-sm">
             <CheckCircle2 className="w-4 h-4 shrink-0" />
@@ -158,11 +217,11 @@ const VerifyOTP: React.FC = () => {
           </div>
         )}
 
+        {/* OTP Input */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-4 text-center">
-            Enter verification code
+            Enter 6-digit verification code
           </label>
-
           <OTPInput
             length={6}
             value={otp}
@@ -175,26 +234,34 @@ const VerifyOTP: React.FC = () => {
           />
         </div>
 
+        {/* Verify Button */}
         <Button
           fullWidth
           onClick={handleVerify}
           loading={loading}
-          disabled={otp.length !== 6 || !!success}
+          disabled={
+            otp.length !== 6 || !!success
+          }
           icon={<ArrowRight className="w-5 h-5" />}
           iconPosition="right"
         >
           Verify & Continue
         </Button>
 
+        {/* Resend Section */}
         <div className="text-center pt-4 border-t border-gray-100">
-          <p className="text-sm text-gray-500 mb-3">Didn't receive the code?</p>
+          <p className="text-sm text-gray-500 mb-3">
+            Didn't receive the code?
+          </p>
 
           {countdown > 0 ? (
             <div className="flex items-center justify-center space-x-2 text-gray-500 text-sm">
               <RefreshCw className="w-4 h-4" />
               <span>
-                Resend available in{' '}
-                <span className="font-bold text-primary-600">{countdown}s</span>
+                Resend in{' '}
+                <span className="font-bold text-primary-600">
+                  {countdown}s
+                </span>
               </span>
             </div>
           ) : (
@@ -218,10 +285,14 @@ const VerifyOTP: React.FC = () => {
           )}
         </div>
 
-        <p className="text-center text-sm text-gray-500 mt-4">
-          Wrong email address?{' '}
-          <Link to="/login" className="font-semibold text-primary-600 hover:underline">
-            Go back
+        {/* Back link */}
+        <p className="text-center text-sm text-gray-500">
+          Wrong email?{' '}
+          <Link
+            to="/login"
+            className="font-semibold text-primary-600 hover:underline"
+          >
+            Go back to login
           </Link>
         </p>
       </div>
