@@ -16,6 +16,7 @@ import AuthLayout from '../components/auth/AuthLayout';
 import Button from '../components/common/Button';
 import { auth, setAuthToken } from '../services/api';
 import OTPInput from '../components/auth/OTPInput';
+import { useAuth } from '../context/AuthContext';
 
 const VerifyOTP: React.FC = () => {
   const navigate = useNavigate();
@@ -23,6 +24,8 @@ const VerifyOTP: React.FC = () => {
   const email = location.state?.email as
     | string
     | undefined;
+
+  const { refreshSession } = useAuth();
 
   const [otp, setOtp] = useState('');
   const [loading, setLoading] = useState(false);
@@ -86,6 +89,9 @@ const VerifyOTP: React.FC = () => {
       }
 
       setSuccess('Email verified! Welcome to WabMeta 🎉');
+
+      // ✅ Auth context update karo taaki ProtectedRoute login pe na bheje
+      await refreshSession();
 
       setTimeout(() => {
         navigate('/dashboard', { replace: true });
