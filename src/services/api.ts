@@ -65,6 +65,12 @@ export interface AuthResponseData {
   };
 }
 
+export interface RegisterResponse {
+  message: string;
+  email: string;
+  requiresVerification: boolean;
+}
+
 // ============================================
 // CONFIGURATION
 // ============================================
@@ -431,7 +437,7 @@ export const auth = {
     phone?: string;
     organizationName?: string;
   }) =>
-    api.post<ApiResponse<AuthResponseData>>('/auth/register', data),
+    api.post<ApiResponse<RegisterResponse>>('/auth/register', data),
 
   login: (data: { email: string; password: string }) =>
     api.post<ApiResponse<AuthResponseData>>('/auth/login', data),

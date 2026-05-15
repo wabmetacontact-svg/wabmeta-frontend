@@ -73,36 +73,20 @@ const VerifyOTP: React.FC = () => {
         throw new Error('Access token not received');
       }
 
-      // ✅ api.ts ka setAuthToken use karo
-      setAuthToken(
-        tokens.accessToken,
-        tokens.refreshToken
-      );
+      // ✅ setAuthToken use karo (instead of manual localStorage)
+      setAuthToken(tokens.accessToken, tokens.refreshToken);
 
-      // User + Org store karo
       if (payload?.user) {
-        localStorage.setItem(
-          'wabmeta_user',
-          JSON.stringify(payload.user)
-        );
+        localStorage.setItem('wabmeta_user', JSON.stringify(payload.user));
       }
 
       if (payload?.organization) {
-        localStorage.setItem(
-          'wabmeta_org',
-          JSON.stringify(payload.organization)
-        );
-        localStorage.setItem(
-          'currentOrganizationId',
-          payload.organization.id
-        );
+        localStorage.setItem('wabmeta_org', JSON.stringify(payload.organization));
+        localStorage.setItem('currentOrganizationId', payload.organization.id);
       }
 
-      setSuccess(
-        'Email verified! Welcome to WabMeta 🎉'
-      );
+      setSuccess('Email verified! Welcome to WabMeta 🎉');
 
-      // ✅ Context settle hone do phir navigate
       setTimeout(() => {
         navigate('/dashboard', { replace: true });
       }, 1200);
