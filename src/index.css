@@ -88,19 +88,28 @@ body {
 }
 
 /* Fade In Animation */
-@keyframes fadeIn {
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scale-in {
   from {
     opacity: 0;
-    transform: translateY(-4px);
+    transform: scale(0.95);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: scale(1);
   }
 }
 
 .animate-fade-in {
-  animation: fadeIn 0.2s ease-out;
+  animation: fade-in 0.2s ease-out;
+}
+
+.animate-scale-in {
+  animation: scale-in 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* Pulse Animation */

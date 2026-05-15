@@ -550,6 +550,14 @@ export const users = {
 
   deleteAccount: (data: { password: string; reason?: string }) =>
     api.delete<ApiResponse>('/users/account', { data }),
+
+  // ✅ NEW: Add phone number (for Google login users)
+  addPhone: (data: { phone: string }) =>
+    api.post<ApiResponse<{
+      message: string;
+      phone: string;
+      whatsappSent: boolean;
+    }>>('/users/add-phone', data),
 };
 
 // ---------- ORGANIZATIONS ----------

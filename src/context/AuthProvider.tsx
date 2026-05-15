@@ -349,20 +349,35 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             const response = await auth.register(data);
 
             if (response.data?.success && response.data?.data) {
-                const { user, tokens, organization } = response.data.data;
+                const result = response.data.data;
 
-                setAuthToken(tokens.accessToken, tokens.refreshToken);
-                saveToStorage(user, organization || null);
+                // ✅ Registration now requires verification (Email OTP flow)
+                if (result.requiresVerification) {
+                    setState(prev => ({ ...prev, isLoading: false }));
+                    console.log('📝 Registration success: Verification required for', result.email);
+                    return { success: true };
+                }
 
-                setState({
-                    user,
-                    organization: organization || null,
-                    isAuthenticated: true,
-                    isLoading: false,
-                    error: null,
-                });
+                // Legacy or direct login flow (if backend supports it)
+                const { user, tokens, organization } = result as any;
 
-                console.log('✅ Registration successful:', user.email);
+                if (user && tokens) {
+                    setAuthToken(tokens.accessToken, tokens.refreshToken);
+                    saveToStorage(user, organization || null);
+
+                    setState({
+                        user,
+                        organization: organization || null,
+                        isAuthenticated: true,
+                        isLoading: false,
+                        error: null,
+                    });
+
+                    console.log('✅ Registration successful (Auto-login):', user.email);
+                } else {
+                    setState(prev => ({ ...prev, isLoading: false }));
+                }
+                
                 return { success: true };
             }
 
