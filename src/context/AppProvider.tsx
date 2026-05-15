@@ -6,21 +6,46 @@ import React, {
     useRef,
     useState,
 } from "react";
+import { useLocation } from "react-router-dom";
 import { contacts, inbox } from "../services/api";
 import { AppContext, type UserType } from "./AppContext";
+import { useAuth } from "./AuthContext";
 import AddPhoneModal from "../components/auth/AddPhoneModal";
 
 const isJwtLike = (t: string) =>
     typeof t === "string" && t.split(".").length === 3;
 
+// ✅ Routes jahan modal NAHI dikhana
+const PUBLIC_ROUTES = [
+    "/",
+    "/login",
+    "/signup",
+    "/verify-otp",
+    "/verify-email",
+    "/forgot-password",
+    "/reset-password",
+    "/terms",
+    "/privacy",
+    "/contact",
+    "/blog",
+    "/help",
+    "/documentation",
+    "/data-deletion",
+    "/meta/callback",
+];
+
+// ✅ Routes jahan modal NAHI dikhana (admin)
+const ADMIN_ROUTES_PREFIX = "/admin";
+
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
     children,
 }) => {
+    const location = useLocation();
+    const { isAuthenticated, isLoading: authLoading, user: authUser } = useAuth();
+
     const [unreadCount, setUnreadCount] = useState(0);
     const [totalContacts, setTotalContacts] = useState(0);
     const [responseRate, setResponseRate] = useState(0);
-
-    // ✅ Phone Modal State
     const [showPhoneModal, setShowPhoneModal] = useState(false);
 
     const [user, setUser] = useState<UserType | null>(() => {
@@ -96,67 +121,126 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
         }
     }, []);
 
-    // ✅ Phone Modal Check Logic
+    // ✅ Phone Modal Check
     const checkPhoneNumber = useCallback(() => {
-        const token =
-            localStorage.getItem("accessToken") ||
-            localStorage.getItem("token") ||
-            localStorage.getItem("wabmeta_token");
+        // 1️⃣ Auth still loading? Wait
+        if (authLoading) {
+            console.log("⏳ Auth loading - waiting...");
+            return;
+        }
 
-        if (!token || !isJwtLike(token)) {
+        // 2️⃣ Not authenticated? Hide modal
+        if (!isAuthenticated) {
+            console.log("🔒 Not authenticated - hiding modal");
             setShowPhoneModal(false);
             return;
         }
 
+        // 3️⃣ Public route check
+        const isPublicRoute = PUBLIC_ROUTES.some((route) => {
+            if (route === "/") return location.pathname === "/";
+            return location.pathname.startsWith(route);
+        });
+
+        if (isPublicRoute) {
+            console.log(`🔒 Public route (${location.pathname}) - hiding modal`);
+            setShowPhoneModal(false);
+            return;
+        }
+
+        // 4️⃣ Admin route check
+        if (location.pathname.startsWith(ADMIN_ROUTES_PREFIX)) {
+            console.log("🔒 Admin route - hiding modal");
+            setShowPhoneModal(false);
+            return;
+        }
+
+        // 5️⃣ Phone exists check
         const userStr = localStorage.getItem("wabmeta_user");
-        if (!userStr) return;
+        if (!userStr) {
+            console.log("⚠️ No user data");
+            return;
+        }
 
         try {
             const u = JSON.parse(userStr);
 
-            // Phone exists & not empty? Don't show
-            if (u.phone && u.phone.trim() !== "") {
+            const hasPhone =
+                u.phone &&
+                typeof u.phone === "string" &&
+                u.phone.trim() !== "" &&
+                u.phone.replace(/\D/g, "").length >= 10;
+
+            if (hasPhone) {
+                console.log(`✅ User has phone (${u.phone}) - hiding modal`);
                 setShowPhoneModal(false);
                 return;
             }
 
-            // Check skip cooldown (24 hours)
+            // 6️⃣ Skip cooldown check (24 hours)
             const skippedAt = localStorage.getItem("phone_modal_skipped_at");
             if (skippedAt) {
                 const hoursPassed =
                     (Date.now() - parseInt(skippedAt)) / (1000 * 60 * 60);
                 if (hoursPassed < 24) {
+                    console.log(
+                        `⏰ Skipped recently (${hoursPassed.toFixed(1)}h ago)`
+                    );
                     setShowPhoneModal(false);
                     return;
                 }
             }
 
-            // Show modal after small delay (better UX)
+            // ✅ Show modal after delay
+            console.log("📱 Showing phone modal in 1.5s...");
             setTimeout(() => {
                 setShowPhoneModal(true);
             }, 1500);
         } catch (err) {
             console.error("Phone check failed:", err);
         }
-    }, []);
+    }, [location.pathname, isAuthenticated, authLoading]);
 
-    // Initial load
+    // ✅ Initial stats load
     useEffect(() => {
-        refreshStats(true);
-        checkPhoneNumber();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
-
-    // ✅ Re-check phone whenever user state changes (login/logout)
-    useEffect(() => {
-        if (user) {
-            checkPhoneNumber();
-        } else {
-            setShowPhoneModal(false);
+        if (isAuthenticated && !authLoading) {
+            refreshStats(true);
         }
-    }, [user, checkPhoneNumber]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isAuthenticated, authLoading]);
 
-    // ✅ Listen for storage changes (for cross-tab sync)
+    // ✅ Re-check phone whenever route, auth, or user changes
+    useEffect(() => {
+        checkPhoneNumber();
+    }, [location.pathname, isAuthenticated, authLoading, authUser, checkPhoneNumber]);
+
+    // ✅ Sync user from authUser (jab login hota hai)
+    useEffect(() => {
+        if (authUser) {
+            try {
+                const userStr = localStorage.getItem("wabmeta_user");
+                if (userStr) {
+                    const u = JSON.parse(userStr);
+                    setUser({
+                        name:
+                            [u.firstName, u.lastName]
+                                .filter(Boolean)
+                                .join(" ") || u.email,
+                        email: u.email,
+                        phone: u.phone || "",
+                        role: u.role || "",
+                        avatar: u.avatar || null,
+                    });
+                }
+            } catch (err) {
+                console.error("Failed to sync user", err);
+            }
+        } else if (!authLoading && !isAuthenticated) {
+            setUser(null);
+        }
+    }, [authUser, isAuthenticated, authLoading]);
+
+    // ✅ Cross-tab storage sync
     useEffect(() => {
         const handleStorageChange = (e: StorageEvent) => {
             if (e.key === "wabmeta_user" || e.key === "accessToken") {
@@ -169,7 +253,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
             window.removeEventListener("storage", handleStorageChange);
     }, [checkPhoneNumber]);
 
-    // ✅ Phone Modal Handlers
+    // ✅ Modal Handlers
     const handlePhoneModalClose = () => {
         setShowPhoneModal(false);
         localStorage.setItem(
@@ -179,15 +263,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
     };
 
     const handlePhoneModalSuccess = (phone: string) => {
-        // Clear skip cooldown
         localStorage.removeItem("phone_modal_skipped_at");
 
-        // Update user state
-        if (user) {
-            setUser({ ...user, phone });
-        }
-
-        // Refresh user from localStorage
+        // Update user state immediately
         try {
             const userStr = localStorage.getItem("wabmeta_user");
             if (userStr) {
@@ -219,7 +297,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
         [user, unreadCount, totalContacts, responseRate, refreshStats]
     );
 
-    // Get user firstName for modal
     const userFirstName = useMemo(() => {
         if (!user) return "there";
         const name = user.name?.split(" ")[0];
@@ -230,7 +307,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
         <AppContext.Provider value={value}>
             {children}
 
-            {/* ✅ Phone Modal - Globally accessible */}
             <AddPhoneModal
                 isOpen={showPhoneModal}
                 onClose={handlePhoneModalClose}
