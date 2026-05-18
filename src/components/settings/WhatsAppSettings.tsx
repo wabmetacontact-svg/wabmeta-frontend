@@ -246,6 +246,12 @@ export default function WhatsAppSettings() {
   // Connect handler
   // ────────────────────────────────────────────
   const handleConnect = async () => {
+    // ✅ ADD: Already connected check
+    if (connectedAccounts.length > 0) {
+      toast.error('Please disconnect the current account before connecting a new one.');
+      return;
+    }
+
     setConnecting(true);
 
     try {
@@ -586,23 +592,14 @@ export default function WhatsAppSettings() {
               );
             })}
 
-            {/* Add Another Account Button */}
-            <button
-              onClick={handleConnect}
-              disabled={connecting}
-              className="w-full flex items-center justify-center gap-2 px-4 py-3
-                border-2 border-dashed border-gray-300 dark:border-gray-600
-                text-gray-600 dark:text-gray-400 rounded-xl
-                hover:border-green-500 hover:text-green-600 dark:hover:border-green-500
-                font-medium transition-colors disabled:opacity-50"
-            >
-              {connecting ? (
-                <Loader2 className="w-5 h-5 animate-spin" />
-              ) : (
-                <Plus className="w-5 h-5" />
-              )}
-              {connecting ? 'Connecting...' : 'Connect Another Account'}
-            </button>
+            {/* ✅ ONE ACCOUNT ONLY - Already connected info */}
+            <div className="flex items-center gap-3 p-3 bg-green-50 dark:bg-green-900/20 
+              border border-green-200 dark:border-green-800 rounded-xl">
+              <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
+              <p className="text-sm text-green-700 dark:text-green-300">
+                WhatsApp account is connected. Disconnect current account to connect a different one.
+              </p>
+            </div>
           </div>
         ) : (
           /* ─── Empty State ──────────────────────────────────────────── */
