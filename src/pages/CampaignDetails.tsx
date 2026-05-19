@@ -5,7 +5,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import {
   ArrowLeft, RefreshCw, RotateCcw, CheckCircle, XCircle,
   Clock, Send, Eye, AlertTriangle, Users, Search,
-  Loader2, Wifi, WifiOff, Download
+  Wifi, WifiOff, Download
 } from 'lucide-react';
 import { campaigns as campaignsApi } from '../services/api';
 import useCampaignRealtime from '../hooks/useCampaignRealtime';

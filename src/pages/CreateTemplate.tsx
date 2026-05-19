@@ -592,8 +592,8 @@ const CreateTemplate: React.FC = () => {
       return;
     }
 
-    // Validate form (skip for drafts)
-    if (!asDraft && !validateForm()) {
+    // Validate form (skip for drafts and approved templates)
+    if (!asDraft && !isApprovedTemplate && !validateForm()) {
       if (errors.account) {
         setActiveTab('settings');
       } else {
@@ -704,7 +704,9 @@ const CreateTemplate: React.FC = () => {
 
       // Call API
       if (isEditMode && templateId && isApprovedTemplate) {
-        if (!formData.header.mediaId) {
+        const mediaIdToUse = formData.header.mediaId || formData.header.metaNumericId;
+        
+        if (!mediaIdToUse) {
           setApiError('Please upload a new image first.');
           setSaving(false);
           return;
@@ -713,21 +715,21 @@ const CreateTemplate: React.FC = () => {
         // ✅ Extract cloudinary URL from smuggled mediaId if cloudinaryUrl is missing
         // Backend returns mediaId as "4:handle:::https://cloudinary_url"
         let cloudinaryUrl = formData.header.cloudinaryUrl || '';
-        if (!cloudinaryUrl && formData.header.mediaId?.includes(':::')) {
-          cloudinaryUrl = formData.header.mediaId.split(':::')[1] || '';
+        if (!cloudinaryUrl && String(mediaIdToUse).includes(':::')) {
+          cloudinaryUrl = String(mediaIdToUse).split(':::')[1] || '';
         }
         if (!cloudinaryUrl) {
           cloudinaryUrl = formData.header.mediaUrl || '';
         }
 
         console.log('📤 Updating media only for approved template:', {
-          headerMediaId: formData.header.mediaId?.substring(0, 40),
+          headerMediaId: String(mediaIdToUse).substring(0, 40),
           headerContent: cloudinaryUrl?.substring(0, 60),
         });
 
         // ✅ Sirf media update payload — name/body etc nahi
         const mediaPayload = {
-          headerMediaId: formData.header.mediaId,
+          headerMediaId: mediaIdToUse,
           headerContent: cloudinaryUrl,
         };
 
