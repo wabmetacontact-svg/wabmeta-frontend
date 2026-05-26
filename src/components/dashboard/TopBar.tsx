@@ -12,7 +12,6 @@ import {
   Moon,
   Sun,
   Menu,
-  Command,
   CreditCard,
   HelpCircle
 } from 'lucide-react';
@@ -90,6 +89,14 @@ const TopBar: React.FC<TopBarProps> = ({ onMenuClick, sidebarCollapsed }) => {
       description: 'Hi, I wanted to know about...',
       time: '2 min ago',
       unread: true
+    },
+    {
+      id: 2,
+      type: 'campaign',
+      title: 'Festive Blast Completed',
+      description: 'Campaign completed successfully with 98% delivery rate.',
+      time: '5 min ago',
+      unread: true
     }
   ];
 
@@ -97,8 +104,9 @@ const TopBar: React.FC<TopBarProps> = ({ onMenuClick, sidebarCollapsed }) => {
 
   return (
     <header
-      className={`fixed top-0 right-0 z-30 bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-800 transition-all duration-300 ${sidebarCollapsed ? 'left-20' : 'left-64'
-        }`}
+      className={`fixed top-0 right-0 z-30 bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-800 transition-all duration-300 ${
+        sidebarCollapsed ? 'left-20' : 'left-64'
+      }`}
     >
       <div className="flex items-center justify-between h-16 px-4 lg:px-6">
         {/* Left Section */}
@@ -110,18 +118,27 @@ const TopBar: React.FC<TopBarProps> = ({ onMenuClick, sidebarCollapsed }) => {
             <Menu className="w-6 h-6" />
           </button>
 
-          <div className="hidden md:flex items-center">
+          <div className="hidden md:flex items-center gap-3">
+            {/* Search Input */}
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-slate-400" />
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-slate-400" />
               <input
                 type="text"
                 placeholder="Search anything..."
-                className="w-64 lg:w-80 pl-10 pr-4 py-2.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all text-gray-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-400"
+                className="w-64 lg:w-80 pl-10 pr-12 py-2.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all text-gray-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-400 text-sm shadow-2xs"
               />
-              <div className="absolute right-3 top-1/2 -translate-y-1/2 hidden lg:flex items-center space-x-1 text-gray-400 dark:text-slate-400">
-                <Command className="w-4 h-4" />
-                <span className="text-xs">K</span>
+              <div className="absolute right-3.5 top-1/2 -translate-y-1/2 hidden lg:flex items-center space-x-0.5 text-gray-400 dark:text-slate-400 text-[10px] font-medium bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-750 px-1 py-0.5 rounded-md shadow-2xs">
+                <span>⌘</span>
+                <span>K</span>
               </div>
+            </div>
+
+            {/* + Create Dropdown */}
+            <div className="relative">
+              <button className="flex items-center gap-1.5 px-4 py-2.5 bg-violet-600 hover:bg-violet-750 text-white font-semibold text-xs rounded-xl shadow-md transition-all">
+                <span>+ Create</span>
+                <ChevronDown className="w-3.5 h-3.5" />
+              </button>
             </div>
           </div>
         </div>
@@ -136,7 +153,7 @@ const TopBar: React.FC<TopBarProps> = ({ onMenuClick, sidebarCollapsed }) => {
             <Search className="w-5 h-5" />
           </button>
 
-          {/* ✅ Dark Mode Toggle (REAL) */}
+          {/* Dark Mode Toggle */}
           <button
             onClick={toggle}
             className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 text-gray-500 dark:text-slate-300 transition-colors"
@@ -152,14 +169,16 @@ const TopBar: React.FC<TopBarProps> = ({ onMenuClick, sidebarCollapsed }) => {
               className="relative p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 text-gray-500 dark:text-slate-300 transition-colors"
             >
               <Bell className="w-5 h-5" />
-              <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white dark:border-slate-900"></span>
+              <span className="absolute top-1.5 right-1.5 flex items-center justify-center w-4.5 h-4.5 bg-red-500 text-[10px] font-bold text-white rounded-full border border-white dark:border-slate-900 shadow-2xs">
+                2
+              </span>
             </button>
 
             {showNotifications && (
               <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-gray-100 dark:border-slate-800 overflow-hidden animate-fade-in z-50">
                 <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-slate-800">
                   <h3 className="font-semibold text-gray-900 dark:text-slate-100">Notifications</h3>
-                  <button className="text-sm text-primary-600 hover:text-primary-700 font-medium">
+                  <button className="text-sm text-violet-600 hover:text-violet-755 font-medium">
                     Mark all read
                   </button>
                 </div>
@@ -168,20 +187,17 @@ const TopBar: React.FC<TopBarProps> = ({ onMenuClick, sidebarCollapsed }) => {
                   {notifications.map((notification) => (
                     <div
                       key={notification.id}
-                      className={`flex items-start space-x-3 px-4 py-3 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors cursor-pointer ${notification.unread ? 'bg-primary-50/50 dark:bg-primary-900/10' : ''
-                        }`}
+                      className="flex items-start space-x-3 px-4 py-3 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
                     >
-                      <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center shrink-0 text-blue-600 dark:text-blue-300">
-                        <Bell className="w-5 h-5" />
+                      <div className="w-9 h-9 rounded-full bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center shrink-0 text-indigo-600 dark:text-indigo-400">
+                        <Bell className="w-4 h-4" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-gray-900 dark:text-slate-100">{notification.title}</p>
-                        <p className="text-sm text-gray-500 dark:text-slate-400 truncate">{notification.description}</p>
-                        <p className="text-xs text-gray-400 dark:text-slate-500 mt-1">{notification.time}</p>
+                        <p className="text-xs text-gray-500 dark:text-slate-400 truncate">{notification.description}</p>
+                        <p className="text-[10px] text-gray-400 dark:text-slate-500 mt-1">{notification.time}</p>
                       </div>
-                      {notification.unread && (
-                        <div className="w-2 h-2 bg-primary-500 rounded-full shrink-0 mt-2"></div>
-                      )}
+                      <div className="w-1.5 h-1.5 bg-red-500 rounded-full shrink-0 mt-2"></div>
                     </div>
                   ))}
                 </div>
@@ -190,7 +206,7 @@ const TopBar: React.FC<TopBarProps> = ({ onMenuClick, sidebarCollapsed }) => {
                   <Link
                     to="/dashboard/notifications"
                     onClick={() => setShowNotifications(false)}
-                    className="block text-center text-sm text-primary-600 hover:text-primary-700 font-medium"
+                    className="block text-center text-sm text-violet-600 hover:text-violet-755 font-medium"
                   >
                     View all notifications
                   </Link>
@@ -203,39 +219,30 @@ const TopBar: React.FC<TopBarProps> = ({ onMenuClick, sidebarCollapsed }) => {
           <div className="relative" ref={profileRef}>
             <button
               onClick={() => setShowProfile(!showProfile)}
-              className="flex items-center space-x-2 p-1.5 rounded-xl hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors"
+              className="flex items-center space-x-2.5 p-1.5 rounded-xl hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors"
             >
-              <div className="w-9 h-9 rounded-full overflow-hidden border border-gray-100 dark:border-slate-800 flex items-center justify-center bg-gray-100 dark:bg-slate-800">
-                {user?.avatar && !avatarError ? (
-                  <img
-                    src={user.avatar}
-                    alt={user.name}
-                    className="w-full h-full object-cover"
-                    onError={() => setAvatarError(true)}
-                  />
-                ) : (
-                  <div className="w-full h-full bg-linear-to-br from-primary-500 to-whatsapp-teal flex items-center justify-center text-white font-bold text-sm">
-                    {user?.name ? user.name.substring(0, 2).toUpperCase() : 'JD'}
-                  </div>
-                )}
+              <div className="w-9 h-9 rounded-full overflow-hidden border border-gray-250 dark:border-slate-700 flex items-center justify-center bg-gray-100 dark:bg-slate-800 shadow-2xs shrink-0">
+                <div className="w-full h-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm">
+                  W
+                </div>
               </div>
               <div className="hidden md:block text-left">
-                <p className="text-sm font-medium text-gray-900 dark:text-slate-100">{user?.name || 'Guest'}</p>
-                <p className="text-xs text-gray-500 dark:text-slate-400 capitalize">{user?.role || 'User'}</p>
+                <p className="text-xs font-semibold text-gray-900 dark:text-slate-100">WabMeta Ads</p>
+                <p className="text-[10px] text-gray-500 dark:text-slate-400">Admin</p>
               </div>
-              <ChevronDown className={`hidden md:block w-4 h-4 text-gray-400 dark:text-slate-400 transition-transform ${showProfile ? 'rotate-180' : ''}`} />
+              <ChevronDown className={`hidden md:block w-3.5 h-3.5 text-gray-400 dark:text-slate-400 transition-transform ${showProfile ? 'rotate-180' : ''}`} />
             </button>
 
             {showProfile && (
               <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-gray-100 dark:border-slate-800 overflow-hidden animate-fade-in z-50">
                 <div className="px-4 py-3 border-b border-gray-100 dark:border-slate-800">
-                  <p className="text-sm font-semibold text-gray-900 dark:text-slate-100">{user?.name}</p>
-                  <p className="text-sm text-gray-500 dark:text-slate-400 truncate">{user?.email}</p>
+                  <p className="text-sm font-semibold text-gray-900 dark:text-slate-100">WabMeta Ads</p>
+                  <p className="text-xs text-gray-500 dark:text-slate-400 truncate">admin@wabmeta.com</p>
                 </div>
 
-                <div className="py-2">
+                <div className="py-1">
                   <Link
-                    to="/dashboard/profile"
+                    to="/dashboard/settings/profile"
                     onClick={() => setShowProfile(false)}
                     className="flex items-center space-x-3 px-4 py-2 text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors"
                   >
@@ -251,7 +258,7 @@ const TopBar: React.FC<TopBarProps> = ({ onMenuClick, sidebarCollapsed }) => {
                     <span className="text-sm">Settings</span>
                   </Link>
                   <Link
-                    to="/dashboard/billing"
+                    to="/dashboard/settings/billing"
                     onClick={() => setShowProfile(false)}
                     className="flex items-center space-x-3 px-4 py-2 text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors"
                   >
@@ -268,10 +275,10 @@ const TopBar: React.FC<TopBarProps> = ({ onMenuClick, sidebarCollapsed }) => {
                   </Link>
                 </div>
 
-                <div className="border-t border-gray-100 dark:border-slate-800 py-2">
+                <div className="border-t border-gray-100 dark:border-slate-800 py-1.5">
                   <button
                     onClick={handleLogout}
-                    className="w-full flex items-center space-x-3 px-4 py-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors text-left"
+                    className="w-full flex items-center space-x-3 px-4 py-2 text-red-650 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors text-left"
                   >
                     <LogOut className="w-4 h-4" />
                     <span className="text-sm">Logout</span>
@@ -291,7 +298,7 @@ const TopBar: React.FC<TopBarProps> = ({ onMenuClick, sidebarCollapsed }) => {
             <input
               type="text"
               placeholder="Search anything..."
-              className="w-full pl-10 pr-4 py-2.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 text-gray-900 dark:text-slate-100"
+              className="w-full pl-10 pr-4 py-2.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 text-gray-900 dark:text-slate-100 text-sm"
               autoFocus
             />
           </div>
