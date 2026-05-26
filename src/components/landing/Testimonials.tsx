@@ -1,128 +1,187 @@
+// src/components/landing/Testimonials.tsx
 import React, { useState } from 'react';
-import { Star, ChevronLeft, ChevronRight } from 'lucide-react';
-import { useScrollReveal } from './useScrollReveal';
-
-const testimonials = [
-  {
-    name: 'Priya Sharma',
-    role: 'Marketing Director',
-    company: 'TechStart India',
-    avatar: 'PS',
-    rating: 5,
-    text: 'WabMeta has transformed how we communicate with our customers. We\'ve seen a 40% increase in customer engagement since we started using the platform.',
-    metric: { label: 'Engagement', value: '+40%' },
-  },
-  {
-    name: 'Rahul Verma',
-    role: 'CEO',
-    company: 'QuickCommerce',
-    avatar: 'RV',
-    rating: 5,
-    text: 'The chatbot builder is incredibly intuitive. We set up our entire customer support automation in just one afternoon. Our team can now focus on complex queries.',
-    metric: { label: 'Time saved', value: '40hrs/week' },
-  },
-  {
-    name: 'Anjali Patel',
-    role: 'Operations Head',
-    company: 'FoodExpress',
-    avatar: 'AP',
-    rating: 5,
-    text: 'Best WhatsApp API platform we\'ve used. Real-time analytics, reliable delivery, and excellent support — everything we needed in one place.',
-    metric: { label: 'Delivery rate', value: '99%' },
-  },
-  {
-    name: 'Vikram Singh',
-    role: 'Founder',
-    company: 'EduLearn',
-    avatar: 'VS',
-    rating: 5,
-    text: 'WabMeta exceeded our expectations. The team collaboration features are fantastic for managing student queries at scale without losing the personal touch.',
-    metric: { label: 'Messages sent', value: '75K+' },
-  },
-];
+import { 
+  Star, 
+  ChevronLeft, 
+  ChevronRight, 
+  Quote,
+  Building2
+} from 'lucide-react';
 
 const Testimonials: React.FC = () => {
-  const [idx, setIdx] = useState(0);
-  const { ref, visible } = useScrollReveal();
-  const t = testimonials[idx];
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  const testimonials = [
+    {
+      name: 'Priya Sharma',
+      role: 'Marketing Director',
+      company: 'TechStart India',
+      avatar: 'PS',
+      rating: 5,
+      text: 'WabMeta has transformed how we communicate with our customers. We\'ve seen a 40% increase in customer engagement since we started using the platform. The bulk messaging feature saves us hours every week.',
+      metrics: { messages: '50K+', response: '95%', saved: '20hrs/week' }
+    },
+    {
+      name: 'Rahul Verma',
+      role: 'CEO',
+      company: 'QuickCommerce',
+      avatar: 'RV',
+      rating: 5,
+      text: 'The chatbot builder is incredibly intuitive. We set up our entire customer support automation in just one afternoon. Our support team can now focus on complex queries while the bot handles routine questions.',
+      metrics: { messages: '100K+', response: '98%', saved: '40hrs/week' }
+    },
+    {
+      name: 'Anjali Patel',
+      role: 'Operations Head',
+      company: 'FoodExpress',
+      avatar: 'AP',
+      rating: 5,
+      text: 'Best WhatsApp API platform we\'ve used. The analytics dashboard gives us real-time insights into our campaigns. Customer support is excellent - they respond within minutes.',
+      metrics: { messages: '200K+', response: '99%', saved: '60hrs/week' }
+    },
+    {
+      name: 'Vikram Singh',
+      role: 'Founder',
+      company: 'EduLearn',
+      avatar: 'VS',
+      rating: 5,
+      text: 'We were looking for a reliable WhatsApp solution for our ed-tech platform. WabMeta exceeded our expectations. The team collaboration features are fantastic for managing student queries.',
+      metrics: { messages: '75K+', response: '97%', saved: '30hrs/week' }
+    }
+  ];
+
+  const nextTestimonial = () => {
+    setCurrentIndex((prev) => (prev + 1) % testimonials.length);
+  };
+
+  const prevTestimonial = () => {
+    setCurrentIndex((prev) => (prev - 1 + testimonials.length) % testimonials.length);
+  };
 
   return (
-    <section ref={ref} className="section-padding">
-      <div className="max-w-6xl mx-auto px-5">
+    <section className="py-24 bg-gray-50 relative overflow-hidden">
+      {/* Background */}
+      <div className="absolute inset-0">
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary-100 rounded-full blur-3xl opacity-30"></div>
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-blue-100 rounded-full blur-3xl opacity-30"></div>
+      </div>
 
-        <div className={`text-center max-w-2xl mx-auto mb-14 transition-all duration-700
-          ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
-          <p className="text-xs font-bold text-primary-600 dark:text-primary-400
-            uppercase tracking-wider mb-3">Customer stories</p>
-          <h2 className="text-3xl lg:text-4xl font-extrabold text-gray-900
-            dark:text-white leading-tight mb-4">
-            Loved by growing <span className="gradient-text">teams</span>
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Section Header */}
+        <div className="text-center max-w-3xl mx-auto mb-16">
+          <span className="inline-block px-4 py-1 bg-primary-100 text-primary-700 rounded-full text-sm font-medium mb-4">
+            Customer Stories
+          </span>
+          <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
+            Loved by{' '}
+            <span className="gradient-text">10,000+ Businesses</span>
           </h2>
+          <p className="text-xl text-gray-600">
+            See what our customers have to say about WabMeta
+          </p>
         </div>
 
-        <div className={`max-w-2xl mx-auto transition-all duration-700 delay-150
-          ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+        {/* Main Testimonial */}
+        <div className="max-w-4xl mx-auto mb-12">
+          <div className="bg-white rounded-3xl shadow-xl p-8 md:p-12 relative">
+            {/* Quote Icon */}
+            <div className="absolute top-8 right-8 w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center">
+              <Quote className="w-8 h-8 text-primary-500" />
+            </div>
 
-          {/* Card */}
-          <div className="bg-white dark:bg-[#111118] rounded-2xl border border-gray-100
-            dark:border-white/5 shadow-card p-8">
-
-            {/* Stars */}
-            <div className="flex gap-0.5 mb-5">
-              {Array.from({ length: t.rating }).map((_, i) => (
-                <Star key={i} className="w-4 h-4 text-amber-400 fill-amber-400" />
+            {/* Rating */}
+            <div className="flex items-center space-x-1 mb-6">
+              {[...Array(testimonials[currentIndex].rating)].map((_, i) => (
+                <Star key={i} className="w-6 h-6 text-yellow-400 fill-yellow-400" />
               ))}
             </div>
 
-            <p className="text-lg text-gray-700 dark:text-gray-200 leading-relaxed mb-8">
-              "{t.text}"
+            {/* Testimonial Text */}
+            <p className="text-xl md:text-2xl text-gray-700 leading-relaxed mb-8">
+              "{testimonials[currentIndex].text}"
             </p>
 
+            {/* Metrics */}
+            <div className="grid grid-cols-3 gap-4 mb-8 p-6 bg-gray-50 rounded-2xl">
+              <div className="text-center">
+                <p className="text-2xl font-bold text-primary-500">
+                  {testimonials[currentIndex].metrics.messages}
+                </p>
+                <p className="text-sm text-gray-500">Messages Sent</p>
+              </div>
+              <div className="text-center border-x border-gray-200">
+                <p className="text-2xl font-bold text-primary-500">
+                  {testimonials[currentIndex].metrics.response}
+                </p>
+                <p className="text-sm text-gray-500">Delivery Rate</p>
+              </div>
+              <div className="text-center">
+                <p className="text-2xl font-bold text-primary-500">
+                  {testimonials[currentIndex].metrics.saved}
+                </p>
+                <p className="text-sm text-gray-500">Time Saved</p>
+              </div>
+            </div>
+
+            {/* Author */}
             <div className="flex items-center justify-between">
-              {/* Author */}
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-500 to-primary-700
-                  flex items-center justify-center text-white text-xs font-bold">
-                  {t.avatar}
+              <div className="flex items-center space-x-4">
+                <div className="w-14 h-14 bg-gradient-to-br from-primary-500 to-whatsapp-teal rounded-full flex items-center justify-center text-white font-bold text-lg">
+                  {testimonials[currentIndex].avatar}
                 </div>
                 <div>
-                  <p className="text-sm font-bold text-gray-900 dark:text-white">{t.name}</p>
-                  <p className="text-xs text-gray-400">{t.role}, {t.company}</p>
+                  <h4 className="font-bold text-gray-900">{testimonials[currentIndex].name}</h4>
+                  <p className="text-gray-500">{testimonials[currentIndex].role}</p>
+                  <div className="flex items-center text-sm text-gray-400 mt-1">
+                    <Building2 className="w-4 h-4 mr-1" />
+                    {testimonials[currentIndex].company}
+                  </div>
                 </div>
               </div>
 
-              {/* Metric */}
-              <div className="text-right">
-                <p className="text-xl font-extrabold text-primary-600">{t.metric.value}</p>
-                <p className="text-xs text-gray-400">{t.metric.label}</p>
+              {/* Navigation */}
+              <div className="flex items-center space-x-2">
+                <button 
+                  onClick={prevTestimonial}
+                  className="p-3 rounded-full bg-gray-100 hover:bg-primary-100 hover:text-primary-500 transition-colors"
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                </button>
+                <button 
+                  onClick={nextTestimonial}
+                  className="p-3 rounded-full bg-gray-100 hover:bg-primary-100 hover:text-primary-500 transition-colors"
+                >
+                  <ChevronRight className="w-5 h-5" />
+                </button>
               </div>
             </div>
           </div>
+        </div>
 
-          {/* Navigation */}
-          <div className="flex items-center justify-between mt-5">
-            <div className="flex gap-1.5">
-              {testimonials.map((_, i) => (
-                <button key={i} onClick={() => setIdx(i)}
-                  className={`h-1.5 rounded-full transition-all duration-300 ${
-                    i === idx ? 'bg-primary-500 w-6' : 'bg-gray-200 dark:bg-white/10 w-1.5'
-                  }`} />
-              ))}
-            </div>
-            <div className="flex gap-2">
-              <button onClick={() => setIdx((idx - 1 + testimonials.length) % testimonials.length)}
-                className="w-8 h-8 rounded-full border border-gray-200 dark:border-white/10
-                  flex items-center justify-center text-gray-500 hover:border-primary-300
-                  hover:text-primary-600 transition-all">
-                <ChevronLeft className="w-4 h-4" />
-              </button>
-              <button onClick={() => setIdx((idx + 1) % testimonials.length)}
-                className="w-8 h-8 rounded-full border border-gray-200 dark:border-white/10
-                  flex items-center justify-center text-gray-500 hover:border-primary-300
-                  hover:text-primary-600 transition-all">
-                <ChevronRight className="w-4 h-4" />
-              </button>
-            </div>
+        {/* Dots Indicator */}
+        <div className="flex items-center justify-center space-x-2">
+          {testimonials.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => setCurrentIndex(index)}
+              className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                index === currentIndex 
+                  ? 'bg-primary-500 w-8' 
+                  : 'bg-gray-300 hover:bg-gray-400'
+              }`}
+            ></button>
+          ))}
+        </div>
+
+        {/* Company Logos */}
+        <div className="mt-16">
+          <p className="text-center text-gray-500 mb-8">Trusted by leading companies</p>
+          <div className="flex flex-wrap items-center justify-center gap-12 opacity-50 grayscale">
+            {['Flipkart', 'Zomato', 'Swiggy', 'PhonePe', 'Razorpay', 'Paytm'].map((company) => (
+              <div key={company} className="text-2xl font-bold text-gray-400">
+                {company}
+              </div>
+            ))}
           </div>
         </div>
       </div>
