@@ -1,7 +1,7 @@
 // src/pages/CreateCampaign.tsx - COMPLETE (CSV REMOVED, GROUP ADDED)
 
 import React, { useState, useMemo, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import {
   ArrowLeft,
   ArrowRight,
@@ -97,6 +97,7 @@ const mapHeaderForPreview = (headerType: string) => {
 
 const CreateCampaign: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [currentStep, setCurrentStep] = useState(1);
   const [sending, setSending] = useState(false);
@@ -115,19 +116,22 @@ const CreateCampaign: React.FC = () => {
   const [loadingAccounts, setLoadingAccounts] = useState(true);
 
   // Form State
-  const [formData, setFormData] = useState<CampaignFormData>({
-    name: "",
-    description: "",
-    templateId: "",
-    audienceType: "all",
-    selectedTags: [],
-    selectedContacts: [],
-    selectedGroup: "", // ✅ Added
-    csvContacts: [],
-    variableMapping: {},
-    scheduleType: "now",
-    scheduledDate: "",
-    scheduledTime: "",
+  const [formData, setFormData] = useState<CampaignFormData>(() => {
+    const stateData = location.state as any;
+    return {
+      name: stateData?.name || "",
+      description: stateData?.description || "",
+      templateId: stateData?.templateId || "",
+      audienceType: "all",
+      selectedTags: [],
+      selectedContacts: [],
+      selectedGroup: "", // ✅ Added
+      csvContacts: [],
+      variableMapping: {},
+      scheduleType: "now",
+      scheduledDate: "",
+      scheduledTime: "",
+    };
   });
 
   // Load Accounts

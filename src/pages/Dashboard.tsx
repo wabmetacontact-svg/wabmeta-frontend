@@ -33,7 +33,7 @@ import { dashboard } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useSocket } from '../context/SocketContext';
 import toast from 'react-hot-toast';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import PageSkeleton from '../components/common/PageSkeleton';
 
 // ============================================
@@ -121,6 +121,7 @@ const DonutSegment: React.FC<DonutSegmentProps> = ({ percentage, color, offset }
 // ============================================
 const Dashboard: React.FC = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [dateRange, setDateRange] = useState<7 | 14 | 30>(7);
@@ -198,7 +199,7 @@ const Dashboard: React.FC = () => {
             <div className="space-y-5 z-10">
               <div>
                 <h1 className="text-2xl lg:text-3xl font-extrabold text-gray-950 dark:text-white tracking-tight flex items-center gap-2">
-                  Good Afternoon, WabMeta! <span className="animate-bounce">≡ƒæï</span>
+                  Good Afternoon, WabMeta! <span className="animate-bounce">👋</span>
                 </h1>
                 <p className="text-sm text-gray-500 dark:text-slate-400 mt-1.5 font-medium">
                   Here's what's happening with your WhatsApp business today.
@@ -207,15 +208,24 @@ const Dashboard: React.FC = () => {
 
               {/* Actions Row */}
               <div className="flex flex-wrap gap-2.5">
-                <button className="flex items-center gap-1.5 px-4.5 py-2.5 bg-violet-600 hover:bg-violet-750 text-white font-bold text-xs rounded-xl shadow-md transition-all">
+                <button
+                  onClick={() => navigate('/dashboard/campaigns/create')}
+                  className="flex items-center gap-1.5 px-4.5 py-2.5 bg-violet-600 hover:bg-violet-750 text-white font-bold text-xs rounded-xl shadow-md transition-all"
+                >
                   <PlusCircle className="w-3.5 h-3.5" />
                   <span>Create Campaign</span>
                 </button>
-                <button className="flex items-center gap-1.5 px-4.5 py-2.5 bg-white hover:bg-gray-50 dark:bg-slate-800 dark:hover:bg-slate-750 text-gray-700 dark:text-slate-200 font-bold text-xs rounded-xl border border-gray-200 dark:border-slate-700 shadow-2xs transition-all">
+                <button
+                  onClick={() => navigate('/dashboard/contacts/import')}
+                  className="flex items-center gap-1.5 px-4.5 py-2.5 bg-white hover:bg-gray-50 dark:bg-slate-800 dark:hover:bg-slate-750 text-gray-700 dark:text-slate-200 font-bold text-xs rounded-xl border border-gray-200 dark:border-slate-700 shadow-2xs transition-all"
+                >
                   <UserPlus className="w-3.5 h-3.5 text-gray-400" />
                   <span>Import Contacts</span>
                 </button>
-                <button className="flex items-center gap-1.5 px-4.5 py-2.5 bg-white hover:bg-gray-50 dark:bg-slate-800 dark:hover:bg-slate-750 text-gray-700 dark:text-slate-200 font-bold text-xs rounded-xl border border-gray-200 dark:border-slate-700 shadow-2xs transition-all">
+                <button
+                  onClick={() => navigate('/dashboard/reports')}
+                  className="flex items-center gap-1.5 px-4.5 py-2.5 bg-white hover:bg-gray-50 dark:bg-slate-800 dark:hover:bg-slate-750 text-gray-700 dark:text-slate-200 font-bold text-xs rounded-xl border border-gray-200 dark:border-slate-700 shadow-2xs transition-all"
+                >
                   <BarChart3 className="w-3.5 h-3.5 text-gray-400" />
                   <span>View Analytics</span>
                 </button>
@@ -692,14 +702,22 @@ const Dashboard: React.FC = () => {
                 </div>
               </div>
 
-              <button className="w-full flex items-center justify-center gap-1 py-2 bg-violet-600 hover:bg-violet-750 text-white font-bold text-xs rounded-xl shadow-md transition-all">
+              <button
+                onClick={() => navigate('/dashboard/campaigns/create', {
+                  state: {
+                    name: 'Festive Offer Campaign',
+                    description: 'High engagement expected during festive season. Reach more users with personalized offers.',
+                  }
+                })}
+                className="w-full flex items-center justify-center gap-1 py-2 bg-violet-600 hover:bg-violet-750 text-white font-bold text-xs rounded-xl shadow-md transition-all"
+              >
                 <Play className="w-3 h-3 fill-white" />
                 <span>Use Suggestion</span>
               </button>
             </div>
 
             <Link to="/dashboard/suggestions" className="block text-center text-xs font-bold text-violet-600 hover:text-violet-755 pt-1.5">
-              View All Suggestions ΓåÆ
+              View All Suggestions →
             </Link>
           </div>
 
@@ -708,27 +726,45 @@ const Dashboard: React.FC = () => {
             <h3 className="text-sm font-bold text-gray-950 dark:text-white">Quick Actions</h3>
             
             <div className="grid grid-cols-3 gap-2">
-              <button className="flex flex-col items-center justify-center p-3 rounded-xl bg-gray-50/50 hover:bg-gray-100/50 dark:bg-slate-850 dark:hover:bg-slate-800/80 border border-gray-100 dark:border-slate-800 gap-1.5 text-center transition-all">
+              <button
+                onClick={() => navigate('/dashboard/campaigns/create')}
+                className="flex flex-col items-center justify-center p-3 rounded-xl bg-gray-50/50 hover:bg-gray-100/50 dark:bg-slate-850 dark:hover:bg-slate-800/80 border border-gray-100 dark:border-slate-800 gap-1.5 text-center transition-all"
+              >
                 <Send className="w-4.5 h-4.5 text-emerald-500" />
                 <span className="text-[9px] font-bold text-gray-600 dark:text-slate-300 block break-words">New Campaign</span>
               </button>
-              <button className="flex flex-col items-center justify-center p-3 rounded-xl bg-gray-50/50 hover:bg-gray-100/50 dark:bg-slate-850 dark:hover:bg-slate-800/80 border border-gray-100 dark:border-slate-800 gap-1.5 text-center transition-all">
+              <button
+                onClick={() => navigate('/dashboard/campaigns/create')}
+                className="flex flex-col items-center justify-center p-3 rounded-xl bg-gray-50/50 hover:bg-gray-100/50 dark:bg-slate-850 dark:hover:bg-slate-800/80 border border-gray-100 dark:border-slate-800 gap-1.5 text-center transition-all"
+              >
                 <Radio className="w-4.5 h-4.5 text-purple-500" />
                 <span className="text-[9px] font-bold text-gray-600 dark:text-slate-300 block">Broadcast</span>
               </button>
-              <button className="flex flex-col items-center justify-center p-3 rounded-xl bg-gray-50/50 hover:bg-gray-100/50 dark:bg-slate-850 dark:hover:bg-slate-800/80 border border-gray-100 dark:border-slate-800 gap-1.5 text-center transition-all">
+              <button
+                onClick={() => navigate('/dashboard/contacts/import')}
+                className="flex flex-col items-center justify-center p-3 rounded-xl bg-gray-50/50 hover:bg-gray-100/50 dark:bg-slate-850 dark:hover:bg-slate-800/80 border border-gray-100 dark:border-slate-800 gap-1.5 text-center transition-all"
+              >
                 <UserPlus className="w-4.5 h-4.5 text-emerald-500 animate-pulse" />
                 <span className="text-[9px] font-bold text-gray-600 dark:text-slate-300 block">Add Contacts</span>
               </button>
-              <button className="flex flex-col items-center justify-center p-3 rounded-xl bg-gray-50/50 hover:bg-gray-100/50 dark:bg-slate-850 dark:hover:bg-slate-800/80 border border-gray-100 dark:border-slate-800 gap-1.5 text-center transition-all">
+              <button
+                onClick={() => navigate('/dashboard/templates/create')}
+                className="flex flex-col items-center justify-center p-3 rounded-xl bg-gray-50/50 hover:bg-gray-100/50 dark:bg-slate-850 dark:hover:bg-slate-800/80 border border-gray-100 dark:border-slate-800 gap-1.5 text-center transition-all"
+              >
                 <FileText className="w-4.5 h-4.5 text-orange-500" />
                 <span className="text-[9px] font-bold text-gray-600 dark:text-slate-300 block">Create Template</span>
               </button>
-              <button className="flex flex-col items-center justify-center p-3 rounded-xl bg-gray-50/50 hover:bg-gray-100/50 dark:bg-slate-850 dark:hover:bg-slate-800/80 border border-gray-100 dark:border-slate-800 gap-1.5 text-center transition-all">
+              <button
+                onClick={() => navigate('/dashboard/chatbots')}
+                className="flex flex-col items-center justify-center p-3 rounded-xl bg-gray-50/50 hover:bg-gray-100/50 dark:bg-slate-850 dark:hover:bg-slate-800/80 border border-gray-100 dark:border-slate-800 gap-1.5 text-center transition-all"
+              >
                 <Bot className="w-4.5 h-4.5 text-blue-500" />
                 <span className="text-[9px] font-bold text-gray-600 dark:text-slate-300 block">AI Chatbot</span>
               </button>
-              <button className="flex flex-col items-center justify-center p-3 rounded-xl bg-gray-50/50 hover:bg-gray-100/50 dark:bg-slate-850 dark:hover:bg-slate-800/80 border border-gray-100 dark:border-slate-800 gap-1.5 text-center transition-all">
+              <button
+                onClick={() => navigate('/dashboard/automations')}
+                className="flex flex-col items-center justify-center p-3 rounded-xl bg-gray-50/50 hover:bg-gray-100/50 dark:bg-slate-850 dark:hover:bg-slate-800/80 border border-gray-100 dark:border-slate-800 gap-1.5 text-center transition-all"
+              >
                 <Workflow className="w-4.5 h-4.5 text-blue-500" />
                 <span className="text-[9px] font-bold text-gray-600 dark:text-slate-300 block">Automation</span>
               </button>
@@ -774,7 +810,7 @@ const Dashboard: React.FC = () => {
             </div>
 
             <button className="w-full py-2 bg-gray-50 hover:bg-gray-100 dark:bg-slate-800 dark:hover:bg-slate-750 text-gray-700 dark:text-slate-200 border border-gray-250 dark:border-slate-700 text-xs font-bold rounded-xl transition-all shadow-2xs">
-              View All Activity ΓåÆ
+              View All Activity →
             </button>
           </div>
 
