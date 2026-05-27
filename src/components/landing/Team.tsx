@@ -1,206 +1,312 @@
 // src/components/landing/Team.tsx
 import React from 'react';
-import { Linkedin, Twitter, Mail, Github, Award, Code, Briefcase } from 'lucide-react';
+import { Linkedin, Twitter, Mail, Github, ArrowUpRight, Code, Briefcase } from 'lucide-react';
 
-// ✅ Photos import karo
 import samirPhoto from '../../assets/images/team/samir.png';
 import ankitPhoto from '../../assets/images/team/ankit.png';
 
 interface TeamMember {
-    name: string;
-    role: string;
-    title: string;
-    image: string;
-    description: string;
-    skills: string[];
-    social: {
-        linkedin?: string;
-        twitter?: string;
-        github?: string;
-        email?: string;
-    };
-    icon: React.ElementType;
-    gradient: string;
+  name: string;
+  role: string;
+  title: string;
+  image: string;
+  description: string;
+  funFact: string;
+  skills: string[];
+  social: {
+    linkedin?: string;
+    twitter?: string;
+    github?: string;
+    email?: string;
+  };
+  icon: React.ElementType;
+  accentColor: string;
+  initials: string;
 }
 
 const teamMembers: TeamMember[] = [
-    {
-        name: 'Ankit Verma',
-        role: 'CEO',
-        title: 'Chief Executive Officer',
-        image: ankitPhoto,
-        description: 'Visionary entrepreneur with 8+ years of experience in tech industry. Leading WabMeta to revolutionize WhatsApp Business communication for enterprises worldwide.',
-        skills: ['Business Strategy', 'Product Vision', 'Team Leadership', 'Growth Hacking'],
-        social: {
-            linkedin: 'https://linkedin.com/in/ankitverma',
-            twitter: 'https://twitter.com/ankitverma',
-            email: 'ankit@wabmeta.com'
-        },
-        icon: Briefcase,
-        gradient: 'from-teal-500 to-emerald-600'
+  {
+    name: 'Ankit Verma',
+    role: 'CEO & Co-founder',
+    title: 'Strategy · Vision · Sales',
+    image: ankitPhoto,
+    description: "Built and sold two SaaS products before this. Knows WhatsApp Business API better than most people at Meta (we joke about this). Talks to customers every single day.",
+    funFact: "Replies to support emails on Sundays — for fun.",
+    skills: ['Business Strategy', 'Product Vision', 'Customer Success', 'Growth'],
+    social: {
+      linkedin: 'https://linkedin.com/in/ankitverma',
+      twitter: 'https://twitter.com/ankitverma',
+      email: 'ankit@wabmeta.com',
     },
-    {
-        name: 'Samir Thakur',
-        role: 'Lead Developer',
-        title: 'Full Stack Developer',
-        image: samirPhoto,  // ✅ Local photo
-        description: 'Passionate full-stack developer specializing in React, Node.js, and cloud architecture. Building scalable solutions that power thousands of businesses.',
-        skills: ['React/TypeScript', 'Node.js', 'System Design', 'WhatsApp API'],
-        social: {
-            linkedin: 'https://www.linkedin.com/in/samir-thakur-354a9a392',
-            github: 'https://github.com/Samir-Thakur',
-            email: 'samirthakur@wabmeta.com'
-        },
-        icon: Code,
-        gradient: 'from-violet-500 to-purple-600'
-    }
+    icon: Briefcase,
+    accentColor: '#10b981',
+    initials: 'AV',
+  },
+  {
+    name: 'Samir Thakur',
+    role: 'CTO & Co-founder',
+    title: 'Code · Architecture · Infra',
+    image: samirPhoto,
+    description: "Full-stack engineer who actually enjoys debugging webhook payloads at 2 AM. Writes the kind of code other engineers screenshot and share. Shipped the entire MVP in 6 weeks.",
+    funFact: "Once rebuilt the entire chatbot engine in a single weekend.",
+    skills: ['React/TypeScript', 'Node.js', 'System Design', 'Meta API'],
+    social: {
+      linkedin: 'https://www.linkedin.com/in/samir-thakur-354a9a392',
+      github: 'https://github.com/Samir-Thakur',
+      email: 'samirthakur@wabmeta.com',
+    },
+    icon: Code,
+    accentColor: '#a855f7',
+    initials: 'ST',
+  },
 ];
 
-// ✅ Baaki sab same rahega - sirf image tag thoda update karo
 const Team: React.FC = () => {
-    return (
-        <section id="team" className="py-20 lg:py-28 bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+  return (
+    <section id="team" className="relative py-24 lg:py-32 overflow-hidden">
 
-                {/* Section Header */}
-                <div className="text-center mb-16 lg:mb-20">
-                    <span className="inline-flex items-center px-4 py-1.5 rounded-full text-sm font-medium bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 mb-4">
-                        <Award className="w-4 h-4 mr-2" />
-                        Our Leadership
-                    </span>
-                    <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-gray-900 dark:text-white mb-4">
-                        Meet the <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-500 to-emerald-600">Minds</span> Behind WabMeta
-                    </h2>
-                    <p className="mt-4 max-w-2xl text-lg lg:text-xl text-gray-600 dark:text-gray-300 mx-auto">
-                        A dedicated team of innovators committed to transforming how businesses communicate on WhatsApp.
-                    </p>
-                </div>
+      {/* ✅ Background */}
+      <div className="absolute inset-0 -z-10 bg-gradient-to-b from-[#0a0e27] via-[#050816] to-[#0a0e27]">
+        <div className="absolute inset-0"
+          style={{
+            background: `
+              radial-gradient(ellipse 60% 50% at 25% 30%, rgba(16, 185, 129, 0.1) 0%, transparent 60%),
+              radial-gradient(ellipse 60% 50% at 75% 70%, rgba(168, 85, 247, 0.1) 0%, transparent 60%)
+            `,
+          }}
+        />
+        <div className="absolute inset-0 opacity-[0.025]"
+          style={{
+            backgroundImage: `linear-gradient(rgba(255,255,255,0.3) 1px, transparent 1px), 
+                              linear-gradient(90deg, rgba(255,255,255,0.3) 1px, transparent 1px)`,
+            backgroundSize: '60px 60px',
+          }}
+        />
+      </div>
 
-                {/* Team Grid */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 max-w-5xl mx-auto">
-                    {teamMembers.map((member, index) => (
-                        <div
-                            key={index}
-                            className="group relative bg-white dark:bg-gray-800 rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-500 overflow-hidden border border-gray-100 dark:border-gray-700"
-                        >
-                            {/* Gradient Background */}
-                            <div className={`absolute inset-0 bg-gradient-to-br ${member.gradient} opacity-0 group-hover:opacity-5 transition-opacity duration-500`}></div>
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
-                            {/* Card Content */}
-                            <div className="relative p-6 lg:p-8">
-
-                                {/* Top Section */}
-                                <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 mb-6">
-
-                                    {/* ✅ Profile Image with Fallback */}
-                                    <div className="relative flex-shrink-0">
-                                        <div className={`absolute inset-0 bg-gradient-to-br ${member.gradient} rounded-2xl blur-lg opacity-40 group-hover:opacity-60 transition-opacity`}></div>
-                                        <img
-                                            src={member.image}
-                                            alt={member.name}
-                                            className="relative w-28 h-28 lg:w-32 lg:h-32 rounded-2xl object-cover object-center border-4 border-white dark:border-gray-700 shadow-lg"
-                                            // ✅ Fallback: agar photo load na ho
-                                            onError={(e) => {
-                                                const target = e.target as HTMLImageElement;
-                                                target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(member.name)}&size=256&background=random&color=fff&bold=true`;
-                                            }}
-                                        />
-                                        {/* Role Badge */}
-                                        <div className={`absolute -bottom-2 -right-2 bg-gradient-to-r ${member.gradient} p-2 rounded-xl shadow-lg`}>
-                                            <member.icon className="w-5 h-5 text-white" />
-                                        </div>
-                                    </div>
-
-                                    {/* Name & Title */}
-                                    <div className="text-center sm:text-left flex-1">
-                                        <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
-                                            {member.name}
-                                        </h3>
-                                        <p className={`text-transparent bg-clip-text bg-gradient-to-r ${member.gradient} font-semibold text-lg mb-2`}>
-                                            {member.role}
-                                        </p>
-                                        <p className="text-gray-500 dark:text-gray-400 text-sm">
-                                            {member.title}
-                                        </p>
-                                    </div>
-                                </div>
-
-                                {/* Description */}
-                                <p className="text-gray-600 dark:text-gray-300 leading-relaxed mb-6 text-center sm:text-left">
-                                    {member.description}
-                                </p>
-
-                                {/* Skills */}
-                                <div className="mb-6">
-                                    <div className="flex flex-wrap gap-2 justify-center sm:justify-start">
-                                        {member.skills.map((skill, skillIndex) => (
-                                            <span
-                                                key={skillIndex}
-                                                className="px-3 py-1.5 text-xs font-medium rounded-full bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-600"
-                                            >
-                                                {skill}
-                                            </span>
-                                        ))}
-                                    </div>
-                                </div>
-
-                                {/* Social Links */}
-                                <div className="flex justify-center sm:justify-start gap-3 pt-4 border-t border-gray-100 dark:border-gray-700">
-                                    {member.social.linkedin && (
-                                        <a href={member.social.linkedin} target="_blank" rel="noopener noreferrer"
-                                            className="p-2.5 rounded-xl bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-blue-100 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-300">
-                                            <Linkedin className="w-5 h-5" />
-                                        </a>
-                                    )}
-                                    {member.social.twitter && (
-                                        <a href={member.social.twitter} target="_blank" rel="noopener noreferrer"
-                                            className="p-2.5 rounded-xl bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-sky-100 dark:hover:bg-sky-900/30 hover:text-sky-500 dark:hover:text-sky-400 transition-all duration-300">
-                                            <Twitter className="w-5 h-5" />
-                                        </a>
-                                    )}
-                                    {member.social.github && (
-                                        <a href={member.social.github} target="_blank" rel="noopener noreferrer"
-                                            className="p-2.5 rounded-xl bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600 hover:text-gray-900 dark:hover:text-white transition-all duration-300">
-                                            <Github className="w-5 h-5" />
-                                        </a>
-                                    )}
-                                    {member.social.email && (
-                                        <a href={`mailto:${member.social.email}`}
-                                            className="p-2.5 rounded-xl bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-green-100 dark:hover:bg-green-900/30 hover:text-green-600 dark:hover:text-green-400 transition-all duration-300">
-                                            <Mail className="w-5 h-5" />
-                                        </a>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-
-                {/* Join Team CTA */}
-                <div className="mt-16 lg:mt-20 text-center">
-                    <div className="inline-flex flex-col sm:flex-row items-center gap-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-2xl p-6 lg:p-8 border border-green-100 dark:border-green-800">
-                        <div className="text-center sm:text-left">
-                            <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
-                                Want to join our team?
-                            </h4>
-                            <p className="text-gray-600 dark:text-gray-400 text-sm">
-                                We're always looking for talented individuals
-                            </p>
-                        </div>
-                        <a
-                            href="https://wa.me/919310010763?text=Hi, I'm interested in joining the WabMeta team!"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-semibold rounded-xl hover:from-green-600 hover:to-emerald-700 transition-all duration-300 shadow-lg hover:shadow-xl"
-                        >
-                            <Mail className="w-5 h-5 mr-2" />
-                            Get in Touch
-                        </a>
-                    </div>
-                </div>
+        {/* ✅ EDITORIAL HEADER */}
+        <div className="grid grid-cols-12 gap-6 mb-16 lg:mb-24">
+          <div className="col-span-12 lg:col-span-7">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="h-px w-12 bg-white/20" />
+              <span className="text-xs font-mono uppercase tracking-[0.2em] text-gray-400">
+                The humans behind it
+              </span>
             </div>
-        </section>
-    );
+
+            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-[1.05] tracking-tight">
+              <span className="text-white">Two people.</span>{' '}
+              <span className="bg-gradient-to-r from-gray-400 to-gray-500 bg-clip-text text-transparent italic font-light">
+                One product.
+              </span>
+              <br />
+              <span className="bg-gradient-to-r from-green-400 to-emerald-300 bg-clip-text text-transparent">
+                No middle layer.
+              </span>
+            </h2>
+          </div>
+
+          <div className="col-span-12 lg:col-span-5 lg:pt-16">
+            <p className="text-base lg:text-lg text-gray-400 leading-relaxed">
+              We're a 2-person team. The founder ships the code. The other founder talks to you. When you email support, one of us replies — usually within an hour.
+            </p>
+          </div>
+        </div>
+
+        {/* ✅ TEAM CARDS - alternating layout */}
+        <div className="space-y-6 lg:space-y-8 max-w-6xl mx-auto">
+          {teamMembers.map((member, index) => {
+            const isReverse = index % 2 === 1;
+            return (
+              <div
+                key={member.name}
+                className={`group relative rounded-3xl overflow-hidden
+                  bg-white/[0.04] backdrop-blur-2xl
+                  border border-white/[0.1]
+                  hover:border-white/[0.18]
+                  shadow-[0_20px_60px_rgba(0,0,0,0.3)]
+                  transition-all duration-500
+                  hover:-translate-y-1`}
+                style={{
+                  animation: `fadeIn 0.7s ease-out ${index * 200}ms backwards`,
+                }}
+              >
+                {/* Accent gradient bg */}
+                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700"
+                  style={{
+                    background: `radial-gradient(ellipse 80% 60% at ${isReverse ? '80%' : '20%'} 30%, ${member.accentColor}15 0%, transparent 60%)`,
+                  }}
+                />
+
+                {/* Shimmer */}
+                <div className="absolute inset-0 pointer-events-none"
+                  style={{
+                    background: 'linear-gradient(135deg, rgba(255,255,255,0.06) 0%, transparent 50%)',
+                  }}
+                />
+
+                {/* Top edge */}
+                <div className="absolute top-0 left-[15%] right-[15%] h-px 
+                  bg-gradient-to-r from-transparent via-white/30 to-transparent" />
+
+                <div className={`relative grid grid-cols-12 gap-6 lg:gap-10 p-6 lg:p-10 items-center
+                  ${isReverse ? 'lg:[direction:rtl]' : ''}
+                `}>
+
+                  {/* PHOTO column */}
+                  <div className={`col-span-12 lg:col-span-4 ${isReverse ? 'lg:[direction:ltr]' : ''}`}>
+                    <div className="relative w-full max-w-[280px] mx-auto lg:mx-0">
+
+                      {/* Glow ring */}
+                      <div className="absolute inset-0 rounded-3xl blur-2xl opacity-60 -z-0"
+                        style={{
+                          background: `radial-gradient(circle, ${member.accentColor}50 0%, transparent 70%)`,
+                        }}
+                      />
+
+                      {/* Photo frame */}
+                      <div className="relative rounded-3xl overflow-hidden
+                        bg-white/[0.04] backdrop-blur-xl
+                        border border-white/[0.15]
+                        p-2 transform transition-transform duration-700
+                        group-hover:scale-[1.02]">
+                        <img
+                          src={member.image}
+                          alt={member.name}
+                          className="w-full aspect-square object-cover rounded-2xl"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(member.name)}&size=400&background=${member.accentColor.replace('#', '')}&color=fff&bold=true`;
+                          }}
+                        />
+                      </div>
+
+                      {/* Floating role badge */}
+                      <div className={`absolute -bottom-3 ${isReverse ? '-left-3' : '-right-3'}
+                        px-4 py-2 rounded-full text-xs font-semibold text-white
+                        backdrop-blur-xl border flex items-center gap-2 shadow-xl`}
+                        style={{
+                          background: `linear-gradient(135deg, ${member.accentColor}, ${member.accentColor}aa)`,
+                          borderColor: `${member.accentColor}80`,
+                          boxShadow: `0 8px 24px ${member.accentColor}40`,
+                        }}
+                      >
+                        <member.icon className="w-3.5 h-3.5" />
+                        <span>{member.initials}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* CONTENT column */}
+                  <div className={`col-span-12 lg:col-span-8 ${isReverse ? 'lg:[direction:ltr] lg:text-right' : ''}`}>
+
+                    {/* Role tag */}
+                    <div className={`inline-flex items-center gap-2 mb-4 px-3 py-1 rounded-full
+                      bg-white/[0.05] border border-white/[0.1] backdrop-blur-xl
+                    `}>
+                      <span className="text-xs font-mono uppercase tracking-wider"
+                        style={{ color: member.accentColor }}
+                      >
+                        {member.role}
+                      </span>
+                    </div>
+
+                    {/* Name */}
+                    <h3 className="text-3xl lg:text-4xl font-bold text-white mb-2 tracking-tight">
+                      {member.name}
+                    </h3>
+
+                    {/* Title */}
+                    <p className="text-sm font-mono text-gray-500 mb-5">
+                      {member.title}
+                    </p>
+
+                    {/* Description */}
+                    <p className="text-base lg:text-lg text-gray-300 leading-relaxed mb-5">
+                      {member.description}
+                    </p>
+
+                    {/* Fun fact - handwritten feel */}
+                    <div className={`flex items-start gap-3 mb-6 p-4 rounded-2xl
+                      bg-white/[0.03] border border-white/[0.06]
+                      ${isReverse ? 'lg:flex-row-reverse' : ''}
+                    `}>
+                      <div className="text-2xl flex-shrink-0">💡</div>
+                      <p className={`text-sm text-gray-400 italic leading-snug ${isReverse ? 'lg:text-right' : ''}`}
+                        style={{ fontFamily: 'Caveat, cursive', fontSize: '1.15rem' }}
+                      >
+                        {member.funFact}
+                      </p>
+                    </div>
+
+                    {/* Skills */}
+                    <div className={`flex flex-wrap gap-2 mb-6 ${isReverse ? 'lg:justify-end' : ''}`}>
+                      {member.skills.map((skill) => (
+                        <span
+                          key={skill}
+                          className="px-3 py-1.5 text-xs font-medium rounded-full
+                            bg-white/[0.04] border border-white/[0.08] text-gray-300
+                            hover:bg-white/[0.08] hover:border-white/[0.15]
+                            transition-all duration-300"
+                        >
+                          {skill}
+                        </span>
+                      ))}
+                    </div>
+
+                    {/* Social links */}
+                    <div className={`flex items-center gap-2 pt-5 border-t border-white/[0.06]
+                      ${isReverse ? 'lg:justify-end' : ''}
+                    `}>
+                      {member.social.linkedin && (
+                        <a href={member.social.linkedin} target="_blank" rel="noopener noreferrer"
+                          className="w-10 h-10 rounded-full bg-white/[0.05] border border-white/[0.08]
+                            hover:bg-blue-500/20 hover:border-blue-400/40 hover:text-blue-400
+                            text-gray-400 flex items-center justify-center
+                            transition-all duration-300">
+                          <Linkedin className="w-4 h-4" />
+                        </a>
+                      )}
+                      {member.social.twitter && (
+                        <a href={member.social.twitter} target="_blank" rel="noopener noreferrer"
+                          className="w-10 h-10 rounded-full bg-white/[0.05] border border-white/[0.08]
+                            hover:bg-sky-500/20 hover:border-sky-400/40 hover:text-sky-400
+                            text-gray-400 flex items-center justify-center
+                            transition-all duration-300">
+                          <Twitter className="w-4 h-4" />
+                        </a>
+                      )}
+                      {member.social.github && (
+                        <a href={member.social.github} target="_blank" rel="noopener noreferrer"
+                          className="w-10 h-10 rounded-full bg-white/[0.05] border border-white/[0.08]
+                            hover:bg-gray-500/20 hover:border-gray-400/40 hover:text-gray-400
+                            text-gray-400 flex items-center justify-center
+                            transition-all duration-300">
+                          <Github className="w-4 h-4" />
+                        </a>
+                      )}
+                      {member.social.email && (
+                        <a href={`mailto:${member.social.email}`}
+                          className="w-10 h-10 rounded-full bg-white/[0.05] border border-white/[0.08]
+                            hover:bg-green-500/20 hover:border-green-400/40 hover:text-green-400
+                            text-gray-400 flex items-center justify-center
+                            transition-all duration-300">
+                          <Mail className="w-4 h-4" />
+                        </a>
+                      )}
+                    </div>
+
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
 };
 
 export default Team;

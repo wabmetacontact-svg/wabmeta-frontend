@@ -1,6 +1,5 @@
-// src/components/landing/Pricing.tsx
 import React, { useState, useEffect, useRef } from 'react';
-import { Check, X, Star, Sparkles, Zap, Shield, Crown, Rocket, ArrowRight, BadgeCheck } from 'lucide-react';
+import { Check, X, Sparkles, Zap, Shield, Crown, Rocket, ArrowUpRight, TrendingUp } from 'lucide-react';
 
 interface Feature {
   text: string;
@@ -18,10 +17,10 @@ interface Plan {
   features: Feature[];
   cta: string;
   highlight: boolean;
-  gradient: string;
-  bgGradient: string;
+  accentColor: string;
+  iconBg: string;
   tag?: string;
-  tagColor?: string;
+  savings?: string;
 }
 
 const Pricing: React.FC = () => {
@@ -29,21 +28,12 @@ const Pricing: React.FC = () => {
   const [isVisible, setIsVisible] = useState(false);
   const sectionRef = useRef<HTMLDivElement>(null);
 
-  // Intersection Observer for scroll animation
   useEffect(() => {
     const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsVisible(true);
-        }
-      },
+      ([entry]) => entry.isIntersecting && setIsVisible(true),
       { threshold: 0.1 }
     );
-
-    if (sectionRef.current) {
-      observer.observe(sectionRef.current);
-    }
-
+    if (sectionRef.current) observer.observe(sectionRef.current);
     return () => observer.disconnect();
   }, []);
 
@@ -53,19 +43,19 @@ const Pricing: React.FC = () => {
       icon: Zap,
       price: 'Free',
       originalPrice: null,
-      duration: '2 days trial',
-      description: 'Perfect to test the waters',
+      duration: '2 days',
+      description: 'Test the waters',
       features: [
-        { text: '100 Messages', included: true },
-        { text: 'Limited Campaigns', included: true },
-        { text: 'Basic Number Safety', included: true },
+        { text: '100 messages', included: true },
+        { text: 'Basic campaigns', included: true },
+        { text: 'Number safety', included: true },
         { text: 'Automation', included: false },
         { text: 'Webhooks', included: false },
       ],
-      cta: 'Start Free Trial',
+      cta: 'Start free',
       highlight: false,
-      gradient: 'from-gray-500 to-gray-600',
-      bgGradient: 'from-gray-50 to-white',
+      accentColor: '#6b7280',
+      iconBg: 'from-gray-500 to-gray-600',
     },
     {
       name: 'Monthly',
@@ -73,18 +63,18 @@ const Pricing: React.FC = () => {
       price: '₹899',
       originalPrice: null,
       duration: 'per month',
-      description: 'For growing businesses',
+      description: 'For growing teams',
       features: [
-        { text: 'Unlimited Messages*', included: true },
-        { text: 'Unlimited Campaigns', included: true },
-        { text: 'Standard Safety', included: true },
-        { text: 'Webhooks & Flow Builder', included: true },
-        { text: 'Standard Support', included: true },
+        { text: 'Unlimited messages*', included: true },
+        { text: 'Unlimited campaigns', included: true },
+        { text: 'Standard safety', included: true },
+        { text: 'Webhooks + Flow Builder', included: true },
+        { text: 'Standard support', included: true },
       ],
-      cta: 'Choose Monthly',
+      cta: 'Choose monthly',
       highlight: false,
-      gradient: 'from-blue-500 to-blue-600',
-      bgGradient: 'from-blue-50 to-white',
+      accentColor: '#3b82f6',
+      iconBg: 'from-blue-500 to-cyan-600',
     },
     {
       name: '3-Month',
@@ -92,18 +82,19 @@ const Pricing: React.FC = () => {
       price: '₹2,500',
       originalPrice: '₹2,697',
       duration: 'one-time',
-      description: 'Save 7% vs monthly',
+      description: 'Quarterly saver',
+      savings: 'Save 7%',
       features: [
-        { text: 'All Monthly Features', included: true },
-        { text: 'Basic Automation', included: true },
-        { text: 'Good Number Safety', included: true },
-        { text: 'Standard Support', included: true },
-        { text: 'Campaign Retry', included: false },
+        { text: 'All monthly features', included: true },
+        { text: 'Basic automation', included: true },
+        { text: 'Good number safety', included: true },
+        { text: 'Standard support', included: true },
+        { text: 'Campaign retry', included: false },
       ],
-      cta: 'Choose 3-Month',
+      cta: 'Choose 3-month',
       highlight: false,
-      gradient: 'from-purple-500 to-purple-600',
-      bgGradient: 'from-purple-50 to-white',
+      accentColor: '#a855f7',
+      iconBg: 'from-purple-500 to-pink-600',
     },
     {
       name: '6-Month',
@@ -111,20 +102,20 @@ const Pricing: React.FC = () => {
       price: '₹5,000',
       originalPrice: '₹5,394',
       duration: 'one-time',
-      description: 'Most Popular Choice',
+      description: 'Most chosen plan',
+      savings: 'Save 7%',
       features: [
-        { text: 'Advanced Automation', included: true },
-        { text: 'Mobile + API Same No.', included: true, highlight: true },
-        { text: 'Campaign Retry', included: true, highlight: true },
-        { text: 'High Safety (Active)', included: true, highlight: true },
-        { text: 'Priority Support', included: true },
+        { text: 'Advanced automation', included: true },
+        { text: 'Mobile + API same no.', included: true, highlight: true },
+        { text: 'Campaign retry', included: true, highlight: true },
+        { text: 'High safety (active)', included: true, highlight: true },
+        { text: 'Priority support', included: true },
       ],
-      cta: 'Get Best Value',
+      cta: 'Get best value',
       highlight: true,
-      tag: 'RECOMMENDED',
-      tagColor: 'bg-gradient-to-r from-green-500 to-emerald-600',
-      gradient: 'from-green-500 to-emerald-600',
-      bgGradient: 'from-green-50 to-emerald-50',
+      tag: 'POPULAR',
+      accentColor: '#10b981',
+      iconBg: 'from-green-500 to-emerald-600',
     },
     {
       name: '1-Year',
@@ -132,153 +123,195 @@ const Pricing: React.FC = () => {
       price: '₹8,999',
       originalPrice: '₹10,788',
       duration: 'one-time',
-      description: 'Save 17% - Best Deal!',
+      description: 'Best deal, period.',
+      savings: 'Save 17%',
       features: [
-        { text: 'Full Automation Suite', included: true },
-        { text: 'Mobile + API Same No.', included: true, highlight: true },
-        { text: 'Campaign Retry', included: true, highlight: true },
-        { text: 'Maximum Safety', included: true, highlight: true },
-        { text: '2 WhatsApp Accounts', included: true, highlight: true },
+        { text: 'Full automation suite', included: true },
+        { text: 'Mobile + API same no.', included: true, highlight: true },
+        { text: 'Campaign retry', included: true, highlight: true },
+        { text: 'Maximum safety', included: true, highlight: true },
+        { text: '2 WhatsApp accounts', included: true, highlight: true },
       ],
-      cta: 'Go Annual',
+      cta: 'Go annual',
       highlight: true,
       tag: 'BEST DEAL',
-      tagColor: 'bg-gradient-to-r from-orange-500 to-red-500',
-      gradient: 'from-orange-500 to-red-500',
-      bgGradient: 'from-orange-50 to-red-50',
-    }
+      accentColor: '#f59e0b',
+      iconBg: 'from-amber-500 to-orange-600',
+    },
   ];
 
   return (
     <section
       id="pricing"
       ref={sectionRef}
-      className="py-24 bg-gradient-to-b from-gray-50 via-white to-gray-50 relative overflow-hidden"
+      className="relative py-24 lg:py-32 overflow-hidden"
     >
-      {/* Animated Background Elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 left-10 w-72 h-72 bg-green-200/30 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-20 right-10 w-96 h-96 bg-blue-200/30 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-purple-200/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }}></div>
-
-        {/* Floating particles */}
-        {[...Array(6)].map((_, i) => (
-          <div
-            key={i}
-            className="absolute w-2 h-2 bg-green-500/30 rounded-full animate-bounce"
-            style={{
-              left: `${15 + i * 15}%`,
-              top: `${20 + (i % 3) * 25}%`,
-              animationDelay: `${i * 0.5}s`,
-              animationDuration: `${2 + i * 0.5}s`,
-            }}
-          ></div>
-        ))}
+      {/* ✅ Background */}
+      <div className="absolute inset-0 -z-10 bg-gradient-to-b from-[#0a0e27] via-[#050816] to-[#0a0e27]">
+        <div className="absolute inset-0"
+          style={{
+            background: `
+              radial-gradient(ellipse 60% 50% at 20% 30%, rgba(16, 185, 129, 0.1) 0%, transparent 60%),
+              radial-gradient(ellipse 60% 50% at 80% 70%, rgba(245, 158, 11, 0.08) 0%, transparent 60%)
+            `,
+          }}
+        />
+        <div className="absolute inset-0 opacity-[0.025]"
+          style={{
+            backgroundImage: `linear-gradient(rgba(255,255,255,0.3) 1px, transparent 1px), 
+                              linear-gradient(90deg, rgba(255,255,255,0.3) 1px, transparent 1px)`,
+            backgroundSize: '60px 60px',
+          }}
+        />
       </div>
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div
-          className={`text-center max-w-3xl mx-auto mb-16 transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
-            }`}
+
+        {/* ✅ EDITORIAL HEADER */}
+        <div className={`grid grid-cols-12 gap-6 mb-16 lg:mb-20 transition-all duration-1000 
+          ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}
         >
-          <span className="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium 
-            bg-gradient-to-r from-green-100 to-emerald-100 text-green-700 mb-4
-            border border-green-200 shadow-sm">
-            <Sparkles className="w-4 h-4 mr-2 animate-pulse" />
-            Simple & Transparent
-          </span>
-
-          <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-            Choose Your{' '}
-            <span className="relative">
-              <span className="relative z-10 text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-emerald-600">
-                Perfect Plan
+          <div className="col-span-12 lg:col-span-7">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="h-px w-12 bg-white/20" />
+              <span className="text-xs font-mono uppercase tracking-[0.2em] text-gray-400">
+                Pricing · No bs
               </span>
-              <span className="absolute bottom-1 left-0 w-full h-3 bg-green-200/50 -z-0 rounded"></span>
-            </span>
-          </h2>
+            </div>
 
-          <p className="text-xl text-gray-600 leading-relaxed">
-            Start free, scale as you grow. No hidden fees, cancel anytime.
-          </p>
+            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-[1.05] tracking-tight">
+              <span className="text-white">Pick a plan.</span>{' '}
+              <span className="bg-gradient-to-r from-gray-400 to-gray-500 bg-clip-text text-transparent italic font-light">
+                Or don't.
+              </span>
+              <br />
+              <span className="bg-gradient-to-r from-green-400 to-emerald-300 bg-clip-text text-transparent">
+                You won't be surprised later.
+              </span>
+            </h2>
+          </div>
+
+          <div className="col-span-12 lg:col-span-5 lg:pt-16">
+            <p className="text-base lg:text-lg text-gray-400 leading-relaxed mb-4">
+              Every plan shows what you get and what you don't. No hidden tier upgrades. No "contact us for pricing". 
+              <span className="text-white"> The longer you commit, the less you pay.</span>
+            </p>
+          </div>
         </div>
 
-        {/* Pricing Cards */}
-        <div className="flex flex-nowrap lg:grid lg:grid-cols-5 gap-4 lg:gap-6 overflow-x-auto lg:overflow-visible py-8 lg:py-6 snap-x snap-mandatory scrollbar-hide items-stretch">
+        {/* ✅ PRICING CARDS */}
+        <div className="flex flex-nowrap lg:grid lg:grid-cols-5 gap-4 lg:gap-5 overflow-x-auto lg:overflow-visible py-6 snap-x snap-mandatory scrollbar-hide items-stretch">
           {plans.map((plan, index) => (
             <div
               key={index}
               onMouseEnter={() => setHoveredPlan(index)}
               onMouseLeave={() => setHoveredPlan(null)}
-              className={`flex-none w-72 lg:w-auto snap-center transition-all duration-500 ${isVisible
-                ? 'opacity-100 translate-y-0'
-                : 'opacity-0 translate-y-20'
-                }`}
-              style={{ transitionDelay: `${index * 100}ms` }}
+              className={`flex-none w-72 lg:w-auto snap-center transition-all duration-700 ease-out
+                ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-20'}`}
+              style={{ transitionDelay: `${index * 80}ms` }}
             >
               <div
-                className={`relative h-full bg-white rounded-2xl p-6 flex flex-col
-                  transition-all duration-500 ease-out
+                className={`relative h-full rounded-3xl overflow-hidden
+                  bg-white/[0.04] backdrop-blur-2xl
+                  border transition-all duration-500 ease-out
+                  flex flex-col
                   ${plan.highlight
-                    ? 'border-2 border-transparent shadow-2xl lg:scale-105 z-10'
-                    : 'border border-gray-200 shadow-lg hover:shadow-xl'
+                    ? 'border-white/[0.18] shadow-[0_20px_60px_rgba(0,0,0,0.3)]'
+                    : 'border-white/[0.08] hover:border-white/[0.15]'
                   }
-                  ${hoveredPlan === index ? '-translate-y-3' : ''}
+                  ${hoveredPlan === index ? '-translate-y-2 lg:-translate-y-3' : ''}
+                  ${plan.highlight ? 'lg:scale-[1.03]' : ''}
                 `}
                 style={{
-                  background: plan.highlight
-                    ? `linear-gradient(white, white) padding-box, linear-gradient(135deg, ${plan.gradient.includes('green') ? '#22c55e, #10b981' : plan.gradient.includes('orange') ? '#f97316, #ef4444' : '#6b7280, #4b5563'}) border-box`
+                  boxShadow: hoveredPlan === index 
+                    ? `0 20px 60px ${plan.accentColor}25` 
                     : undefined,
                 }}
               >
-                {/* Highlight Tag */}
-                {plan.highlight && plan.tag && (
-                  <div className={`absolute -top-4 left-1/2 transform -translate-x-1/2 
-                    px-4 py-1.5 rounded-full text-xs font-bold text-white shadow-lg
-                    ${plan.tagColor} flex items-center space-x-1.5
-                    animate-pulse`}
-                  >
-                    <Star className="w-3.5 h-3.5 fill-white" />
-                    <span>{plan.tag}</span>
+                {/* Gradient bg */}
+                <div className="absolute inset-0 opacity-0 transition-opacity duration-500"
+                  style={{
+                    background: `linear-gradient(135deg, ${plan.accentColor}20 0%, transparent 60%)`,
+                    opacity: hoveredPlan === index || plan.highlight ? 1 : 0,
+                  }}
+                />
+
+                {/* Inner shimmer */}
+                <div className="absolute inset-0 pointer-events-none"
+                  style={{
+                    background: 'linear-gradient(135deg, rgba(255,255,255,0.06) 0%, transparent 50%)',
+                  }}
+                />
+
+                {/* Top edge highlight */}
+                <div className="absolute top-0 left-[15%] right-[15%] h-px 
+                  bg-gradient-to-r from-transparent via-white/30 to-transparent" />
+
+                {/* TAG */}
+                {plan.tag && (
+                  <div className="absolute top-4 right-4 z-10">
+                    <div className="px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wider
+                      backdrop-blur-xl border"
+                      style={{
+                        backgroundColor: `${plan.accentColor}25`,
+                        borderColor: `${plan.accentColor}60`,
+                        color: plan.accentColor,
+                      }}
+                    >
+                      {plan.tag}
+                    </div>
                   </div>
                 )}
 
-                {/* Gradient Overlay on Hover */}
-                <div className={`absolute inset-0 rounded-2xl bg-gradient-to-br ${plan.bgGradient} 
-                  opacity-0 transition-opacity duration-500
-                  ${hoveredPlan === index ? 'opacity-100' : ''}`}
-                ></div>
+                {/* CONTENT */}
+                <div className="relative z-10 p-6 flex flex-col h-full">
 
-                {/* Content */}
-                <div className="relative z-10">
-                  {/* Icon & Name */}
-                  <div className="flex items-center justify-between mb-4">
-                    <div className={`p-2.5 rounded-xl bg-gradient-to-br ${plan.gradient} 
-                      shadow-lg transition-transform duration-500
-                      ${hoveredPlan === index ? 'scale-110 rotate-6' : ''}`}
-                    >
-                      <plan.icon className="w-5 h-5 text-white" />
-                    </div>
-                    {plan.originalPrice && (
-                      <span className="text-xs text-gray-400 line-through">{plan.originalPrice}</span>
-                    )}
+                  {/* Icon */}
+                  <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${plan.iconBg}
+                    flex items-center justify-center mb-5 
+                    transition-all duration-500
+                    ${hoveredPlan === index ? 'scale-110 rotate-3' : ''}`}
+                    style={{
+                      boxShadow: `0 8px 20px ${plan.accentColor}40`,
+                    }}
+                  >
+                    <plan.icon className="w-5 h-5 text-white" />
                   </div>
 
-                  {/* Plan Name */}
-                  <h3 className="text-lg font-bold text-gray-900 mb-1">{plan.name}</h3>
-                  <p className="text-xs text-gray-500 mb-4">{plan.description}</p>
+                  {/* Name */}
+                  <h3 className="text-xl font-bold text-white mb-1">{plan.name}</h3>
+                  <p className="text-xs text-gray-500 mb-5">{plan.description}</p>
 
                   {/* Price */}
-                  <div className="mb-6">
-                    <div className="flex items-baseline">
-                      <span className={`text-3xl font-extrabold bg-gradient-to-r ${plan.gradient} 
-                        text-transparent bg-clip-text`}>
+                  <div className="mb-5">
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-3xl lg:text-4xl font-bold text-white">
                         {plan.price}
                       </span>
+                      {plan.originalPrice && (
+                        <span className="text-sm text-gray-600 line-through">
+                          {plan.originalPrice}
+                        </span>
+                      )}
                     </div>
-                    <span className="text-sm text-gray-500">{plan.duration}</span>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="text-xs text-gray-500">{plan.duration}</span>
+                      {plan.savings && (
+                        <>
+                          <span className="text-gray-700">·</span>
+                          <span className="text-xs font-mono inline-flex items-center gap-1"
+                            style={{ color: plan.accentColor }}
+                          >
+                            <TrendingUp className="w-3 h-3" />
+                            {plan.savings}
+                          </span>
+                        </>
+                      )}
+                    </div>
                   </div>
+
+                  {/* Divider */}
+                  <div className="h-px bg-white/[0.06] mb-5" />
 
                   {/* Features */}
                   <ul className="space-y-3 mb-6 flex-1">
@@ -286,124 +319,158 @@ const Pricing: React.FC = () => {
                       <li
                         key={idx}
                         className={`flex items-start text-sm transition-all duration-300
-                          ${hoveredPlan === index ? 'translate-x-1' : ''}`}
-                        style={{ transitionDelay: `${idx * 50}ms` }}
+                          ${hoveredPlan === index ? 'translate-x-0.5' : ''}`}
+                        style={{ transitionDelay: `${idx * 40}ms` }}
                       >
                         {feature.included ? (
-                          <span className={`shrink-0 mr-2 mt-0.5 p-0.5 rounded-full 
-                            ${feature.highlight
-                              ? `bg-gradient-to-r ${plan.gradient}`
-                              : 'bg-green-100'}`}
+                          <span className="flex-shrink-0 mr-2.5 mt-0.5 w-4 h-4 rounded-full flex items-center justify-center"
+                            style={{
+                              backgroundColor: feature.highlight 
+                                ? `${plan.accentColor}30` 
+                                : 'rgba(255,255,255,0.08)',
+                              border: feature.highlight 
+                                ? `1px solid ${plan.accentColor}60` 
+                                : 'none',
+                            }}
                           >
-                            <Check className={`w-3 h-3 ${feature.highlight ? 'text-white' : 'text-green-600'}`} />
+                            <Check className="w-2.5 h-2.5" 
+                              style={{ 
+                                color: feature.highlight ? plan.accentColor : '#10b981' 
+                              }} 
+                              strokeWidth={3} 
+                            />
                           </span>
                         ) : (
-                          <span className="shrink-0 mr-2 mt-0.5 p-0.5 rounded-full bg-gray-100">
-                            <X className="w-3 h-3 text-gray-400" />
+                          <span className="flex-shrink-0 mr-2.5 mt-0.5 w-4 h-4 rounded-full bg-white/[0.04] flex items-center justify-center">
+                            <X className="w-2.5 h-2.5 text-gray-600" strokeWidth={2.5} />
                           </span>
                         )}
-                        <span className={`${feature.included
-                          ? feature.highlight ? 'text-gray-900 font-medium' : 'text-gray-700'
-                          : 'text-gray-400'}`}
-                        >
+                        <span className={
+                          feature.included
+                            ? feature.highlight 
+                              ? 'text-white font-medium' 
+                              : 'text-gray-300'
+                            : 'text-gray-600 line-through'
+                        }>
                           {feature.text}
-                          {feature.highlight && (
-                            <BadgeCheck className="w-3.5 h-3.5 inline ml-1 text-green-500" />
-                          )}
                         </span>
                       </li>
                     ))}
                   </ul>
 
-                  {/* CTA Button */}
+                  {/* CTA */}
                   <button
                     className={`w-full py-3 px-4 rounded-xl font-semibold text-sm
                       transition-all duration-300 flex items-center justify-center gap-2
-                      group overflow-hidden relative
-                      ${plan.highlight
-                        ? `bg-gradient-to-r ${plan.gradient} text-white 
-                           shadow-lg hover:shadow-xl hover:scale-[1.02]
-                           ${plan.gradient.includes('green') ? 'shadow-green-500/30 hover:shadow-green-500/50' : 'shadow-orange-500/30 hover:shadow-orange-500/50'}`
-                        : 'bg-gray-100 hover:bg-gray-200 text-gray-900 hover:scale-[1.02]'
-                      }`}
+                      group/btn overflow-hidden relative
+                      ${plan.highlight ? 'text-white' : 'text-gray-200'}
+                    `}
+                    style={{
+                      background: plan.highlight 
+                        ? `linear-gradient(135deg, ${plan.accentColor}, ${plan.accentColor}cc)`
+                        : 'rgba(255,255,255,0.06)',
+                      border: plan.highlight 
+                        ? `1px solid ${plan.accentColor}80` 
+                        : '1px solid rgba(255,255,255,0.1)',
+                      boxShadow: plan.highlight ? `0 8px 24px ${plan.accentColor}40` : 'none',
+                    }}
                   >
-                    {/* Shine effect */}
-                    <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent 
-                      -translate-x-full group-hover:translate-x-full transition-transform duration-700"></span>
-
+                    <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent
+                      -translate-x-full group-hover/btn:translate-x-full transition-transform duration-700" />
                     <span className="relative z-10">{plan.cta}</span>
-                    <ArrowRight className={`w-4 h-4 relative z-10 transition-transform duration-300 
-                      group-hover:translate-x-1 ${plan.highlight ? 'text-white' : 'text-gray-600'}`} />
+                    <ArrowUpRight className="relative z-10 w-4 h-4 group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-transform" />
                   </button>
                 </div>
-
-                {/* Decorative corner */}
-                {plan.highlight && (
-                  <div className={`absolute top-0 right-0 w-20 h-20 bg-gradient-to-br ${plan.gradient} 
-                    opacity-10 rounded-bl-full`}></div>
-                )}
               </div>
             </div>
           ))}
         </div>
 
-        {/* Footer Note */}
-        <div className={`mt-12 text-center transition-all duration-1000 delay-500 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
-          }`}>
-          <div className="inline-flex items-center gap-6 flex-wrap justify-center">
-            <div className="flex items-center gap-2 text-sm text-gray-600">
-              <Shield className="w-4 h-4 text-green-500" />
-              <span>Secure Payments</span>
-            </div>
-            <div className="flex items-center gap-2 text-sm text-gray-600">
-              <Zap className="w-4 h-4 text-yellow-500" />
-              <span>Instant Activation</span>
-            </div>
-            <div className="flex items-center gap-2 text-sm text-gray-600">
-              <BadgeCheck className="w-4 h-4 text-blue-500" />
-              <span>Cancel Anytime</span>
-            </div>
+        {/* ✅ TRUST STRIP - editorial */}
+        <div className={`mt-16 pt-10 border-t border-white/10 transition-all duration-1000 delay-500
+          ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}
+        >
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
+            {[
+              { icon: Shield, label: 'Secure payments', sub: '256-bit SSL' },
+              { icon: Zap, label: 'Instant activation', sub: 'No wait time' },
+              { icon: Check, label: 'Cancel anytime', sub: 'No questions' },
+              { icon: Sparkles, label: 'Honest pricing', sub: 'No surprises' },
+            ].map((item, i) => (
+              <div key={i} className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-white/[0.04] border border-white/[0.08]
+                  flex items-center justify-center flex-shrink-0">
+                  <item.icon className="w-4 h-4 text-gray-400" />
+                </div>
+                <div>
+                  <div className="text-sm font-medium text-white">{item.label}</div>
+                  <div className="text-xs text-gray-500">{item.sub}</div>
+                </div>
+              </div>
+            ))}
           </div>
 
-          <p className="text-sm text-gray-500 mt-4">
-            *Unlimited messages subject to Meta Fair Usage Policy & Tier Limits.
+          <p className="text-xs text-gray-500 text-center">
+            *Unlimited messages subject to Meta's Fair Usage Policy & tier limits.
           </p>
         </div>
 
-        {/* Enterprise CTA */}
-        <div className={`mt-16 text-center transition-all duration-1000 delay-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
-          }`}>
-          <div className="inline-flex flex-col sm:flex-row items-center gap-4 
-            bg-gradient-to-r from-gray-900 to-gray-800 
-            rounded-2xl px-8 py-6 shadow-2xl">
-            <div className="text-left">
-              <h4 className="text-white font-bold text-lg">Need a Custom Plan?</h4>
-              <p className="text-gray-400 text-sm">Get tailored solutions for your enterprise</p>
+        {/* ✅ ENTERPRISE CTA */}
+        <div className={`mt-16 transition-all duration-1000 delay-700
+          ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}
+        >
+          <div className="relative rounded-3xl overflow-hidden
+            bg-white/[0.04] backdrop-blur-2xl
+            border border-white/[0.1]
+            p-8 lg:p-10">
+
+            {/* Gradient bg */}
+            <div className="absolute inset-0"
+              style={{
+                background: `
+                  radial-gradient(ellipse 60% 50% at 20% 50%, rgba(168, 85, 247, 0.15) 0%, transparent 60%),
+                  radial-gradient(ellipse 50% 40% at 80% 50%, rgba(59, 130, 246, 0.15) 0%, transparent 60%)
+                `,
+              }}
+            />
+
+            <div className="relative flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+              <div className="max-w-xl">
+                <div className="flex items-center gap-2 mb-3">
+                  <Crown className="w-4 h-4 text-purple-400" />
+                  <span className="text-xs font-mono uppercase tracking-wider text-purple-300">
+                    Enterprise
+                  </span>
+                </div>
+                <h3 className="text-2xl lg:text-3xl font-bold text-white mb-2">
+                  Need something <span className="italic font-light text-gray-400">custom?</span>
+                </h3>
+                <p className="text-gray-400 text-sm lg:text-base">
+                  100k+ messages/day, dedicated infrastructure, SLA, white-labeling — we do all of it.
+                </p>
+              </div>
+
+              <a
+                href="https://wa.me/919310010763?text=Hi, I need a custom enterprise plan for WabMeta!"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group inline-flex items-center gap-3 
+                  bg-white text-gray-900 px-6 py-3.5 rounded-full text-sm font-semibold
+                  hover:shadow-[0_8px_24px_rgba(255,255,255,0.2)]
+                  hover:-translate-y-0.5
+                  transition-all duration-300 flex-shrink-0"
+              >
+                Talk to founder
+                <ArrowUpRight className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+              </a>
             </div>
-            <a
-              href="https://wa.me/919310010763?text=Hi, I need a custom enterprise plan for WabMeta!"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="px-6 py-3 bg-white text-gray-900 rounded-xl font-semibold text-sm
-                hover:bg-green-50 transition-all duration-300
-                flex items-center gap-2 group hover:scale-105"
-            >
-              Contact Sales
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-            </a>
           </div>
         </div>
       </div>
 
-      {/* Hide scrollbar CSS */}
       <style>{`
-        .scrollbar-hide::-webkit-scrollbar {
-          display: none;
-        }
-        .scrollbar-hide {
-          -ms-overflow-style: none;
-          scrollbar-width: none;
-        }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
     </section>
   );
