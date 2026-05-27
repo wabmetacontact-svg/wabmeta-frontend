@@ -1,5 +1,4 @@
 // src/components/dashboard/TopBar.tsx
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {
@@ -9,15 +8,12 @@ import {
   Settings,
   User,
   LogOut,
-  Moon,
-  Sun,
   Menu,
   Command,
   CreditCard,
-  HelpCircle
+  HelpCircle,
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
-import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
 
 interface TopBarProps {
@@ -28,7 +24,6 @@ interface TopBarProps {
 const TopBar: React.FC<TopBarProps> = ({ onMenuClick, sidebarCollapsed }) => {
   const { user } = useApp();
   const { logout } = useAuth();
-  const { resolved, toggle } = useTheme();
 
   const [showSearch, setShowSearch] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
@@ -38,18 +33,13 @@ const TopBar: React.FC<TopBarProps> = ({ onMenuClick, sidebarCollapsed }) => {
   const notificationRef = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
 
-  // Reset avatar error when user changes
-  useEffect(() => {
-    setAvatarError(false);
-  }, [user?.avatar]);
+  useEffect(() => { setAvatarError(false); }, [user?.avatar]);
 
-  // Handle Logout
   const handleLogout = async () => {
     setShowProfile(false);
     await logout();
   };
 
-  // Click outside handler
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (notificationRef.current && !notificationRef.current.contains(event.target as Node)) {
@@ -59,12 +49,10 @@ const TopBar: React.FC<TopBarProps> = ({ onMenuClick, sidebarCollapsed }) => {
         setShowProfile(false);
       }
     };
-
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Keyboard shortcut for search
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
@@ -77,7 +65,6 @@ const TopBar: React.FC<TopBarProps> = ({ onMenuClick, sidebarCollapsed }) => {
         setShowProfile(false);
       }
     };
-
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, []);
@@ -89,77 +76,104 @@ const TopBar: React.FC<TopBarProps> = ({ onMenuClick, sidebarCollapsed }) => {
       title: 'New message from Priya',
       description: 'Hi, I wanted to know about...',
       time: '2 min ago',
-      unread: true
-    }
+      unread: true,
+    },
   ];
-
-  const isDark = resolved === 'dark';
 
   return (
     <header
-      className={`fixed top-0 right-0 z-30 bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-800 transition-all duration-300 ${sidebarCollapsed ? 'left-20' : 'left-64'
-        }`}
+      className={`fixed top-0 right-0 z-30 transition-all duration-300
+        ${sidebarCollapsed ? 'left-0 lg:left-20' : 'left-0 lg:left-72'}
+      `}
     >
-      <div className="flex items-center justify-between h-16 px-4 lg:px-6">
-        {/* Left Section */}
-        <div className="flex items-center space-x-4">
+      {/* ✅ Glass background */}
+      <div className="absolute inset-0 bg-[#0a0e27]/70 backdrop-blur-2xl border-b border-white/[0.06]" />
+
+      <div className="relative flex items-center justify-between h-16 px-4 lg:px-6">
+
+        {/* Left */}
+        <div className="flex items-center gap-3">
           <button
             onClick={onMenuClick}
-            className="lg:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 text-gray-500 dark:text-slate-300"
+            className="lg:hidden p-2 rounded-lg
+              bg-white/[0.04] border border-white/[0.06]
+              hover:bg-white/[0.08]
+              text-gray-400 hover:text-white
+              transition-all duration-300"
           >
-            <Menu className="w-6 h-6" />
+            <Menu className="w-5 h-5" />
           </button>
 
+          {/* Search - glass */}
           <div className="hidden md:flex items-center">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-slate-400" />
+            <div className="relative group">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 group-focus-within:text-green-400 transition-colors" />
               <input
                 type="text"
-                placeholder="Search anything..."
-                className="w-64 lg:w-80 pl-10 pr-4 py-2.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all text-gray-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-400"
+                placeholder="Search contacts, campaigns, templates..."
+                className="w-72 lg:w-96 pl-10 pr-20 py-2.5 text-sm
+                  bg-white/[0.04] backdrop-blur-xl
+                  border border-white/[0.08]
+                  rounded-xl
+                  text-white placeholder:text-gray-500
+                  focus:outline-none focus:bg-white/[0.06] focus:border-green-400/30
+                  transition-all duration-300"
               />
-              <div className="absolute right-3 top-1/2 -translate-y-1/2 hidden lg:flex items-center space-x-1 text-gray-400 dark:text-slate-400">
-                <Command className="w-4 h-4" />
-                <span className="text-xs">K</span>
+              <div className="absolute right-3 top-1/2 -translate-y-1/2 hidden lg:flex items-center gap-1
+                px-2 py-0.5 rounded-md
+                bg-white/[0.05] border border-white/[0.08]">
+                <Command className="w-3 h-3 text-gray-500" />
+                <span className="text-[10px] font-mono text-gray-500">K</span>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Right Section */}
-        <div className="flex items-center space-x-2">
+        {/* Right */}
+        <div className="flex items-center gap-2">
+
           {/* Mobile Search */}
           <button
             onClick={() => setShowSearch(!showSearch)}
-            className="md:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 text-gray-500 dark:text-slate-300"
+            className="md:hidden p-2 rounded-lg
+              bg-white/[0.04] border border-white/[0.06]
+              hover:bg-white/[0.08]
+              text-gray-400 hover:text-white
+              transition-all duration-300"
           >
-            <Search className="w-5 h-5" />
-          </button>
-
-          {/* ✅ Dark Mode Toggle (REAL) */}
-          <button
-            onClick={toggle}
-            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 text-gray-500 dark:text-slate-300 transition-colors"
-            title={isDark ? 'Light Mode' : 'Dark Mode'}
-          >
-            {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+            <Search className="w-4 h-4" />
           </button>
 
           {/* Notifications */}
           <div className="relative" ref={notificationRef}>
             <button
               onClick={() => setShowNotifications(!showNotifications)}
-              className="relative p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 text-gray-500 dark:text-slate-300 transition-colors"
+              className="relative p-2 rounded-lg
+                bg-white/[0.04] border border-white/[0.06]
+                hover:bg-white/[0.08] hover:border-white/[0.12]
+                text-gray-400 hover:text-white
+                transition-all duration-300"
             >
-              <Bell className="w-5 h-5" />
-              <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white dark:border-slate-900"></span>
+              <Bell className="w-4 h-4" />
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full
+                ring-2 ring-[#0a0e27] animate-pulse" />
             </button>
 
             {showNotifications && (
-              <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-gray-100 dark:border-slate-800 overflow-hidden animate-fade-in z-50">
-                <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-slate-800">
-                  <h3 className="font-semibold text-gray-900 dark:text-slate-100">Notifications</h3>
-                  <button className="text-sm text-primary-600 hover:text-primary-700 font-medium">
+              <div className="absolute right-0 mt-2 w-80
+                bg-[#0a0e27]/95 backdrop-blur-2xl
+                border border-white/[0.1]
+                rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.5)]
+                overflow-hidden z-50
+                animate-fadeIn">
+
+                {/* Top edge */}
+                <div className="absolute top-0 left-[15%] right-[15%] h-px 
+                  bg-gradient-to-r from-transparent via-white/30 to-transparent" />
+
+                <div className="flex items-center justify-between px-4 py-3 border-b border-white/[0.06]">
+                  <h3 className="font-semibold text-white text-sm">Notifications</h3>
+                  <button className="text-xs text-green-400 hover:text-green-300 font-medium">
                     Mark all read
                   </button>
                 </div>
@@ -168,44 +182,52 @@ const TopBar: React.FC<TopBarProps> = ({ onMenuClick, sidebarCollapsed }) => {
                   {notifications.map((notification) => (
                     <div
                       key={notification.id}
-                      className={`flex items-start space-x-3 px-4 py-3 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors cursor-pointer ${notification.unread ? 'bg-primary-50/50 dark:bg-primary-900/10' : ''
-                        }`}
+                      className={`flex items-start gap-3 px-4 py-3
+                        hover:bg-white/[0.04] transition-colors cursor-pointer
+                        ${notification.unread ? 'bg-green-500/[0.04]' : ''}
+                      `}
                     >
-                      <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center shrink-0 text-blue-600 dark:text-blue-300">
-                        <Bell className="w-5 h-5" />
+                      <div className="w-9 h-9 rounded-full
+                        bg-blue-500/20 border border-blue-400/30
+                        flex items-center justify-center flex-shrink-0
+                        text-blue-300">
+                        <Bell className="w-4 h-4" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-gray-900 dark:text-slate-100">{notification.title}</p>
-                        <p className="text-sm text-gray-500 dark:text-slate-400 truncate">{notification.description}</p>
-                        <p className="text-xs text-gray-400 dark:text-slate-500 mt-1">{notification.time}</p>
+                        <p className="text-sm font-medium text-white">{notification.title}</p>
+                        <p className="text-xs text-gray-400 truncate">{notification.description}</p>
+                        <p className="text-[10px] text-gray-500 mt-1 font-mono">{notification.time}</p>
                       </div>
                       {notification.unread && (
-                        <div className="w-2 h-2 bg-primary-500 rounded-full shrink-0 mt-2"></div>
+                        <div className="w-2 h-2 bg-green-400 rounded-full flex-shrink-0 mt-1.5" />
                       )}
                     </div>
                   ))}
                 </div>
 
-                <div className="px-4 py-3 border-t border-gray-100 dark:border-slate-800">
+                <div className="px-4 py-3 border-t border-white/[0.06]">
                   <Link
                     to="/dashboard/notifications"
                     onClick={() => setShowNotifications(false)}
-                    className="block text-center text-sm text-primary-600 hover:text-primary-700 font-medium"
+                    className="block text-center text-xs text-green-400 hover:text-green-300 font-medium"
                   >
-                    View all notifications
+                    View all notifications →
                   </Link>
                 </div>
               </div>
             )}
           </div>
 
-          {/* Profile Dropdown */}
+          {/* Profile */}
           <div className="relative" ref={profileRef}>
             <button
               onClick={() => setShowProfile(!showProfile)}
-              className="flex items-center space-x-2 p-1.5 rounded-xl hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors"
+              className="flex items-center gap-2 p-1.5 rounded-xl
+                bg-white/[0.04] border border-white/[0.06]
+                hover:bg-white/[0.08] hover:border-white/[0.12]
+                transition-all duration-300"
             >
-              <div className="w-9 h-9 rounded-full overflow-hidden border border-gray-100 dark:border-slate-800 flex items-center justify-center bg-gray-100 dark:bg-slate-800">
+              <div className="w-8 h-8 rounded-lg overflow-hidden flex-shrink-0">
                 {user?.avatar && !avatarError ? (
                   <img
                     src={user.avatar}
@@ -214,64 +236,63 @@ const TopBar: React.FC<TopBarProps> = ({ onMenuClick, sidebarCollapsed }) => {
                     onError={() => setAvatarError(true)}
                   />
                 ) : (
-                  <div className="w-full h-full bg-linear-to-br from-primary-500 to-whatsapp-teal flex items-center justify-center text-white font-bold text-sm">
+                  <div className="w-full h-full bg-gradient-to-br from-green-500 to-emerald-600
+                    flex items-center justify-center text-white font-bold text-xs">
                     {user?.name ? user.name.substring(0, 2).toUpperCase() : 'JD'}
                   </div>
                 )}
               </div>
               <div className="hidden md:block text-left">
-                <p className="text-sm font-medium text-gray-900 dark:text-slate-100">{user?.name || 'Guest'}</p>
-                <p className="text-xs text-gray-500 dark:text-slate-400 capitalize">{user?.role || 'User'}</p>
+                <p className="text-xs font-semibold text-white">{user?.name || 'Guest'}</p>
+                <p className="text-[10px] text-gray-500 capitalize font-mono">{user?.role || 'User'}</p>
               </div>
-              <ChevronDown className={`hidden md:block w-4 h-4 text-gray-400 dark:text-slate-400 transition-transform ${showProfile ? 'rotate-180' : ''}`} />
+              <ChevronDown className={`hidden md:block w-3.5 h-3.5 text-gray-500 transition-transform 
+                ${showProfile ? 'rotate-180' : ''}`} />
             </button>
 
             {showProfile && (
-              <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-gray-100 dark:border-slate-800 overflow-hidden animate-fade-in z-50">
-                <div className="px-4 py-3 border-b border-gray-100 dark:border-slate-800">
-                  <p className="text-sm font-semibold text-gray-900 dark:text-slate-100">{user?.name}</p>
-                  <p className="text-sm text-gray-500 dark:text-slate-400 truncate">{user?.email}</p>
+              <div className="absolute right-0 mt-2 w-56
+                bg-[#0a0e27]/95 backdrop-blur-2xl
+                border border-white/[0.1]
+                rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.5)]
+                overflow-hidden z-50
+                animate-fadeIn">
+
+                <div className="absolute top-0 left-[15%] right-[15%] h-px 
+                  bg-gradient-to-r from-transparent via-white/30 to-transparent" />
+
+                <div className="px-4 py-3 border-b border-white/[0.06]">
+                  <p className="text-sm font-semibold text-white">{user?.name}</p>
+                  <p className="text-xs text-gray-400 truncate font-mono">{user?.email}</p>
                 </div>
 
                 <div className="py-2">
-                  <Link
-                    to="/dashboard/profile"
-                    onClick={() => setShowProfile(false)}
-                    className="flex items-center space-x-3 px-4 py-2 text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors"
-                  >
-                    <User className="w-4 h-4 text-gray-400" />
-                    <span className="text-sm">My Profile</span>
-                  </Link>
-                  <Link
-                    to="/dashboard/settings"
-                    onClick={() => setShowProfile(false)}
-                    className="flex items-center space-x-3 px-4 py-2 text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors"
-                  >
-                    <Settings className="w-4 h-4 text-gray-400" />
-                    <span className="text-sm">Settings</span>
-                  </Link>
-                  <Link
-                    to="/dashboard/billing"
-                    onClick={() => setShowProfile(false)}
-                    className="flex items-center space-x-3 px-4 py-2 text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors"
-                  >
-                    <CreditCard className="w-4 h-4 text-gray-400" />
-                    <span className="text-sm">Billing</span>
-                  </Link>
-                  <Link
-                    to="/dashboard/help"
-                    onClick={() => setShowProfile(false)}
-                    className="flex items-center space-x-3 px-4 py-2 text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors"
-                  >
-                    <HelpCircle className="w-4 h-4 text-gray-400" />
-                    <span className="text-sm">Help & Support</span>
-                  </Link>
+                  {[
+                    { icon: User, label: 'My Profile', href: '/dashboard/profile' },
+                    { icon: Settings, label: 'Settings', href: '/dashboard/settings' },
+                    { icon: CreditCard, label: 'Billing', href: '/dashboard/billing' },
+                    { icon: HelpCircle, label: 'Help & Support', href: '/dashboard/help' },
+                  ].map((item) => (
+                    <Link
+                      key={item.href}
+                      to={item.href}
+                      onClick={() => setShowProfile(false)}
+                      className="flex items-center gap-3 px-4 py-2
+                        text-gray-300 hover:text-white hover:bg-white/[0.04]
+                        transition-colors"
+                    >
+                      <item.icon className="w-4 h-4 text-gray-500" />
+                      <span className="text-sm">{item.label}</span>
+                    </Link>
+                  ))}
                 </div>
 
-                <div className="border-t border-gray-100 dark:border-slate-800 py-2">
+                <div className="border-t border-white/[0.06] py-2">
                   <button
                     onClick={handleLogout}
-                    className="w-full flex items-center space-x-3 px-4 py-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors text-left"
+                    className="w-full flex items-center gap-3 px-4 py-2
+                      text-red-400 hover:bg-red-500/10 hover:text-red-300
+                      transition-colors text-left"
                   >
                     <LogOut className="w-4 h-4" />
                     <span className="text-sm">Logout</span>
@@ -283,15 +304,20 @@ const TopBar: React.FC<TopBarProps> = ({ onMenuClick, sidebarCollapsed }) => {
         </div>
       </div>
 
-      {/* Mobile Search Bar */}
+      {/* Mobile Search */}
       {showSearch && (
-        <div className="md:hidden px-4 pb-4 animate-fade-in bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-800">
+        <div className="md:hidden px-4 pb-3 animate-fadeIn">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-slate-400" />
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
             <input
               type="text"
-              placeholder="Search anything..."
-              className="w-full pl-10 pr-4 py-2.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 text-gray-900 dark:text-slate-100"
+              placeholder="Search..."
+              className="w-full pl-10 pr-4 py-2.5 text-sm
+                bg-white/[0.04] backdrop-blur-xl
+                border border-white/[0.08]
+                rounded-xl
+                text-white placeholder:text-gray-500
+                focus:outline-none focus:bg-white/[0.06] focus:border-green-400/30"
               autoFocus
             />
           </div>
