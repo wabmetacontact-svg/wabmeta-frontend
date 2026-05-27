@@ -827,7 +827,7 @@ const Dashboard: React.FC = () => {
                   <div className="absolute inset-0 flex flex-col items-center justify-center select-none text-center">
                     <span className="text-[10px] font-bold text-gray-400 dark:text-slate-500 leading-none">Total</span>
                     <span className="text-base font-extrabold text-gray-950 dark:text-white mt-0.5 leading-none">
-                      {donutTotal.toLocaleString()}
+                      {(donutTotal ?? 0).toLocaleString()}
                     </span>
                   </div>
                 </div>
@@ -849,13 +849,13 @@ const Dashboard: React.FC = () => {
                 <div className="bg-emerald-500/5 rounded-xl p-2 text-center">
                   <span className="text-[9px] font-bold text-gray-400 dark:text-slate-500 uppercase block">Delivered</span>
                   <span className="text-sm font-extrabold text-emerald-600 block mt-0.5">
-                    {widgets?.summary ? (widgets.summary.totalDelivered).toLocaleString() : '30,245'}
+                    {widgets?.summary ? (widgets.summary.totalDelivered ?? 0).toLocaleString() : '30,245'}
                   </span>
                 </div>
                 <div className="bg-red-500/5 rounded-xl p-2 text-center">
                   <span className="text-[9px] font-bold text-gray-400 dark:text-slate-500 uppercase block">Failed</span>
                   <span className="text-sm font-extrabold text-red-500 block mt-0.5">
-                    {widgets?.summary ? (widgets.summary.totalFailed).toLocaleString() : '2,145'}
+                    {widgets?.summary ? (widgets.summary.totalFailed ?? 0).toLocaleString() : '2,145'}
                   </span>
                 </div>
               </div>
@@ -895,9 +895,9 @@ const Dashboard: React.FC = () => {
                             <span className="w-1.5 h-6 rounded bg-emerald-500 shrink-0" />
                             <span className="font-bold text-gray-900 dark:text-white">{camp.name}</span>
                           </td>
-                          <td className="py-3 text-right">{camp.sent.toLocaleString()}</td>
-                          <td className="py-3 text-right">{camp.delivered.toLocaleString()}</td>
-                          <td className="py-3 text-right">{camp.read.toLocaleString()}</td>
+                          <td className="py-3 text-right">{(camp.sent ?? 0).toLocaleString()}</td>
+                          <td className="py-3 text-right">{(camp.delivered ?? 0).toLocaleString()}</td>
+                          <td className="py-3 text-right">{(camp.read ?? 0).toLocaleString()}</td>
                           <td className="py-3 text-right text-emerald-500 font-bold">{camp.ctr}</td>
                         </tr>
                       ))
