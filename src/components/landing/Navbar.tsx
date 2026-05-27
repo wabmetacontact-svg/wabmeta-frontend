@@ -6,24 +6,11 @@ import logo from '../../assets/logo.png';
 const Navbar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
-  const [isOverDark, setIsOverDark] = useState(true); // ✅ Track if navbar is over dark section
   const navigate = useNavigate();
 
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 10);
-
-      // ✅ Detect background color behind navbar
-      // Hero section ka height check karo
-      const heroHeight = window.innerHeight; // hero approx full screen
-      const scrollY = window.scrollY;
-
-      // Agar hero section me hain to dark, warna light
-      if (scrollY < heroHeight - 100) {
-        setIsOverDark(true);
-      } else {
-        setIsOverDark(false);
-      }
     };
 
     handleScroll(); // initial check
@@ -61,33 +48,25 @@ const Navbar: React.FC = () => {
     <>
       <div className="fixed top-0 left-0 right-0 z-50 flex justify-center px-4 pt-4">
 
-        {/* ✅ ADAPTIVE Glass Navbar */}
+        {/* ✅ Floating Dark Glassmorphic Navbar */}
         <nav
           className={`
             relative w-full max-w-5xl
-            transition-all duration-700 ease-in-out
+            transition-all duration-500 ease-in-out
             rounded-full
-            ${isOverDark
-              // 🌙 OVER DARK (Hero section)
-              ? isScrolled
-                ? 'bg-white/[0.08] backdrop-blur-2xl border border-white/[0.15] shadow-2xl shadow-black/30'
-                : 'bg-white/[0.05] backdrop-blur-xl border border-white/[0.12] shadow-xl shadow-black/20'
-              // ☀️ OVER LIGHT (other sections)
-              : isScrolled
-                ? 'bg-white/70 backdrop-blur-2xl border border-gray-200/60 shadow-2xl shadow-gray-900/10'
-                : 'bg-white/60 backdrop-blur-xl border border-gray-200/50 shadow-xl shadow-gray-900/5'
+            ${isScrolled
+              ? 'bg-[#0a0e27]/40 backdrop-blur-2xl border border-white/[0.15] shadow-2xl shadow-black/40'
+              : 'bg-white/[0.04] backdrop-blur-xl border border-white/[0.1] shadow-xl shadow-black/10'
             }
           `}
           style={{
             WebkitBackdropFilter: 'blur(24px)',
           }}
         >
-          {/* ✅ Adaptive shimmer overlay */}
+          {/* ✅ Shimmer overlay */}
           <div className="absolute inset-0 rounded-full pointer-events-none"
             style={{
-              background: isOverDark
-                ? 'linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.03) 50%, rgba(255,255,255,0.08) 100%)'
-                : 'linear-gradient(135deg, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0.2) 50%, rgba(255,255,255,0.4) 100%)',
+              background: 'linear-gradient(135deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.02) 50%, rgba(255,255,255,0.06) 100%)',
             }}
           />
 
@@ -108,31 +87,22 @@ const Navbar: React.FC = () => {
               </div>
             </Link>
 
-            {/* ✅ Desktop Nav Links - ADAPTIVE COLORS */}
+            {/* ✅ Desktop Nav Links */}
             <div className="hidden lg:flex items-center space-x-1">
               {navLinks.map((link, index) => (
                 <button
                   key={link.name}
                   onClick={() => handleNavClick(link)}
-                  className={`relative px-4 py-2 text-sm font-medium
+                  className="relative px-4 py-2 text-sm font-medium
                     transition-all duration-500 ease-out group
-                    ${isOverDark
-                      ? 'text-white/90 hover:text-green-400'
-                      : 'text-gray-700 hover:text-green-600'
-                    }
-                  `}
+                    text-white/90 hover:text-green-400"
                   style={{ animationDelay: `${index * 100}ms` }}
                 >
-                  {/* Hover bg pill - adaptive */}
-                  <span className={`absolute inset-0 rounded-full
+                  {/* Hover bg pill */}
+                  <span className="absolute inset-0 rounded-full
                     scale-0 group-hover:scale-100
                     transition-transform duration-300 ease-out origin-center
-                    border
-                    ${isOverDark
-                      ? 'bg-white/10 border-white/15'
-                      : 'bg-green-50 border-green-100'
-                    }
-                  `} />
+                    border bg-white/10 border-white/15" />
 
                   <span className="relative z-10 transition-transform duration-300 group-hover:translate-x-0.5">
                     {link.name}
@@ -147,27 +117,23 @@ const Navbar: React.FC = () => {
               ))}
             </div>
 
-            {/* ✅ Desktop CTA Buttons - ADAPTIVE */}
+            {/* ✅ Desktop CTA Buttons */}
             <div className="hidden lg:flex items-center space-x-2 flex-shrink-0">
 
-              {/* Login - adaptive glass pill */}
+              {/* Login - glass pill */}
               <Link
                 to="/login"
-                className={`relative text-sm font-medium
+                className="relative text-sm font-medium
                   px-5 py-2 rounded-full overflow-hidden group
                   border backdrop-blur-sm
                   transition-all duration-500
-                  ${isOverDark
-                    ? 'text-white/90 border-white/15 bg-white/10 hover:bg-white/20 hover:border-green-400/50 hover:text-green-400'
-                    : 'text-gray-700 border-gray-300/60 bg-white/40 hover:bg-white/80 hover:border-green-500/60 hover:text-green-600'
-                  }
-                  hover:shadow-md hover:shadow-green-500/10
-                `}
+                  text-white/90 border-white/15 bg-white/10 hover:bg-white/20 hover:border-green-400/50 hover:text-green-400
+                  hover:shadow-md hover:shadow-green-500/10"
               >
                 <span className="relative z-10">Login</span>
               </Link>
 
-              {/* Get Started - solid green pill (same on both bg) */}
+              {/* Get Started - solid green pill */}
               <Link
                 to="/signup"
                 className="relative bg-gradient-to-r from-green-500 to-emerald-500
@@ -190,30 +156,26 @@ const Navbar: React.FC = () => {
               </Link>
             </div>
 
-            {/* ✅ Mobile Menu Button - ADAPTIVE */}
+            {/* ✅ Mobile Menu Button */}
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className={`lg:hidden p-2.5 rounded-full
+              className="lg:hidden p-2.5 rounded-full
                 backdrop-blur-sm transition-all duration-500
                 flex-shrink-0 border
-                ${isOverDark
-                  ? 'bg-white/10 border-white/15 hover:bg-white/20 hover:border-green-400/50'
-                  : 'bg-white/60 border-gray-300/60 hover:bg-white/90 hover:border-green-500/60'
-                }
-              `}
+                bg-white/10 border-white/15 hover:bg-white/20 hover:border-green-400/50"
             >
               <div className="relative w-5 h-5">
                 <span className={`absolute top-1/2 left-0 w-5 h-0.5 rounded-full
                   transition-all duration-300 ease-out origin-center
-                  ${isOverDark ? 'bg-white' : 'bg-gray-800'}
+                  bg-white
                   ${isOpen ? 'rotate-45 translate-y-0' : '-translate-y-1.5'}`} />
                 <span className={`absolute top-1/2 left-0 w-5 h-0.5 rounded-full
                   transition-all duration-300 ease-out
-                  ${isOverDark ? 'bg-white' : 'bg-gray-800'}
+                  bg-white
                   ${isOpen ? 'opacity-0 translate-x-3' : 'opacity-100'}`} />
                 <span className={`absolute top-1/2 left-0 w-5 h-0.5 rounded-full
                   transition-all duration-300 ease-out origin-center
-                  ${isOverDark ? 'bg-white' : 'bg-gray-800'}
+                  bg-white
                   ${isOpen ? '-rotate-45 translate-y-0' : '-translate-y-1.5'}`} />
               </div>
             </button>
@@ -222,31 +184,24 @@ const Navbar: React.FC = () => {
         </nav>
       </div>
 
-      {/* ✅ Mobile Dropdown - ADAPTIVE */}
+      {/* ✅ Mobile Dropdown */}
       <div className={`
         fixed top-[4.5rem] left-0 right-0 z-40
         flex justify-center px-4
         transition-all duration-500 ease-out
         ${isOpen ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 -translate-y-4 pointer-events-none'}
       `}>
-        <div className={`
-          relative w-full max-w-5xl
+        <div className="relative w-full max-w-5xl
           rounded-3xl
           backdrop-blur-2xl
           border overflow-hidden
           shadow-2xl
-          ${isOverDark
-            ? 'bg-[#0a0e27]/90 border-white/15 shadow-black/40'
-            : 'bg-white/85 border-gray-200/60 shadow-gray-900/15'
-          }
-          `}
+          bg-[#0a0e27]/90 border-white/15 shadow-black/40"
           style={{ WebkitBackdropFilter: 'blur(24px)' }}
         >
           <div className="absolute inset-0 rounded-3xl pointer-events-none"
             style={{
-              background: isOverDark
-                ? 'linear-gradient(135deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.02) 100%)'
-                : 'linear-gradient(135deg, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0.2) 100%)',
+              background: 'linear-gradient(135deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.02) 100%)',
             }}
           />
 
@@ -255,14 +210,10 @@ const Navbar: React.FC = () => {
               <button
                 key={link.name}
                 onClick={() => handleNavClick(link)}
-                className={`block w-full text-left px-4 py-3
+                className="block w-full text-left px-4 py-3
                   rounded-2xl transition-all duration-300 font-medium
                   border border-transparent hover:translate-x-1
-                  ${isOverDark
-                    ? 'text-white/90 hover:bg-white/10 hover:text-green-400 hover:border-white/10'
-                    : 'text-gray-700 hover:bg-green-50 hover:text-green-600 hover:border-green-100'
-                  }
-                `}
+                  text-white/90 hover:bg-white/10 hover:text-green-400 hover:border-white/10"
                 style={{
                   transitionDelay: isOpen ? `${index * 40}ms` : '0ms',
                   transform: isOpen ? 'translateX(0)' : 'translateX(-10px)',
@@ -272,28 +223,22 @@ const Navbar: React.FC = () => {
               >
                 <span className="flex items-center justify-between">
                   {link.name}
-                  <ChevronRight className={`w-4 h-4 ${isOverDark ? 'text-gray-500' : 'text-gray-400'}`} />
+                  <ChevronRight className="w-4 h-4 text-gray-500" />
                 </span>
               </button>
             ))}
 
             {/* Divider */}
-            <div className={`h-px bg-gradient-to-r from-transparent to-transparent my-2
-              ${isOverDark ? 'via-white/20' : 'via-gray-300'}
-            `} />
+            <div className="h-px bg-gradient-to-r from-transparent to-transparent my-2 via-white/20" />
 
             {/* Mobile Auth Buttons */}
             <div className="grid grid-cols-2 gap-2 pt-1">
               <Link
                 to="/login"
                 onClick={() => setIsOpen(false)}
-                className={`text-center px-4 py-3 rounded-2xl transition-all duration-300 font-medium
+                className="text-center px-4 py-3 rounded-2xl transition-all duration-300 font-medium
                   backdrop-blur-sm border
-                  ${isOverDark
-                    ? 'text-white/90 bg-white/10 hover:bg-white/20 border-white/15 hover:border-green-400/50 hover:text-green-400'
-                    : 'text-gray-700 bg-white/60 hover:bg-white/90 border-gray-300/60 hover:border-green-500/60 hover:text-green-600'
-                  }
-                `}
+                  text-white/90 bg-white/10 hover:bg-white/20 border-white/15 hover:border-green-400/50 hover:text-green-400"
               >
                 Login
               </Link>
