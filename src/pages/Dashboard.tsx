@@ -126,17 +126,22 @@ const Dashboard: React.FC = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [dateRange, setDateRange] = useState<7 | 14 | 30>(7);
 
-  const { socket, isConnected } = useSocket();
+  const { socket } = useSocket();
 
-  // Mock values as high-fidelity fallbacks to ensure mockup-identical representation
+  // API Live Data states
+  const [stats, setStats] = useState<any>(null);
+  const [widgets, setWidgets] = useState<any>(null);
+  const [activity, setActivity] = useState<any[]>([]);
+
+  // Default mock values as high-fidelity fallbacks to ensure mockup-identical representation when no database values exist
   const defaultStats = {
-    contacts: { total: 12589, change: '+24.5%', history: [8000, 9200, 10100, 9800, 11500, 12589] },
-    messages: { sent: 45678, change: '+18.2%', history: [30000, 35000, 42000, 39000, 43000, 45678] },
-    delivery: { rate: '98.6%', change: '+6.3%', history: [92, 94, 96, 95, 97, 98.6] },
-    campaigns: { active: 24, change: '+8', history: [12, 15, 18, 16, 21, 24] }
+    contacts: { total: 12589, growth: 24.5, history: [8000, 9200, 10100, 9800, 11500, 12589] },
+    messages: { sent: 45678, growth: 18.2, history: [30000, 35000, 42000, 39000, 43000, 45678] },
+    delivery: { rate: 98.6, readRate: 22.4, growth: 6.3, history: [92, 94, 96, 95, 97, 98.6] },
+    campaigns: { active: 24, growth: 8, history: [12, 15, 18, 16, 21, 24] }
   };
 
-  const overviewBarData = [
+  const defaultOverviewBarData = [
     { label: 'Tue', sent: 12000, delivered: 10500, read: 8000, failed: 800 },
     { label: 'Wed', sent: 16000, delivered: 14500, read: 11000, failed: 400 },
     { label: 'Thu', sent: 14500, delivered: 13000, read: 9500, failed: 600 },
@@ -145,43 +150,318 @@ const Dashboard: React.FC = () => {
     { label: 'Mon', sent: 15500, delivered: 14000, read: 10500, failed: 700 },
   ];
 
-  const donutData = [
+  const defaultDonutData = [
     { name: 'Delivered', value: 30245, percentage: 66.2, color: '#22c55e' },
     { name: 'Read', value: 10245, percentage: 22.4, color: '#3b82f6' },
     { name: 'Failed', value: 2145, percentage: 4.7, color: '#ef4444' },
     { name: 'Pending', value: 3043, percentage: 6.7, color: '#94a3b8' }
   ];
 
-  const topCampaigns = [
-    { name: 'Festive Offer', sent: 12456, delivered: 11234, read: 8932, ctr: '21.5%', color: '#22c55e' },
-    { name: 'New Year Blast', sent: 8965, delivered: 8123, read: 6543, ctr: '18.7%', color: '#22c55e' },
-    { name: 'Summer Sale', sent: 6789, delivered: 6102, read: 4987, ctr: '16.3%', color: '#22c55e' }
+  const defaultTopCampaigns = [
+    { name: 'Festive Offer', sentCount: 12456, deliveredCount: 11234, readCount: 8932, ctr: '21.5%', color: '#22c55e' },
+    { name: 'New Year Blast', sentCount: 8965, deliveredCount: 8123, readCount: 6543, ctr: '18.7%', color: '#22c55e' },
+    { name: 'Summer Sale', sentCount: 6789, deliveredCount: 6102, readCount: 4987, ctr: '16.3%', color: '#22c55e' }
   ];
 
-  const contactsGrowthData = [6000, 7000, 6800, 8500, 9200, 8900, 10500, 11000, 10800, 12589];
+  const fetchDashboardData = async (showSkeleton = true) => {
+    if (showSkeleton) setLoading(true);
+    try {
+      const [statsRes, widgetsRes, activityRes] = await Promise.all([
+        dashboard.getStats(),
+        dashboard.getWidgets(dateRange),
+        dashboard.getActivity(10)
+      ]);
 
+      if (statsRes.success && statsRes.data) {
+        setStats(statsRes.data);
+      }
+      if (widgetsRes.success && widgetsRes.data) {
+        setWidgets(widgetsRes.data);
+      }
+      if (activityRes.success && activityRes.data) {
+        setActivity(activityRes.data);
+      }
+    } catch (error) {
+      console.error('❌ Error loading dashboard data:', error);
+    } finally {
+      if (showSkeleton) setLoading(false);
+    }
+  };
+
+  // Fetch when dateRange changes or on initial mount
   useEffect(() => {
-    // Mimic API loading but transition nicely
-    const timer = setTimeout(() => {
-      setLoading(false);
-    }, 450);
-    return () => clearTimeout(timer);
-  }, []);
+    fetchDashboardData(true);
+  }, [dateRange]);
 
-  const handleRefresh = () => {
+  // Listen to socket events for live auto-updating
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleUpdate = () => {
+      fetchDashboardData(false);
+    };
+
+    socket.on('message:new', handleUpdate);
+    socket.on('message:status', handleUpdate);
+    socket.on('campaign:update', handleUpdate);
+    socket.on('campaign:progress', handleUpdate);
+    socket.on('campaign:completed', handleUpdate);
+
+    return () => {
+      socket.off('message:new', handleUpdate);
+      socket.off('message:status', handleUpdate);
+      socket.off('campaign:update', handleUpdate);
+      socket.off('campaign:progress', handleUpdate);
+      socket.off('campaign:completed', handleUpdate);
+    };
+  }, [socket]);
+
+  const handleRefresh = async () => {
     setRefreshing(true);
-    setTimeout(() => {
+    try {
+      await fetchDashboardData(false);
+      toast.success('Dashboard metrics refreshed');
+    } catch (e) {
+      toast.error('Refresh failed');
+    } finally {
       setRefreshing(false);
-      toast.success('Dashboard refreshed');
-    }, 600);
+    }
   };
 
   if (loading) {
     return <PageSkeleton />;
   }
 
-  // Calculate grouped bar chart heights (max height is 120px)
-  const maxSentVal = Math.max(...overviewBarData.map(d => d.sent));
+  // --- DYNAMIC DATA DERIVATION ---
+  
+  // Format dynamic greeting
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Good Morning';
+    if (hour < 17) return 'Good Afternoon';
+    return 'Good Evening';
+  };
+  const userName = user?.firstName || 'WabMeta';
+
+  // Format date key into clean label
+  const getDayLabel = (dateStr: string) => {
+    const d = new Date(dateStr);
+    if (dateRange === 7) {
+      return d.toLocaleDateString('en-US', { weekday: 'short' });
+    }
+    return d.toLocaleDateString('en-US', { day: '2-digit', month: 'short' });
+  };
+
+  // 1. Total Contacts Sparkline History (Cumulative calculation)
+  const getContactsHistory = () => {
+    if (!widgets?.contactsGrowth || widgets.contactsGrowth.length === 0) {
+      return defaultStats.contacts.history;
+    }
+    const total = stats?.contacts?.total || 0;
+    const dailyCounts = widgets.contactsGrowth.map((d: any) => d.count || 0);
+    const totalInPeriod = dailyCounts.reduce((a: number, b: number) => a + b, 0);
+    let current = Math.max(0, total - totalInPeriod);
+    return widgets.contactsGrowth.map((d: any) => {
+      current += (d.count || 0);
+      return current;
+    });
+  };
+
+  // 2. Messages Sent Sparkline History (Cumulative calculation)
+  const getMessagesHistory = () => {
+    if (!widgets?.messagesOverview || widgets.messagesOverview.length === 0) {
+      return defaultStats.messages.history;
+    }
+    const total = stats?.messages?.sent || 0;
+    const dailySent = widgets.messagesOverview.map((d: any) => d.sent || 0);
+    const totalInPeriod = dailySent.reduce((a: number, b: number) => a + b, 0);
+    let current = Math.max(0, total - totalInPeriod);
+    return widgets.messagesOverview.map((d: any) => {
+      current += (d.sent || 0);
+      return current;
+    });
+  };
+
+  // 3. Delivery Rate Sparkline History
+  const getDeliveryHistory = () => {
+    if (!widgets?.messagesOverview || widgets.messagesOverview.length === 0) {
+      return defaultStats.delivery.history;
+    }
+    return widgets.messagesOverview.map((d: any) => {
+      return d.sent > 0 ? Math.round((d.delivered / d.sent) * 100) : 100;
+    });
+  };
+
+  // 4. Active Campaigns History
+  const getCampaignsHistory = () => {
+    const total = stats?.campaigns?.total || 0;
+    const active = stats?.campaigns?.active || 0;
+    return [
+      Math.max(0, total - active - 2),
+      Math.max(0, total - active - 1),
+      Math.max(0, total - active),
+      total
+    ];
+  };
+
+  // Messages Overview Grouped Columns
+  const chartData = widgets?.messagesOverview && widgets.messagesOverview.length > 0
+    ? widgets.messagesOverview.map((item: any) => ({
+        label: getDayLabel(item.date),
+        sent: item.sent || 0,
+        delivered: item.delivered || 0,
+        read: item.read || 0,
+        failed: item.failed || 0
+      }))
+    : defaultOverviewBarData;
+
+  const maxSentVal = Math.max(...chartData.map(d => d.sent)) || 1;
+
+  // Donut Chart Processing
+  const getDonutData = () => {
+    if (!widgets?.summary) {
+      return defaultDonutData;
+    }
+    const { totalSent, totalRead, totalFailed } = widgets.summary;
+    const totalDelivered = widgets.summary.totalDelivered || 0;
+    const deliveredOnly = Math.max(0, totalDelivered - totalRead);
+    const pending = Math.max(0, totalSent - totalDelivered);
+    const total = totalDelivered + totalFailed + pending;
+
+    const items = [
+      { name: 'Delivered', value: deliveredOnly, color: '#22c55e' },
+      { name: 'Read', value: totalRead, color: '#3b82f6' },
+      { name: 'Failed', value: totalFailed, color: '#ef4444' },
+      { name: 'Pending', value: pending, color: '#94a3b8' }
+    ];
+
+    return items.map(item => ({
+      ...item,
+      percentage: total > 0 ? Math.round((item.value / total) * 1000) / 10 : 0
+    }));
+  };
+
+  const currentDonutData = getDonutData();
+  const donutTotal = widgets?.summary?.totalSent || defaultDonutData.reduce((acc, d) => acc + d.value, 0);
+
+  // Top Campaigns Table
+  const campaignsList = widgets?.recentCampaigns && widgets.recentCampaigns.length > 0
+    ? widgets.recentCampaigns.map((camp: any) => ({
+        name: camp.name,
+        sent: camp.sentCount || 0,
+        delivered: camp.deliveredCount || 0,
+        read: camp.readCount || 0,
+        ctr: camp.sentCount > 0 ? ((camp.readCount / camp.sentCount) * 100).toFixed(1) + '%' : '0.0%',
+        color: '#22c55e'
+      }))
+    : defaultTopCampaigns;
+
+  // Contacts Growth line chart computations
+  const contactsGrowthHistory = getContactsHistory();
+  const contactsGrowthWidth = 200;
+  const contactsGrowthHeight = 80;
+  const contactsGrowthMax = Math.max(...contactsGrowthHistory);
+  const contactsGrowthMin = Math.min(...contactsGrowthHistory);
+  const contactsGrowthRange = contactsGrowthMax - contactsGrowthMin || 1;
+
+  const contactsGrowthPoints = contactsGrowthHistory.map((val, idx) => {
+    const x = (idx / (contactsGrowthHistory.length - 1)) * contactsGrowthWidth;
+    const y = contactsGrowthHeight - ((val - contactsGrowthMin) / contactsGrowthRange) * (contactsGrowthHeight - 16) - 8;
+    return { x, y };
+  });
+
+  let contactsGrowthPath = `M ${contactsGrowthPoints[0].x} ${contactsGrowthPoints[0].y}`;
+  for (let i = 0; i < contactsGrowthPoints.length - 1; i++) {
+    const p0 = contactsGrowthPoints[i];
+    const p1 = contactsGrowthPoints[i + 1];
+    const cpX1 = p0.x + (p1.x - p0.x) / 2;
+    const cpY1 = p0.y;
+    const cpX2 = p0.x + (p1.x - p0.x) / 2;
+    const cpY2 = p1.y;
+    contactsGrowthPath += ` C ${cpX1} ${cpY1}, ${cpX2} ${cpY2}, ${p1.x} ${p1.y}`;
+  }
+
+  const contactsGrowthFillPath = `${contactsGrowthPath} L ${contactsGrowthWidth} ${contactsGrowthHeight} L 0 ${contactsGrowthHeight} Z`;
+
+  const lastContactsPoint = contactsGrowthPoints[contactsGrowthPoints.length - 1] || { x: 200, y: 10 };
+  const lastContactsVal = contactsGrowthHistory[contactsGrowthHistory.length - 1] || 0;
+  const lastContactsDateStr = widgets?.contactsGrowth && widgets.contactsGrowth.length > 0
+    ? new Date(widgets.contactsGrowth[widgets.contactsGrowth.length - 1].date).toLocaleDateString('en-US', { day: 'numeric', month: 'short' })
+    : 'Today';
+
+  // Activity events formatter
+  const formatActivity = (act: any) => {
+    let title = act.action;
+    let description = '';
+    let color = 'bg-blue-500';
+
+    const metadata = typeof act.metadata === 'string' ? JSON.parse(act.metadata) : act.metadata;
+
+    switch (act.action) {
+      case 'CREATE':
+        title = `Created ${act.entity?.toLowerCase() || 'item'}`;
+        if (metadata?.name) description = metadata.name;
+        color = 'bg-emerald-500';
+        break;
+      case 'UPDATE':
+        title = `Updated ${act.entity?.toLowerCase() || 'item'}`;
+        if (metadata?.name) description = metadata.name;
+        color = 'bg-purple-500';
+        break;
+      case 'DELETE':
+        title = `Deleted ${act.entity?.toLowerCase() || 'item'}`;
+        color = 'bg-red-500';
+        break;
+      case 'CAMPAIGN_SENT':
+      case 'CAMPAIGN_START':
+        title = `Campaign '${metadata?.name || 'Campaign'}' started`;
+        color = 'bg-emerald-500';
+        break;
+      case 'CAMPAIGN_COMPLETED':
+        title = `Campaign '${metadata?.name || 'Campaign'}' completed`;
+        color = 'bg-emerald-500';
+        break;
+      case 'CONTACT_IMPORT':
+        title = `Imported contacts`;
+        description = `${metadata?.count || 0} contacts added`;
+        color = 'bg-blue-500';
+        break;
+      default:
+        title = act.action.replace(/_/g, ' ');
+        title = title.charAt(0).toUpperCase() + title.slice(1).toLowerCase();
+        if (metadata?.name) description = metadata.name;
+        else if (act.entity) description = act.entity;
+    }
+
+    return { title, description, color };
+  };
+
+  const formatRelativeTime = (dateStr: string) => {
+    const now = new Date();
+    const date = new Date(dateStr);
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMins / 60);
+    const diffDays = Math.floor(diffHours / 24);
+
+    if (diffMins < 1) return 'Just now';
+    if (diffMins < 60) return `${diffMins} min${diffMins > 1 ? 's' : ''} ago`;
+    if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+    return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+  };
+
+  const renderTrend = (value: number, baseColorClass: string) => {
+    const isNegative = value < 0;
+    const colorClass = isNegative ? 'text-red-500' : baseColorClass;
+    const Icon = isNegative ? TrendingDown : TrendingUp;
+    const formattedValue = isNegative ? `${value}%` : `+${value}%`;
+    return (
+      <span className={`text-[10px] font-bold ${colorClass} flex items-center`}>
+        <Icon className="w-3 h-3 mr-0.5" />
+        {formattedValue}
+      </span>
+    );
+  };
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-10">
@@ -197,9 +477,8 @@ const Dashboard: React.FC = () => {
             
             {/* Left Content */}
             <div className="space-y-5 z-10">
-              <div>
-                <h1 className="text-2xl lg:text-3xl font-extrabold text-gray-950 dark:text-white tracking-tight flex items-center gap-2">
-                  Good Afternoon, WabMeta! <span className="animate-bounce">👋</span>
+              <div>                <h1 className="text-2xl lg:text-3xl font-extrabold text-gray-950 dark:text-white tracking-tight flex items-center gap-2">
+                  {getGreeting()}, {userName}! <span className="animate-bounce">👋</span>
                 </h1>
                 <p className="text-sm text-gray-500 dark:text-slate-400 mt-1.5 font-medium">
                   Here's what's happening with your WhatsApp business today.
@@ -298,15 +577,14 @@ const Dashboard: React.FC = () => {
               <div className="mt-3">
                 <p className="text-xs font-semibold text-gray-400 dark:text-slate-500">Total Contacts</p>
                 <div className="flex items-baseline gap-2 mt-0.5">
-                  <span className="text-2xl font-extrabold text-gray-950 dark:text-white">12,589</span>
-                  <span className="text-[10px] font-bold text-emerald-500 flex items-center">
-                    <TrendingUp className="w-3 h-3 mr-0.5" />
-                    24.5%
+                  <span className="text-2xl font-extrabold text-gray-950 dark:text-white">
+                    {(stats?.contacts?.total ?? defaultStats.contacts.total).toLocaleString()}
                   </span>
+                  {renderTrend(stats?.contacts?.growth ?? defaultStats.contacts.growth, 'text-emerald-500')}
                 </div>
               </div>
               <div className="mt-3 overflow-hidden">
-                <Sparkline data={defaultStats.contacts.history} color="#22c55e" fillId="contacts-grad" />
+                <Sparkline data={getContactsHistory()} color="#22c55e" fillId="contacts-grad" />
               </div>
             </div>
 
@@ -323,15 +601,14 @@ const Dashboard: React.FC = () => {
               <div className="mt-3">
                 <p className="text-xs font-semibold text-gray-400 dark:text-slate-500">Messages Sent</p>
                 <div className="flex items-baseline gap-2 mt-0.5">
-                  <span className="text-2xl font-extrabold text-gray-950 dark:text-white">45,678</span>
-                  <span className="text-[10px] font-bold text-blue-500 flex items-center">
-                    <TrendingUp className="w-3 h-3 mr-0.5" />
-                    18.2%
+                  <span className="text-2xl font-extrabold text-gray-950 dark:text-white">
+                    {(stats?.messages?.sent ?? defaultStats.messages.sent).toLocaleString()}
                   </span>
+                  {renderTrend(stats?.messages?.growth ?? defaultStats.messages.growth, 'text-blue-500')}
                 </div>
               </div>
               <div className="mt-3 overflow-hidden">
-                <Sparkline data={defaultStats.messages.history} color="#3b82f6" fillId="messages-grad" />
+                <Sparkline data={getMessagesHistory()} color="#3b82f6" fillId="messages-grad" />
               </div>
             </div>
 
@@ -348,15 +625,17 @@ const Dashboard: React.FC = () => {
               <div className="mt-3">
                 <p className="text-xs font-semibold text-gray-400 dark:text-slate-500">Delivery Rate</p>
                 <div className="flex items-baseline gap-2 mt-0.5">
-                  <span className="text-2xl font-extrabold text-gray-950 dark:text-white">98.6%</span>
+                  <span className="text-2xl font-extrabold text-gray-950 dark:text-white">
+                    {stats?.delivery?.deliveryRate ?? defaultStats.delivery.rate}%
+                  </span>
                   <span className="text-[10px] font-bold text-purple-500 flex items-center">
                     <TrendingUp className="w-3 h-3 mr-0.5" />
-                    6.3%
+                    {stats?.delivery?.readRate ?? defaultStats.delivery.readRate}% read
                   </span>
                 </div>
               </div>
               <div className="mt-3 overflow-hidden">
-                <Sparkline data={defaultStats.delivery.history} color="#8b5cf6" fillId="delivery-grad" />
+                <Sparkline data={getDeliveryHistory()} color="#8b5cf6" fillId="delivery-grad" />
               </div>
             </div>
 
@@ -373,15 +652,17 @@ const Dashboard: React.FC = () => {
               <div className="mt-3">
                 <p className="text-xs font-semibold text-gray-400 dark:text-slate-500">Active Campaigns</p>
                 <div className="flex items-baseline gap-2 mt-0.5">
-                  <span className="text-2xl font-extrabold text-gray-950 dark:text-white">24</span>
+                  <span className="text-2xl font-extrabold text-gray-950 dark:text-white">
+                    {stats?.campaigns?.active ?? defaultStats.campaigns.active}
+                  </span>
                   <span className="text-[10px] font-bold text-orange-500 flex items-center">
                     <TrendingUp className="w-3 h-3 mr-0.5" />
-                    +8
+                    +{stats?.campaigns?.thisMonth ?? defaultStats.campaigns.growth} this month
                   </span>
                 </div>
               </div>
               <div className="mt-3 overflow-hidden">
-                <Sparkline data={defaultStats.campaigns.history} color="#f97316" fillId="campaigns-grad" />
+                <Sparkline data={getCampaignsHistory()} color="#f97316" fillId="campaigns-grad" />
               </div>
             </div>
 
@@ -440,67 +721,75 @@ const Dashboard: React.FC = () => {
                   <text x="5" y="172" className="text-[10px] font-bold fill-gray-400 dark:fill-slate-500" textAnchor="start">0</text>
 
                   {/* Columns Grouped rendering */}
-                  {overviewBarData.map((item, idx) => {
-                    const groupWidth = 65;
-                    const startX = 40 + idx * 75;
+                  {chartData.map((item, idx) => {
+                    const N = chartData.length;
+                    const chartWidth = 440; // x range: 40 to 480
+                    const step = chartWidth / N;
+                    const startX = 40 + idx * step;
+                    
+                    // Width of individual bar
+                    const barWidth = Math.max(1.5, Math.min(6, step / 6));
+                    const gap = barWidth * 0.25; // gap between bars
 
-                    const heightRatio = 145 / maxSentVal;
+                    const heightRatio = maxSentVal > 0 ? 145 / maxSentVal : 0;
                     const sentHeight = item.sent * heightRatio;
                     const delivHeight = item.delivered * heightRatio;
                     const readHeight = item.read * heightRatio;
                     const failHeight = item.failed * heightRatio;
 
                     return (
-                      <g key={item.label}>
+                      <g key={idx}>
                         {/* Sent Bar (Green) */}
                         <rect
                           x={startX}
                           y={160 - sentHeight}
-                          width="6"
+                          width={barWidth}
                           height={sentHeight}
                           fill="#22c55e"
-                          rx="1.5"
+                          rx={barWidth / 4}
                           className="hover:opacity-85 cursor-pointer transition-opacity"
                         />
                         {/* Delivered Bar (Blue) */}
                         <rect
-                          x={startX + 7.5}
+                          x={startX + barWidth + gap}
                           y={160 - delivHeight}
-                          width="6"
+                          width={barWidth}
                           height={delivHeight}
                           fill="#3b82f6"
-                          rx="1.5"
+                          rx={barWidth / 4}
                           className="hover:opacity-85 cursor-pointer transition-opacity"
                         />
                         {/* Read Bar (Purple) */}
                         <rect
-                          x={startX + 15}
+                          x={startX + (barWidth + gap) * 2}
                           y={160 - readHeight}
-                          width="6"
+                          width={barWidth}
                           height={readHeight}
                           fill="#8b5cf6"
-                          rx="1.5"
+                          rx={barWidth / 4}
                           className="hover:opacity-85 cursor-pointer transition-opacity"
                         />
                         {/* Failed Bar (Red) */}
                         <rect
-                          x={startX + 22.5}
+                          x={startX + (barWidth + gap) * 3}
                           y={160 - failHeight}
-                          width="6"
+                          width={barWidth}
                           height={failHeight}
                           fill="#ef4444"
-                          rx="1.5"
+                          rx={barWidth / 4}
                           className="hover:opacity-85 cursor-pointer transition-opacity"
                         />
                         {/* X-axis Label */}
-                        <text
-                          x={startX + 14}
-                          y="176"
-                          className="text-[10px] font-bold fill-gray-400 dark:fill-slate-500"
-                          textAnchor="middle"
-                        >
-                          {item.label}
-                        </text>
+                        {(N <= 10 || idx % Math.ceil(N / 7) === 0) && (
+                          <text
+                            x={startX + (barWidth + gap) * 1.5}
+                            y="176"
+                            className="text-[9px] font-bold fill-gray-400 dark:fill-slate-500"
+                            textAnchor="middle"
+                          >
+                            {item.label}
+                          </text>
+                        )}
                       </g>
                     );
                   })}
@@ -518,21 +807,34 @@ const Dashboard: React.FC = () => {
                     <circle cx="50" cy="50" r="35" fill="transparent" stroke="#f1f5f9" strokeWidth="9" className="dark:stroke-slate-800" />
                     
                     {/* Render Segments stacking offsets */}
-                    <DonutSegment percentage={66.2} color="#22c55e" offset={0} />
-                    <DonutSegment percentage={22.4} color="#3b82f6" offset={66.2} />
-                    <DonutSegment percentage={4.7} color="#ef4444" offset={88.6} />
-                    <DonutSegment percentage={6.7} color="#94a3b8" offset={93.3} />
+                    {(() => {
+                      let currentOffset = 0;
+                      return currentDonutData.map((item) => {
+                        const segment = (
+                          <DonutSegment
+                            key={item.name}
+                            percentage={item.percentage}
+                            color={item.color}
+                            offset={currentOffset}
+                          />
+                        );
+                        currentOffset += item.percentage;
+                        return segment;
+                      });
+                    })()}
                   </svg>
                   {/* Absolute total center text */}
                   <div className="absolute inset-0 flex flex-col items-center justify-center select-none text-center">
                     <span className="text-[10px] font-bold text-gray-400 dark:text-slate-500 leading-none">Total</span>
-                    <span className="text-base font-extrabold text-gray-950 dark:text-white mt-0.5 leading-none">45,678</span>
+                    <span className="text-base font-extrabold text-gray-950 dark:text-white mt-0.5 leading-none">
+                      {donutTotal.toLocaleString()}
+                    </span>
                   </div>
                 </div>
 
                 {/* Donut Legend */}
                 <div className="space-y-2 min-w-0">
-                  {donutData.map((item) => (
+                  {currentDonutData.map((item) => (
                     <div key={item.name} className="flex items-center gap-2 text-xs font-semibold text-gray-600 dark:text-slate-300 min-w-0">
                       <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: item.color }} />
                       <p className="truncate leading-none">{item.name}</p>
@@ -546,11 +848,15 @@ const Dashboard: React.FC = () => {
               <div className="grid grid-cols-2 gap-3 pt-3 border-t border-gray-100 dark:border-slate-800">
                 <div className="bg-emerald-500/5 rounded-xl p-2 text-center">
                   <span className="text-[9px] font-bold text-gray-400 dark:text-slate-500 uppercase block">Delivered</span>
-                  <span className="text-sm font-extrabold text-emerald-600 block mt-0.5">30,245</span>
+                  <span className="text-sm font-extrabold text-emerald-600 block mt-0.5">
+                    {widgets?.summary ? (widgets.summary.totalDelivered).toLocaleString() : '30,245'}
+                  </span>
                 </div>
                 <div className="bg-red-500/5 rounded-xl p-2 text-center">
                   <span className="text-[9px] font-bold text-gray-400 dark:text-slate-500 uppercase block">Failed</span>
-                  <span className="text-sm font-extrabold text-red-500 block mt-0.5">2,145</span>
+                  <span className="text-sm font-extrabold text-red-500 block mt-0.5">
+                    {widgets?.summary ? (widgets.summary.totalFailed).toLocaleString() : '2,145'}
+                  </span>
                 </div>
               </div>
             </div>
@@ -582,18 +888,26 @@ const Dashboard: React.FC = () => {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100 dark:divide-slate-800 font-semibold text-gray-700 dark:text-slate-300">
-                    {topCampaigns.map((camp) => (
-                      <tr key={camp.name} className="hover:bg-gray-50/50 dark:hover:bg-slate-800/20 transition-colors">
-                        <td className="py-3 flex items-center gap-2 min-w-[120px]">
-                          <span className="w-1.5 h-6 rounded bg-emerald-500 shrink-0" />
-                          <span className="font-bold text-gray-900 dark:text-white">{camp.name}</span>
+                    {campaignsList.length > 0 ? (
+                      campaignsList.map((camp) => (
+                        <tr key={camp.name} className="hover:bg-gray-50/50 dark:hover:bg-slate-800/20 transition-colors">
+                          <td className="py-3 flex items-center gap-2 min-w-[120px]">
+                            <span className="w-1.5 h-6 rounded bg-emerald-500 shrink-0" />
+                            <span className="font-bold text-gray-900 dark:text-white">{camp.name}</span>
+                          </td>
+                          <td className="py-3 text-right">{camp.sent.toLocaleString()}</td>
+                          <td className="py-3 text-right">{camp.delivered.toLocaleString()}</td>
+                          <td className="py-3 text-right">{camp.read.toLocaleString()}</td>
+                          <td className="py-3 text-right text-emerald-500 font-bold">{camp.ctr}</td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan={5} className="py-6 text-center text-gray-400 dark:text-slate-500 font-semibold">
+                          No campaigns found. Create your first campaign!
                         </td>
-                        <td className="py-3 text-right">{camp.sent.toLocaleString()}</td>
-                        <td className="py-3 text-right">{camp.delivered.toLocaleString()}</td>
-                        <td className="py-3 text-right">{camp.read.toLocaleString()}</td>
-                        <td className="py-3 text-right text-emerald-500 font-bold">{camp.ctr}</td>
                       </tr>
-                    ))}
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -605,10 +919,12 @@ const Dashboard: React.FC = () => {
                 <div>
                   <h3 className="text-base font-bold text-gray-950 dark:text-white">Contacts Growth</h3>
                   <div className="flex items-baseline gap-2 mt-1">
-                    <span className="text-2xl font-extrabold text-gray-950 dark:text-white">12,589</span>
-                    <span className="text-[10px] font-bold text-emerald-500 flex items-center">
-                      <TrendingUp className="w-3 h-3 mr-0.5" />
-                      24.5% vs last 7 days
+                    <span className="text-2xl font-extrabold text-gray-950 dark:text-white">
+                      {lastContactsVal.toLocaleString()}
+                    </span>
+                    <span className="text-[10px] font-bold text-emerald-500 flex items-center gap-1">
+                      {renderTrend(stats?.contacts?.growth ?? defaultStats.contacts.growth, 'text-emerald-500')}
+                      <span>vs last {dateRange} days</span>
                     </span>
                   </div>
                 </div>
@@ -633,17 +949,24 @@ const Dashboard: React.FC = () => {
                   <line x1="0" y1="50" x2="200" y2="50" stroke="#f1f5f9" className="dark:stroke-slate-800" strokeDasharray="3 3" />
 
                   {/* Sparkline curve */}
-                  <path d="M 0 70 C 25 72, 40 50, 60 55 C 80 60, 100 30, 120 40 C 140 50, 160 15, 200 10 L 200 80 L 0 80 Z" fill="url(#growth-grad)" />
-                  <path d="M 0 70 C 25 72, 40 50, 60 55 C 80 60, 100 30, 120 40 C 140 50, 160 15, 200 10" fill="none" stroke="#22c55e" strokeWidth="2.5" strokeLinecap="round" />
+                  <path d={contactsGrowthFillPath} fill="url(#growth-grad)" />
+                  <path d={contactsGrowthPath} fill="none" stroke="#22c55e" strokeWidth="2.5" strokeLinecap="round" />
 
                   {/* Tooltip bubble representation */}
-                  <circle cx="120" cy="40" r="5" fill="#22c55e" stroke="white" strokeWidth="2" className="drop-shadow-sm" />
+                  <circle cx={lastContactsPoint.x} cy={lastContactsPoint.y} r="5" fill="#22c55e" stroke="white" strokeWidth="2" className="drop-shadow-sm" />
                 </svg>
 
                 {/* Absolute overlay tooltip */}
-                <div className="absolute top-1 left-24 bg-slate-900 border border-slate-700 text-white rounded-lg px-2 py-1 flex flex-col text-center shadow-md animate-fade-in pointer-events-none scale-90">
-                  <span className="text-[10px] font-extrabold leading-tight">1,259</span>
-                  <span className="text-[8px] font-medium text-slate-400 leading-none mt-0.5">12 May</span>
+                <div 
+                  className="absolute bg-slate-900 border border-slate-700 text-white rounded-lg px-2 py-1 flex flex-col text-center shadow-md animate-fade-in pointer-events-none scale-90"
+                  style={{
+                    left: `${Math.max(20, Math.min(80, (lastContactsPoint.x / 200) * 100))}%`,
+                    top: `${Math.max(10, lastContactsPoint.y - 35)}px`,
+                    transform: 'translateX(-50%)'
+                  }}
+                >
+                  <span className="text-[10px] font-extrabold leading-tight">{lastContactsVal.toLocaleString()}</span>
+                  <span className="text-[8px] font-medium text-slate-400 leading-none mt-0.5">{lastContactsDateStr}</span>
                 </div>
               </div>
             </div>
@@ -776,37 +1099,28 @@ const Dashboard: React.FC = () => {
             <h3 className="text-sm font-bold text-gray-950 dark:text-white">Recent Activity</h3>
             
             <div className="space-y-4 relative pl-3.5 before:absolute before:left-1 before:top-2 before:bottom-2 before:w-0.5 before:bg-gray-100 dark:before:bg-slate-800 select-none">
-              
-              {/* Event 1 */}
-              <div className="relative space-y-0.5">
-                <span className="absolute -left-5 top-1.5 w-3 h-3 rounded-full bg-emerald-500 border-2 border-white dark:border-slate-900 shadow-sm" />
-                <p className="text-xs font-bold text-gray-900 dark:text-white">Campaign 'Festive Blast' sent</p>
-                <span className="text-[9px] font-semibold text-gray-400 block">2 mins ago</span>
-              </div>
-
-              {/* Event 2 */}
-              <div className="relative space-y-0.5">
-                <span className="absolute -left-5 top-1.5 w-3 h-3 rounded-full bg-emerald-500 border-2 border-white dark:border-slate-900 shadow-sm" />
-                <p className="text-xs font-bold text-gray-900 dark:text-white">New contact added</p>
-                <p className="text-[10px] font-semibold text-gray-500 dark:text-slate-400">Amit Verma</p>
-                <span className="text-[9px] font-semibold text-gray-400 block">10 mins ago</span>
-              </div>
-
-              {/* Event 3 */}
-              <div className="relative space-y-0.5">
-                <span className="absolute -left-5 top-1.5 w-3 h-3 rounded-full bg-purple-500 border-2 border-white dark:border-slate-900 shadow-sm" />
-                <p className="text-xs font-bold text-gray-900 dark:text-white">Template 'Discount Offer' updated</p>
-                <span className="text-[9px] font-semibold text-gray-400 block">15 mins ago</span>
-              </div>
-
-              {/* Event 4 */}
-              <div className="relative space-y-0.5">
-                <span className="absolute -left-5 top-1.5 w-3 h-3 rounded-full bg-blue-500 border-2 border-white dark:border-slate-900 shadow-sm" />
-                <p className="text-xs font-bold text-gray-900 dark:text-white">Webhook connected</p>
-                <p className="text-[10px] font-semibold text-gray-500 dark:text-slate-400">WhatsApp Cloud API</p>
-                <span className="text-[9px] font-semibold text-gray-400 block">30 mins ago</span>
-              </div>
-
+              {activity.length > 0 ? (
+                activity.map((act) => {
+                  const { title, description, color } = formatActivity(act);
+                  return (
+                    <div key={act.id} className="relative space-y-0.5">
+                      <span className={`absolute -left-5 top-1.5 w-3 h-3 rounded-full ${color} border-2 border-white dark:border-slate-900 shadow-sm`} />
+                      <p className="text-xs font-bold text-gray-900 dark:text-white">{title}</p>
+                      {description && (
+                        <p className="text-[10px] font-semibold text-gray-500 dark:text-slate-400">{description}</p>
+                      )}
+                      {act.user?.name && (
+                        <p className="text-[9px] font-semibold text-gray-400">By {act.user.name}</p>
+                      )}
+                      <span className="text-[9px] font-semibold text-gray-400 block">{formatRelativeTime(act.createdAt)}</span>
+                    </div>
+                  );
+                })
+              ) : (
+                <div className="py-2 text-center text-xs text-gray-400 dark:text-slate-500 font-semibold">
+                  No recent activity found.
+                </div>
+              )}
             </div>
 
             <button className="w-full py-2 bg-gray-50 hover:bg-gray-100 dark:bg-slate-800 dark:hover:bg-slate-750 text-gray-700 dark:text-slate-200 border border-gray-250 dark:border-slate-700 text-xs font-bold rounded-xl transition-all shadow-2xs">
