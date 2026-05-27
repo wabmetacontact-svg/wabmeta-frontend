@@ -55,7 +55,7 @@ const Navbar: React.FC = () => {
             rounded-full
             border border-white/20
             ${isScrolled
-              ? 'bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl shadow-2xl shadow-black/10 border-white/30 dark:border-white/10'
+              ? 'bg-[#050816]/80 backdrop-blur-xl shadow-2xl shadow-black/30 border-white/10'
               : 'bg-white/5 dark:bg-gray-900/10 backdrop-blur-md shadow-lg shadow-black/5'
             }
           `}
@@ -95,10 +95,9 @@ const Navbar: React.FC = () => {
                 <button
                   key={link.name}
                   onClick={() => handleNavClick(link)}
-                  className={`relative px-4 py-2 text-sm font-medium
-                    ${isScrolled ? 'text-gray-800 dark:text-gray-200' : 'text-white/90'}
-                    hover:text-green-600 dark:hover:text-green-400
-                    transition-all duration-300 ease-out group`}
+                  className="relative px-4 py-2 text-sm font-medium
+                    text-white/90 hover:text-green-400
+                    transition-all duration-300 ease-out group"
                   style={{ animationDelay: `${index * 100}ms` }}
                 >
                   {/* Hover bg pill */}
@@ -128,17 +127,16 @@ const Navbar: React.FC = () => {
               {/* Login - ghost glass pill */}
               <Link
                 to="/login"
-                className={`relative text-sm font-medium
-                  ${isScrolled ? 'text-gray-800 dark:text-gray-200' : 'text-white/90'}
+                className="relative text-sm font-medium
+                  text-white/90
                   px-5 py-2 rounded-full overflow-hidden group
-                  border ${isScrolled ? 'border-white/30 dark:border-white/15' : 'border-white/20'}
-                  bg-white/20 dark:bg-white/5
-                  hover:bg-white/40 dark:hover:bg-white/10
+                  border border-white/15
+                  bg-white/10 hover:bg-white/20
                   backdrop-blur-sm
                   transition-all duration-300
-                  hover:border-green-400/50 dark:hover:border-green-500/40
-                  hover:text-green-600 dark:hover:text-green-400
-                  hover:shadow-md hover:shadow-green-500/10`}
+                  hover:border-green-400/50
+                  hover:text-green-400
+                  hover:shadow-md hover:shadow-green-500/10"
               >
                 <span className="relative z-10">Login</span>
               </Link>
@@ -181,15 +179,15 @@ const Navbar: React.FC = () => {
             >
               <div className="relative w-5 h-5">
                 <span className={`absolute top-1/2 left-0 w-5 h-0.5
-                  ${isScrolled ? 'bg-gray-800 dark:bg-white' : 'bg-white'} rounded-full
+                  bg-white rounded-full
                   transition-all duration-300 ease-out origin-center
                   ${isOpen ? 'rotate-45 translate-y-0' : '-translate-y-1.5'}`} />
                 <span className={`absolute top-1/2 left-0 w-5 h-0.5
-                  ${isScrolled ? 'bg-gray-800 dark:bg-white' : 'bg-white'} rounded-full
+                  bg-white rounded-full
                   transition-all duration-300 ease-out
                   ${isOpen ? 'opacity-0 translate-x-3' : 'opacity-100'}`} />
                 <span className={`absolute top-1/2 left-0 w-5 h-0.5
-                  ${isScrolled ? 'bg-gray-800 dark:bg-white' : 'bg-white'} rounded-full
+                  bg-white rounded-full
                   transition-all duration-300 ease-out origin-center
                   ${isOpen ? '-rotate-45 translate-y-0' : 'translate-y-1.5'}`} />
               </div>
@@ -208,10 +206,10 @@ const Navbar: React.FC = () => {
       `}>
         <div className="w-full max-w-5xl
           rounded-3xl
-          bg-white/15 dark:bg-gray-900/25
+          bg-[#050816]/95
           backdrop-blur-xl
-          border border-white/25 dark:border-white/10
-          shadow-2xl shadow-black/15
+          border border-white/10
+          shadow-2xl shadow-black/30
           overflow-hidden"
           style={{ WebkitBackdropFilter: 'blur(20px)' }}
         >
@@ -228,12 +226,12 @@ const Navbar: React.FC = () => {
                 key={link.name}
                 onClick={() => handleNavClick(link)}
                 className="block w-full text-left px-4 py-3
-                  text-gray-800 dark:text-gray-200
-                  hover:bg-white/30 dark:hover:bg-white/10
-                  hover:text-green-600 dark:hover:text-green-400
+                  text-white/90
+                  hover:bg-white/10
+                  hover:text-green-400
                   rounded-2xl transition-all duration-300 font-medium
                   border border-transparent
-                  hover:border-white/30 dark:hover:border-white/10
+                  hover:border-white/10
                   hover:translate-x-1"
                 style={{
                   transitionDelay: isOpen ? `${index * 40}ms` : '0ms',
@@ -258,13 +256,13 @@ const Navbar: React.FC = () => {
                 to="/login"
                 onClick={() => setIsOpen(false)}
                 className="text-center px-4 py-3
-                  text-gray-800 dark:text-gray-200
-                  bg-white/20 dark:bg-white/5
-                  hover:bg-white/40 dark:hover:bg-white/10
-                  border border-white/30 dark:border-white/15
+                  text-white/90
+                  bg-white/10
+                  hover:bg-white/20
+                  border border-white/15
                   hover:border-green-400/50
                   rounded-2xl transition-all duration-300 font-medium
-                  hover:text-green-600 dark:hover:text-green-400
+                  hover:text-green-400
                   backdrop-blur-sm"
               >
                 Login
