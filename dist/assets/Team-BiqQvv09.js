@@ -1,0 +1,1 @@
+import{j as e}from"./index-BvT4lI_a.js";const a=()=>e.jsxs("div",{className:"p-6",children:[e.jsx("h1",{className:"text-2xl font-bold",children:"Team Management"}),e.jsx("p",{className:"text-gray-600 mt-2",children:"Coming soon..."})]});export{a as default};
