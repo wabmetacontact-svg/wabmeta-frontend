@@ -1,4 +1,3 @@
-// src/components/common/Loader.tsx
 import React from 'react';
 import logo from '../../assets/logo.png';
 
@@ -11,54 +10,126 @@ interface LoaderProps {
 const Loader: React.FC<LoaderProps> = ({
   size = 'md',
   fullScreen = false,
-  text = 'Loading...'
+  text = 'Loading...',
 }) => {
-  const sizeClasses = {
-    sm: 'h-12 w-12',
-    md: 'h-20 w-20',
-    lg: 'h-28 w-28'
+  const sizeConfig = {
+    sm: { logo: 'w-8 h-8', spinner: 60, container: 'w-12 h-12', stroke: 2 },
+    md: { logo: 'w-12 h-12', spinner: 88, container: 'w-16 h-16', stroke: 2 },
+    lg: { logo: 'w-16 h-16', spinner: 120, container: 'w-24 h-24', stroke: 2.5 },
   };
 
-  const spinnerSizes = {
-    sm: 'w-16 h-16',
-    md: 'w-24 h-24',
-    lg: 'w-36 h-36'
-  };
+  const config = sizeConfig[size];
 
   const content = (
     <div className="flex flex-col items-center justify-center">
-      {/* Logo with Spinner */}
-      <div className="relative mb-4">
-        {/* Spinning Border */}
-        <div className={`absolute inset-0 flex items-center justify-center`}>
-          <div
-            className={`${spinnerSizes[size]} border-4 border-gray-200 dark:border-gray-700 border-t-green-500 rounded-full animate-spin`}
-          ></div>
-        </div>
 
-        {/* Logo */}
-        <div className="p-4">
+      {/* Logo with spinner */}
+      <div className="relative mb-4">
+
+        {/* Glow */}
+        <div className="absolute inset-0 bg-green-500/20 rounded-full blur-xl animate-pulse" />
+
+        {/* Spinner */}
+        <svg
+          className="absolute"
+          width={config.spinner}
+          height={config.spinner}
+          viewBox={`0 0 ${config.spinner} ${config.spinner}`}
+          style={{
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            animation: 'spin 1.5s linear infinite',
+          }}
+        >
+          <circle
+            cx={config.spinner / 2}
+            cy={config.spinner / 2}
+            r={config.spinner / 2 - 3}
+            fill="none"
+            stroke="rgba(255,255,255,0.08)"
+            strokeWidth={config.stroke}
+          />
+          <circle
+            cx={config.spinner / 2}
+            cy={config.spinner / 2}
+            r={config.spinner / 2 - 3}
+            fill="none"
+            stroke="#10b981"
+            strokeWidth={config.stroke}
+            strokeLinecap="round"
+            strokeDasharray={`${config.spinner * 0.4} ${config.spinner * 3}`}
+            style={{ filter: 'drop-shadow(0 0 6px rgba(16,185,129,0.5))' }}
+          />
+        </svg>
+
+        {/* Logo container */}
+        <div className={`relative ${config.container} rounded-xl
+          bg-white/[0.06] backdrop-blur-xl
+          border border-white/[0.1]
+          flex items-center justify-center`}>
           <img
             src={logo}
             alt="WabMeta"
-            className={`${sizeClasses[size]} object-contain`}
+            className={`${config.logo} object-contain
+              drop-shadow-[0_0_8px_rgba(16,185,129,0.5)]`}
           />
         </div>
       </div>
 
       {/* Text */}
       {text && (
-        <p className="text-gray-500 dark:text-gray-400 text-sm font-medium animate-pulse">
-          {text}
-        </p>
+        <div className="flex items-center gap-2">
+          <p className="text-sm text-gray-300 font-medium">{text}</p>
+          <span className="flex items-center gap-0.5">
+            {[0, 1, 2].map((i) => (
+              <span
+                key={i}
+                className="w-1 h-1 rounded-full bg-green-400 animate-bounce"
+                style={{
+                  animationDelay: `${i * 150}ms`,
+                  animationDuration: '1.4s',
+                }}
+              />
+            ))}
+          </span>
+        </div>
       )}
+
+      <style>{`
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
     </div>
   );
 
   if (fullScreen) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm">
-        {content}
+      <div className="fixed inset-0 z-50 flex items-center justify-center 
+        bg-[#050816]/90 backdrop-blur-md">
+        {/* Subtle gradient */}
+        <div className="absolute inset-0"
+          style={{
+            background: 'radial-gradient(ellipse 50% 40% at 50% 50%, rgba(16, 185, 129, 0.1) 0%, transparent 70%)',
+          }}
+        />
+
+        {/* Glass card */}
+        <div className="relative rounded-2xl overflow-hidden
+          bg-white/[0.04] backdrop-blur-2xl
+          border border-white/[0.1]
+          shadow-[0_20px_60px_rgba(0,0,0,0.3)]
+          p-8">
+          <div className="absolute inset-0 pointer-events-none"
+            style={{
+              background: 'linear-gradient(135deg, rgba(255,255,255,0.06) 0%, transparent 50%)',
+            }}
+          />
+          <div className="relative">
+            {content}
+          </div>
+        </div>
       </div>
     );
   }
