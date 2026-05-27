@@ -1,5 +1,3 @@
-// src/pages/Login.tsx - FINAL FIXED
-
 import React, { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Mail, Lock, ArrowRight, AlertCircle } from "lucide-react";
@@ -16,7 +14,7 @@ const Login: React.FC = () => {
   const location = useLocation();
   const { login, isLoading, clearError } = useAuth();
 
-  const [rememberMe, setRememberMe] = useState(true); // ✅ Default to true for persistent login
+  const [rememberMe, setRememberMe] = useState(true);
 
   const [formData, setFormData] = useState({
     email: "",
@@ -57,7 +55,6 @@ const Login: React.FC = () => {
       );
 
       if (result.success) {
-        // ✅ Save remember me preference
         if (rememberMe) {
           localStorage.setItem("remember_me", "true");
         } else {
@@ -66,15 +63,12 @@ const Login: React.FC = () => {
 
         toast.success("Welcome back!");
 
-        // ✅ Redirect to saved location or dashboard
         const from = (location.state as any)?.from || "/dashboard";
         navigate(from, { replace: true });
       } else {
-        // ✅ Handle specific error cases
         const errorMessage = result.error || "Login failed";
         setApiError(errorMessage);
 
-        // Don't show toast for validation errors
         if (!errorMessage.includes("password") && !errorMessage.includes("email")) {
           toast.error(errorMessage);
         }
@@ -116,49 +110,55 @@ const Login: React.FC = () => {
   return (
     <AuthLayout
       title="Welcome back"
-      subtitle="Sign in to continue to your dashboard"
+      subtitle="Sign in to your WabMeta dashboard"
     >
+      {/* ✅ API Error - glass styled */}
       {apiError && (
-        <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl flex items-start space-x-3 text-red-600 dark:text-red-400 animate-fade-in">
-          <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
+        <div className="mb-6 p-4 rounded-xl flex items-start gap-3
+          bg-red-500/10 backdrop-blur-xl
+          border border-red-400/30
+          text-red-300 animate-fadeIn">
+          <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5 text-red-400" />
           <p className="text-sm font-medium">{apiError}</p>
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-5">
         <Input
           label="Email Address"
           type="email"
-          placeholder="Enter your email"
-          icon={<Mail className="w-5 h-5" />}
+          placeholder="you@company.com"
+          icon={<Mail className="w-4 h-4" />}
           value={formData.email}
           onChange={(e) => updateField("email", e.target.value)}
           error={errors.email}
           autoFocus
           disabled={isLoading}
+          autoComplete="email"
         />
 
         <Input
           label="Password"
           type="password"
           placeholder="Enter your password"
-          icon={<Lock className="w-5 h-5" />}
+          icon={<Lock className="w-4 h-4" />}
           value={formData.password}
           onChange={(e) => updateField("password", e.target.value)}
           error={errors.password}
           disabled={isLoading}
+          autoComplete="current-password"
         />
 
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between pt-1">
           <Checkbox
             id="remember-me"
             checked={rememberMe}
             onChange={setRememberMe}
-            label="Keep me logged in"
+            label="Keep me signed in"
           />
           <Link
             to="/forgot-password"
-            className="text-sm font-medium text-primary-600 hover:text-primary-500 transition-colors"
+            className="text-sm font-medium text-green-400 hover:text-green-300 transition-colors"
           >
             Forgot password?
           </Link>
@@ -168,33 +168,34 @@ const Login: React.FC = () => {
           type="submit"
           fullWidth
           loading={isLoading}
-          icon={<ArrowRight className="w-5 h-5" />}
+          icon={<ArrowRight className="w-4 h-4" />}
           iconPosition="right"
           disabled={isLoading}
         >
-          Sign In
+          Sign in to dashboard
         </Button>
 
-        <div className="relative">
+        {/* Divider */}
+        <div className="relative py-2">
           <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-200 dark:border-gray-700" />
+            <div className="w-full border-t border-white/[0.08]" />
           </div>
-          <div className="relative flex justify-center text-sm">
-            <span className="px-4 bg-gray-50 dark:bg-gray-900 text-gray-500">
-              Or continue with
+          <div className="relative flex justify-center text-xs">
+            <span className="px-3 bg-[#0a0e27]/50 backdrop-blur-sm text-gray-500 font-mono uppercase tracking-wider">
+              Or
             </span>
           </div>
         </div>
 
         <SocialLoginButtons loading={isLoading} />
 
-        <p className="text-center text-gray-600 dark:text-gray-400">
-          Don't have an account?{" "}
+        <p className="text-center text-sm text-gray-400 pt-2">
+          New to WabMeta?{" "}
           <Link
             to="/signup"
-            className="font-semibold text-primary-600 hover:text-primary-500 transition-colors"
+            className="font-semibold text-green-400 hover:text-green-300 transition-colors"
           >
-            Sign up for free
+            Create free account →
           </Link>
         </p>
       </form>

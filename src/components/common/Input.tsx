@@ -1,85 +1,100 @@
 import React, { useState, forwardRef } from 'react';
-import { Eye, EyeOff, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Eye, EyeOff } from 'lucide-react';
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
   error?: string;
-  success?: string;
   icon?: React.ReactNode;
-  rightIcon?: React.ReactNode;
+  helperText?: string;
 }
 
 const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ label, error, success, icon, rightIcon, type = 'text', className = '', ...props }, ref) => {
+  ({ label, error, icon, type = 'text', helperText, className = '', ...props }, ref) => {
     const [showPassword, setShowPassword] = useState(false);
+    const [isFocused, setIsFocused] = useState(false);
+
     const isPassword = type === 'password';
+    const inputType = isPassword ? (showPassword ? 'text' : 'password') : type;
 
     return (
       <div className="w-full">
         {label && (
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-300 mb-2">
             {label}
+            {props.required && <span className="text-red-400 ml-1">*</span>}
           </label>
         )}
-        
-        <div className="relative">
+
+        <div className="relative group">
+          {/* Glow effect on focus */}
+          <div className={`absolute inset-0 rounded-xl transition-opacity duration-300 pointer-events-none
+            ${isFocused 
+              ? 'opacity-100 bg-gradient-to-r from-green-500/10 to-emerald-500/10 blur-md' 
+              : 'opacity-0'
+            }`}
+          />
+
           {icon && (
-            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
+            <div className={`absolute left-4 top-1/2 -translate-y-1/2 z-10 transition-colors duration-300
+              ${error 
+                ? 'text-red-400' 
+                : isFocused 
+                  ? 'text-green-400' 
+                  : 'text-gray-500'
+              }`}
+            >
               {icon}
             </div>
           )}
-          
+
           <input
             ref={ref}
-            type={isPassword ? (showPassword ? 'text' : 'password') : type}
+            type={inputType}
+            onFocus={() => setIsFocused(true)}
+            onBlur={() => setIsFocused(false)}
             className={`
-              w-full px-4 py-3.5 
-              ${icon ? 'pl-12' : ''} 
-              ${isPassword || rightIcon ? 'pr-12' : ''}
+              relative w-full
+              ${icon ? 'pl-12' : 'pl-4'} 
+              ${isPassword ? 'pr-12' : 'pr-4'} 
+              py-3.5 
+              bg-white/[0.04] backdrop-blur-xl
               border rounded-xl 
+              text-white placeholder:text-gray-500
               transition-all duration-300
-              focus:outline-none focus:ring-2 focus:ring-offset-0
-              ${error 
-                ? 'border-red-300 focus:border-red-500 focus:ring-red-500/20 bg-red-50/50' 
-                : success 
-                  ? 'border-green-300 focus:border-green-500 focus:ring-green-500/20 bg-green-50/50'
-                  : 'border-gray-200 focus:border-primary-500 focus:ring-primary-500/20 hover:border-gray-300'
+              focus:outline-none focus:bg-white/[0.06]
+              disabled:opacity-50 disabled:cursor-not-allowed
+              ${error
+                ? 'border-red-400/40 focus:border-red-400/60'
+                : 'border-white/[0.08] focus:border-green-400/40 hover:border-white/[0.15]'
               }
-              placeholder:text-gray-400
               ${className}
             `}
             {...props}
           />
-          
+
           {isPassword && (
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+              className="absolute right-4 top-1/2 -translate-y-1/2 z-10
+                text-gray-500 hover:text-white transition-colors
+                p-1 rounded-lg hover:bg-white/[0.05]"
+              tabIndex={-1}
             >
-              {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+              {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
             </button>
           )}
-          
-          {rightIcon && !isPassword && (
-            <div className="absolute right-4 top-1/2 -translate-y-1/2">
-              {rightIcon}
-            </div>
-          )}
         </div>
-        
+
         {error && (
-          <p className="mt-2 text-sm text-red-600 flex items-center">
-            <AlertCircle className="w-4 h-4 mr-1" />
+          <p className="mt-2 text-xs text-red-400 flex items-center gap-1.5 animate-fadeIn">
+            <span className="w-1 h-1 rounded-full bg-red-400" />
             {error}
           </p>
         )}
-        
-        {success && !error && (
-          <p className="mt-2 text-sm text-green-600 flex items-center">
-            <CheckCircle2 className="w-4 h-4 mr-1" />
-            {success}
-          </p>
+
+        {helperText && !error && (
+          <p className="mt-2 text-xs text-gray-500">{helperText}</p>
         )}
       </div>
     );
@@ -87,4 +102,5 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
 );
 
 Input.displayName = 'Input';
+
 export default Input;
