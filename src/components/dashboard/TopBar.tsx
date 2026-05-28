@@ -12,12 +12,9 @@ import {
   Command,
   CreditCard,
   HelpCircle,
-  Sun,
-  Moon,
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { useAuth } from '../../context/AuthContext';
-import { useTheme } from '../../context/ThemeContext';
 
 interface TopBarProps {
   onMenuClick: () => void;
@@ -27,7 +24,6 @@ interface TopBarProps {
 const TopBar: React.FC<TopBarProps> = ({ onMenuClick, sidebarCollapsed }) => {
   const { user } = useApp();
   const { logout } = useAuth();
-  const { resolved, toggle } = useTheme();
 
   const [showSearch, setShowSearch] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
@@ -146,23 +142,6 @@ const TopBar: React.FC<TopBarProps> = ({ onMenuClick, sidebarCollapsed }) => {
               transition-all duration-300"
           >
             <Search className="w-4 h-4" />
-          </button>
-
-          {/* Dark Mode Toggle */}
-          <button
-            onClick={toggle}
-            title={resolved === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-            className="relative p-2 rounded-lg
-              bg-white/[0.04] border border-white/[0.06]
-              hover:bg-white/[0.08] hover:border-white/[0.12]
-              text-gray-400 hover:text-white
-              transition-all duration-300 group"
-          >
-            {resolved === 'dark' ? (
-              <Sun className="w-4 h-4 text-yellow-400 group-hover:rotate-12 transition-transform duration-300" />
-            ) : (
-              <Moon className="w-4 h-4 text-blue-400 group-hover:-rotate-12 transition-transform duration-300" />
-            )}
           </button>
 
           {/* Notifications */}
