@@ -10,7 +10,7 @@ import {
   Pin, PinOff, Tag, Archive, ArchiveRestore, X, ArrowLeft,
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
-import { useInboxSocket } from '../hooks/useInboxSocket';
+import { useInboxSocket, type InboundMessage, type ConversationUpdate, type MessageStatusUpdate } from '../hooks/useInboxSocket';
 import api, { inbox as inboxApi, whatsapp as whatsappApi } from '../services/api';
 import toast from 'react-hot-toast';
 import WindowStatus from '../components/inbox/WindowStatus';
@@ -657,86 +657,77 @@ const Inbox: React.FC = () => {
   }, []);
 
   // ============================================
-  // ✅ SOCKET HANDLERS - PERFECT DEDUPLICATION
+  // ✅ SOCKET HANDLERS
   // ============================================
   useInboxSocket(
     selectedConversation?.id || null,
 
     // ===== NEW MESSAGE =====
-    useCallback((newMsg: any) => {
-      const msg = newMsg?.message || newMsg;
-      if (!msg) return;
+    useCallback((newMsg: InboundMessage) => {
+      if (!newMsg) return;
 
-      const convId = msg.conversationId;
+      const convId = newMsg.conversationId;
       if (!convId) return;
 
-      const msgId = msg.id;
-      const waId = msg.waMessageId || msg.wamId;
+      const msgId = newMsg.id;
+      const waId  = newMsg.waMessageId || newMsg.wamId;
 
       console.log('📩 Socket new message:', {
-        id: msgId, waId, direction: msg.direction, convId
+        id: msgId, waId, direction: newMsg.direction, convId,
       });
 
-
-
-      // ✅ RULE: Only add INBOUND messages to chat if it's selected conversation
-      if (selectedConvRef.current?.id === convId) {
+      // ✅ INBOUND: selected conversation mein add karo
+      if (
+        newMsg.direction === 'INBOUND' &&
+        selectedConvRef.current?.id === convId
+      ) {
         setMessages((prev) => {
-          // Check for duplicates
-          const isDuplicate = prev.some((m) => {
-            if (m.id === msgId) return true;
-            if (waId && (m.waMessageId === waId || m.wamId === waId)) return true;
-            return false;
-          });
-
-          if (isDuplicate) {
-            console.log('⏭️ Duplicate message prevented:', msgId);
+          // Duplicate check
+          const isDup = prev.some((m) =>
+            m.id === msgId ||
+            (waId && (m.waMessageId === waId || m.wamId === waId))
+          );
+          if (isDup) {
+            console.log('⏭️ Dup prevented:', msgId);
             return prev;
           }
-
-          console.log('✅ Adding inbound message to chat');
           return [...prev, {
-            ...msg,
-            createdAt: msg.createdAt || new Date().toISOString()
-          }];
+            ...newMsg,
+            createdAt: newMsg.createdAt || new Date().toISOString(),
+          } as Message];
         });
 
         scrollToBottom();
-        inboxApi.markAsRead(convId).catch(() => { });
+
+        // Mark as read (non-blocking)
+        inboxApi.markAsRead(convId).catch(() => {});
       }
 
-      // ✅ Update conversation list
+      // ✅ ALWAYS: Conversation list update karo
       setConversations((prev) => {
-        const index = prev.findIndex((c) => c.id === convId);
-        let updated = [...prev];
+        const idx = prev.findIndex((c) => c.id === convId);
 
-        if (index !== -1) {
-          const existing = prev[index];
-          updated[index] = {
-            ...existing,
-            lastMessagePreview: msg.content?.substring(0, 50) || 'New message',
-            lastMessageAt: msg.createdAt || new Date().toISOString(),
-            unreadCount: selectedConvRef.current?.id === convId
-              ? 0
-              : (existing.unreadCount || 0) + 1,
-            isRead: selectedConvRef.current?.id === convId,
-          };
-        } else {
-          // New conversation - need full data
-          const convData = newMsg?.conversation;
-          if (convData?.id && convData?.contact) {
-            updated.unshift({
-              ...convData,
-              lastMessagePreview: msg.content?.substring(0, 50) || 'New message',
-              lastMessageAt: msg.createdAt || new Date().toISOString(),
-              unreadCount: 1,
-              isRead: false,
-            });
-          }
+        if (idx === -1) {
+          // Naya conversation - conversation:updated event handle karega
+          return prev;
         }
 
-        // ✅ Play sound for messages in OTHER conversations
-        if (msg.direction === 'INBOUND' && selectedConvRef.current?.id !== convId) {
+        const updated   = [...prev];
+        const existing  = updated[idx];
+        const isCurrentlyOpen = selectedConvRef.current?.id === convId;
+
+        updated[idx] = {
+          ...existing,
+          lastMessagePreview: (newMsg.content || 'New message').substring(0, 60),
+          lastMessageAt:      newMsg.createdAt || new Date().toISOString(),
+          unreadCount: isCurrentlyOpen
+            ? 0
+            : (existing.unreadCount || 0) + 1,
+          isRead: isCurrentlyOpen,
+        };
+
+        // ✅ Notification sound - other conversations ke liye
+        if (newMsg.direction === 'INBOUND' && !isCurrentlyOpen) {
           playNotificationSound();
         }
 
@@ -745,69 +736,83 @@ const Inbox: React.FC = () => {
     }, [scrollToBottom]),
 
     // ===== CONVERSATION UPDATE =====
-    useCallback((updatedConv: any) => {
+    useCallback((updatedConv: ConversationUpdate) => {
       if (!updatedConv?.id) return;
       console.log('💬 Conversation updated:', updatedConv.id);
 
-      setConversations((prev) =>
-        sortConversations(
-          prev.map((c) => c.id === updatedConv.id ? { ...c, ...updatedConv } : c)
-        )
-      );
+      setConversations((prev) => {
+        const idx = prev.findIndex((c) => c.id === updatedConv.id);
+
+        if (idx === -1) {
+          // ✅ Naya conversation list mein nahi hai - add karo
+          if ((updatedConv as any).contact?.id) {
+            return sortConversations([updatedConv as any, ...prev]);
+          }
+          return prev;
+        }
+
+        const updated = [...prev];
+        updated[idx] = { ...updated[idx], ...updatedConv };
+        return sortConversations(updated);
+      });
+
+      // Selected conversation bhi update karo
       if (selectedConvRef.current?.id === updatedConv.id) {
-        setSelectedConversation((prev) => prev ? { ...prev, ...updatedConv } : prev);
+        setSelectedConversation((prev) =>
+          prev ? { ...prev, ...updatedConv } : prev
+        );
       }
     }, []),
 
     // ===== MESSAGE STATUS =====
-    useCallback((statusUpdate: any) => {
+    useCallback((statusUpdate: MessageStatusUpdate) => {
       if (!statusUpdate?.status) return;
 
       console.log('📊 Status update:', {
-        messageId: statusUpdate.messageId,
+        messageId:   statusUpdate.messageId,
         waMessageId: statusUpdate.waMessageId,
-        status: statusUpdate.status,
-        tempId: statusUpdate.tempId,
+        status:      statusUpdate.status,
+        tempId:      statusUpdate.tempId,
       });
 
       setMessages((prev) =>
         prev.map((m) => {
-          // ✅ Match by multiple possible IDs
+          // ✅ Multiple ID se match karo
           const isMatch =
-            m.id === statusUpdate.messageId ||
-            m.id === statusUpdate.tempId ||
+            (statusUpdate.messageId   && m.id === statusUpdate.messageId) ||
+            (statusUpdate.tempId      && m.id === statusUpdate.tempId) ||
             (statusUpdate.waMessageId && (
               m.waMessageId === statusUpdate.waMessageId ||
-              m.wamId === statusUpdate.waMessageId
+              m.wamId       === statusUpdate.waMessageId
             )) ||
             (statusUpdate.wamId && (
               m.waMessageId === statusUpdate.wamId ||
-              m.wamId === statusUpdate.wamId
+              m.wamId       === statusUpdate.wamId
             ));
 
           if (!isMatch) return m;
 
           const newStatus = statusUpdate.status.toUpperCase() as Message['status'];
 
-          // ✅ Don't downgrade status (READ > DELIVERED > SENT)
-          const statusRank: Record<string, number> = {
+          // ✅ Status downgrade prevent karo
+          const rank: Record<string, number> = {
             PENDING: 0, SENT: 1, DELIVERED: 2, READ: 3, FAILED: -1,
           };
-          const currentRank = statusRank[m.status || 'PENDING'] ?? 0;
-          const newRank = statusRank[newStatus || 'PENDING'] ?? 0;
+          const curRank = rank[m.status || 'PENDING'] ?? 0;
+          const newRank = rank[newStatus || 'PENDING'] ?? 0;
 
-          if (newRank < currentRank && newStatus !== 'FAILED') return m;
+          if (newRank < curRank && newStatus !== 'FAILED') return m;
 
           console.log(`✅ Status: ${m.id} ${m.status} → ${newStatus}`);
 
           return {
             ...m,
-            status: newStatus,
-            failureReason: statusUpdate.failureReason,
+            status:          newStatus,
+            failureReason:   statusUpdate.failureReason,
             statusUpdatedAt: statusUpdate.timestamp,
-            ...(newStatus === 'SENT' && { sentAt: statusUpdate.timestamp }),
+            ...(newStatus === 'SENT'      && { sentAt:      statusUpdate.timestamp }),
             ...(newStatus === 'DELIVERED' && { deliveredAt: statusUpdate.timestamp }),
-            ...(newStatus === 'READ' && { readAt: statusUpdate.timestamp }),
+            ...(newStatus === 'READ'      && { readAt:      statusUpdate.timestamp }),
           };
         })
       );

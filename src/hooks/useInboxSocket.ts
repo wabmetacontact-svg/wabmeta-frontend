@@ -1,223 +1,214 @@
-// src/hooks/useInboxSocket.ts - COMPLETELY REWRITTEN
+// src/hooks/useInboxSocket.ts - FINAL CLEAN VERSION
 
 import { useEffect, useRef } from 'react';
 import { useSocket } from '../context/SocketContext';
 
-interface InboundMessage {
-    id: string;
-    conversationId: string;
-    waMessageId?: string;
-    wamId?: string;
-    content: string;
-    direction: 'INBOUND' | 'OUTBOUND';
-    status: string;
-    createdAt: string;
-    timestamp?: string;
-    type: string;
-    mediaUrl?: string;
-    mediaType?: string;
-    fileName?: string;
-    metadata?: any;
+// ============================================================
+// TYPES
+// ============================================================
+export interface InboundMessage {
+  id:             string;
+  conversationId: string;
+  waMessageId?:   string;
+  wamId?:         string;
+  content:        string;
+  direction:      'INBOUND' | 'OUTBOUND';
+  status:         string;
+  createdAt:      string;
+  timestamp?:     string;
+  type:           string;
+  mediaUrl?:      string;
+  mediaType?:     string;
+  fileName?:      string;
+  metadata?:      any;
 }
 
-interface ConversationUpdate {
-    id: string;
-    lastMessageAt: string;
-    lastMessagePreview: string;
-    unreadCount: number;
-    isWindowOpen?: boolean;
-    windowExpiresAt?: string;
-    contact?: any;
-    isPinned?: boolean;
-    labels?: string[];
-    isArchived?: boolean;
-    isRead?: boolean;
+export interface ConversationUpdate {
+  id:                 string;
+  lastMessageAt:      string;
+  lastMessagePreview: string;
+  unreadCount:        number;
+  isWindowOpen?:      boolean;
+  windowExpiresAt?:   string;
+  contact?:           any;
+  isPinned?:          boolean;
+  labels?:            string[];
+  isArchived?:        boolean;
+  isRead?:            boolean;
 }
 
-interface MessageStatusUpdate {
-    messageId: string;
-    waMessageId?: string;
-    wamId?: string;
-    conversationId: string;
-    status: string;
-    timestamp: string;
-    tempId?: string;
-    clientMsgId?: string;
-    failureReason?: string;
+export interface MessageStatusUpdate {
+  messageId?:     string;
+  waMessageId?:   string;
+  wamId?:         string;
+  conversationId: string;
+  status:         string;
+  timestamp:      string;
+  tempId?:        string;
+  clientMsgId?:   string;
+  failureReason?: string;
 }
 
-type NewMessageCallback = (message: InboundMessage) => void;
+type NewMessageCallback         = (message: InboundMessage) => void;
 type ConversationUpdateCallback = (update: ConversationUpdate) => void;
-type MessageStatusCallback = (status: MessageStatusUpdate) => void;
+type MessageStatusCallback      = (status: MessageStatusUpdate) => void;
 
+// ============================================================
+// HOOK
+// ============================================================
 export const useInboxSocket = (
-    selectedConversationId: string | null,
-    onNewMessage?: NewMessageCallback,
-    onConversationUpdate?: ConversationUpdateCallback,
-    onMessageStatus?: MessageStatusCallback
+  selectedConversationId:  string | null,
+  onNewMessage?:           NewMessageCallback,
+  onConversationUpdate?:   ConversationUpdateCallback,
+  onMessageStatus?:        MessageStatusCallback
 ) => {
-    const { socket, isConnected, joinConversation, leaveConversation } = useSocket();
+  const { socket, isConnected, joinConversation, leaveConversation } = useSocket();
 
-    const previousConversationId = useRef<string | null>(null);
+  // ✅ Refs se stale closure problem solve hota hai
+  const onNewMessageRef         = useRef(onNewMessage);
+  const onConversationUpdateRef = useRef(onConversationUpdate);
+  const onMessageStatusRef      = useRef(onMessageStatus);
+  const prevConvIdRef           = useRef<string | null>(null);
 
-    // ✅ Store callbacks in refs - prevents stale closures
-    const onNewMessageRef = useRef(onNewMessage);
-    const onConversationUpdateRef = useRef(onConversationUpdate);
-    const onMessageStatusRef = useRef(onMessageStatus);
+  // Always latest callbacks
+  useEffect(() => {
+    onNewMessageRef.current         = onNewMessage;
+    onConversationUpdateRef.current = onConversationUpdate;
+    onMessageStatusRef.current      = onMessageStatus;
+  });
 
-    // Always update refs with latest callbacks
-    useEffect(() => {
-        onNewMessageRef.current = onNewMessage;
-        onConversationUpdateRef.current = onConversationUpdate;
-        onMessageStatusRef.current = onMessageStatus;
-    });
+  // ✅ Join/Leave conversation room
+  useEffect(() => {
+    if (!isConnected) return;
 
-    // ✅ Join/Leave conversation rooms
-    useEffect(() => {
-        if (!socket || !isConnected) return;
+    const prev = prevConvIdRef.current;
+    const curr = selectedConversationId;
 
-        // Leave previous conversation room
-        if (
-            previousConversationId.current &&
-            previousConversationId.current !== selectedConversationId
-        ) {
-            leaveConversation(previousConversationId.current);
-            console.log('📤 Left conversation:', previousConversationId.current);
+    // Leave old room
+    if (prev && prev !== curr) {
+      leaveConversation(prev);
+    }
+
+    // Join new room
+    if (curr) {
+      joinConversation(curr);
+      prevConvIdRef.current = curr;
+    }
+
+    return () => {
+      if (curr) {
+        leaveConversation(curr);
+        prevConvIdRef.current = null;
+      }
+    };
+  }, [isConnected, selectedConversationId, joinConversation, leaveConversation]);
+
+  // ✅ Socket listeners - socket change hone par re-register
+  useEffect(() => {
+    if (!socket) return;
+
+    // --------------------------------------------------
+    // message:new
+    // --------------------------------------------------
+    const handleNewMessage = (data: any) => {
+      try {
+        // Backend se format:
+        // { organizationId, conversationId, message, conversation? }
+        const raw    = data?.message || data;
+        const convId = raw?.conversationId || data?.conversationId;
+
+        if (!raw || !convId) {
+          console.warn('⚠️ Invalid message:new payload');
+          return;
         }
 
-        // Join new conversation room
-        if (selectedConversationId) {
-            joinConversation(selectedConversationId);
-            console.log('📂 Joined conversation:', selectedConversationId);
-            previousConversationId.current = selectedConversationId;
-        }
-
-        // Cleanup on unmount
-        return () => {
-            if (selectedConversationId) {
-                leaveConversation(selectedConversationId);
-            }
-        };
-    }, [socket, isConnected, selectedConversationId, joinConversation, leaveConversation]);
-
-    // ✅ Socket event listeners - Registered ONCE
-    useEffect(() => {
-        if (!socket) return;
-
-        // ============================================
-        // NEW MESSAGE HANDLER
-        // ============================================
-        const handleNewMessage = (data: any) => {
-            try {
-                // Backend sends: { organizationId, conversationId, message, conversation?, tempId? }
-                const message: InboundMessage = data.message || data;
-
-                if (!message?.id && !message?.waMessageId) {
-                    console.warn('⚠️ Invalid message data received:', data);
-                    return;
-                }
-
-                console.log('📩 [SOCKET] message:new:', {
-                    id: message.id,
-                    direction: message.direction,
-                    conversationId: message.conversationId || data.conversationId,
-                    type: message.type,
-                });
-
-                // ✅ Ensure conversationId is set
-                if (!message.conversationId && data.conversationId) {
-                    message.conversationId = data.conversationId;
-                }
-
-                if (onNewMessageRef.current) {
-                    onNewMessageRef.current(message);
-                }
-            } catch (e) {
-                console.error('❌ handleNewMessage error:', e);
-            }
+        const msg: InboundMessage = {
+          ...raw,
+          conversationId: convId,
+          createdAt: raw.createdAt || new Date().toISOString(),
         };
 
-        // ============================================
-        // CONVERSATION UPDATE HANDLER
-        // ============================================
-        const handleConversationUpdate = (data: any) => {
-            try {
-                // Backend sends: { organizationId, conversation }
-                const update: ConversationUpdate = data.conversation || data;
+        console.log('📩 message:new:', {
+          id:        msg.id,
+          direction: msg.direction,
+          convId:    msg.conversationId,
+          type:      msg.type,
+        });
 
-                if (!update?.id) {
-                    console.warn('⚠️ Invalid conversation update:', data);
-                    return;
-                }
+        onNewMessageRef.current?.(msg);
+      } catch (e) {
+        console.error('handleNewMessage error:', e);
+      }
+    };
 
-                console.log('💬 [SOCKET] conversation:updated:', update.id);
+    // --------------------------------------------------
+    // conversation:updated
+    // --------------------------------------------------
+    const handleConversationUpdate = (data: any) => {
+      try {
+        const update: ConversationUpdate = data?.conversation || data;
+        if (!update?.id) return;
 
-                if (onConversationUpdateRef.current) {
-                    onConversationUpdateRef.current(update);
-                }
-            } catch (e) {
-                console.error('❌ handleConversationUpdate error:', e);
-            }
+        console.log('💬 conversation:updated:', update.id);
+        onConversationUpdateRef.current?.(update);
+      } catch (e) {
+        console.error('handleConversationUpdate error:', e);
+      }
+    };
+
+    // --------------------------------------------------
+    // message:status
+    // --------------------------------------------------
+    const handleMessageStatus = (data: any) => {
+      try {
+        if (!data?.status) return;
+
+        const statusUpdate: MessageStatusUpdate = {
+          messageId:      data.messageId,
+          waMessageId:    data.waMessageId,
+          wamId:          data.wamId,
+          conversationId: data.conversationId || '',
+          status:         data.status,
+          timestamp:      data.timestamp || new Date().toISOString(),
+          tempId:         data.tempId,
+          clientMsgId:    data.clientMsgId,
+          failureReason:  data.failureReason,
         };
 
-        // ============================================
-        // MESSAGE STATUS HANDLER
-        // ============================================
-        const handleMessageStatus = (data: any) => {
-            try {
-                if (!data?.status) {
-                    console.warn('⚠️ Invalid status update:', data);
-                    return;
-                }
+        console.log('📊 message:status:', {
+          messageId:   statusUpdate.messageId,
+          waMessageId: statusUpdate.waMessageId,
+          status:      statusUpdate.status,
+          tempId:      statusUpdate.tempId,
+        });
 
-                const statusUpdate: MessageStatusUpdate = {
-                    messageId: data.messageId,
-                    waMessageId: data.waMessageId,
-                    wamId: data.wamId,
-                    conversationId: data.conversationId,
-                    status: data.status,
-                    timestamp: data.timestamp || new Date().toISOString(),
-                    tempId: data.tempId,
-                    clientMsgId: data.clientMsgId,
-                    failureReason: data.failureReason,
-                };
+        onMessageStatusRef.current?.(statusUpdate);
+      } catch (e) {
+        console.error('handleMessageStatus error:', e);
+      }
+    };
 
-                console.log('📊 [SOCKET] message:status:', {
-                    messageId: statusUpdate.messageId,
-                    waMessageId: statusUpdate.waMessageId,
-                    status: statusUpdate.status,
-                    tempId: statusUpdate.tempId,
-                });
+    // ✅ Pehle purane listeners hataao (duplicate prevention)
+    socket.off('message:new',          handleNewMessage);
+    socket.off('conversation:updated', handleConversationUpdate);
+    socket.off('message:status',       handleMessageStatus);
 
-                if (onMessageStatusRef.current) {
-                    onMessageStatusRef.current(statusUpdate);
-                }
-            } catch (e) {
-                console.error('❌ handleMessageStatus error:', e);
-            }
-        };
+    // ✅ Naye listeners register karo
+    socket.on('message:new',          handleNewMessage);
+    socket.on('conversation:updated', handleConversationUpdate);
+    socket.on('message:status',       handleMessageStatus);
 
-        // ✅ Remove old listeners first (prevents duplicate handlers)
-        socket.off('message:new', handleNewMessage);
-        socket.off('conversation:updated', handleConversationUpdate);
-        socket.off('message:status', handleMessageStatus);
+    console.log('✅ Socket listeners registered, socket:', socket.id);
 
-        // ✅ Register new listeners
-        socket.on('message:new', handleNewMessage);
-        socket.on('conversation:updated', handleConversationUpdate);
-        socket.on('message:status', handleMessageStatus);
+    return () => {
+      socket.off('message:new',          handleNewMessage);
+      socket.off('conversation:updated', handleConversationUpdate);
+      socket.off('message:status',       handleMessageStatus);
+      console.log('🔌 Socket listeners removed');
+    };
+  }, [socket]); // ✅ Sirf socket par depend karo
 
-        console.log('✅ [SOCKET] Inbox listeners registered, socket:', socket.id);
-
-        return () => {
-            socket.off('message:new', handleNewMessage);
-            socket.off('conversation:updated', handleConversationUpdate);
-            socket.off('message:status', handleMessageStatus);
-            console.log('🔌 [SOCKET] Inbox listeners removed');
-        };
-    }, [socket]); // ✅ Only depends on socket instance
-
-    return { isConnected };
+  return { isConnected };
 };
 
 export default useInboxSocket;

@@ -1,140 +1,157 @@
-// src/context/SocketProvider.tsx - COMPLETE FIXED
+// src/context/SocketProvider.tsx - COMPLETE FIX
 
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { SocketContext } from './SocketContext';
 
+const getSocketUrl = (): string => {
+  const envUrl = import.meta.env.VITE_API_URL;
+
+  if (envUrl) {
+    return envUrl
+      .replace(/\/api\/v1\/?$/, '')
+      .replace(/\/api\/?$/, '')
+      .replace(/\/v1\/?$/, '')
+      .replace(/\/$/, '');
+  }
+
+  return import.meta.env.PROD
+    ? 'https://wabmeta-api.onrender.com'
+    : 'http://localhost:10000';
+};
+
+const getOrgId = (): string | null => {
+  try {
+    const orgData = localStorage.getItem('wabmeta_org');
+    if (orgData) {
+      const parsed = JSON.parse(orgData);
+      if (parsed?.id) return parsed.id;
+    }
+  } catch {}
+  return localStorage.getItem('currentOrganizationId');
+};
+
+const getToken = (): string | null => {
+  return (
+    localStorage.getItem('accessToken') ||
+    localStorage.getItem('token') ||
+    localStorage.getItem('wabmeta_token')
+  );
+};
+
 export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const [socket, setSocket] = useState<Socket | null>(null);
-    const [isConnected, setIsConnected] = useState(false);
-    const socketRef = useRef<Socket | null>(null);
-    const connectionAttempted = useRef(false);
-    const orgIdRef = useRef<string | null>(null);
+  const [socket, setSocket]           = useState<Socket | null>(null);
+  const [isConnected, setIsConnected] = useState(false);
 
-    useEffect(() => {
-        if (connectionAttempted.current) return;
-        connectionAttempted.current = true;
+  const socketRef      = useRef<Socket | null>(null);
+  const orgIdRef       = useRef<string | null>(null);
+  // ✅ Flag to prevent double-init in React StrictMode
+  const initializedRef = useRef(false);
 
-        const token =
-            localStorage.getItem('accessToken') ||
-            localStorage.getItem('token') ||
-            localStorage.getItem('wabmeta_token');
+  useEffect(() => {
+    // ✅ StrictMode double-mount fix
+    if (initializedRef.current) return;
+    initializedRef.current = true;
 
-        if (!token) {
-            console.log('⚠️ No auth token, skipping socket connection');
-            return;
-        }
+    const token = getToken();
+    if (!token) {
+      console.log('⚠️ No auth token, skipping socket');
+      return;
+    }
 
-        // Get organization ID
-        let organizationId: string | null = null;
-        try {
-            const orgData = localStorage.getItem('wabmeta_org');
-            if (orgData) {
-                organizationId = JSON.parse(orgData)?.id || null;
-            }
-            if (!organizationId) {
-                organizationId = localStorage.getItem('currentOrganizationId');
-            }
-        } catch (e) {
-            organizationId = localStorage.getItem('currentOrganizationId');
-        }
+    const organizationId = getOrgId();
+    orgIdRef.current = organizationId;
 
-        orgIdRef.current = organizationId;
+    const SOCKET_URL = getSocketUrl();
+    console.log('🔌 Socket connecting to:', SOCKET_URL, '| Org:', organizationId);
 
-        // Socket URL
-        const socketBase = import.meta.env.PROD
-            ? 'https://wabmeta-api.onrender.com'
-            : 'http://localhost:10000';
+    const newSocket = io(SOCKET_URL, {
+      auth:                 { token, organizationId },
+      transports:           ['polling', 'websocket'], // polling pehle (Render ke liye)
+      path:                 '/socket.io/',
+      reconnection:         true,
+      reconnectionAttempts: 20,
+      reconnectionDelay:    1000,
+      reconnectionDelayMax: 10000,
+      timeout:              30000,
+      forceNew:             true,
+      autoConnect:          true,
+    });
 
-        const SOCKET_URL = import.meta.env.VITE_API_URL
-            ? import.meta.env.VITE_API_URL
-                .replace(/\/api\/v1\/?$/, '')
-                .replace(/\/api\/?$/, '')
-                .replace(/\/v1\/?$/, '')
-                .replace(/\/$/, '')
-            : socketBase;
+    socketRef.current = newSocket;
 
-        console.log('🔌 Connecting socket:', SOCKET_URL, '| Org:', organizationId);
+    newSocket.on('connect', () => {
+      console.log('✅ Socket connected:', newSocket.id);
+      setIsConnected(true);
 
-        const newSocket = io(SOCKET_URL, {
-            auth: { token, organizationId },
-            transports: ['polling', 'websocket'],
-            path: '/socket.io/',
-            reconnection: true,
-            reconnectionAttempts: 15,
-            reconnectionDelay: 1000,
-            reconnectionDelayMax: 10000,
-            timeout: 20000,
-            forceNew: true,
-            autoConnect: true,
-        });
+      // ✅ Org room join on connect + reconnect
+      const orgId = orgIdRef.current;
+      if (orgId) {
+        newSocket.emit('org:join', orgId);
+        console.log('📂 Joined org room:', orgId);
+      }
+    });
 
-        socketRef.current = newSocket;
+    newSocket.on('disconnect', (reason) => {
+      console.log('🔌 Socket disconnected:', reason);
+      setIsConnected(false);
+    });
 
-        newSocket.on('connect', () => {
-            console.log('✅ Socket connected:', newSocket.id);
-            setIsConnected(true);
+    newSocket.on('connect_error', (error) => {
+      console.error('❌ Socket connect error:', error.message);
+      setIsConnected(false);
+    });
 
-            if (organizationId) {
-                newSocket.emit('org:join', organizationId);
-                console.log('📂 Joined org room:', organizationId);
-            }
-        });
+    newSocket.on('reconnect', (attempt) => {
+      console.log(`🔄 Socket reconnected after ${attempt} attempts`);
+      // ✅ Re-join org on reconnect
+      const orgId = orgIdRef.current;
+      if (orgId) {
+        newSocket.emit('org:join', orgId);
+      }
+    });
 
-        newSocket.on('disconnect', (reason) => {
-            console.log('🔌 Socket disconnected:', reason);
-            setIsConnected(false);
-        });
+    // ✅ Pong ke liye
+    newSocket.on('pong', () => {});
 
-        newSocket.on('connect_error', (error) => {
-            console.error('❌ Socket connect error:', error.message);
-            setIsConnected(false);
-        });
+    setSocket(newSocket);
 
-        newSocket.on('reconnect', (attempt) => {
-            console.log(`🔄 Socket reconnected after ${attempt} attempts`);
-            // Re-join org room after reconnect
-            if (orgIdRef.current) {
-                newSocket.emit('org:join', orgIdRef.current);
-            }
-        });
+    return () => {
+      console.log('🔌 Socket cleanup');
+      initializedRef.current = false;
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+        socketRef.current = null;
+      }
+      setSocket(null);
+      setIsConnected(false);
+    };
+  }, []);
 
-        setSocket(newSocket);
+  const joinConversation = useCallback((conversationId: string) => {
+    if (socketRef.current?.connected && conversationId) {
+      socketRef.current.emit('join:conversation', conversationId);
+      console.log('📂 Joined conv room:', conversationId);
+    }
+  }, []);
 
-        return () => {
-            console.log('🔌 Cleaning up socket...');
-            if (socketRef.current) {
-                socketRef.current.disconnect();
-                socketRef.current = null;
-            }
-            connectionAttempted.current = false;
-        };
-    }, []);
+  const leaveConversation = useCallback((conversationId: string) => {
+    if (socketRef.current?.connected && conversationId) {
+      socketRef.current.emit('leave:conversation', conversationId);
+      console.log('📤 Left conv room:', conversationId);
+    }
+  }, []);
 
-    const joinConversation = useCallback((conversationId: string) => {
-        if (socketRef.current?.connected && conversationId) {
-            socketRef.current.emit('join:conversation', conversationId);
-            console.log('📂 Joined conversation room:', conversationId);
-        }
-    }, []);
-
-    const leaveConversation = useCallback((conversationId: string) => {
-        if (socketRef.current?.connected && conversationId) {
-            socketRef.current.emit('leave:conversation', conversationId);
-            console.log('📤 Left conversation room:', conversationId);
-        }
-    }, []);
-
-    return (
-        <SocketContext.Provider value={{
-            socket,
-            isConnected,
-            joinConversation,
-            leaveConversation
-        }}>
-            {children}
-        </SocketContext.Provider>
-    );
+  return (
+    <SocketContext.Provider value={{
+      socket,
+      isConnected,
+      joinConversation,
+      leaveConversation,
+    }}>
+      {children}
+    </SocketContext.Provider>
+  );
 };
 
 export default SocketProvider;
