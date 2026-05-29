@@ -11,6 +11,19 @@ import {
 import toast from 'react-hot-toast';
 import { MessageSquare } from 'lucide-react';
 import React from 'react';
+import api from '../services/api';
+
+// Utility to convert VAPID key
+function urlBase64ToUint8Array(base64String: string) {
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
+  const rawData = window.atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+  for (let i = 0; i < rawData.length; ++i) {
+    outputArray[i] = rawData.charCodeAt(i);
+  }
+  return outputArray;
+}
 
 // ─── Custom Toast UI ──────────────────────────────────────────────────────────
 function NotificationToast({
@@ -64,7 +77,40 @@ export function useGlobalNotifications() {
   useEffect(() => {
     if (permissionRequestedRef.current) return;
     permissionRequestedRef.current = true;
-    requestNotificationPermission();
+    
+    const setupPush = async () => {
+      try {
+        const permission = await Notification.requestPermission();
+        if (permission === 'granted') {
+          if ('serviceWorker' in navigator && 'PushManager' in window) {
+            const registration = await navigator.serviceWorker.register('/sw.js');
+            const readyReg = await navigator.serviceWorker.ready;
+            
+            // Check existing subscription
+            let subscription = await readyReg.pushManager.getSubscription();
+            
+            if (!subscription) {
+              const publicVapidKey = import.meta.env.VITE_VAPID_PUBLIC_KEY;
+              if (publicVapidKey) {
+                subscription = await readyReg.pushManager.subscribe({
+                  userVisibleOnly: true,
+                  applicationServerKey: urlBase64ToUint8Array(publicVapidKey)
+                });
+              }
+            }
+            
+            if (subscription) {
+              await api.post('/users/subscribe', subscription);
+              console.log('✅ Web Push Subscription successful');
+            }
+          }
+        }
+      } catch (err) {
+        console.error('Service Worker or Push Subscription error:', err);
+      }
+    };
+    
+    setupPush();
   }, []);
 
   const navigateToConversation = useCallback(
