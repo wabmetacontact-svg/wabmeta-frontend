@@ -1,4 +1,4 @@
-// src/pages/Inbox.tsx - COMPLETE PERFECT VERSION
+// src/pages/Inbox.tsx - COMPLETE OPTIMIZED VERSION
 
 import React, {
   useState, useEffect, useCallback, useRef, useMemo
@@ -8,9 +8,12 @@ import {
   Search, MoreVertical, Info, Loader2, Phone,
   MessageSquare, AlertCircle, RefreshCw,
   Pin, PinOff, Tag, Archive, ArchiveRestore, X, ArrowLeft,
+  Bell,
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { useInboxSocket, type InboundMessage, type ConversationUpdate, type MessageStatusUpdate } from '../hooks/useInboxSocket';
+import { useNotifications, playNotificationSound, showBrowserNotification } from '../hooks/useNotifications';
+import { useInboxNotifications } from '../hooks/useInboxNotifications';
 import api, { inbox as inboxApi, whatsapp as whatsappApi } from '../services/api';
 import toast from 'react-hot-toast';
 import WindowStatus from '../components/inbox/WindowStatus';
@@ -656,6 +659,9 @@ const Inbox: React.FC = () => {
     setShowCallScreen(true);
   }, []);
 
+  // ✅ In-app toast notifications
+  const { showNewMessageToast } = useInboxNotifications();
+
   // ============================================
   // ✅ SOCKET HANDLERS
   // ============================================
@@ -726,14 +732,38 @@ const Inbox: React.FC = () => {
           isRead: isCurrentlyOpen,
         };
 
-        // ✅ Notification sound - other conversations ke liye
+        // ✅ Notification - other conversations ke liye
         if (newMsg.direction === 'INBOUND' && !isCurrentlyOpen) {
           playNotificationSound();
+
+          // Contact name for notification
+          const existingConv = prev[idx];
+          const contactName = existingConv
+            ? (existingConv.contact.whatsappProfileName ||
+               existingConv.contact.name ||
+               [existingConv.contact.firstName, existingConv.contact.lastName].filter(Boolean).join(' ') ||
+               existingConv.contact.phone)
+            : 'New Message';
+
+          // In-app toast
+          showNewMessageToast({
+            contactName,
+            messagePreview: (newMsg.content || 'New message').substring(0, 80),
+            conversationId: convId,
+          });
+
+          // Browser notification
+          showBrowserNotification({
+            title:   `💬 ${contactName}`,
+            body:    (newMsg.content || 'New message').substring(0, 100),
+            tag:     `conv-${convId}`,
+            onClick: () => navigate(`/dashboard/inbox/${convId}`),
+          });
         }
 
         return sortConversations(updated);
       });
-    }, [scrollToBottom]),
+    }, [scrollToBottom, showNewMessageToast, navigate]),
 
     // ===== CONVERSATION UPDATE =====
     useCallback((updatedConv: ConversationUpdate) => {
