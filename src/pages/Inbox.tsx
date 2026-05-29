@@ -56,6 +56,7 @@ interface Conversation {
   lastMessageType?: string;
   lastMessageDirection?: 'INBOUND' | 'OUTBOUND';
   lastMessageStatus?: string;
+  lastCustomerMessageAt?: string | null;
   unreadCount: number;
   isArchived?: boolean;
   isPinned?: boolean;
@@ -938,6 +939,7 @@ const Inbox: React.FC = () => {
               lastMessageType: newMsg.type,
               lastMessageDirection: direction,
               unreadCount: isCurrentConv ? 0 : (updated[idx].unreadCount || 0) + 1,
+              ...(direction === 'INBOUND' ? { lastCustomerMessageAt: newMsg.createdAt || new Date().toISOString() } : {})
             };
           }
 

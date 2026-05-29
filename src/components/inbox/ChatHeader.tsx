@@ -102,9 +102,9 @@ const ChatHeader: React.FC<Props> = ({
       );
     }
     
-    // Simulate real-time active based on lastMessageAt (e.g. within last 3 minutes)
-    if ((conversation as any).lastMessageAt) {
-      const lastMsgDate = new Date((conversation as any).lastMessageAt);
+    // Simulate real-time active based on lastCustomerMessageAt (e.g. within last 3 minutes)
+    if ((conversation as any).lastCustomerMessageAt) {
+      const lastMsgDate = new Date((conversation as any).lastCustomerMessageAt);
       const diffMins = (Date.now() - lastMsgDate.getTime()) / (1000 * 60);
       
       if (diffMins <= 3) {
