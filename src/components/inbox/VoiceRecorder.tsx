@@ -69,12 +69,12 @@ const VoiceRecorder: React.FC<Props> = ({ isRecording, onStart, onStop, onCancel
       updateWaveform();
   
       // ✅ WhatsApp-supported MIME types (in priority order)
+      // Note: Removed mp4/mpeg because Chrome's mp4 is fragmented and Meta rejects it.
+      // We will rely on the backend to transcode webm to standard ogg/opus using ffmpeg.
       const supportedMimeTypes = [
-        'audio/ogg;codecs=opus',  // ✅ Best for WhatsApp
+        'audio/ogg;codecs=opus',  // Best (Firefox)
         'audio/ogg',
-        'audio/mp4',
-        'audio/mpeg',
-        'audio/webm;codecs=opus', // Fallback
+        'audio/webm;codecs=opus', // Chrome/Edge fallback (will be transcoded by backend)
         'audio/webm',
       ];
   
