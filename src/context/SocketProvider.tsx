@@ -1,12 +1,11 @@
-// src/context/SocketProvider.tsx - COMPLETE FIX
-
+// src/context/SocketProvider.tsx
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { SocketContext } from './SocketContext';
+import { useAuth } from './AuthContext'; // ✅ ADD
 
 const getSocketUrl = (): string => {
   const envUrl = import.meta.env.VITE_API_URL;
-
   if (envUrl) {
     return envUrl
       .replace(/\/api\/v1\/?$/, '')
@@ -14,7 +13,6 @@ const getSocketUrl = (): string => {
       .replace(/\/v1\/?$/, '')
       .replace(/\/$/, '');
   }
-
   return import.meta.env.PROD
     ? 'https://wabmeta-api.onrender.com'
     : 'http://localhost:10000';
@@ -40,22 +38,39 @@ const getToken = (): string | null => {
 };
 
 export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [socket, setSocket]           = useState<Socket | null>(null);
+  const [socket, setSocket] = useState<Socket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
 
-  const socketRef      = useRef<Socket | null>(null);
-  const orgIdRef       = useRef<string | null>(null);
-  // ✅ Flag to prevent double-init in React StrictMode
-  const initializedRef = useRef(false);
+  const socketRef = useRef<Socket | null>(null);
+  const orgIdRef = useRef<string | null>(null);
+
+  // ✅ Auth state se trigger karo
+  const { isAuthenticated, isLoading } = useAuth();
 
   useEffect(() => {
-    // ✅ StrictMode double-mount fix
-    if (initializedRef.current) return;
-    initializedRef.current = true;
+    // ✅ Auth check
+    if (isLoading) return;
+    if (!isAuthenticated) {
+      // Logout hua - socket close karo
+      if (socketRef.current) {
+        console.log('🔌 Logout detected, closing socket');
+        socketRef.current.disconnect();
+        socketRef.current = null;
+        setSocket(null);
+        setIsConnected(false);
+      }
+      return;
+    }
 
     const token = getToken();
     if (!token) {
-      console.log('⚠️ No auth token, skipping socket');
+      console.log('⚠️ No auth token despite isAuthenticated');
+      return;
+    }
+
+    // ✅ Already connected? Skip
+    if (socketRef.current?.connected) {
+      console.log('⚡ Socket already connected, skipping');
       return;
     }
 
@@ -66,16 +81,16 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     console.log('🔌 Socket connecting to:', SOCKET_URL, '| Org:', organizationId);
 
     const newSocket = io(SOCKET_URL, {
-      auth:                 { token, organizationId },
-      transports:           ['polling', 'websocket'], // polling pehle (Render ke liye)
-      path:                 '/socket.io/',
-      reconnection:         true,
+      auth: { token, organizationId },
+      transports: ['polling', 'websocket'],
+      path: '/socket.io/',
+      reconnection: true,
       reconnectionAttempts: 20,
-      reconnectionDelay:    1000,
+      reconnectionDelay: 1000,
       reconnectionDelayMax: 10000,
-      timeout:              30000,
-      forceNew:             true,
-      autoConnect:          true,
+      timeout: 30000,
+      forceNew: true,
+      autoConnect: true,
     });
 
     socketRef.current = newSocket;
@@ -84,7 +99,6 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       console.log('✅ Socket connected:', newSocket.id);
       setIsConnected(true);
 
-      // ✅ Org room join on connect + reconnect
       const orgId = orgIdRef.current;
       if (orgId) {
         newSocket.emit('org:join', orgId);
@@ -104,21 +118,16 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
     newSocket.on('reconnect', (attempt) => {
       console.log(`🔄 Socket reconnected after ${attempt} attempts`);
-      // ✅ Re-join org on reconnect
       const orgId = orgIdRef.current;
       if (orgId) {
         newSocket.emit('org:join', orgId);
       }
     });
 
-    // ✅ Pong ke liye
-    newSocket.on('pong', () => {});
-
     setSocket(newSocket);
 
     return () => {
-      console.log('🔌 Socket cleanup');
-      initializedRef.current = false;
+      console.log('🔌 Socket cleanup (deps changed)');
       if (socketRef.current) {
         socketRef.current.disconnect();
         socketRef.current = null;
@@ -126,29 +135,29 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       setSocket(null);
       setIsConnected(false);
     };
-  }, []);
+  }, [isAuthenticated, isLoading]); // ✅ Auth state pe react karo
 
   const joinConversation = useCallback((conversationId: string) => {
     if (socketRef.current?.connected && conversationId) {
       socketRef.current.emit('join:conversation', conversationId);
-      console.log('📂 Joined conv room:', conversationId);
     }
   }, []);
 
   const leaveConversation = useCallback((conversationId: string) => {
     if (socketRef.current?.connected && conversationId) {
       socketRef.current.emit('leave:conversation', conversationId);
-      console.log('📤 Left conv room:', conversationId);
     }
   }, []);
 
   return (
-    <SocketContext.Provider value={{
-      socket,
-      isConnected,
-      joinConversation,
-      leaveConversation,
-    }}>
+    <SocketContext.Provider
+      value={{
+        socket,
+        isConnected,
+        joinConversation,
+        leaveConversation,
+      }}
+    >
       {children}
     </SocketContext.Provider>
   );

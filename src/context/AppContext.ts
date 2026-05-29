@@ -2,10 +2,15 @@
 import { createContext, useContext } from 'react';
 
 export interface AppContextType {
+  // Unread messages
   unreadCount: number;
   incrementUnread: (conversationId?: string) => void;
   decrementUnread: (conversationId?: string) => void;
   resetUnread: () => void;
+
+  // ✅ Contacts count (sidebar ke liye)
+  totalContacts: number;
+  setTotalContacts: (count: number) => void;
 }
 
 export const AppContext = createContext<AppContextType>({
@@ -13,6 +18,9 @@ export const AppContext = createContext<AppContextType>({
   incrementUnread: () => {},
   decrementUnread: () => {},
   resetUnread: () => {},
+
+  totalContacts: 0,
+  setTotalContacts: () => {},
 });
 
 export const useApp = () => {

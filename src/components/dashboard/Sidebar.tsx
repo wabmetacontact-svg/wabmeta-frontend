@@ -124,7 +124,7 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, setCollapsed }) => {
           href: "/dashboard/inbox",
           icon: Inbox,
           badge: unreadCount > 0 ? (unreadCount > 99 ? '99+' : unreadCount) : undefined,
-          badgeColor: "bg-green-500",
+          badgeColor: "bg-red-500",
         },
         {
           name: "Contacts",
