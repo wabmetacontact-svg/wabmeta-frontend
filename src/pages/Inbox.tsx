@@ -120,14 +120,6 @@ const getContactInitial = (contact: Contact): string =>
 const getLabelStyle = (label: string) =>
   LABEL_COLORS[label.toLowerCase()] || { bg: 'bg-gray-100', text: 'text-gray-700' };
 
-const playNotificationSound = () => {
-  try {
-    const audio = new Audio('/notification.mp3');
-    audio.volume = 0.4;
-    audio.play().catch(() => { });
-  } catch { }
-};
-
 const sortConversations = (convs: Conversation[]): Conversation[] => {
   return [...convs].sort((a, b) => {
     if (a.isPinned && !b.isPinned) return -1;
