@@ -53,7 +53,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
       try {
         // Fetch total contacts
-        const contactRes = await contactsApi.getContacts({ limit: 1 });
+        const contactRes = await contactsApi.getAll({ limit: 1 });
         if (contactRes.data.success) {
           const total =
             contactRes.data.data?.pagination?.total ||
