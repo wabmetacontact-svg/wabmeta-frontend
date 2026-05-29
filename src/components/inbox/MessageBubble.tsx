@@ -1,17 +1,41 @@
-// src/components/inbox/MessageBubble.tsx - WhatsApp-style message renderer
-
+// src/components/inbox/MessageBubble.tsx - PREMIUM REDESIGN
 import React, { useState, useRef, useEffect } from 'react';
 import {
-  Check, CheckCheck, Clock, Download, Play, Pause,
-  FileText, MapPin, User, Video, Mic, X, ExternalLink,
-  AlertCircle, MessageSquare, RefreshCw, Copy, Phone,
-  MousePointerClick, ChevronRight, Trash2, Pencil, MoreVertical,
+  Check,
+  CheckCheck,
+  Clock,
+  Download,
+  Play,
+  Pause,
+  FileText,
+  MapPin,
+  User,
+  Video,
+  Mic,
+  X,
+  ExternalLink,
+  AlertCircle,
+  MessageSquare,
+  RefreshCw,
+  Copy,
+  Phone,
+  ChevronRight,
+  Trash2,
+  Pencil,
+  MoreVertical,
+  Reply,
+  Star,
+  Forward,
+  Smile,
+  Heart,
+  ThumbsUp,
 } from 'lucide-react';
 import api from '../../services/api';
 import toast from 'react-hot-toast';
+import { formatMessageTime, getAvatarColor } from '../../utils/inboxHelpers';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
-interface Message {
+export interface Message {
   id: string;
   content: string;
   direction: 'INBOUND' | 'OUTBOUND';
@@ -26,20 +50,44 @@ interface Message {
   fileName?: string | null;
   failureReason?: string | null;
   metadata?: any;
+  // Advanced features
+  isStarred?: boolean;
+  reactions?: Array<{ emoji: string; userId: string }>;
+  replyTo?: {
+    id: string;
+    content: string;
+    direction: 'INBOUND' | 'OUTBOUND';
+    type?: string;
+    senderName?: string;
+  };
+  isForwarded?: boolean;
+  edited?: boolean;
 }
 
-interface MessageBubbleProps {
+interface Props {
   message: Message;
   conversationId?: string;
+  showAvatar?: boolean;
+  contactName?: string;
+  isGrouped?: boolean; // Same sender as previous message
+  isHighlighted?: boolean; // Search match
+  searchQuery?: string;
   onCopy?: (content: string) => void;
+  onReply?: (msg: Message) => void;
+  onForward?: (msg: Message) => void;
+  onStar?: (msg: Message) => void;
+  onReact?: (msg: Message, emoji: string) => void;
   onDeleted?: (messageId: string) => void;
   onEdited?: (messageId: string, newContent: string) => void;
+  onJumpToMessage?: (messageId: string) => void;
 }
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+// ─── Constants ────────────────────────────────────────────────────────────────
 const API_BASE = 'https://wabmeta-api.onrender.com/api';
 
-/** Parse template content from plain-text or JSON */
+const QUICK_REACTIONS = ['👍', '❤️', '😂', '😮', '😢', '🙏'];
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 function parseTemplateContent(content: string, meta: any): {
   isTemplate: boolean;
   headerText?: string;
@@ -52,7 +100,6 @@ function parseTemplateContent(content: string, meta: any): {
 } {
   if (!content) return { isTemplate: false, bodyText: '', buttons: [] };
 
-  // ── JSON template (structured) ──
   if (content.startsWith('{') && (content.includes('templateName') || content.includes('bodyText'))) {
     try {
       const p = JSON.parse(content);
@@ -66,39 +113,37 @@ function parseTemplateContent(content: string, meta: any): {
         mediaUrl: p.mediaUrl || p.headerMediaUrl,
         mediaType: p.mediaType || p.headerType,
       };
-    } catch { /* fall through */ }
+    } catch {}
   }
 
-  // ── Multi-line Campaign format: "Campaign: X\nTemplate: Y" ──
   if (content.startsWith('Campaign:') || content.startsWith('Template:')) {
     const lines = content.split('\n');
-    const campaignLine = lines.find(l => l.startsWith('Campaign:'));
-    const templateLine = lines.find(l => l.startsWith('Template:'));
+    const campaignLine = lines.find((l) => l.startsWith('Campaign:'));
+    const templateLine = lines.find((l) => l.startsWith('Template:'));
     const templateName = templateLine?.replace('Template:', '').trim() || 'Template';
-    const buttons = normalizeButtons(meta?.buttons || []);
-    // Body text from metadata if available
     const bodyText = meta?.bodyText || meta?.body || '';
     return {
       isTemplate: true,
       templateName: templateLine?.replace('Template:', '').trim(),
       headerText: campaignLine || undefined,
       bodyText: bodyText || `📋 ${templateName.replace(/_/g, ' ')}`,
-      buttons,
+      buttons: normalizeButtons(meta?.buttons || []),
     };
   }
 
-  // ── Type TEMPLATE with plain content ──
   return { isTemplate: false, bodyText: content, buttons: normalizeButtons(meta?.buttons || []) };
 }
 
 function normalizeButtons(raw: any[]): Array<{ type: string; text: string; url?: string; phone?: string }> {
   if (!Array.isArray(raw)) return [];
-  return raw.map((b: any) => ({
-    type: (b.type || 'QUICK_REPLY').toUpperCase(),
-    text: b.text || b.title || '',
-    url: b.url,
-    phone: b.phone_number || b.phone,
-  })).filter(b => b.text);
+  return raw
+    .map((b: any) => ({
+      type: (b.type || 'QUICK_REPLY').toUpperCase(),
+      text: b.text || b.title || '',
+      url: b.url,
+      phone: b.phone_number || b.phone,
+    }))
+    .filter((b) => b.text);
 }
 
 function getMediaSrc(msg: Message): string | null {
@@ -113,39 +158,99 @@ function getMediaSrc(msg: Message): string | null {
   return null;
 }
 
+// ─── Highlight search ─────────────────────────────────────────────────────────
+function HighlightedText({ text, query }: { text: string; query?: string }) {
+  if (!query?.trim()) return <>{text}</>;
+  const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+  const parts = text.split(regex);
+  return (
+    <>
+      {parts.map((part, i) =>
+        regex.test(part) ? (
+          <mark key={i} className="bg-yellow-400/40 text-yellow-100 rounded px-0.5">
+            {part}
+          </mark>
+        ) : (
+          <span key={i}>{part}</span>
+        )
+      )}
+    </>
+  );
+}
+
 // ─── Main Component ───────────────────────────────────────────────────────────
-const MessageBubble: React.FC<MessageBubbleProps> = ({ message, conversationId, onCopy, onDeleted, onEdited }) => {
+const MessageBubble: React.FC<Props> = ({
+  message,
+  conversationId,
+  showAvatar = false,
+  contactName,
+  isGrouped = false,
+  isHighlighted = false,
+  searchQuery = '',
+  onCopy,
+  onReply,
+  onForward,
+  onStar,
+  onReact,
+  onDeleted,
+  onEdited,
+  onJumpToMessage,
+}) => {
   const [imageLoading, setImageLoading] = useState(true);
   const [imageError, setImageError] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [showFullImage, setShowFullImage] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
 
-  // ── Context menu & edit state ──
+  const [showActions, setShowActions] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
+  const [showReactions, setShowReactions] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editText, setEditText] = useState(message.content || '');
   const [deleting, setDeleting] = useState(false);
   const [editSaving, setEditSaving] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
-  const editRef = useRef<HTMLTextAreaElement>(null);
 
-  // Close menu on outside click
+  const menuRef = useRef<HTMLDivElement>(null);
+  const reactionRef = useRef<HTMLDivElement>(null);
+  const editRef = useRef<HTMLTextAreaElement>(null);
+  const bubbleRef = useRef<HTMLDivElement>(null);
+
+  const isOutbound = message.direction === 'OUTBOUND';
+  const msgType = (message.type || '').toLowerCase();
+  const meta = message.metadata || {};
+  const canEdit = isOutbound && msgType === 'text' && !!conversationId;
+  const canDelete = !!conversationId;
+  const isDeleted = message.content === '[revoke]' || message.content === '[Revoke]';
+
+  // Close menus on outside click
   useEffect(() => {
-    if (!showMenu) return;
+    if (!showMenu && !showReactions) return;
     const handler = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setShowMenu(false);
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setShowMenu(false);
+      }
+      if (reactionRef.current && !reactionRef.current.contains(e.target as Node)) {
+        setShowReactions(false);
+      }
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
-  }, [showMenu]);
+  }, [showMenu, showReactions]);
 
   // Focus edit textarea
   useEffect(() => {
     if (isEditing) setTimeout(() => editRef.current?.focus(), 50);
   }, [isEditing]);
 
+  // Highlight scroll
+  useEffect(() => {
+    if (isHighlighted && bubbleRef.current) {
+      bubbleRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, [isHighlighted]);
+
+  // ── Delete handler ──────────────────────────────────────────────────────
   const handleDelete = async () => {
     if (!conversationId) return;
     setDeleting(true);
@@ -162,11 +267,14 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, conversationId, 
     }
   };
 
+  // ── Edit handler ────────────────────────────────────────────────────────
   const handleEdit = async () => {
     if (!conversationId || !editText.trim()) return;
     setEditSaving(true);
     try {
-      await api.patch(`/inbox/conversations/${conversationId}/messages/${message.id}`, { content: editText.trim() });
+      await api.patch(`/inbox/conversations/${conversationId}/messages/${message.id}`, {
+        content: editText.trim(),
+      });
       onEdited?.(message.id, editText.trim());
       toast.success('Message updated');
       setIsEditing(false);
@@ -177,40 +285,51 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, conversationId, 
     }
   };
 
-  const isOutbound = message.direction === 'OUTBOUND';
-  const msgType = (message.type || '').toLowerCase();
-  const meta = message.metadata || {};
-  const canEdit = isOutbound && msgType === 'text' && !!conversationId;
-  const canDelete = !!conversationId;
-
-  // ── Timestamp ──────────────────────────────────────────────────────────────
-  const formatTime = (ts: string) => {
-    try {
-      const d = new Date(ts);
-      if (isNaN(d.getTime())) return '';
-      return d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
-    } catch { return ''; }
-  };
-
-  // ── Status icon ────────────────────────────────────────────────────────────
+  // ── Status icon ─────────────────────────────────────────────────────────
   const StatusIcon = () => {
     if (!isOutbound) return null;
-    switch (message.status?.toUpperCase()) {
-      case 'SENT':      return <Check className="w-3.5 h-3.5 text-gray-300" />;
-      case 'DELIVERED': return <CheckCheck className="w-3.5 h-3.5 text-gray-300" />;
-      case 'READ':      return <CheckCheck className="w-3.5 h-3.5 text-blue-300" />;
-      case 'FAILED':    return <AlertCircle className="w-3.5 h-3.5 text-red-400" />;
-      default:          return <Clock className="w-3 h-3 text-gray-400 animate-pulse" />;
+    const status = message.status?.toUpperCase();
+    switch (status) {
+      case 'SENT':
+        return <Check className="w-3.5 h-3.5 text-gray-400" />;
+      case 'DELIVERED':
+        return <CheckCheck className="w-3.5 h-3.5 text-gray-400" />;
+      case 'READ':
+        return <CheckCheck className="w-3.5 h-3.5 text-blue-400" />;
+      case 'FAILED':
+        return <AlertCircle className="w-3.5 h-3.5 text-red-400" />;
+      default:
+        return <Clock className="w-3 h-3 text-gray-500 animate-pulse" />;
     }
   };
 
-  // ── Image ──────────────────────────────────────────────────────────────────
+  // ── Avatar ──────────────────────────────────────────────────────────────
+  const renderAvatar = () => {
+    if (!showAvatar || isOutbound) return null;
+    const name = contactName || 'U';
+    const initial = name.charAt(0).toUpperCase();
+    const color = getAvatarColor(name);
+    return (
+      <div className={`
+        w-7 h-7 rounded-full
+        bg-gradient-to-br ${color}
+        flex items-center justify-center
+        text-white text-xs font-semibold
+        flex-shrink-0 self-end mb-0.5
+        ring-2 ring-[#0a0e1c]
+      `}>
+        {initial}
+      </div>
+    );
+  };
+
+  // ── Image ───────────────────────────────────────────────────────────────
   const renderImage = (src?: string | null, caption?: string) => {
     const imgSrc = src || getMediaSrc(message);
     if (!imgSrc) {
       return (
-        <div className="w-52 h-36 bg-gray-700/50 rounded-xl flex flex-col items-center justify-center gap-2">
-          <span className="text-3xl">🖼️</span>
+        <div className="w-56 h-40 bg-white/5 rounded-xl flex flex-col items-center justify-center gap-2 border border-white/10">
+          <span className="text-3xl opacity-50">🖼️</span>
           <span className="text-xs text-gray-400">Image unavailable</span>
         </div>
       );
@@ -218,36 +337,72 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, conversationId, 
     return (
       <div className="relative max-w-xs">
         {imageLoading && !imageError && (
-          <div className="w-52 h-36 bg-gray-700 rounded-xl flex items-center justify-center animate-pulse">
-            <div className="w-7 h-7 border-2 border-green-400 border-t-transparent rounded-full animate-spin" />
+          <div className="w-56 h-40 bg-white/5 rounded-xl flex items-center justify-center animate-pulse border border-white/10">
+            <div className="w-7 h-7 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin" />
           </div>
         )}
         {imageError && (
-          <div className="w-52 h-36 bg-gray-700 rounded-xl flex flex-col items-center justify-center gap-2 border border-gray-600">
-            <span className="text-3xl">🖼️</span>
+          <div className="w-56 h-40 bg-white/5 rounded-xl flex flex-col items-center justify-center gap-2 border border-white/10">
+            <span className="text-3xl opacity-50">🖼️</span>
             <span className="text-xs text-gray-400">Media unavailable</span>
-            <button onClick={() => { setImageError(false); setImageLoading(true); setRetryCount(p => p + 1); }}
-              className="flex items-center gap-1 px-2 py-1 bg-green-600 hover:bg-green-700 text-white text-xs rounded-lg">
+            <button
+              onClick={() => {
+                setImageError(false);
+                setImageLoading(true);
+                setRetryCount((p) => p + 1);
+              }}
+              className="flex items-center gap-1 px-2.5 py-1 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 text-xs rounded-md transition-colors"
+            >
               <RefreshCw className="w-3 h-3" /> Retry
             </button>
           </div>
         )}
-        <img key={`${imgSrc}-${retryCount}`} src={imgSrc} alt="Image"
-          className={`max-w-full rounded-xl cursor-zoom-in hover:opacity-95 transition-all shadow ${imageLoading || imageError ? 'hidden' : 'block'}`}
-          style={{ maxHeight: 280, maxWidth: 260 }}
-          onLoad={() => { setImageLoading(false); setImageError(false); }}
-          onError={() => { setImageLoading(false); setImageError(true); }}
+        <img
+          key={`${imgSrc}-${retryCount}`}
+          src={imgSrc}
+          alt="Image"
+          className={`max-w-full rounded-xl cursor-zoom-in hover:opacity-95 transition-all shadow-lg ${
+            imageLoading || imageError ? 'hidden' : 'block'
+          }`}
+          style={{ maxHeight: 300, maxWidth: 280 }}
+          onLoad={() => {
+            setImageLoading(false);
+            setImageError(false);
+          }}
+          onError={() => {
+            setImageLoading(false);
+            setImageError(true);
+          }}
           onClick={() => !imageError && setShowFullImage(true)}
         />
-        {caption && <p className="mt-1.5 text-sm">{caption}</p>}
+        {caption && <p className="mt-1.5 text-sm px-1 leading-relaxed">{caption}</p>}
+
+        {/* Full image modal */}
         {showFullImage && !imageError && (
-          <div className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-4" onClick={() => setShowFullImage(false)}>
-            <button className="absolute top-4 right-4 p-2 bg-white/10 hover:bg-white/20 rounded-full text-white" onClick={() => setShowFullImage(false)}>
-              <X className="w-6 h-6" />
+          <div
+            className="fixed inset-0 z-[60] glass-backdrop flex items-center justify-center p-4 image-zoom-enter"
+            onClick={() => setShowFullImage(false)}
+          >
+            <button
+              className="absolute top-4 right-4 p-2.5 bg-white/10 hover:bg-white/20 rounded-full text-white backdrop-blur-sm"
+              onClick={() => setShowFullImage(false)}
+            >
+              <X className="w-5 h-5" />
             </button>
-            <img src={imgSrc} alt="Full" className="max-w-full max-h-[90vh] object-contain rounded-lg" onClick={e => e.stopPropagation()} />
-            <a href={imgSrc} download target="_blank" rel="noopener noreferrer"
-              className="absolute bottom-4 right-4 p-3 bg-white/10 hover:bg-white/20 rounded-full text-white" onClick={e => e.stopPropagation()}>
+            <img
+              src={imgSrc}
+              alt="Full"
+              className="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            />
+            <a
+              href={imgSrc}
+              download
+              target="_blank"
+              rel="noopener noreferrer"
+              className="absolute bottom-4 right-4 p-2.5 bg-white/10 hover:bg-white/20 rounded-full text-white backdrop-blur-sm"
+              onClick={(e) => e.stopPropagation()}
+            >
               <Download className="w-5 h-5" />
             </a>
           </div>
@@ -256,72 +411,151 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, conversationId, 
     );
   };
 
-  // ── Video ──────────────────────────────────────────────────────────────────
+  // ── Video ───────────────────────────────────────────────────────────────
   const renderVideo = (src?: string | null, caption?: string) => {
     const vidSrc = src || getMediaSrc(message);
-    if (!vidSrc) return (
-      <div className="w-64 h-40 bg-gray-700 rounded-lg flex flex-col items-center justify-center text-gray-400">
-        <Video className="w-8 h-8 mb-2 opacity-50" />
-        <span className="text-xs">Video unavailable</span>
-      </div>
-    );
+    if (!vidSrc) {
+      return (
+        <div className="w-64 h-40 bg-white/5 rounded-xl flex flex-col items-center justify-center text-gray-400 border border-white/10">
+          <Video className="w-8 h-8 mb-2 opacity-50" />
+          <span className="text-xs">Video unavailable</span>
+        </div>
+      );
+    }
     return (
       <div className="relative max-w-xs">
-        <video src={vidSrc} controls className="max-w-full rounded-xl shadow" preload="metadata" style={{ maxHeight: 280 }} />
-        {caption && <p className="mt-1.5 text-sm">{caption}</p>}
+        <video
+          src={vidSrc}
+          controls
+          className="max-w-full rounded-xl shadow-lg"
+          preload="metadata"
+          style={{ maxHeight: 300 }}
+        />
+        {caption && <p className="mt-1.5 text-sm px-1 leading-relaxed">{caption}</p>}
       </div>
     );
   };
 
-  // ── Audio ──────────────────────────────────────────────────────────────────
+  // ── Audio (voice message) ───────────────────────────────────────────────
   const renderAudio = () => {
     const src = getMediaSrc(message);
     const audioId = `audio-${message.id}`;
     const toggle = () => {
       const el = document.getElementById(audioId) as HTMLAudioElement;
-      el && (isPlaying ? el.pause() : el.play());
+      if (el) {
+        if (isPlaying) el.pause();
+        else el.play();
+      }
     };
     return (
-      <div className="flex items-center gap-3 p-3 bg-white/10 rounded-2xl min-w-[220px]">
-        <button onClick={toggle} className="p-2.5 bg-green-500 hover:bg-green-600 rounded-full text-white transition-colors shadow">
+      <div className="flex items-center gap-3 min-w-[240px]">
+        <button
+          onClick={toggle}
+          className="
+            w-10 h-10 flex-shrink-0
+            bg-emerald-500 hover:bg-emerald-600
+            rounded-full text-white
+            flex items-center justify-center
+            transition-all shadow-md hover:shadow-lg
+            active:scale-95
+          "
+        >
           {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 ml-0.5" />}
         </button>
+
         <div className="flex-1">
-          <div className="h-1.5 bg-white/20 rounded-full"><div className="h-full w-0 bg-green-400 rounded-full" /></div>
-          <span className="text-[10px] text-white/60 mt-1 block">Voice message</span>
-          {src && <audio id={audioId} src={src} onPlay={() => setIsPlaying(true)} onPause={() => setIsPlaying(false)} onEnded={() => setIsPlaying(false)} className="hidden" />}
+          {/* Waveform visualizer */}
+          <div className="flex items-center gap-0.5 h-8">
+            {Array.from({ length: 24 }).map((_, i) => (
+              <div
+                key={i}
+                className={`
+                  w-0.5 rounded-full transition-all
+                  ${isPlaying ? 'wave-bar bg-emerald-400' : 'bg-white/30'}
+                `}
+                style={{
+                  height: `${30 + (Math.sin(i) * 40 + 40) * 0.3}%`,
+                  ['--delay' as any]: `${i * 0.05}s`,
+                }}
+              />
+            ))}
+          </div>
+          <div className="flex items-center gap-1 mt-1">
+            <Mic className="w-3 h-3 text-white/40" />
+            <span className="text-[10px] text-white/50 font-medium">Voice message</span>
+          </div>
         </div>
-        <Mic className="w-4 h-4 text-white/40" />
+
+        {src && (
+          <audio
+            id={audioId}
+            src={src}
+            onPlay={() => setIsPlaying(true)}
+            onPause={() => setIsPlaying(false)}
+            onEnded={() => setIsPlaying(false)}
+            className="hidden"
+          />
+        )}
       </div>
     );
   };
 
-  // ── Document ───────────────────────────────────────────────────────────────
+  // ── Document ────────────────────────────────────────────────────────────
   const renderDocument = (src?: string | null) => {
     const docSrc = src || getMediaSrc(message);
     const fileName = message.fileName || 'Document';
     const ext = fileName.split('.').pop()?.toLowerCase() || '';
-    const iconColor = ext === 'pdf' ? 'text-red-500' : ext === 'doc' || ext === 'docx' ? 'text-blue-500' : 'text-gray-500';
+    const iconColors: Record<string, string> = {
+      pdf: 'from-red-500/20 to-red-600/20 text-red-400 border-red-500/30',
+      doc: 'from-blue-500/20 to-blue-600/20 text-blue-400 border-blue-500/30',
+      docx: 'from-blue-500/20 to-blue-600/20 text-blue-400 border-blue-500/30',
+      xls: 'from-green-500/20 to-green-600/20 text-green-400 border-green-500/30',
+      xlsx: 'from-green-500/20 to-green-600/20 text-green-400 border-green-500/30',
+      ppt: 'from-orange-500/20 to-orange-600/20 text-orange-400 border-orange-500/30',
+      pptx: 'from-orange-500/20 to-orange-600/20 text-orange-400 border-orange-500/30',
+    };
+    const colorClass = iconColors[ext] || 'from-gray-500/20 to-gray-600/20 text-gray-300 border-gray-500/30';
+
     return (
-      <div className="flex items-center gap-3 p-3 bg-white/10 rounded-2xl min-w-[240px]">
-        <div className="p-2.5 bg-white/20 rounded-xl">
-          <FileText className={`w-6 h-6 ${iconColor}`} />
+      <div className="flex items-center gap-3 min-w-[260px] py-1">
+        <div className={`
+          w-12 h-14 rounded-lg
+          bg-gradient-to-br ${colorClass} border
+          flex flex-col items-center justify-center
+          flex-shrink-0
+        `}>
+          <FileText className="w-5 h-5" />
+          {ext && (
+            <span className="text-[9px] font-bold uppercase mt-0.5">{ext}</span>
+          )}
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium truncate">{fileName}</p>
-          <p className="text-[10px] uppercase text-white/50 mt-0.5">{ext || 'File'}</p>
+          <p className="text-sm font-medium truncate text-white">{fileName}</p>
+          <p className="text-[10px] text-white/50 mt-0.5 uppercase tracking-wider">
+            {ext || 'File'} Document
+          </p>
         </div>
         {docSrc && (
-          <a href={docSrc} target="_blank" rel="noopener noreferrer" download={fileName}
-            className="p-2 hover:bg-white/10 rounded-full transition-colors">
-            <Download className="w-4 h-4 text-white/70" />
+          <a
+            href={docSrc}
+            target="_blank"
+            rel="noopener noreferrer"
+            download={fileName}
+            className="
+              p-2 rounded-full
+              bg-white/10 hover:bg-white/20
+              text-white/80 hover:text-white
+              transition-colors flex-shrink-0
+            "
+          >
+            <Download className="w-4 h-4" />
           </a>
         )}
       </div>
     );
   };
 
-  // ── Location ───────────────────────────────────────────────────────────────
+  // ── Location ────────────────────────────────────────────────────────────
   const renderLocation = () => {
     let loc: any = {};
     try {
@@ -331,75 +565,93 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, conversationId, 
         if (m) loc = { latitude: parseFloat(m[1]), longitude: parseFloat(m[2]) };
       }
     } catch {}
-    if (!loc.latitude || !loc.longitude) return (
-      <div className="flex items-center gap-2 p-3 bg-white/10 rounded-xl">
-        <MapPin className="w-5 h-5 text-red-400" />
-        <span className="text-sm">Location shared</span>
-      </div>
-    );
+    if (!loc.latitude || !loc.longitude) {
+      return (
+        <div className="flex items-center gap-2 px-3 py-2 bg-white/5 rounded-lg">
+          <MapPin className="w-4 h-4 text-red-400" />
+          <span className="text-sm">Location shared</span>
+        </div>
+      );
+    }
     const mapUrl = `https://www.google.com/maps?q=${loc.latitude},${loc.longitude}`;
     return (
-      <div className="rounded-2xl overflow-hidden border border-white/10 max-w-xs">
-        <div className="bg-gradient-to-br from-green-900/60 to-blue-900/60 h-28 flex items-center justify-center relative">
-          <MapPin className="w-10 h-10 text-red-400 drop-shadow-md" />
-          <div className="absolute bottom-2 right-2 bg-black/40 px-2 py-1 rounded text-[10px] text-white">
-            📍 {loc.latitude.toFixed(4)}, {loc.longitude.toFixed(4)}
-          </div>
+      <div className="rounded-xl overflow-hidden border border-white/10 max-w-[280px]">
+        <div className="bg-gradient-to-br from-emerald-900/40 via-blue-900/40 to-purple-900/40 h-32 flex items-center justify-center relative">
+          <div className="absolute inset-0 opacity-30" style={{
+            backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255,255,255,0.05) 10px, rgba(255,255,255,0.05) 20px)`,
+          }} />
+          <MapPin className="w-10 h-10 text-red-400 drop-shadow-lg relative z-10" />
         </div>
         <div className="p-3 bg-white/5">
-          {loc.name && <p className="text-sm font-medium">{loc.name}</p>}
+          {loc.name && <p className="text-sm font-medium text-white">{loc.name}</p>}
           {loc.address && <p className="text-xs text-white/60 mt-0.5">{loc.address}</p>}
-          <a href={mapUrl} target="_blank" rel="noopener noreferrer"
-            className="flex items-center gap-1.5 text-xs text-blue-400 mt-2 hover:underline font-medium">
-            <ExternalLink className="w-3.5 h-3.5" /> Open in Google Maps
+          <p className="text-[10px] text-white/40 font-mono mt-1">
+            {loc.latitude.toFixed(6)}, {loc.longitude.toFixed(6)}
+          </p>
+          <a
+            href={mapUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="
+              inline-flex items-center gap-1.5 mt-2
+              text-xs text-emerald-400 hover:text-emerald-300
+              font-medium
+            "
+          >
+            <ExternalLink className="w-3.5 h-3.5" /> Open in Maps
           </a>
         </div>
       </div>
     );
   };
 
-  // ── Contact card ───────────────────────────────────────────────────────────
+  // ── Contact ─────────────────────────────────────────────────────────────
   const renderContact = () => {
     let contacts: any[] = [];
-    try { if (message.mediaUrl?.startsWith('[')) contacts = JSON.parse(message.mediaUrl); } catch {}
+    try {
+      if (message.mediaUrl?.startsWith('[')) contacts = JSON.parse(message.mediaUrl);
+    } catch {}
     const name = contacts[0]?.name?.formatted_name || 'Contact';
     const phone = contacts[0]?.phones?.[0]?.phone || '';
     return (
-      <div className="p-3 bg-white/10 rounded-2xl min-w-[200px]">
-        <div className="flex items-center gap-3">
-          <div className="p-2.5 bg-blue-500/20 rounded-full"><User className="w-5 h-5 text-blue-400" /></div>
-          <div>
-            <p className="text-sm font-semibold">{name}</p>
-            {phone && <p className="text-xs text-white/60">{phone}</p>}
-          </div>
+      <div className="flex items-center gap-3 min-w-[220px]">
+        <div className="w-11 h-11 bg-gradient-to-br from-blue-500/20 to-purple-500/20 border border-blue-400/30 rounded-full flex items-center justify-center flex-shrink-0">
+          <User className="w-5 h-5 text-blue-300" />
+        </div>
+        <div className="flex-1">
+          <p className="text-sm font-semibold text-white">{name}</p>
+          {phone && <p className="text-xs text-white/60">{phone}</p>}
+          {phone && (
+            <button className="text-[10px] text-emerald-400 hover:text-emerald-300 mt-1 font-medium">
+              Save to contacts
+            </button>
+          )}
         </div>
       </div>
     );
   };
 
-  // ── Interactive (button reply / list reply) ────────────────────────────────
+  // ── Interactive (button reply) ──────────────────────────────────────────
   const renderInteractive = () => {
     const body = meta?.body?.text || meta?.text || message.content || '';
     const buttonReply = meta?.button_reply || meta?.buttonReply;
     const listReply = meta?.list_reply || meta?.listReply;
 
-    // Button reply (what user clicked)
     if (buttonReply || listReply) {
       const reply = buttonReply || listReply;
       return (
         <div className="space-y-1.5">
-          <div className="flex items-center gap-1.5 text-[10px] text-white/50">
-            <MousePointerClick className="w-3 h-3" />
+          <div className="flex items-center gap-1.5 text-[10px] text-white/50 uppercase tracking-wider font-medium">
+            <ChevronRight className="w-3 h-3" />
             Button Reply
           </div>
-          <div className="px-3 py-2 bg-white/10 rounded-xl border border-white/20 text-sm font-medium">
+          <div className="px-3 py-2 bg-white/10 rounded-lg border border-white/15 text-sm font-medium">
             {reply.title || reply.text || body}
           </div>
         </div>
       );
     }
 
-    // Interactive message with buttons
     const btns = normalizeButtons(meta?.action?.buttons || meta?.buttons || []);
     return (
       <div className="space-y-2">
@@ -407,7 +659,10 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, conversationId, 
         {btns.length > 0 && (
           <div className="pt-2 border-t border-white/10 space-y-1">
             {btns.map((btn, i) => (
-              <div key={i} className="flex items-center justify-center gap-1.5 p-2 bg-white/10 rounded-xl border border-white/15 text-xs font-semibold cursor-default">
+              <div
+                key={i}
+                className="flex items-center justify-center gap-1.5 p-2 bg-white/10 hover:bg-white/15 rounded-lg border border-white/15 text-xs font-semibold cursor-default transition-colors"
+              >
                 {btn.type === 'URL' && <ExternalLink className="w-3 h-3" />}
                 {btn.type === 'PHONE_NUMBER' && <Phone className="w-3 h-3" />}
                 {btn.text}
@@ -419,56 +674,54 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, conversationId, 
     );
   };
 
-  // ── WhatsApp-style template bubble ────────────────────────────────────────
+  // ── Template ────────────────────────────────────────────────────────────
   const renderTemplateBubble = (parsed: ReturnType<typeof parseTemplateContent>) => {
     const { templateName, headerText, bodyText, footerText, buttons, mediaUrl: tplMedia, mediaType: tplMediaType } = parsed;
     const mediaSrc = tplMedia || getMediaSrc(message);
     const hasImage = tplMediaType?.toUpperCase() === 'IMAGE' || message.mediaType === 'image';
     const hasVideo = tplMediaType?.toUpperCase() === 'VIDEO' || message.mediaType === 'video';
-    const hasDoc   = tplMediaType?.toUpperCase() === 'DOCUMENT' || message.mediaType === 'document';
+    const hasDoc = tplMediaType?.toUpperCase() === 'DOCUMENT' || message.mediaType === 'document';
 
     return (
-      <div className="w-full max-w-xs space-y-0 overflow-hidden rounded-2xl border border-white/10">
+      <div className="w-full max-w-xs space-y-0 overflow-hidden rounded-xl border border-white/10 bg-black/20">
         {/* Template badge */}
-        <div className="px-3 pt-2.5 pb-1 flex items-center gap-1.5 border-b border-white/10 bg-white/5">
-          <MessageSquare className="w-3 h-3 text-green-300 flex-shrink-0" />
-          <span className="text-[10px] font-bold uppercase tracking-widest text-green-300 truncate">
+        <div className="px-3 pt-2 pb-1.5 flex items-center gap-1.5 border-b border-white/10 bg-emerald-500/5">
+          <MessageSquare className="w-3 h-3 text-emerald-300 flex-shrink-0" />
+          <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-300 truncate">
             {templateName ? templateName.replace(/_/g, ' ') : 'Template'}
           </span>
         </div>
 
-        {/* Media header */}
-        {mediaSrc && hasImage && (
-          <div className="overflow-hidden">{renderImage(mediaSrc)}</div>
-        )}
-        {mediaSrc && hasVideo && (
-          <div className="overflow-hidden">{renderVideo(mediaSrc)}</div>
-        )}
-        {mediaSrc && hasDoc && (
-          <div className="px-3 py-2">{renderDocument(mediaSrc)}</div>
-        )}
+        {mediaSrc && hasImage && <div className="overflow-hidden">{renderImage(mediaSrc)}</div>}
+        {mediaSrc && hasVideo && <div className="overflow-hidden">{renderVideo(mediaSrc)}</div>}
+        {mediaSrc && hasDoc && <div className="px-3 py-2">{renderDocument(mediaSrc)}</div>}
 
-        {/* Text header */}
         {headerText && !mediaSrc && (
           <p className="px-3 pt-2 text-sm font-bold text-white/90">{headerText}</p>
         )}
 
-        {/* Body */}
         {bodyText && (
-          <p className="px-3 py-2 text-sm whitespace-pre-wrap break-words leading-relaxed">{bodyText}</p>
+          <p className="px-3 py-2 text-sm whitespace-pre-wrap break-words leading-relaxed">
+            {bodyText}
+          </p>
         )}
 
-        {/* Footer */}
         {footerText && (
-          <p className="px-3 pb-2 text-[11px] text-white/45">{footerText}</p>
+          <p className="px-3 pb-2 text-[11px] text-white/45 italic">{footerText}</p>
         )}
 
-        {/* Buttons */}
         {buttons.length > 0 && (
           <div className="border-t border-white/10">
             {buttons.map((btn, i) => (
-              <div key={i}
-                className={`flex items-center justify-center gap-1.5 px-3 py-2.5 text-xs font-semibold text-green-300 hover:bg-white/5 cursor-default transition-colors ${i < buttons.length - 1 ? 'border-b border-white/10' : ''}`}>
+              <div
+                key={i}
+                className={`
+                  flex items-center justify-center gap-1.5 px-3 py-2.5
+                  text-xs font-semibold text-emerald-300 hover:bg-white/5
+                  cursor-default transition-colors
+                  ${i < buttons.length - 1 ? 'border-b border-white/10' : ''}
+                `}
+              >
                 {btn.type === 'URL' && <ExternalLink className="w-3.5 h-3.5" />}
                 {btn.type === 'PHONE_NUMBER' && <Phone className="w-3.5 h-3.5" />}
                 {btn.type === 'QUICK_REPLY' && <ChevronRight className="w-3.5 h-3.5" />}
@@ -481,146 +734,353 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, conversationId, 
     );
   };
 
-  // ── Main content resolver ─────────────────────────────────────────────────
+  // ── Content router ──────────────────────────────────────────────────────
   const renderContent = () => {
-    // TEMPLATE type — always use template renderer
+    if (isDeleted) {
+      return (
+        <div className="flex items-center gap-2 italic text-white/50 text-sm">
+          <AlertCircle className="w-4 h-4" />
+          This message was deleted
+        </div>
+      );
+    }
+
     if (msgType === 'template') {
       const parsed = parseTemplateContent(message.content, meta);
-      parsed.isTemplate = true; // force
+      parsed.isTemplate = true;
       return renderTemplateBubble(parsed);
     }
 
-    // INTERACTIVE type
-    if (msgType === 'interactive') {
-      return renderInteractive();
-    }
+    if (msgType === 'interactive') return renderInteractive();
 
-    // Plain content that looks like a template
     if (message.content) {
       const parsed = parseTemplateContent(message.content, meta);
-      if (parsed.isTemplate) {
-        return renderTemplateBubble(parsed);
-      }
+      if (parsed.isTemplate) return renderTemplateBubble(parsed);
     }
 
-    // Media types
     switch (msgType) {
-      case 'image':    return renderImage();
-      case 'video':    return renderVideo();
+      case 'image':
+        return renderImage();
+      case 'video':
+        return renderVideo();
       case 'audio':
       case 'voice':
-      case 'ptt':      return renderAudio();
-      case 'document': return renderDocument();
-      case 'sticker':  return renderImage(); // sticker = image-like
-      case 'location': return renderLocation();
+      case 'ptt':
+        return renderAudio();
+      case 'document':
+        return renderDocument();
+      case 'sticker':
+        return renderImage();
+      case 'location':
+        return renderLocation();
       case 'contact':
-      case 'contacts': return renderContact();
+      case 'contacts':
+        return renderContact();
       default:
-        return <p className="text-sm whitespace-pre-wrap break-words leading-relaxed">{message.content || ''}</p>;
+        return (
+          <p className="text-sm whitespace-pre-wrap break-words leading-relaxed">
+            <HighlightedText text={message.content || ''} query={searchQuery} />
+          </p>
+        );
     }
   };
 
-  // ── Bubble colours ────────────────────────────────────────────────────────
+  // ── Reply preview ───────────────────────────────────────────────────────
+  const renderReplyPreview = () => {
+    if (!message.replyTo) return null;
+    return (
+      <div
+        onClick={() => onJumpToMessage?.(message.replyTo!.id)}
+        className="
+          reply-quote cursor-pointer
+          mb-1.5 mx-1
+          hover:bg-white/[0.08] transition-colors
+        "
+      >
+        <p className="text-[10px] font-semibold text-emerald-400 mb-0.5">
+          {message.replyTo.direction === 'OUTBOUND' ? 'You' : message.replyTo.senderName || 'Contact'}
+        </p>
+        <p className="text-xs text-white/70 truncate">
+          {message.replyTo.content || `[${message.replyTo.type || 'media'}]`}
+        </p>
+      </div>
+    );
+  };
+
+  // ── Reactions ───────────────────────────────────────────────────────────
+  const renderReactions = () => {
+    if (!message.reactions || message.reactions.length === 0) return null;
+
+    // Group by emoji
+    const grouped: Record<string, number> = {};
+    message.reactions.forEach((r) => {
+      grouped[r.emoji] = (grouped[r.emoji] || 0) + 1;
+    });
+
+    return (
+      <div className={`
+        absolute -bottom-2.5 ${isOutbound ? 'right-2' : 'left-2'}
+        flex items-center gap-0.5
+        bg-[#1a2238] border border-white/10
+        rounded-full px-1.5 py-0.5
+        shadow-md
+      `}>
+        {Object.entries(grouped).map(([emoji, count]) => (
+          <button
+            key={emoji}
+            onClick={() => onReact?.(message, emoji)}
+            className="flex items-center gap-0.5 hover:scale-110 transition-transform"
+          >
+            <span className="text-xs">{emoji}</span>
+            {count > 1 && <span className="text-[10px] text-gray-400">{count}</span>}
+          </button>
+        ))}
+      </div>
+    );
+  };
+
+  // ── Bubble colors ───────────────────────────────────────────────────────
   const bubbleClass = isOutbound
-    ? 'bg-[#005c4b] text-white rounded-br-none'
-    : 'bg-[#202c33] text-white rounded-bl-none';
+    ? 'bg-gradient-to-br from-emerald-600 to-emerald-700 text-white'
+    : 'bg-[#1f2937]/90 backdrop-blur-sm text-white border border-white/[0.06]';
+
+  const bubbleRadius = isOutbound
+    ? `rounded-2xl ${isGrouped ? 'rounded-tr-md' : ''} rounded-br-md`
+    : `rounded-2xl ${isGrouped ? 'rounded-tl-md' : ''} rounded-bl-md`;
 
   const ts = message.timestamp || message.createdAt || '';
 
   return (
-    <div className={`flex ${isOutbound ? 'justify-end' : 'justify-start'} mb-1.5 px-2 group`}>
-      <div className={`relative max-w-[80%] lg:max-w-[65%] rounded-2xl shadow-md overflow-visible ${bubbleClass}`}
-        style={{ padding: msgType === 'template' ? 0 : undefined }}>
+    <div
+      ref={bubbleRef}
+      className={`
+        flex ${isOutbound ? 'justify-end' : 'justify-start'}
+        ${isGrouped ? 'mt-0.5' : 'mt-2'}
+        px-2 sm:px-4
+        ${isHighlighted ? 'animate-fade-in' : ''}
+      `}
+      onMouseEnter={() => setShowActions(true)}
+      onMouseLeave={() => {
+        setShowActions(false);
+        setShowReactions(false);
+      }}
+    >
+      {/* Avatar for inbound */}
+      {!isOutbound && <div className="w-7 mr-1.5 flex-shrink-0">{!isGrouped && renderAvatar()}</div>}
 
-        {/* Hover Actions (Copy / Context Menu) */}
-        <div className={`absolute top-1 ${isOutbound ? '-left-[4.5rem]' : '-right-[4.5rem]'} flex flex-row-reverse items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10 w-[4.5rem] ${isOutbound ? 'justify-end' : 'justify-start'}`}>
-          {onCopy && message.content && msgType !== 'template' && (
-            <button onClick={() => onCopy(message.content)}
-              className="p-1.5 bg-gray-800 border border-gray-700 rounded-lg shadow hover:text-green-400 transition-colors"
-              title="Copy">
-              <Copy className="w-3.5 h-3.5 text-gray-300" />
-            </button>
-          )}
-          
-          {(canEdit || canDelete) && (
-            <div className="relative" ref={menuRef}>
-              <button 
-                onClick={() => setShowMenu(!showMenu)}
-                className="p-1.5 bg-gray-800 border border-gray-700 rounded-lg shadow hover:text-green-400 transition-colors"
-                title="More"
+      <div className={`relative max-w-[85%] sm:max-w-[70%] lg:max-w-[60%] group`}>
+        {/* Action bar (hover) */}
+        {showActions && !isEditing && !isDeleted && (
+          <div className={`
+            absolute -top-9 ${isOutbound ? 'right-0' : 'left-0'}
+            flex items-center gap-0.5
+            bg-[#1a2238]/95 backdrop-blur-xl
+            border border-white/[0.08]
+            rounded-lg shadow-xl
+            px-0.5 py-0.5
+            animate-fade-in
+            z-20
+          `}>
+            {onReact && (
+              <div className="relative" ref={reactionRef}>
+                <button
+                  onClick={() => setShowReactions(!showReactions)}
+                  className="p-1.5 hover:bg-white/10 rounded-md transition-colors"
+                  title="React"
+                >
+                  <Smile className="w-3.5 h-3.5 text-gray-300" />
+                </button>
+                {showReactions && (
+                  <div className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 flex items-center gap-1 bg-[#1a2238]/95 backdrop-blur-xl border border-white/[0.1] rounded-full px-2 py-1.5 shadow-xl animate-fade-in">
+                    {QUICK_REACTIONS.map((emoji) => (
+                      <button
+                        key={emoji}
+                        onClick={() => {
+                          onReact(message, emoji);
+                          setShowReactions(false);
+                        }}
+                        className="text-lg hover:scale-125 transition-transform p-0.5"
+                      >
+                        {emoji}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {onReply && (
+              <button
+                onClick={() => onReply(message)}
+                className="p-1.5 hover:bg-white/10 rounded-md transition-colors"
+                title="Reply"
               >
-                <MoreVertical className="w-3.5 h-3.5 text-gray-300" />
+                <Reply className="w-3.5 h-3.5 text-gray-300" />
               </button>
+            )}
 
-              {/* Context Menu Dropdown */}
-              {showMenu && (
-                <div className={`absolute top-8 ${isOutbound ? 'right-0' : 'left-0'} w-36 bg-gray-800 border border-gray-700 rounded-xl shadow-xl overflow-hidden z-20`}>
-                  {canEdit && (
-                    <button 
-                      onClick={() => { setIsEditing(true); setShowMenu(false); }}
-                      className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
-                    >
-                      <Pencil className="w-3.5 h-3.5" /> Edit
-                    </button>
-                  )}
-                  {canDelete && (
-                    <button 
-                      onClick={() => { setShowDeleteConfirm(true); setShowMenu(false); }}
-                      className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-400 hover:bg-red-400/10 transition-colors border-t border-gray-700/50"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" /> Delete
-                    </button>
-                  )}
-                </div>
-              )}
-            </div>
-          )}
-        </div>
+            {onForward && (
+              <button
+                onClick={() => onForward(message)}
+                className="p-1.5 hover:bg-white/10 rounded-md transition-colors"
+                title="Forward"
+              >
+                <Forward className="w-3.5 h-3.5 text-gray-300" />
+              </button>
+            )}
 
-        {/* Delete Confirmation Overlay */}
+            {onStar && (
+              <button
+                onClick={() => onStar(message)}
+                className={`p-1.5 hover:bg-white/10 rounded-md transition-colors ${
+                  message.isStarred ? 'text-yellow-400' : 'text-gray-300'
+                }`}
+                title="Star"
+              >
+                <Star className={`w-3.5 h-3.5 ${message.isStarred ? 'fill-current' : ''}`} />
+              </button>
+            )}
+
+            {onCopy && message.content && msgType !== 'template' && (
+              <button
+                onClick={() => onCopy(message.content)}
+                className="p-1.5 hover:bg-white/10 rounded-md transition-colors"
+                title="Copy"
+              >
+                <Copy className="w-3.5 h-3.5 text-gray-300" />
+              </button>
+            )}
+
+            {(canEdit || canDelete) && (
+              <div className="relative" ref={menuRef}>
+                <button
+                  onClick={() => setShowMenu(!showMenu)}
+                  className="p-1.5 hover:bg-white/10 rounded-md transition-colors"
+                  title="More"
+                >
+                  <MoreVertical className="w-3.5 h-3.5 text-gray-300" />
+                </button>
+
+                {showMenu && (
+                  <div className={`
+                    absolute top-8 ${isOutbound ? 'right-0' : 'left-0'}
+                    w-40 py-1
+                    bg-[#1a2238]/98 backdrop-blur-xl
+                    border border-white/[0.1]
+                    rounded-lg shadow-2xl
+                    animate-fade-in
+                  `}>
+                    {canEdit && (
+                      <button
+                        onClick={() => {
+                          setIsEditing(true);
+                          setShowMenu(false);
+                        }}
+                        className="w-full flex items-center gap-2 px-3 py-2 text-xs text-gray-200 hover:bg-white/[0.06] transition-colors"
+                      >
+                        <Pencil className="w-3.5 h-3.5" /> Edit message
+                      </button>
+                    )}
+                    {canDelete && (
+                      <button
+                        onClick={() => {
+                          setShowDeleteConfirm(true);
+                          setShowMenu(false);
+                        }}
+                        className="w-full flex items-center gap-2 px-3 py-2 text-xs text-red-400 hover:bg-red-500/10 transition-colors"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" /> Delete
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Delete confirm overlay */}
         {showDeleteConfirm && (
-          <div className="absolute inset-0 bg-gray-900/95 rounded-2xl z-30 flex flex-col items-center justify-center p-3 backdrop-blur-sm">
-            <p className="text-xs text-white mb-3 text-center">Delete message for everyone?</p>
+          <div className="absolute inset-0 bg-[#0a0e1c]/95 backdrop-blur-md rounded-2xl z-30 flex flex-col items-center justify-center p-3 animate-fade-in">
+            <AlertCircle className="w-6 h-6 text-red-400 mb-2" />
+            <p className="text-xs text-white mb-3 text-center font-medium">
+              Delete this message?
+            </p>
             <div className="flex items-center gap-2">
-              <button 
+              <button
                 onClick={() => setShowDeleteConfirm(false)}
-                className="px-3 py-1.5 bg-gray-700 text-white text-xs rounded-lg hover:bg-gray-600 transition-colors"
                 disabled={deleting}
+                className="px-3 py-1.5 bg-white/10 hover:bg-white/15 text-white text-xs rounded-md transition-colors"
               >
                 Cancel
               </button>
-              <button 
+              <button
                 onClick={handleDelete}
-                className="px-3 py-1.5 bg-red-500 text-white text-xs rounded-lg hover:bg-red-600 flex items-center gap-1 transition-colors"
                 disabled={deleting}
+                className="px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white text-xs rounded-md transition-colors flex items-center gap-1.5"
               >
-                {deleting ? <RefreshCw className="w-3 h-3 animate-spin" /> : 'Delete'}
+                {deleting ? (
+                  <RefreshCw className="w-3 h-3 animate-spin" />
+                ) : (
+                  <Trash2 className="w-3 h-3" />
+                )}
+                Delete
               </button>
             </div>
           </div>
         )}
 
-        {/* Content or Edit Mode */}
-        <div className={msgType === 'template' ? '' : 'px-3.5 py-2.5'}>
+        {/* Bubble */}
+        <div className={`
+          relative shadow-md bubble-shadow animate-bubble-pop
+          ${bubbleClass} ${bubbleRadius}
+          ${msgType === 'template' ? 'p-0 overflow-hidden' : 'px-3.5 py-2'}
+          ${isHighlighted ? 'ring-2 ring-yellow-400/60' : ''}
+        `}>
+          {/* Forwarded indicator */}
+          {message.isForwarded && (
+            <div className="flex items-center gap-1 text-[10px] text-white/50 italic mb-1">
+              <Forward className="w-3 h-3" />
+              Forwarded
+            </div>
+          )}
+
+          {/* Reply preview */}
+          {renderReplyPreview()}
+
+          {/* Content or edit */}
           {isEditing ? (
-            <div className="flex flex-col gap-2 min-w-[200px]">
+            <div className="flex flex-col gap-2 min-w-[220px]">
               <textarea
                 ref={editRef}
                 value={editText}
                 onChange={(e) => setEditText(e.target.value)}
-                className="w-full bg-black/20 text-white text-sm rounded-lg p-2 focus:outline-none focus:ring-1 focus:ring-green-500 resize-none min-h-[60px]"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleEdit();
+                  } else if (e.key === 'Escape') {
+                    setIsEditing(false);
+                  }
+                }}
+                className="
+                  w-full bg-black/20 text-white text-sm
+                  rounded-lg p-2.5
+                  focus:outline-none focus:ring-1 focus:ring-emerald-400
+                  resize-none min-h-[60px]
+                "
               />
-              <div className="flex justify-end gap-2 mt-1">
-                <button 
+              <div className="flex justify-end gap-2">
+                <button
                   onClick={() => setIsEditing(false)}
-                  className="px-2 py-1 text-xs text-white/70 hover:text-white transition-colors"
+                  className="px-3 py-1 text-xs text-white/70 hover:text-white transition-colors"
                 >
                   Cancel
                 </button>
-                <button 
+                <button
                   onClick={handleEdit}
                   disabled={editSaving || !editText.trim()}
-                  className="px-3 py-1 bg-green-500 hover:bg-green-600 text-white text-xs rounded-lg shadow transition-colors flex items-center gap-1 disabled:opacity-50"
+                  className="px-3 py-1 bg-emerald-500 hover:bg-emerald-600 text-white text-xs rounded-md transition-colors flex items-center gap-1 disabled:opacity-50"
                 >
                   {editSaving ? <RefreshCw className="w-3 h-3 animate-spin" /> : 'Save'}
                 </button>
@@ -629,25 +1089,38 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, conversationId, 
           ) : (
             renderContent()
           )}
+
+          {/* Timestamp + status */}
+          {!isEditing && (
+            <div className={`
+              flex items-center justify-end gap-1
+              ${msgType === 'template' ? 'px-3 pb-1.5 pt-0.5' : 'mt-1'}
+            `}>
+              {message.edited && (
+                <span className="text-[10px] text-white/40 italic mr-1">edited</span>
+              )}
+              {message.isStarred && (
+                <Star className="w-3 h-3 text-yellow-400 fill-current mr-0.5" />
+              )}
+              <span className="text-[10px] text-white/50">{formatMessageTime(ts)}</span>
+              <StatusIcon />
+            </div>
+          )}
+
+          {/* Failure reason */}
+          {message.status?.toUpperCase() === 'FAILED' && message.failureReason && (
+            <div className="mt-2 pt-2 border-t border-red-400/30 flex items-start gap-1.5">
+              <AlertCircle className="w-3.5 h-3.5 text-red-300 shrink-0 mt-0.5" />
+              <p className="text-[10px] text-red-300">{message.failureReason}</p>
+            </div>
+          )}
         </div>
 
-        {/* Timestamp + Status */}
-        <div className={`flex items-center justify-end gap-1 ${msgType === 'template' ? 'px-3 pb-2' : 'px-0 pb-0'} mt-1`}>
-          {meta?.edited && <span className="text-[10px] text-white/40 mr-1 italic">Edited</span>}
-          <span className="text-[10px] text-white/40">{formatTime(ts)}</span>
-          <StatusIcon />
-        </div>
-
-        {/* Failure reason */}
-        {message.status?.toUpperCase() === 'FAILED' && message.failureReason && (
-          <div className="mx-3 mb-2 pt-2 border-t border-red-400/30 flex items-start gap-1.5">
-            <AlertCircle className="w-3.5 h-3.5 text-red-300 shrink-0 mt-0.5" />
-            <p className="text-[10px] text-red-300">Failed: {message.failureReason}</p>
-          </div>
-        )}
+        {/* Reactions */}
+        {renderReactions()}
       </div>
     </div>
   );
 };
 
-export default MessageBubble;
+export default React.memo(MessageBubble);

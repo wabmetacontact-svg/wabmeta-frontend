@@ -942,6 +942,25 @@ export const inbox = {
     api.post('/inbox/template/resolve-media', { templateId }),
 };
 
+// ─── Voice message upload ────────────────────────────────────────────────────
+export const uploadVoiceMessage = async (
+  conversationId: string,
+  blob: Blob,
+  duration: number,
+  whatsappAccountId: string
+) => {
+  const form = new FormData();
+  form.append('file', blob, `voice-${Date.now()}.webm`);
+  form.append('conversationId', conversationId);
+  form.append('duration', String(duration));
+  form.append('whatsappAccountId', whatsappAccountId);
+  form.append('type', 'audio');
+
+  return api.post('/inbox/media/upload-voice', form, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+};
+
 // ---------- CHATBOT ----------
 export const chatbots = {
   getAll: () => api.get<ApiResponse>('/chatbots'),
