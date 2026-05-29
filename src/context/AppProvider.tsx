@@ -52,15 +52,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }
 
       try {
-        // Fetch total contacts
-        const contactRes = await contactsApi.getAll({ limit: 1 });
-        if (contactRes.data.success) {
-          const total =
-            contactRes.data.data?.meta?.total ||
-            contactRes.data.data?.pagination?.total ||
-            contactRes.data.data?.total ||
-            contactRes.data.total ||
-            0;
+        // Fetch total contacts from stats API (much faster and more reliable)
+        const statsRes = await contactsApi.stats();
+        if (statsRes.data.success) {
+          const total = statsRes.data.data?.total || 0;
           setTotalContacts(total);
         }
       } catch (e) {
