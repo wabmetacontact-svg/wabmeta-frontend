@@ -10,6 +10,7 @@ import { useAuth } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeProvider';
 import { SocketProvider } from './context/SocketProvider';
 import { AppProvider } from './context/AppProvider';
+import { NotificationsProvider } from './context/NotificationsProvider';
 
 // Components
 import LoadingScreen from './components/common/LoadingScreen';
@@ -450,49 +451,51 @@ const App: React.FC = () => {
             <SocketProvider>
               {/* ✅ AppProvider yahan add karo - Router ke ANDAR */}
               <AppProvider>
-                {/* Toast Notifications */}
-                <Toaster
-                  position="top-right"
-                  gutter={8}
-                  containerStyle={{ top: 20, right: 20 }}
-                  toastOptions={{
-                    duration: 4000,
-                    style: {
-                      background: '#363636',
-                      color: '#fff',
-                      padding: '12px 16px',
-                      borderRadius: '8px',
-                      fontSize: '14px',
-                      maxWidth: '400px',
-                    },
-                    success: {
-                      duration: 3000,
-                      style: { background: '#10b981', color: '#fff' },
-                      iconTheme: { primary: '#fff', secondary: '#10b981' },
-                    },
-                    error: {
-                      duration: 5000,
-                      style: { background: '#ef4444', color: '#fff' },
-                      iconTheme: { primary: '#fff', secondary: '#ef4444' },
-                    },
-                    loading: {
-                      style: { background: '#3b82f6', color: '#fff' },
-                    },
-                  }}
-                />
+                <NotificationsProvider>
+                  {/* Toast Notifications */}
+                  <Toaster
+                    position="top-right"
+                    gutter={8}
+                    containerStyle={{ top: 20, right: 20 }}
+                    toastOptions={{
+                      duration: 4000,
+                      style: {
+                        background: '#363636',
+                        color: '#fff',
+                        padding: '12px 16px',
+                        borderRadius: '8px',
+                        fontSize: '14px',
+                        maxWidth: '400px',
+                      },
+                      success: {
+                        duration: 3000,
+                        style: { background: '#10b981', color: '#fff' },
+                        iconTheme: { primary: '#fff', secondary: '#10b981' },
+                      },
+                      error: {
+                        duration: 5000,
+                        style: { background: '#ef4444', color: '#fff' },
+                        iconTheme: { primary: '#fff', secondary: '#ef4444' },
+                      },
+                      loading: {
+                        style: { background: '#3b82f6', color: '#fff' },
+                      },
+                    }}
+                  />
 
-                {/* App Routes */}
-                <AppRoutes />
+                  {/* App Routes */}
+                  <AppRoutes />
 
-                {/* Upgrade Modal */}
-                <UpgradeModal
-                  isOpen={upgradeModal.isOpen}
-                  onClose={() => setUpgradeModal(prev => ({ ...prev, isOpen: false }))}
-                  limitType={upgradeModal.limitType as any}
-                  used={upgradeModal.used}
-                  limit={upgradeModal.limit}
-                  message={upgradeModal.message}
-                />
+                  {/* Upgrade Modal */}
+                  <UpgradeModal
+                    isOpen={upgradeModal.isOpen}
+                    onClose={() => setUpgradeModal(prev => ({ ...prev, isOpen: false }))}
+                    limitType={upgradeModal.limitType as any}
+                    used={upgradeModal.used}
+                    limit={upgradeModal.limit}
+                    message={upgradeModal.message}
+                  />
+                </NotificationsProvider>
               </AppProvider>
             </SocketProvider>
           </AuthProvider>

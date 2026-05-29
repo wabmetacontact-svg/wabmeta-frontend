@@ -1,11 +1,8 @@
 // src/hooks/useGlobalNotifications.ts
-// Ye hook DashboardLayout mein use hoga
-// Inbox page pe ho ya na ho - notifications aayengi
-
 import { useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSocket } from '../context/SocketContext';
-import { useApp } from '../context/AppContext';
+import { useNotificationsStore } from '../context/NotificationsContext';
 import {
   playNotificationSound,
   showBrowserNotification,
@@ -31,7 +28,6 @@ function NotificationToast({
       className: 'flex items-center gap-3 cursor-pointer min-w-0',
       onClick,
     },
-    // Icon
     React.createElement(
       'div',
       {
@@ -40,7 +36,6 @@ function NotificationToast({
       },
       React.createElement(MessageSquare, { className: 'w-5 h-5 text-white' })
     ),
-    // Text
     React.createElement(
       'div',
       { className: 'flex-1 min-w-0' },
@@ -61,23 +56,21 @@ function NotificationToast({
 // ─── Main Hook ────────────────────────────────────────────────────────────────
 export function useGlobalNotifications() {
   const { socket } = useSocket();
-  const { incrementUnread } = useApp();
+  const { addNotification } = useNotificationsStore();
   const navigate = useNavigate();
-
-  // Permission request - once on mount
   const permissionRequestedRef = useRef(false);
 
+  // ✅ Permission request once
   useEffect(() => {
     if (permissionRequestedRef.current) return;
     permissionRequestedRef.current = true;
     requestNotificationPermission();
   }, []);
 
-  // ─── Navigate to conversation ─────────────────────────────────────────────
   const navigateToConversation = useCallback(
     (convId: string) => {
       navigate(`/dashboard/inbox/${convId}`);
-      toast.dismiss(); // Dismiss all toasts
+      toast.dismiss();
     },
     [navigate]
   );
@@ -108,31 +101,32 @@ export function useGlobalNotifications() {
         {
           duration: 5000,
           position: 'top-right',
-          id: `msg-${convId}`, // ✅ Same conv se duplicate toast nahi aayega
+          id: `msg-${convId}`,
         }
       );
     },
     [navigateToConversation]
   );
 
-  // ─── Socket listener ──────────────────────────────────────────────────────
+  // ─── Socket listeners ──────────────────────────────────────────────────────
   useEffect(() => {
     if (!socket) return;
 
+    // ====================
+    // NEW MESSAGE
+    // ====================
     const handleNewMessage = (data: any) => {
       const msg = data?.message || data;
       const convId = msg?.conversationId || data?.conversationId;
       const direction = msg?.direction;
 
-      // Sirf INBOUND messages
       if (direction !== 'INBOUND' || !convId) return;
 
-      // ✅ Agar user already us conversation mein hai toh notification mat dikhao
+      // Check current location
       const currentPath = window.location.pathname;
       const isViewingThisConv = currentPath.includes(`/inbox/${convId}`);
-      if (isViewingThisConv) return;
 
-      // ─── Contact name extract karo ────────────────────────────────────────
+      // Extract contact name
       const contact = data?.conversation?.contact || {};
       const contactName =
         contact.whatsappProfileName ||
@@ -143,34 +137,118 @@ export function useGlobalNotifications() {
         msg.from ||
         'New Message';
 
-      // ─── Message preview ─────────────────────────────────────────────────
-      const messagePreview =
-        (msg.content || 'New message').substring(0, 80);
+      const messagePreview = (msg.content || 'New message').substring(0, 100);
 
-      // ─── 1. Sound ─────────────────────────────────────────────────────────
-      playNotificationSound();
-
-      // ─── 2. In-app Toast ─────────────────────────────────────────────────
-      showToast(contactName, messagePreview, convId);
-
-      // ─── 3. Browser Notification (tab hidden ho toh) ──────────────────────
-      showBrowserNotification({
-        title: `💬 ${contactName}`,
-        body: messagePreview,
-        tag: `conv-${convId}`,
-        onClick: () => {
-          window.focus();
-          navigateToConversation(convId);
-        },
+      // ✅ Always add to notifications store
+      addNotification({
+        type: 'message',
+        title: `New message from ${contactName}`,
+        description: messagePreview,
+        actionUrl: `/dashboard/inbox/${convId}`,
+        metadata: { conversationId: convId, contactName },
       });
+
+      // ✅ Only show toast/sound if NOT viewing this conv
+      if (!isViewingThisConv) {
+        playNotificationSound();
+        showToast(contactName, messagePreview, convId);
+        showBrowserNotification({
+          title: `💬 ${contactName}`,
+          body: messagePreview,
+          tag: `conv-${convId}`,
+          onClick: () => {
+            window.focus();
+            navigateToConversation(convId);
+          },
+        });
+      }
     };
 
+    // ====================
+    // CAMPAIGN COMPLETED
+    // ====================
+    const handleCampaignCompleted = (data: any) => {
+      const campaignName = data?.name || data?.campaignName || 'Campaign';
+      const stats = data?.stats || {};
+      const deliveryRate = stats.deliveryRate || 
+        (stats.total > 0 ? Math.round(((stats.delivered || 0) / stats.total) * 100) : 0);
+
+      addNotification({
+        type: 'campaign',
+        title: 'Campaign completed successfully',
+        description: `"${campaignName}" has been completed. ${deliveryRate}% delivery rate.`,
+        actionUrl: data?.campaignId ? `/dashboard/campaigns/${data.campaignId}` : '/dashboard/campaigns',
+        metadata: data,
+      });
+
+      playNotificationSound();
+    };
+
+    // ====================
+    // CAMPAIGN FAILED
+    // ====================
+    const handleCampaignFailed = (data: any) => {
+      const campaignName = data?.name || 'Campaign';
+      addNotification({
+        type: 'alert',
+        title: 'Campaign failed',
+        description: `"${campaignName}" failed to send. ${data?.error || 'Please check details.'}`,
+        actionUrl: data?.campaignId ? `/dashboard/campaigns/${data.campaignId}` : '/dashboard/campaigns',
+      });
+      playNotificationSound();
+    };
+
+    // ====================
+    // WHATSAPP ACCOUNT
+    // ====================
+    const handleAccountUpdated = (data: any) => {
+      const status = data?.status;
+      if (status === 'CONNECTED') {
+        addNotification({
+          type: 'whatsapp',
+          title: 'WhatsApp account connected',
+          description: 'Your WhatsApp Business account has been successfully connected.',
+          actionUrl: '/dashboard/settings',
+        });
+      } else if (status === 'DISCONNECTED' || status === 'ERROR') {
+        addNotification({
+          type: 'alert',
+          title: 'WhatsApp account issue',
+          description: 'Your WhatsApp account needs attention. Please reconnect.',
+          actionUrl: '/dashboard/settings',
+        });
+      }
+    };
+
+    // ====================
+    // INCOMING CALL
+    // ====================
+    const handleIncomingCall = (data: any) => {
+      addNotification({
+        type: 'message',
+        title: 'Incoming WhatsApp call',
+        description: `Call from ${data?.contactName || data?.from || 'Unknown'}`,
+        actionUrl: '/dashboard/inbox',
+        metadata: data,
+      });
+      playNotificationSound();
+    };
+
+    // ✅ Attach all listeners
     socket.on('message:new', handleNewMessage);
+    socket.on('campaign:completed', handleCampaignCompleted);
+    socket.on('campaign:failed', handleCampaignFailed);
+    socket.on('account:updated', handleAccountUpdated);
+    socket.on('incomingCall', handleIncomingCall);
 
     return () => {
       socket.off('message:new', handleNewMessage);
+      socket.off('campaign:completed', handleCampaignCompleted);
+      socket.off('campaign:failed', handleCampaignFailed);
+      socket.off('account:updated', handleAccountUpdated);
+      socket.off('incomingCall', handleIncomingCall);
     };
-  }, [socket, showToast, navigateToConversation]);
+  }, [socket, addNotification, showToast, navigateToConversation]);
 }
 
 export default useGlobalNotifications;
