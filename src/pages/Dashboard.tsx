@@ -130,6 +130,15 @@ const Dashboard: React.FC = () => {
   const [widgets, setWidgets] = useState<any>(null);
   const [activity, setActivity] = useState<any[]>([]);
 
+  // Real-time greeting
+  const [greeting, setGreeting] = useState(getGreeting());
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setGreeting(getGreeting());
+    }, 60000);
+    return () => clearInterval(timer);
+  }, []);
+
   // ✅ FIXED: Properly handle axios response structure
   const fetchDashboardData = async (showSkeleton = true) => {
     if (showSkeleton) setLoading(true);
@@ -264,7 +273,7 @@ const Dashboard: React.FC = () => {
           <div className="flex items-center gap-2 mb-2">
             <Sparkles className="w-4 h-4 text-green-400" />
             <span className="text-xs font-mono uppercase tracking-[0.15em] text-gray-400">
-              {getGreeting()}
+              {greeting}
             </span>
           </div>
           <h1 className="text-3xl lg:text-4xl font-bold text-white tracking-tight">

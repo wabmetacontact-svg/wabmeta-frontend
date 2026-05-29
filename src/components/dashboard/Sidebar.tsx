@@ -106,6 +106,15 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, setCollapsed }) => {
     return null;
   });
 
+  // Real-time greeting
+  const [greeting, setGreeting] = useState(getGreeting());
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setGreeting(getGreeting());
+    }, 60000); // Check every minute
+    return () => clearInterval(timer);
+  }, []);
+
   const displayName = getDisplayName(user);
   const firstName = displayName.split(" ")[0];
   const email = user?.email || "";
@@ -135,6 +144,7 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, setCollapsed }) => {
               ? `${(totalContacts / 1000).toFixed(1)}k`
               : totalContacts.toLocaleString()
             : undefined,
+          badgeColor: "bg-blue-500",
         },
       ],
     },
@@ -287,7 +297,7 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, setCollapsed }) => {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-1 mb-0.5">
                   <span className="text-[10px] font-mono uppercase tracking-wider text-gray-500">
-                    {getGreeting()}
+                    {greeting}
                   </span>
                   <span className="text-xs">👋</span>
                 </div>
