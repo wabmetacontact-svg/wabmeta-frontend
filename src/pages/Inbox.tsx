@@ -597,6 +597,31 @@ const Inbox: React.FC = () => {
   );
 
   // ============================================
+  // TYPING INDICATOR (AGENT)
+  // ============================================
+  const typingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleTyping = useCallback(
+    async (isTyping: boolean) => {
+      if (!isTyping || !selectedConvRef.current) return;
+      
+      // Prevent spamming the API, only send once every 10 seconds
+      if (typingTimerRef.current) return;
+      
+      try {
+        await api.post(`/inbox/conversations/${selectedConvRef.current.id}/typing`);
+      } catch (err) {
+        console.error('Failed to send typing indicator', err);
+      }
+      
+      typingTimerRef.current = setTimeout(() => {
+        typingTimerRef.current = null;
+      }, 10000); // 10s cooldown
+    },
+    []
+  );
+
+  // ============================================
   // PIN / ARCHIVE / LABELS
   // ============================================
   const handlePinConversation = useCallback(
@@ -1188,6 +1213,7 @@ const Inbox: React.FC = () => {
               onSendMessage={handleSendMessage}
               onSendVoice={handleSendVoice}
               onMediaUpload={handleUploadAndSendMedia}
+              onTyping={handleTyping}
               onOpenTemplateModal={() => setShowTemplateModal(true)}
               isWindowOpen={selectedConversation.isWindowOpen || false}
               windowExpiresAt={selectedConversation.windowExpiresAt}
