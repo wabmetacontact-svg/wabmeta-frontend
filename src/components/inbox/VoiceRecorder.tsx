@@ -35,9 +35,16 @@ const VoiceRecorder: React.FC<Props> = ({ isRecording, onStart, onStop, onCancel
   // ── Start recording ─────────────────────────────────────────────────────
   const startRecording = useCallback(async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        audio: {
+          channelCount: 1,
+          echoCancellation: true,
+          noiseSuppression: true,
+          sampleRate: 48000,
+        }
+      });
       streamRef.current = stream;
-
+  
       // Audio analyser for waveform
       const audioContext = new AudioContext();
       const analyser = audioContext.createAnalyser();
@@ -46,7 +53,7 @@ const VoiceRecorder: React.FC<Props> = ({ isRecording, onStart, onStop, onCancel
       source.connect(analyser);
       audioContextRef.current = audioContext;
       analyserRef.current = analyser;
-
+  
       // Start waveform animation
       const dataArray = new Uint8Array(analyser.frequencyBinCount);
       const updateWaveform = () => {
@@ -60,27 +67,53 @@ const VoiceRecorder: React.FC<Props> = ({ isRecording, onStart, onStop, onCancel
         animationRef.current = requestAnimationFrame(updateWaveform);
       };
       updateWaveform();
-
-      // MediaRecorder
+  
+      // ✅ WhatsApp-supported MIME types (in priority order)
+      const supportedMimeTypes = [
+        'audio/ogg;codecs=opus',  // ✅ Best for WhatsApp
+        'audio/ogg',
+        'audio/mp4',
+        'audio/mpeg',
+        'audio/webm;codecs=opus', // Fallback
+        'audio/webm',
+      ];
+  
+      let selectedMimeType = '';
+      for (const mimeType of supportedMimeTypes) {
+        if (MediaRecorder.isTypeSupported(mimeType)) {
+          selectedMimeType = mimeType;
+          console.log('✅ Using MIME type:', mimeType);
+          break;
+        }
+      }
+  
+      if (!selectedMimeType) {
+        throw new Error('No supported audio format');
+      }
+  
+      // MediaRecorder with audio-only MIME type
       const mediaRecorder = new MediaRecorder(stream, {
-        mimeType: MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : 'audio/mp4',
+        mimeType: selectedMimeType,
+        audioBitsPerSecond: 128000,
       });
+  
       mediaRecorderRef.current = mediaRecorder;
       chunksRef.current = [];
-
+  
       mediaRecorder.ondataavailable = (e) => {
         if (e.data.size > 0) chunksRef.current.push(e.data);
       };
-
+  
       mediaRecorder.onstop = () => {
-        const blob = new Blob(chunksRef.current, { type: mediaRecorder.mimeType });
+        // ✅ Use the correct MIME type for blob
+        const blob = new Blob(chunksRef.current, { 
+          type: selectedMimeType.split(';')[0] // strip codec info
+        });
         setAudioBlob(blob);
         setAudioUrl(URL.createObjectURL(blob));
-
-        // Stop all tracks
+  
         streamRef.current?.getTracks().forEach((t) => t.stop());
-
-        // Cleanup audio context
+  
         if (animationRef.current) {
           cancelAnimationFrame(animationRef.current);
           animationRef.current = null;
@@ -89,15 +122,13 @@ const VoiceRecorder: React.FC<Props> = ({ isRecording, onStart, onStop, onCancel
         audioContextRef.current = null;
         analyserRef.current = null;
       };
-
-      mediaRecorder.start();
+  
+      mediaRecorder.start(100); // Capture data every 100ms
       setDuration(0);
       setIsPaused(false);
-
-      // Duration timer
+  
       intervalRef.current = setInterval(() => {
         setDuration((d) => {
-          // Max 5 min recording
           if (d >= 300) {
             stopRecording();
             return 300;
@@ -105,7 +136,7 @@ const VoiceRecorder: React.FC<Props> = ({ isRecording, onStart, onStop, onCancel
           return d + 1;
         });
       }, 1000);
-
+  
       onStart();
     } catch (e) {
       console.error('Recording failed:', e);

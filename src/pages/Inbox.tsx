@@ -567,10 +567,31 @@ const Inbox: React.FC = () => {
   const handleSendVoice = useCallback(
     async (blob: Blob, duration: number) => {
       if (!selectedConvRef.current) return;
-      const conv = selectedConvRef.current;
-      const file = new File([blob], `voice-${Date.now()}.webm`, { type: blob.type });
+      
+      // ✅ Determine correct file extension from blob type
+      let extension = 'ogg'; // default
+      const mimeType = blob.type;
+      
+      if (mimeType.includes('ogg')) extension = 'ogg';
+      else if (mimeType.includes('mp4')) extension = 'm4a';
+      else if (mimeType.includes('mpeg')) extension = 'mp3';
+      else if (mimeType.includes('webm')) extension = 'webm';
+      
+      const fileName = `voice-${Date.now()}.${extension}`;
+      
+      // ✅ Create file with correct extension AND audio mime type
+      const file = new File([blob], fileName, { 
+        type: blob.type 
+      });
+      
+      console.log('🎤 Sending voice:', { 
+        fileName, 
+        mimeType: blob.type, 
+        size: blob.size,
+        duration 
+      });
+      
       await handleUploadAndSendMedia(file);
-      console.log('Voice sent, duration:', duration);
     },
     [handleUploadAndSendMedia]
   );
