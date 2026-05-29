@@ -16,6 +16,7 @@ import { useNotifications, playNotificationSound, showBrowserNotification } from
 import { useInboxNotifications } from '../hooks/useInboxNotifications';
 import api, { inbox as inboxApi, whatsapp as whatsappApi } from '../services/api';
 import toast from 'react-hot-toast';
+import { useApp } from '../context/AppContext';
 import WindowStatus from '../components/inbox/WindowStatus';
 import ChatInput from '../components/inbox/ChatInput';
 import MessageBubble from '../components/inbox/MessageBubble';
@@ -172,6 +173,7 @@ const getMessagePreview = (raw?: string, type?: string): string => {
 const Inbox: React.FC = () => {
   const { conversationId: urlConvId } = useParams();
   const navigate = useNavigate();
+  const { decrementUnread, incrementUnread } = useApp();
 
   // ============================================
   // REFS
@@ -353,11 +355,9 @@ const Inbox: React.FC = () => {
   // ============================================
   const selectConversation = useCallback((conv: Conversation) => {
     if (selectedConvRef.current?.id === conv.id) {
-      // On mobile, still switch to chat view even if same conv
       setShowMobileChat(true);
       return;
     }
-
     setMessages([]);
     lastFetchedConvId.current = null;
     sentMessageIds.current.clear();
@@ -367,7 +367,12 @@ const Inbox: React.FC = () => {
     setShowMobileChat(true);
     navigate(`/dashboard/inbox/${conv.id}`);
     fetchMessages(conv.id);
-  }, [navigate, fetchMessages]);
+    
+    // ✅ Sync sidebar - decrement if this conv had unread
+    if (conv.unreadCount > 0) {
+      decrementUnread(conv.id);
+    }
+  }, [navigate, fetchMessages, decrementUnread]);
 
   // ============================================
   // SEND TEXT MESSAGE
@@ -663,98 +668,75 @@ const Inbox: React.FC = () => {
     // ===== NEW MESSAGE =====
     useCallback((newMsg: InboundMessage) => {
       if (!newMsg) return;
+      const convId    = newMsg.conversationId;
+      const msgId     = newMsg.id;
+      const waId      = newMsg.waMessageId || newMsg.wamId;
+      const direction = newMsg.direction;
 
-      const convId = newMsg.conversationId;
       if (!convId) return;
 
-      const msgId = newMsg.id;
-      const waId  = newMsg.waMessageId || newMsg.wamId;
+      const isCurrentConv = selectedConvRef.current?.id === convId;
 
-      console.log('📩 Socket new message:', {
-        id: msgId, waId, direction: newMsg.direction, convId,
-      });
-
-      // ✅ INBOUND: selected conversation mein add karo
-      if (
-        newMsg.direction === 'INBOUND' &&
-        selectedConvRef.current?.id === convId
-      ) {
-        setMessages((prev) => {
-          // Duplicate check
-          const isDup = prev.some((m) =>
-            m.id === msgId ||
-            (waId && (m.waMessageId === waId || m.wamId === waId))
+      // INBOUND in current conv → add to messages
+      if (direction === 'INBOUND' && isCurrentConv) {
+        setMessages(prev => {
+          const isDup = prev.some(
+            m => m.id === msgId || (waId && (m.waMessageId === waId || m.wamId === waId))
           );
-          if (isDup) {
-            console.log('⏭️ Dup prevented:', msgId);
-            return prev;
-          }
+          if (isDup) return prev;
           return [...prev, {
-            ...newMsg,
+            ...newMsg as any,
             createdAt: newMsg.createdAt || new Date().toISOString(),
-          } as Message];
+          }];
         });
-
         scrollToBottom();
-
-        // Mark as read (non-blocking)
         inboxApi.markAsRead(convId).catch(() => {});
       }
 
-      // ✅ ALWAYS: Conversation list update karo
-      setConversations((prev) => {
-        const idx = prev.findIndex((c) => c.id === convId);
+      // Update conversation list - ALWAYS
+      setConversations(prev => {
+        const idx = prev.findIndex(c => c.id === convId);
+        const updated = [...prev];
 
-        if (idx === -1) {
-          // Naya conversation - conversation:updated event handle karega
-          return prev;
+        if (idx !== -1) {
+          updated[idx] = {
+            ...updated[idx],
+            lastMessagePreview: (newMsg.content || 'New message').substring(0, 60),
+            lastMessageAt:      newMsg.createdAt || new Date().toISOString(),
+            unreadCount:        isCurrentConv ? 0 : (updated[idx].unreadCount || 0) + 1,
+            isRead:             isCurrentConv,
+          };
         }
 
-        const updated   = [...prev];
-        const existing  = updated[idx];
-        const isCurrentlyOpen = selectedConvRef.current?.id === convId;
+        return sortConversations(updated);
+      });
 
-        updated[idx] = {
-          ...existing,
-          lastMessagePreview: (newMsg.content || 'New message').substring(0, 60),
-          lastMessageAt:      newMsg.createdAt || new Date().toISOString(),
-          unreadCount: isCurrentlyOpen
-            ? 0
-            : (existing.unreadCount || 0) + 1,
-          isRead: isCurrentlyOpen,
-        };
+      // ✅ Notifications + sidebar update for OTHER conversations
+      if (direction === 'INBOUND' && !isCurrentConv) {
+        playNotificationSound();
 
-        // ✅ Notification - other conversations ke liye
-        if (newMsg.direction === 'INBOUND' && !isCurrentlyOpen) {
-          playNotificationSound();
+        // Sidebar is automatically updated by AppProvider's socket listener
+        // No need to call incrementUnread here - AppProvider handles it
+        
+        setConversations(prev => {
+          const conv = prev.find(c => c.id === convId);
+          const contactName = conv ? getContactName(conv.contact) : 'New Message';
 
-          // Contact name for notification
-          const existingConv = prev[idx];
-          const contactName = existingConv
-            ? (existingConv.contact.whatsappProfileName ||
-               existingConv.contact.name ||
-               [existingConv.contact.firstName, existingConv.contact.lastName].filter(Boolean).join(' ') ||
-               existingConv.contact.phone)
-            : 'New Message';
-
-          // In-app toast
           showNewMessageToast({
             contactName,
             messagePreview: (newMsg.content || 'New message').substring(0, 80),
             conversationId: convId,
           });
 
-          // Browser notification
           showBrowserNotification({
             title:   `💬 ${contactName}`,
             body:    (newMsg.content || 'New message').substring(0, 100),
             tag:     `conv-${convId}`,
             onClick: () => navigate(`/dashboard/inbox/${convId}`),
           });
-        }
-
-        return sortConversations(updated);
-      });
+          return prev;
+        });
+      }
     }, [scrollToBottom, showNewMessageToast, navigate]),
 
     // ===== CONVERSATION UPDATE =====

@@ -1,4 +1,5 @@
-// src/context/AppProvider.tsx
+// src/context/AppProvider.tsx - COMPLETE OPTIMIZED VERSION
+
 import React, {
     useEffect,
     useMemo,
@@ -10,31 +11,19 @@ import { useLocation } from "react-router-dom";
 import { contacts, inbox } from "../services/api";
 import { AppContext, type UserType } from "./AppContext";
 import { useAuth } from "./AuthContext";
+import { useSocket } from "./SocketContext";
 import AddPhoneModal from "../components/auth/AddPhoneModal";
 
 const isJwtLike = (t: string) =>
     typeof t === "string" && t.split(".").length === 3;
 
-// ✅ Routes jahan modal NAHI dikhana
 const PUBLIC_ROUTES = [
-    "/",
-    "/login",
-    "/signup",
-    "/verify-otp",
-    "/verify-email",
-    "/forgot-password",
-    "/reset-password",
-    "/terms",
-    "/privacy",
-    "/contact",
-    "/blog",
-    "/help",
-    "/documentation",
-    "/data-deletion",
-    "/meta/callback",
+    "/", "/login", "/signup", "/verify-otp", "/verify-email",
+    "/forgot-password", "/reset-password", "/terms", "/privacy",
+    "/contact", "/blog", "/help", "/documentation",
+    "/data-deletion", "/meta/callback",
 ];
 
-// ✅ Routes jahan modal NAHI dikhana (admin)
 const ADMIN_ROUTES_PREFIX = "/admin";
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
@@ -42,25 +31,23 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
     const location = useLocation();
     const { isAuthenticated, isLoading: authLoading, user: authUser } = useAuth();
+    const { socket, isConnected } = useSocket();
 
-    const [unreadCount, setUnreadCount] = useState(0);
+    const [unreadCount,   setUnreadCount]   = useState(0);
     const [totalContacts, setTotalContacts] = useState(0);
-    const [responseRate, setResponseRate] = useState(0);
+    const [responseRate,  setResponseRate]  = useState(0);
     const [showPhoneModal, setShowPhoneModal] = useState(false);
 
     const [user, setUser] = useState<UserType | null>(() => {
         try {
             const stored = localStorage.getItem("wabmeta_user");
             if (!stored) return null;
-
             const u = JSON.parse(stored);
             return {
-                name:
-                    [u.firstName, u.lastName].filter(Boolean).join(" ") ||
-                    u.email,
-                email: u.email,
-                phone: u.phone || "",
-                role: u.role || "",
+                name:   [u.firstName, u.lastName].filter(Boolean).join(" ") || u.email,
+                email:  u.email,
+                phone:  u.phone || "",
+                role:   u.role || "",
                 avatar: u.avatar || null,
             };
         } catch {
@@ -68,8 +55,30 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
         }
     });
 
-    const lastStatsFetchRef = useRef(0);
+    const lastStatsFetchRef     = useRef(0);
+    // ✅ Track which conversations have unread messages
+    const unreadConvIdsRef      = useRef<Set<string>>(new Set());
+    // ✅ Track current viewed conversation (live)
+    const currentConvIdRef      = useRef<string | null>(null);
 
+    // ────────────────────────────────────────────────────────────────────
+    // ✅ Sync currently viewed conversation from URL
+    // ────────────────────────────────────────────────────────────────────
+    useEffect(() => {
+        const match = location.pathname.match(/\/inbox\/([^/]+)/);
+        const convId = match?.[1] || null;
+        currentConvIdRef.current = convId;
+
+        // ✅ Agar user inbox open karta hai aur conv unread tha, decrement
+        if (convId && unreadConvIdsRef.current.has(convId)) {
+            unreadConvIdsRef.current.delete(convId);
+            setUnreadCount(prev => Math.max(0, prev - 1));
+        }
+    }, [location.pathname]);
+
+    // ────────────────────────────────────────────────────────────────────
+    // ✅ Refresh Stats
+    // ────────────────────────────────────────────────────────────────────
     const refreshStats = useCallback(async (force: boolean = false) => {
         try {
             const token =
@@ -80,141 +89,186 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
             if (!token || !isJwtLike(token)) return;
 
             const now = Date.now();
-            if (!force && now - lastStatsFetchRef.current < 30_000) {
-                return;
-            }
+            if (!force && now - lastStatsFetchRef.current < 30_000) return;
             lastStatsFetchRef.current = now;
 
-            try {
-                const [contactsRes, inboxStatsRes] = await Promise.all([
-                    contacts.stats(),
-                    inbox.stats
-                        ? inbox.stats()
-                        : Promise.resolve({ data: { data: {} } } as any),
-                ]);
+            const [contactsRes, inboxStatsRes] = await Promise.all([
+                contacts.stats(),
+                inbox.stats
+                    ? inbox.stats()
+                    : Promise.resolve({ data: { data: {} } } as any),
+            ]);
 
-                const contactsStats = contactsRes.data?.data || {};
-                const inboxStats = inboxStatsRes.data?.data || {};
+            const contactsStats = contactsRes.data?.data || {};
+            const inboxStats    = inboxStatsRes.data?.data || {};
 
-                const unread =
-                    inboxStats.unreadCount ??
-                    inboxStats.unread ??
-                    inboxStats.totalUnread ??
-                    inboxStats.unreadTotal ??
-                    0;
+            const unread =
+                inboxStats.unreadCount ??
+                inboxStats.unread ??
+                inboxStats.totalUnread ??
+                inboxStats.unreadTotal ??
+                0;
 
-                const rr =
-                    inboxStats.responseRate ??
-                    inboxStats.response_rate ??
-                    inboxStats.avgResponseRate ??
-                    inboxStats.averageResponseRate ??
-                    0;
+            const rr =
+                inboxStats.responseRate ??
+                inboxStats.response_rate ??
+                inboxStats.avgResponseRate ??
+                inboxStats.averageResponseRate ??
+                0;
 
-                setTotalContacts(Number(contactsStats?.total || 0));
-                setUnreadCount(Number(unread || 0));
-                setResponseRate(Number(rr || 0));
-            } catch (err) {
-                console.error("Partial stats failure", err);
-            }
+            setTotalContacts(Number(contactsStats?.total || 0));
+            setUnreadCount(Number(unread || 0));
+            setResponseRate(Number(rr || 0));
         } catch (error) {
             console.error("Failed to update global stats", error);
         }
     }, []);
 
-    // ✅ Phone Modal Check
+    // ────────────────────────────────────────────────────────────────────
+    // ✅ CRITICAL: Socket listeners for realtime sidebar
+    // ────────────────────────────────────────────────────────────────────
+    useEffect(() => {
+        if (!socket || !isConnected) return;
+
+        console.log('🔔 AppProvider: Registering socket listeners for sidebar');
+
+        // ────────────────────────────────────────────────────────────────
+        // NEW MESSAGE: Increment unread if INBOUND + not current conv
+        // ────────────────────────────────────────────────────────────────
+        const handleNewMessage = (data: any) => {
+            const msg       = data?.message || data;
+            const direction = msg?.direction;
+            const convId    = msg?.conversationId || data?.conversationId;
+
+            if (direction !== 'INBOUND' || !convId) return;
+
+            // ✅ If user is currently viewing this conv, don't increment
+            if (currentConvIdRef.current === convId) {
+                console.log('📩 Sidebar: User viewing this conv, skip increment');
+                return;
+            }
+
+            // ✅ Only increment if not already counted
+            if (!unreadConvIdsRef.current.has(convId)) {
+                unreadConvIdsRef.current.add(convId);
+                setUnreadCount(prev => {
+                    const newCount = prev + 1;
+                    console.log(`📩 Sidebar unread: ${prev} → ${newCount}`);
+                    return newCount;
+                });
+            }
+        };
+
+        // ────────────────────────────────────────────────────────────────
+        // CONVERSATION UPDATE: Sync unread state
+        // ────────────────────────────────────────────────────────────────
+        const handleConversationUpdate = (data: any) => {
+            const conv = data?.conversation || data;
+            if (!conv?.id) return;
+
+            const convId       = conv.id;
+            const wasUnread    = unreadConvIdsRef.current.has(convId);
+            const nowHasUnread = (conv.unreadCount ?? 0) > 0 && conv.isRead !== true;
+
+            // Read → Unread
+            if (!wasUnread && nowHasUnread && currentConvIdRef.current !== convId) {
+                unreadConvIdsRef.current.add(convId);
+                setUnreadCount(prev => prev + 1);
+            }
+            // Unread → Read
+            else if (wasUnread && !nowHasUnread) {
+                unreadConvIdsRef.current.delete(convId);
+                setUnreadCount(prev => Math.max(0, prev - 1));
+            }
+        };
+
+        socket.on('message:new',          handleNewMessage);
+        socket.on('conversation:updated', handleConversationUpdate);
+
+        return () => {
+            socket.off('message:new',          handleNewMessage);
+            socket.off('conversation:updated', handleConversationUpdate);
+            console.log('🔔 AppProvider: Socket listeners removed');
+        };
+    }, [socket, isConnected]);
+
+    // ────────────────────────────────────────────────────────────────────
+    // ✅ Manual unread methods (for Inbox.tsx)
+    // ────────────────────────────────────────────────────────────────────
+    const incrementUnread = useCallback((convId: string) => {
+        if (!unreadConvIdsRef.current.has(convId)) {
+            unreadConvIdsRef.current.add(convId);
+            setUnreadCount(prev => prev + 1);
+        }
+    }, []);
+
+    const decrementUnread = useCallback((convId: string) => {
+        if (unreadConvIdsRef.current.has(convId)) {
+            unreadConvIdsRef.current.delete(convId);
+            setUnreadCount(prev => Math.max(0, prev - 1));
+        }
+    }, []);
+
+    const setUnreadCountManual = useCallback((count: number) => {
+        setUnreadCount(count);
+    }, []);
+
+    // ────────────────────────────────────────────────────────────────────
+    // PHONE MODAL CHECK (existing code - same as before)
+    // ────────────────────────────────────────────────────────────────────
     const checkPhoneNumber = useCallback(() => {
-        // 1️⃣ Auth still loading? Wait
-        if (authLoading) {
-            console.log("⏳ Auth loading - waiting...");
-            return;
-        }
+        if (authLoading) return;
+        if (!isAuthenticated) { setShowPhoneModal(false); return; }
 
-        // 2️⃣ Not authenticated? Hide modal
-        if (!isAuthenticated) {
-            console.log("🔒 Not authenticated - hiding modal");
-            setShowPhoneModal(false);
-            return;
-        }
+        const isPublicRoute = PUBLIC_ROUTES.some(route =>
+            route === "/" ? location.pathname === "/" : location.pathname.startsWith(route)
+        );
+        if (isPublicRoute) { setShowPhoneModal(false); return; }
 
-        // 3️⃣ Public route check
-        const isPublicRoute = PUBLIC_ROUTES.some((route) => {
-            if (route === "/") return location.pathname === "/";
-            return location.pathname.startsWith(route);
-        });
-
-        if (isPublicRoute) {
-            console.log(`🔒 Public route (${location.pathname}) - hiding modal`);
-            setShowPhoneModal(false);
-            return;
-        }
-
-        // 4️⃣ Admin route check
         if (location.pathname.startsWith(ADMIN_ROUTES_PREFIX)) {
-            console.log("🔒 Admin route - hiding modal");
             setShowPhoneModal(false);
             return;
         }
 
-        // 5️⃣ Phone exists check
         const userStr = localStorage.getItem("wabmeta_user");
-        if (!userStr) {
-            console.log("⚠️ No user data");
-            return;
-        }
+        if (!userStr) return;
 
         try {
             const u = JSON.parse(userStr);
-
             const hasPhone =
                 u.phone &&
                 typeof u.phone === "string" &&
                 u.phone.trim() !== "" &&
                 u.phone.replace(/\D/g, "").length >= 10;
 
-            if (hasPhone) {
-                console.log(`✅ User has phone (${u.phone}) - hiding modal`);
-                setShowPhoneModal(false);
-                return;
-            }
+            if (hasPhone) { setShowPhoneModal(false); return; }
 
-            // 6️⃣ Skip cooldown check (24 hours)
             const skippedAt = localStorage.getItem("phone_modal_skipped_at");
             if (skippedAt) {
-                const hoursPassed =
-                    (Date.now() - parseInt(skippedAt)) / (1000 * 60 * 60);
+                const hoursPassed = (Date.now() - parseInt(skippedAt)) / (1000 * 60 * 60);
                 if (hoursPassed < 24) {
-                    console.log(
-                        `⏰ Skipped recently (${hoursPassed.toFixed(1)}h ago)`
-                    );
                     setShowPhoneModal(false);
                     return;
                 }
             }
 
-            // ✅ Show modal after delay
-            console.log("📱 Showing phone modal in 1.5s...");
-            setTimeout(() => {
-                setShowPhoneModal(true);
-            }, 1500);
+            setTimeout(() => setShowPhoneModal(true), 1500);
         } catch (err) {
             console.error("Phone check failed:", err);
         }
     }, [location.pathname, isAuthenticated, authLoading]);
 
-    // ✅ Initial stats load
+    // ────────────────────────────────────────────────────────────────────
+    // EFFECTS
+    // ────────────────────────────────────────────────────────────────────
     useEffect(() => {
-        if (isAuthenticated && !authLoading) {
-            refreshStats(true);
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [isAuthenticated, authLoading]);
+        if (isAuthenticated && !authLoading) refreshStats(true);
+    }, [isAuthenticated, authLoading, refreshStats]);
 
-    // ✅ Re-check phone whenever route, auth, or user changes
     useEffect(() => {
         checkPhoneNumber();
     }, [location.pathname, isAuthenticated, authLoading, authUser, checkPhoneNumber]);
 
-    // ✅ Sync user from authUser (jab login hota hai)
     useEffect(() => {
         if (authUser) {
             try {
@@ -222,13 +276,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
                 if (userStr) {
                     const u = JSON.parse(userStr);
                     setUser({
-                        name:
-                            [u.firstName, u.lastName]
-                                .filter(Boolean)
-                                .join(" ") || u.email,
-                        email: u.email,
-                        phone: u.phone || "",
-                        role: u.role || "",
+                        name:   [u.firstName, u.lastName].filter(Boolean).join(" ") || u.email,
+                        email:  u.email,
+                        phone:  u.phone || "",
+                        role:   u.role || "",
                         avatar: u.avatar || null,
                     });
                 }
@@ -240,43 +291,32 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
         }
     }, [authUser, isAuthenticated, authLoading]);
 
-    // ✅ Cross-tab storage sync
     useEffect(() => {
         const handleStorageChange = (e: StorageEvent) => {
             if (e.key === "wabmeta_user" || e.key === "accessToken") {
                 checkPhoneNumber();
             }
         };
-
         window.addEventListener("storage", handleStorageChange);
-        return () =>
-            window.removeEventListener("storage", handleStorageChange);
+        return () => window.removeEventListener("storage", handleStorageChange);
     }, [checkPhoneNumber]);
 
-    // ✅ Modal Handlers
     const handlePhoneModalClose = () => {
         setShowPhoneModal(false);
-        localStorage.setItem(
-            "phone_modal_skipped_at",
-            Date.now().toString()
-        );
+        localStorage.setItem("phone_modal_skipped_at", Date.now().toString());
     };
 
     const handlePhoneModalSuccess = (phone: string) => {
         localStorage.removeItem("phone_modal_skipped_at");
-
-        // Update user state immediately
         try {
             const userStr = localStorage.getItem("wabmeta_user");
             if (userStr) {
                 const u = JSON.parse(userStr);
                 setUser({
-                    name:
-                        [u.firstName, u.lastName].filter(Boolean).join(" ") ||
-                        u.email,
-                    email: u.email,
-                    phone: u.phone || phone,
-                    role: u.role || "",
+                    name:   [u.firstName, u.lastName].filter(Boolean).join(" ") || u.email,
+                    email:  u.email,
+                    phone:  u.phone || phone,
+                    role:   u.role || "",
                     avatar: u.avatar || null,
                 });
             }
@@ -293,20 +333,21 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
             totalContacts,
             responseRate,
             refreshStats,
+            incrementUnread,
+            decrementUnread,
+            setUnreadCount: setUnreadCountManual,
         }),
-        [user, unreadCount, totalContacts, responseRate, refreshStats]
+        [user, unreadCount, totalContacts, responseRate, refreshStats, incrementUnread, decrementUnread, setUnreadCountManual]
     );
 
     const userFirstName = useMemo(() => {
         if (!user) return "there";
-        const name = user.name?.split(" ")[0];
-        return name || "there";
+        return user.name?.split(" ")[0] || "there";
     }, [user]);
 
     return (
         <AppContext.Provider value={value}>
             {children}
-
             <AddPhoneModal
                 isOpen={showPhoneModal}
                 onClose={handlePhoneModalClose}
@@ -317,3 +358,5 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
         </AppContext.Provider>
     );
 };
+
+export default AppProvider;
