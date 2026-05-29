@@ -229,8 +229,8 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, setCollapsed }) => {
               src={logo}
               alt="WabMeta"
               className={`object-contain transition-all duration-300
-                ${collapsed ? "w-10 h-10" : "w-10 h-10"}
-                group-hover:scale-110
+                ${collapsed ? "w-10 h-10" : "h-8 w-auto"}
+                group-hover:scale-105
               `}
             />
           </Link>
