@@ -88,17 +88,6 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({
           {/* Middle: Editorial content */}
           <div className="space-y-10 max-w-lg">
 
-            {/* Tag */}
-            <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full
-              bg-white/[0.05] backdrop-blur-xl border border-white/[0.1]">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-green-400" />
-              </span>
-              <span className="text-xs font-mono uppercase tracking-wider text-gray-300">
-                847 businesses · live now
-              </span>
-            </div>
 
             {/* Main headline */}
             <div>
