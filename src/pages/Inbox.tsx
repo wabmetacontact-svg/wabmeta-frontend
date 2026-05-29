@@ -1136,7 +1136,7 @@ const Inbox: React.FC = () => {
 
       {/* ─── Center: Chat Window ─────────────────────────────────────────── */}
       <div className={`
-        flex-1 flex flex-col h-full overflow-hidden
+        flex-1 flex flex-col h-full overflow-hidden min-w-0 w-full
         ${!showMobileChat ? 'hidden md:flex' : 'flex'}
       `}>
         {selectedConversation ? (

@@ -89,7 +89,7 @@ const DashboardLayout: React.FC = () => {
 
       {/* Main Content */}
       <main
-        className={`pt-16 transition-all duration-300
+        className={`pt-16 transition-all duration-300 w-full overflow-x-hidden
           ${sidebarCollapsed ? "lg:pl-20" : "lg:pl-72"}
           ${isInbox ? 'overflow-hidden' : 'min-h-screen'}
         `}
