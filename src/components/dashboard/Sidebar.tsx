@@ -233,11 +233,6 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, setCollapsed }) => {
                 group-hover:scale-110
               `}
             />
-            {!collapsed && (
-              <span className="text-base font-bold text-white tracking-tight">
-                WabMeta
-              </span>
-            )}
           </Link>
 
           {!collapsed && (
