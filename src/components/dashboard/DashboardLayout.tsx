@@ -38,7 +38,7 @@ const DashboardLayout: React.FC = () => {
   const isInbox = location.pathname.startsWith('/dashboard/inbox');
 
   return (
-    <div className="min-h-screen relative bg-[#050816]">
+    <div className={`${isInbox ? 'h-[100dvh] overflow-hidden' : 'min-h-[100dvh]'} relative bg-[#050816]`}>
       {/* ✅ Global Notification Handler - always active */}
       <GlobalNotificationHandler />
 
@@ -91,11 +91,11 @@ const DashboardLayout: React.FC = () => {
       <main
         className={`pt-16 transition-all duration-300 w-full overflow-x-hidden
           ${sidebarCollapsed ? "lg:pl-20" : "lg:pl-72"}
-          ${isInbox ? 'overflow-hidden' : 'min-h-screen'}
+          ${isInbox ? 'overflow-hidden' : 'min-h-[100dvh]'}
         `}
       >
         {isInbox ? (
-          <div className="h-[calc(100vh-4rem)]">
+          <div className="h-[calc(100dvh-4rem)]">
             <Suspense fallback={<RouteLoader />}>
               <Outlet />
             </Suspense>
