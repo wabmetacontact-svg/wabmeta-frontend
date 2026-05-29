@@ -101,6 +101,29 @@ const ChatHeader: React.FC<Props> = ({
         </span>
       );
     }
+    
+    // Simulate real-time active based on lastMessageAt (e.g. within last 3 minutes)
+    if ((conversation as any).lastMessageAt) {
+      const lastMsgDate = new Date((conversation as any).lastMessageAt);
+      const diffMins = (Date.now() - lastMsgDate.getTime()) / (1000 * 60);
+      
+      if (diffMins <= 3) {
+        return <span className="text-emerald-400">● Active now</span>;
+      }
+      
+      // Show relative time if within 24h, else date
+      const diffHours = diffMins / 60;
+      if (diffHours < 24) {
+        if (Math.floor(diffHours) === 0) {
+           return <span className="text-gray-400">Last active: {Math.floor(diffMins)} mins ago</span>;
+        }
+        return <span className="text-gray-400">Last active: {Math.floor(diffHours)} hours ago</span>;
+      } else {
+        const diffDays = Math.floor(diffHours / 24);
+        return <span className="text-gray-400">Last active: {diffDays} {diffDays === 1 ? 'day' : 'days'} ago</span>;
+      }
+    }
+
     if (conversation.isWindowOpen) {
       return <span className="text-emerald-400">● Active now</span>;
     }
