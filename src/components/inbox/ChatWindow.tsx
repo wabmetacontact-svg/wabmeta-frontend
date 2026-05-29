@@ -1,274 +1,307 @@
 // src/components/inbox/ChatWindow.tsx
-
-import React, { useState, useEffect, useRef } from 'react';
-import {
-  Phone,
-  Info,
-  ArrowLeft,
-  Loader2,
-} from 'lucide-react';
-import { inbox } from '../../services/api';
-import api from '../../services/api';
+import React, { useRef, useEffect, useState, useCallback, useMemo } from 'react';
+import { ArrowDown, MessageSquare, Loader2 } from 'lucide-react';
+import MessageBubble, { type Message } from './MessageBubble';
+import { formatDateSeparator } from '../../utils/inboxHelpers';
 import toast from 'react-hot-toast';
 
-// Import components
-import MessageBubble from './MessageBubble';
-import ChatInput from './ChatInput';
-import WindowStatus from './WindowStatus';
-import SendTemplateModal from './SendTemplateModal';
-import ContactInfo from './ContactInfo';
-
-// ... interfaces same as before ...
-interface Message {
-  id: string;
-  content: string;
-  type: string;
-  direction: 'INBOUND' | 'OUTBOUND';
-  status: string;
-  createdAt: string;
-  timestamp?: string;
-  mediaUrl?: string;
+interface Props {
+  messages: Message[];
+  conversationId?: string;
+  contactName?: string;
+  loading?: boolean;
+  searchQuery?: string;
+  searchResultIds?: string[];
+  currentSearchIndex?: number;
+  onReply?: (msg: Message) => void;
+  onForward?: (msg: Message) => void;
+  onStar?: (msg: Message) => void;
+  onReact?: (msg: Message, emoji: string) => void;
+  onDeleted?: (messageId: string) => void;
+  onEdited?: (messageId: string, content: string) => void;
+  onJumpToMessage?: (messageId: string) => void;
 }
 
-interface Conversation {
-  id: string;
-  contact: {
-    id: string;
-    phone: string;
-    firstName?: string;
-    lastName?: string;
-    avatar?: string;
-    whatsappProfileName?: string;
-  };
-  lastMessageAt?: string;
-  lastMessagePreview?: string;
-  isWindowOpen: boolean;
-  windowExpiresAt?: string;
-  lastCustomerMessageAt?: string;
-  unreadCount: number;
-}
-
-interface ChatWindowProps {
-  conversation: Conversation | null;
-  onBack?: () => void;
-  onConversationUpdate?: () => void;
-}
-
-const ChatWindow: React.FC<ChatWindowProps> = ({
-  conversation,
-  onBack,
-  onConversationUpdate,
+const ChatWindow: React.FC<Props> = ({
+  messages,
+  conversationId,
+  contactName,
+  loading,
+  searchQuery,
+  searchResultIds = [],
+  currentSearchIndex = -1,
+  onReply,
+  onForward,
+  onStar,
+  onReact,
+  onDeleted,
+  onEdited,
+  onJumpToMessage,
 }) => {
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [showContactInfo, setShowContactInfo] = useState(false);
-  const [showTemplateModal, setShowTemplateModal] = useState(false);
-  const [initiatingCall, setInitiatingCall] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [showScrollButton, setShowScrollButton] = useState(false);
+  const [newMessageCount, setNewMessageCount] = useState(0);
+  const lastMessageCountRef = useRef(messages.length);
+  const isInitialLoadRef = useRef(true);
 
-  useEffect(() => {
-    if (conversation?.id) {
-      fetchMessages();
-      markAsRead();
+  // ── Scroll to bottom ────────────────────────────────────────────────────
+  const scrollToBottom = useCallback((smooth = true) => {
+    messagesEndRef.current?.scrollIntoView({
+      behavior: smooth ? 'smooth' : 'auto',
+      block: 'end',
+    });
+    setNewMessageCount(0);
+  }, []);
+
+  // ── Handle scroll: show/hide scroll-to-bottom button ────────────────────
+  const handleScroll = useCallback(() => {
+    const el = containerRef.current;
+    if (!el) return;
+
+    const { scrollTop, scrollHeight, clientHeight } = el;
+    const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
+    const isNearBottom = distanceFromBottom < 100;
+
+    setShowScrollButton(!isNearBottom && scrollHeight > clientHeight + 200);
+
+    if (isNearBottom) {
+      setNewMessageCount(0);
     }
-  }, [conversation?.id]);
+  }, []);
 
+  // ── Auto-scroll on new messages ─────────────────────────────────────────
   useEffect(() => {
-    scrollToBottom();
+    const newCount = messages.length - lastMessageCountRef.current;
+    if (newCount > 0) {
+      const el = containerRef.current;
+      if (!el) return;
+
+      const { scrollTop, scrollHeight, clientHeight } = el;
+      const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
+      const isNearBottom = distanceFromBottom < 200;
+
+      if (isInitialLoadRef.current || isNearBottom) {
+        setTimeout(() => scrollToBottom(!isInitialLoadRef.current), 100);
+      } else {
+        // User is scrolled up - show counter
+        setNewMessageCount((prev) => prev + newCount);
+      }
+    }
+    lastMessageCountRef.current = messages.length;
+  }, [messages.length, scrollToBottom]);
+
+  // ── Initial load: instant scroll to bottom ─────────────────────────────
+  useEffect(() => {
+    if (messages.length > 0 && isInitialLoadRef.current) {
+      setTimeout(() => {
+        scrollToBottom(false);
+        isInitialLoadRef.current = false;
+      }, 50);
+    }
+  }, [messages.length, scrollToBottom]);
+
+  // ── Reset on conversation change ────────────────────────────────────────
+  useEffect(() => {
+    isInitialLoadRef.current = true;
+    setNewMessageCount(0);
+    setShowScrollButton(false);
+  }, [conversationId]);
+
+  // ── Group messages by date + sender ─────────────────────────────────────
+  const groupedMessages = useMemo(() => {
+    const groups: Array<{
+      type: 'date' | 'message';
+      message?: Message;
+      isGrouped?: boolean;
+      showAvatar?: boolean;
+      date?: string;
+      key: string;
+    }> = [];
+
+    let lastDate: string | null = null;
+    let lastDirection: string | null = null;
+    let lastSenderTime: number = 0;
+
+    messages.forEach((msg, idx) => {
+      const msgDate = new Date(msg.createdAt || msg.timestamp);
+      const dateKey = msgDate.toDateString();
+      const msgTime = msgDate.getTime();
+
+      // Date separator
+      if (dateKey !== lastDate) {
+        groups.push({
+          type: 'date',
+          date: msg.createdAt || msg.timestamp,
+          key: `date-${dateKey}`,
+        });
+        lastDate = dateKey;
+        lastDirection = null;
+        lastSenderTime = 0;
+      }
+
+      // Same sender within 2 minutes = grouped
+      const isGrouped =
+        msg.direction === lastDirection &&
+        msgTime - lastSenderTime < 2 * 60 * 1000;
+
+      // Show avatar on LAST message of group (for inbound)
+      const nextMsg = messages[idx + 1];
+      const isLastInGroup =
+        !nextMsg ||
+        nextMsg.direction !== msg.direction ||
+        new Date(nextMsg.createdAt || nextMsg.timestamp).getTime() - msgTime >= 2 * 60 * 1000 ||
+        new Date(nextMsg.createdAt || nextMsg.timestamp).toDateString() !== dateKey;
+
+      groups.push({
+        type: 'message',
+        message: msg,
+        isGrouped,
+        showAvatar: isLastInGroup,
+        key: msg.id,
+      });
+
+      lastDirection = msg.direction;
+      lastSenderTime = msgTime;
+    });
+
+    return groups;
   }, [messages]);
 
-  const fetchMessages = async () => {
-    if (!conversation) return;
-    try {
-      setLoading(true);
-      const response = await inbox.getMessages(conversation.id, { limit: 100 });
-      if (response.data.success) {
-        const msgs = response.data.data?.messages || response.data.data || [];
-        setMessages(Array.isArray(msgs) ? msgs.reverse() : []);
-      }
-    } catch (error) {
-      console.error('Fetch messages error:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // ── Copy handler ────────────────────────────────────────────────────────
+  const handleCopy = useCallback((text: string) => {
+    navigator.clipboard.writeText(text);
+    toast.success('Copied to clipboard', {
+      duration: 2000,
+      style: {
+        background: '#1a2238',
+        color: '#fff',
+        border: '1px solid rgba(255,255,255,0.1)',
+      },
+    });
+  }, []);
 
-  const markAsRead = async () => {
-    if (conversation?.unreadCount && conversation.unreadCount > 0) {
-      inbox.markAsRead(conversation.id).then(() => onConversationUpdate?.());
-    }
-  };
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'auto' });
-  };
-
-  const handleSendMessage = async (content: string) => {
-    if (!conversation) return;
-    try {
-      const response = await inbox.sendMessage(conversation.id, { content, type: 'TEXT' });
-      if (response.data.success) {
-        setMessages((prev) => [...prev, response.data.data]);
-        onConversationUpdate?.();
-      }
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to send');
-    }
-  };
-
-  const getContactName = () => {
-    if (!conversation?.contact) return 'Unknown';
-    const { firstName, lastName, whatsappProfileName, phone } = conversation.contact;
-    return [firstName, lastName].filter(Boolean).join(' ') || whatsappProfileName || phone || 'Unknown';
-  };
-
-  const handleCallContact = async () => {
-    if (!conversation) return;
-    try {
-      setInitiatingCall(true);
-      const response = await api.post('/calling/initiate', {
-        to: conversation.contact.phone,
-        contactId: conversation.contact.id,
-        conversationId: conversation.id,
-      });
-      if (response.data.success) {
-        toast.success('📞 WhatsApp call initiated! Customer will receive a call on WhatsApp.');
-      }
-    } catch (error: any) {
-      const msg = error.response?.data?.message || error.message || '';
-      if (msg.includes('2000') || msg.includes('limit')) {
-        toast.error('Calling requires 2000+ daily message limit. Upgrade your WhatsApp Business account.');
-      } else if (msg.includes('not enabled')) {
-        toast.error('Enable calling in Settings → WhatsApp first.');
-      } else {
-        toast.error(`Call failed: ${msg}`);
-      }
-    } finally {
-      setInitiatingCall(false);
-    }
-  };
-
-  // EMPTY STATE
-  if (!conversation) {
+  // ── Loading state ───────────────────────────────────────────────────────
+  if (loading) {
     return (
-      <div className="flex-1 flex items-center justify-center bg-gray-50 dark:bg-gray-900 h-full">
-        <div className="text-center p-8">
-          <div className="w-20 h-20 bg-gray-200 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Phone className="w-10 h-10 text-gray-400" />
-          </div>
-          <h3 className="text-lg font-medium text-gray-900 dark:text-gray-200">
-            Select a conversation
-          </h3>
+      <div className="flex-1 flex items-center justify-center chat-bg">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-10 h-10 border-2 border-white/10 border-t-emerald-500 rounded-full animate-spin" />
+          <p className="text-sm text-gray-400">Loading messages...</p>
         </div>
       </div>
     );
   }
 
+  // ── Empty state ─────────────────────────────────────────────────────────
+  if (messages.length === 0) {
+    return (
+      <div className="flex-1 flex items-center justify-center chat-bg">
+        <div className="flex flex-col items-center gap-3 text-center px-6">
+          <div className="
+            w-20 h-20 rounded-full
+            bg-emerald-500/10 border border-emerald-500/20
+            flex items-center justify-center
+          ">
+            <MessageSquare className="w-9 h-9 text-emerald-400" />
+          </div>
+          <h3 className="text-base font-semibold text-white">No messages yet</h3>
+          <p className="text-sm text-gray-400 max-w-xs">
+            Start the conversation by sending a message below
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Main render ─────────────────────────────────────────────────────────
   return (
-    <div className="flex flex-col h-full bg-white dark:bg-gray-900 relative">
-      {/* 1. HEADER (Fixed Height) */}
-      <div className="flex-none h-16 px-4 flex items-center justify-between bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 z-20">
-        <div className="flex items-center">
-          {onBack && (
-            <button onClick={onBack} className="mr-3 p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full lg:hidden">
-              <ArrowLeft className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-            </button>
-          )}
-          <div className="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mr-3">
-            <span className="text-green-600 font-semibold text-lg">
-              {getContactName().charAt(0).toUpperCase()}
-            </span>
-          </div>
-          <div>
-            <h3 className="font-semibold text-gray-900 dark:text-white leading-tight">
-              {getContactName()}
-            </h3>
-            <p className="text-xs text-gray-500 dark:text-gray-400">
-              +{conversation.contact.phone}
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-1">
-          {/* ✅ Call Button */}
-          <button
-            onClick={handleCallContact}
-            disabled={initiatingCall}
-            title="WhatsApp Call"
-            className="p-2 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-full transition-colors disabled:opacity-50"
-          >
-            {initiatingCall ? (
-              <Loader2 className="w-5 h-5 text-green-500 animate-spin" />
-            ) : (
-              <Phone className="w-5 h-5 text-green-500" />
-            )}
-          </button>
-          {/* Info button */}
-          <button onClick={() => setShowContactInfo(!showContactInfo)} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full">
-            <Info className="w-5 h-5 text-gray-500" />
-          </button>
-        </div>
-      </div>
+    <div className="flex-1 relative overflow-hidden chat-bg chat-area">
+      <div
+        ref={containerRef}
+        onScroll={handleScroll}
+        className="
+          h-full overflow-y-auto inbox-scroll chat-scroll-container
+          py-3 pb-6
+        "
+      >
+        {groupedMessages.map((item) => {
+          if (item.type === 'date') {
+            return (
+              <div key={item.key} className="flex justify-center my-4">
+                <span className="
+                  px-3 py-1
+                  bg-white/[0.06] backdrop-blur-sm
+                  border border-white/[0.05]
+                  text-gray-300 text-[11px] font-medium
+                  rounded-full shadow-sm
+                ">
+                  {formatDateSeparator(item.date)}
+                </span>
+              </div>
+            );
+          }
 
-      {/* 2. WINDOW STATUS (Sticky under header) */}
-      <div className="flex-none z-10">
-        <WindowStatus
-          windowExpiresAt={conversation.windowExpiresAt || null}
-          isWindowOpen={conversation.isWindowOpen}
-        />
-      </div>
+          const msg = item.message!;
+          const isHighlighted =
+            searchResultIds.length > 0 &&
+            currentSearchIndex >= 0 &&
+            searchResultIds[currentSearchIndex] === msg.id;
 
-      {/* 3. MESSAGES AREA (Scrollable) */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50 dark:bg-gray-900 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600">
-        {loading ? (
-          <div className="flex justify-center py-10">
-            <Loader2 className="w-8 h-8 animate-spin text-green-600" />
-          </div>
-        ) : messages.length > 0 ? (
-          messages.map((msg) => (
-            <MessageBubble key={msg.id} message={msg as any} />
-          ))
-        ) : (
-          <div className="text-center py-10 text-gray-500">
-            No messages yet. Start chatting!
-          </div>
-        )}
+          return (
+            <MessageBubble
+              key={item.key}
+              message={msg}
+              conversationId={conversationId}
+              contactName={contactName}
+              showAvatar={item.showAvatar}
+              isGrouped={item.isGrouped}
+              isHighlighted={isHighlighted}
+              searchQuery={searchQuery}
+              onCopy={handleCopy}
+              onReply={onReply}
+              onForward={onForward}
+              onStar={onStar}
+              onReact={onReact}
+              onDeleted={onDeleted}
+              onEdited={onEdited}
+              onJumpToMessage={onJumpToMessage}
+            />
+          );
+        })}
+
         <div ref={messagesEndRef} />
       </div>
 
-      {/* 4. CHAT INPUT (Fixed at bottom) */}
-      <div className="flex-none z-20">
-        <ChatInput
-          onSendMessage={handleSendMessage}
-          onOpenTemplateModal={() => setShowTemplateModal(true)}
-          isWindowOpen={conversation.isWindowOpen}
-          windowExpiresAt={conversation.windowExpiresAt}
-        />
-      </div>
-
-      {/* 5. SLIDE-OVERS & MODALS */}
-      {showContactInfo && (
-        <ContactInfo
-          isOpen={showContactInfo}
-          contact={{
-            ...conversation.contact,
-            name: getContactName(),
-            tags: []
-          }}
-          onClose={() => setShowContactInfo(false)}
-        />
+      {/* ── Scroll to bottom button ─────────────────────────────────────── */}
+      {showScrollButton && (
+        <button
+          onClick={() => scrollToBottom(true)}
+          className="
+            absolute bottom-6 right-6 z-10
+            w-11 h-11 rounded-full
+            bg-emerald-500 hover:bg-emerald-600
+            text-white shadow-lg shadow-emerald-500/30
+            flex items-center justify-center
+            transition-all hover:scale-110 active:scale-95
+            animate-fade-in
+          "
+        >
+          <ArrowDown className="w-5 h-5" />
+          {newMessageCount > 0 && (
+            <span className="
+              absolute -top-1 -right-1
+              min-w-[20px] h-5 px-1.5
+              bg-red-500 text-white
+              text-[10px] font-bold
+              rounded-full flex items-center justify-center
+              ring-2 ring-[#0a0e1c]
+            ">
+              {newMessageCount > 99 ? '99+' : newMessageCount}
+            </span>
+          )}
+        </button>
       )}
-
-      <SendTemplateModal
-        isOpen={showTemplateModal}
-        onClose={() => setShowTemplateModal(false)}
-        onSuccess={() => {
-          fetchMessages();
-          onConversationUpdate?.();
-        }}
-        conversationId={conversation.id}
-        contactPhone={conversation.contact.phone}
-        contactName={getContactName()}
-      />
     </div>
   );
 };
