@@ -1,43 +1,26 @@
 // src/context/AppContext.ts
-
-import { createContext, useContext } from "react";
-
-export interface UserType {
-    role?:   string;
-    phone?:  string;
-    name:    string;
-    email:   string;
-    avatar?: string | null;
-}
+import { createContext, useContext } from 'react';
 
 export interface AppContextType {
-    user:    UserType | null;
-    setUser: (user: UserType | null) => void;
-
-    unreadCount:   number;
-    totalContacts: number;
-    responseRate:  number;
-
-    refreshStats:    (force?: boolean) => Promise<void>;
-    
-    // ✅ NEW: Realtime unread methods
-    incrementUnread: (convId: string) => void;
-    decrementUnread: (convId: string) => void;
-    setUnreadCount:  (count: number) => void;
+  unreadCount: number;
+  incrementUnread: (conversationId?: string) => void;
+  decrementUnread: (conversationId?: string) => void;
+  resetUnread: () => void;
 }
 
 export const AppContext = createContext<AppContextType>({
-    user:    null,
-    setUser: () => {},
-
-    unreadCount:   0,
-    totalContacts: 0,
-    responseRate:  0,
-
-    refreshStats:    async () => {},
-    incrementUnread: () => {},
-    decrementUnread: () => {},
-    setUnreadCount:  () => {},
+  unreadCount: 0,
+  incrementUnread: () => {},
+  decrementUnread: () => {},
+  resetUnread: () => {},
 });
 
-export const useApp = () => useContext(AppContext);
+export const useApp = () => {
+  const context = useContext(AppContext);
+  if (!context) {
+    console.warn('useApp must be used within AppProvider');
+  }
+  return context;
+};
+
+export default AppContext;

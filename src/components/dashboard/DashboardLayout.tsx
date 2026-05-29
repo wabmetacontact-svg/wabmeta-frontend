@@ -2,6 +2,7 @@ import React, { Suspense, useState, useEffect } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import TopBar from "./TopBar";
+import { useGlobalNotifications } from "../../hooks/useGlobalNotifications";
 
 const RouteLoader: React.FC = () => {
   const [show, setShow] = useState(false);
@@ -22,6 +23,13 @@ const RouteLoader: React.FC = () => {
   );
 };
 
+// ✅ Global notifications ko alag component mein rakho
+// Taaki DashboardLayout re-render na ho
+const GlobalNotificationHandler: React.FC = () => {
+  useGlobalNotifications();
+  return null; // Kuch render nahi karta
+};
+
 const DashboardLayout: React.FC = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -31,6 +39,8 @@ const DashboardLayout: React.FC = () => {
 
   return (
     <div className="min-h-screen relative bg-[#050816]">
+      {/* ✅ Global Notification Handler - always active */}
+      <GlobalNotificationHandler />
 
       {/* ✅ Global dashboard background */}
       <div className="fixed inset-0 -z-10">

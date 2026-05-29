@@ -12,8 +12,6 @@ import {
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { useInboxSocket, type InboundMessage, type ConversationUpdate, type MessageStatusUpdate } from '../hooks/useInboxSocket';
-import { useNotifications, playNotificationSound, showBrowserNotification } from '../hooks/useNotifications';
-import { useInboxNotifications } from '../hooks/useInboxNotifications';
 import api, { inbox as inboxApi, whatsapp as whatsappApi } from '../services/api';
 import toast from 'react-hot-toast';
 import { useApp } from '../context/AppContext';
@@ -656,9 +654,6 @@ const Inbox: React.FC = () => {
     setShowCallScreen(true);
   }, []);
 
-  // ✅ In-app toast notifications
-  const { showNewMessageToast } = useInboxNotifications();
-
   // ============================================
   // ✅ SOCKET HANDLERS
   // ============================================
@@ -711,33 +706,7 @@ const Inbox: React.FC = () => {
         return sortConversations(updated);
       });
 
-      // ✅ Notifications + sidebar update for OTHER conversations
-      if (direction === 'INBOUND' && !isCurrentConv) {
-        playNotificationSound();
-
-        // Sidebar is automatically updated by AppProvider's socket listener
-        // No need to call incrementUnread here - AppProvider handles it
-        
-        setConversations(prev => {
-          const conv = prev.find(c => c.id === convId);
-          const contactName = conv ? getContactName(conv.contact) : 'New Message';
-
-          showNewMessageToast({
-            contactName,
-            messagePreview: (newMsg.content || 'New message').substring(0, 80),
-            conversationId: convId,
-          });
-
-          showBrowserNotification({
-            title:   `💬 ${contactName}`,
-            body:    (newMsg.content || 'New message').substring(0, 100),
-            tag:     `conv-${convId}`,
-            onClick: () => navigate(`/dashboard/inbox/${convId}`),
-          });
-          return prev;
-        });
-      }
-    }, [scrollToBottom, showNewMessageToast, navigate]),
+    }, [scrollToBottom]),
 
     // ===== CONVERSATION UPDATE =====
     useCallback((updatedConv: ConversationUpdate) => {
