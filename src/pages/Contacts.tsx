@@ -378,7 +378,7 @@ const Contacts: React.FC = () => {
   const [editingContact, setEditingContact] = useState<Contact | null>(null);
 
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 20;
+  const itemsPerPage = 10000;
 
   // ============================================
   // DATA FETCHING
@@ -866,19 +866,6 @@ const Contacts: React.FC = () => {
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
-          {meta.total > 0 && (
-            <button
-              onClick={() => {
-                setDeleteAllInput('');
-                setShowDeleteAllModal(true);
-              }}
-              className="flex items-center space-x-2 px-4 py-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-500 font-medium rounded-xl transition-colors border border-red-500/20"
-            >
-              <Trash2 className="w-4 h-4" />
-              <span className="hidden sm:inline">Delete All</span>
-            </button>
-          )}
-
           <button
             onClick={fetchAll}
             className="p-2.5 bg-[#0a0e27]/[0.04] rounded-xl hover:bg-gray-200 text-gray-300 transition-colors"
@@ -1223,31 +1210,6 @@ const Contacts: React.FC = () => {
             </div>
           )}
 
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="flex justify-between items-center bg-[#0a0e27] p-4 rounded-xl border border-white/[0.1]">
-              <span className="text-sm text-gray-500">
-                Page {meta.page} of {totalPages} • {meta.total.toLocaleString()} total contacts
-              </span>
-              <div className="flex gap-2">
-                <button
-                  disabled={meta.page === 1}
-                  onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                  className="flex items-center px-3 py-1.5 border border-white/[0.1] rounded-lg hover:bg-[#050816] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                >
-                  <ChevronLeft className="w-4 h-4 mr-1" />
-                  Previous
-                </button>
-                <button
-                  disabled={meta.page === totalPages}
-                  onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-                  className="flex items-center px-3 py-1.5 border border-white/[0.1] rounded-lg hover:bg-[#050816] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                >
-                  Next
-                  <ChevronRight className="w-4 h-4 ml-1" />
-                </button>
-              </div>
-            </div>
           )}
         </>
       ) : (
