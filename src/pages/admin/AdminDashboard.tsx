@@ -676,7 +676,7 @@ const AdminDashboard: React.FC = () => {
           icon={Building2}
           iconBg="bg-purple-100"
           iconColor="text-purple-600"
-          link="/admin/organizations"
+          link="/admin/subscriptions"
         />
         <StatCard
           title="Messages Sent"
@@ -800,7 +800,7 @@ const AdminDashboard: React.FC = () => {
             <span className="font-medium text-gray-300">Manage Users</span>
           </Link>
           <Link
-            to="/admin/organizations"
+            to="/admin/subscriptions"
             className="flex items-center space-x-3 p-4 bg-[#050816] rounded-xl hover:bg-[#0a0e27]/[0.04] transition-colors"
           >
             <Building2 className="w-5 h-5 text-purple-600" />

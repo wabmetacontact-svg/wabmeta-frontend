@@ -11,9 +11,11 @@ import {
     Trash2,
     Search,
     RefreshCw,
+    Settings,
 } from 'lucide-react';
 import { admin } from '../../services/api';
 import toast from 'react-hot-toast';
+import { Link } from 'react-router-dom';
 
 // Components
 import AssignPlanModal from '../../components/admin/AssignPlanModal';
@@ -371,6 +373,13 @@ const SubscriptionManagement: React.FC = () => {
                                         >
                                             <Trash2 className="w-4 h-4 inline" />
                                         </button>
+                                        <Link
+                                            to={`/admin/organizations/${sub.organizationId}/features`}
+                                            className="text-gray-400 hover:text-white ml-2"
+                                            title="Features & Locks"
+                                        >
+                                            <Settings className="w-4 h-4 inline" />
+                                        </Link>
                                     </td>
                                 </tr>
                             ))}
