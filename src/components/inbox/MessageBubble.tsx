@@ -1,5 +1,6 @@
 // src/components/inbox/MessageBubble.tsx - PREMIUM REDESIGN
 import React, { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import {
   Check,
   CheckCheck,
@@ -398,9 +399,9 @@ const MessageBubble: React.FC<Props> = ({
         {caption && <p className="mt-1.5 text-sm px-1 leading-relaxed">{caption}</p>}
 
         {/* Full image modal */}
-        {showFullImage && !imageError && (
+        {showFullImage && !imageError && typeof document !== 'undefined' && createPortal(
           <div
-            className="fixed inset-0 z-[60] glass-backdrop flex items-center justify-center p-4 image-zoom-enter"
+            className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 image-zoom-enter"
             onClick={() => setShowFullImage(false)}
           >
             <button
@@ -421,7 +422,8 @@ const MessageBubble: React.FC<Props> = ({
             >
               <Download className="w-5 h-5" />
             </button>
-          </div>
+          </div>,
+          document.body
         )}
       </div>
     );
