@@ -196,9 +196,9 @@ const ConversationList: React.FC<Props> = ({
         </div>
 
         {/* Labels Scrollable Bar */}
-        {labels && labels.length > 0 && (
+        {labels && labels.filter(l => l.count > 0).length > 0 && (
           <div className="mt-3 flex items-center gap-2 overflow-x-auto inbox-scroll pb-1">
-            {labels.map((l) => (
+            {labels.filter(l => l.count > 0).map((l) => (
               <button
                 key={l.label}
                 onClick={() => onFilterChange(filter === l.label ? 'all' : l.label)}
