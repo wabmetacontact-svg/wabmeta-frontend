@@ -133,6 +133,7 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, setCollapsed }) => {
           name: "Inbox",
           href: "/dashboard/inbox",
           icon: Inbox,
+          featureKey: "inbox",
           badge: unreadCount > 0 ? (unreadCount > 99 ? '99+' : unreadCount) : undefined,
           badgeColor: "bg-red-500",
         },
@@ -168,7 +169,7 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, setCollapsed }) => {
       title: "Messaging",
       count: 4,
       items: [
-        { name: "Campaigns", href: "/dashboard/campaigns", icon: Send },
+        { name: "Campaigns", href: "/dashboard/campaigns", icon: Send, featureKey: "campaigns" },
         { name: "Templates", href: "/dashboard/templates", icon: FileText },
         { name: "Chatbots", href: "/dashboard/chatbots", icon: Bot, featureKey: "chatbot" },
         { name: "Automations", href: "/dashboard/automations", icon: Zap, featureKey: "automation" },

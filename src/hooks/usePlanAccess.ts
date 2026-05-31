@@ -47,6 +47,13 @@ export const usePlanAccess = () => {
   }, [organization?.planType]);
 
   const hasAccess = useCallback((feature: string): boolean => {
+    // 1. Check for Admin Locks FIRST
+    if (organization?.featureInboxLocked && feature === 'inbox') return false;
+    if (organization?.featureCampaignsLocked && feature === 'campaigns') return false;
+    if (organization?.featureChatbotLocked && feature === 'chatbot') return false;
+    if (organization?.featureAutomationLocked && feature === 'automation') return false;
+
+    // 2. Check Plan Level Access
     const allowedPlans = FEATURES_MATRIX[feature as keyof typeof FEATURES_MATRIX];
     
     if (!allowedPlans) {
@@ -55,7 +62,7 @@ export const usePlanAccess = () => {
     }
 
     return allowedPlans.includes(userPlan);
-  }, [userPlan]);
+  }, [userPlan, organization]);
 
   return { hasAccess, currentPlan: userPlan };
 };

@@ -16,7 +16,11 @@ export default function OrganizationFeatures() {
     const [features, setFeatures] = useState({
         simpleBulkPaste: false,
         csvUpload: false,
-        adminOverride: false
+        adminOverride: false,
+        inboxLocked: false,
+        campaignsLocked: false,
+        chatbotLocked: false,
+        automationLocked: false
     });
 
     useEffect(() => {
@@ -43,7 +47,11 @@ export default function OrganizationFeatures() {
             await admin.updateOrganizationFeatures(organizationId!, {
                 simpleBulkPaste: features.simpleBulkPaste,
                 csvUpload: features.csvUpload,
-                enableOverride: features.adminOverride
+                enableOverride: features.adminOverride,
+                inboxLocked: features.inboxLocked,
+                campaignsLocked: features.campaignsLocked,
+                chatbotLocked: features.chatbotLocked,
+                automationLocked: features.automationLocked
             });
             toast.success('Features updated successfully');
         } catch (error: any) {
@@ -189,6 +197,70 @@ export default function OrganizationFeatures() {
                                         className="sr-only peer"
                                     />
                                     <div className="w-14 h-7 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer dark:bg-gray-600 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-[#0a0e27] after:border-white/[0.12] after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-purple-600 disabled:opacity-50"></div>
+                                </label>
+                            </div>
+                        </div>
+
+                        {/* Lock Features Header */}
+                        <div className="pt-4 pb-2">
+                            <h3 className="text-white font-semibold flex items-center gap-2">
+                                <Shield className="w-5 h-5 text-red-400" />
+                                Disable / Lock Modules
+                            </h3>
+                            <p className="text-sm text-gray-500">Select modules to forcibly lock for this organization.</p>
+                        </div>
+
+                        {/* Module Locks */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {/* Inbox Lock */}
+                            <div className="p-4 bg-red-950/20 rounded-xl border border-red-500/20 flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <Lock className="w-5 h-5 text-red-400" />
+                                    <span className="text-white font-medium">Lock Inbox</span>
+                                </div>
+                                <label className="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" checked={features.inboxLocked} disabled={!features.adminOverride}
+                                        onChange={(e) => setFeatures(prev => ({ ...prev, inboxLocked: e.target.checked }))} className="sr-only peer" />
+                                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-600 disabled:opacity-50"></div>
+                                </label>
+                            </div>
+
+                            {/* Campaigns Lock */}
+                            <div className="p-4 bg-red-950/20 rounded-xl border border-red-500/20 flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <Lock className="w-5 h-5 text-red-400" />
+                                    <span className="text-white font-medium">Lock Campaigns</span>
+                                </div>
+                                <label className="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" checked={features.campaignsLocked} disabled={!features.adminOverride}
+                                        onChange={(e) => setFeatures(prev => ({ ...prev, campaignsLocked: e.target.checked }))} className="sr-only peer" />
+                                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-600 disabled:opacity-50"></div>
+                                </label>
+                            </div>
+
+                            {/* Chatbot Lock */}
+                            <div className="p-4 bg-red-950/20 rounded-xl border border-red-500/20 flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <Lock className="w-5 h-5 text-red-400" />
+                                    <span className="text-white font-medium">Lock Chatbot</span>
+                                </div>
+                                <label className="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" checked={features.chatbotLocked} disabled={!features.adminOverride}
+                                        onChange={(e) => setFeatures(prev => ({ ...prev, chatbotLocked: e.target.checked }))} className="sr-only peer" />
+                                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-600 disabled:opacity-50"></div>
+                                </label>
+                            </div>
+
+                            {/* Automation Lock */}
+                            <div className="p-4 bg-red-950/20 rounded-xl border border-red-500/20 flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <Lock className="w-5 h-5 text-red-400" />
+                                    <span className="text-white font-medium">Lock Automation</span>
+                                </div>
+                                <label className="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" checked={features.automationLocked} disabled={!features.adminOverride}
+                                        onChange={(e) => setFeatures(prev => ({ ...prev, automationLocked: e.target.checked }))} className="sr-only peer" />
+                                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-600 disabled:opacity-50"></div>
                                 </label>
                             </div>
                         </div>

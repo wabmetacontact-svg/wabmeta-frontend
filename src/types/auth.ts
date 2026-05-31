@@ -20,6 +20,10 @@ export interface Organization {
   slug: string;
   planType: 'FREE' | 'STARTER' | 'PRO' | 'ENTERPRISE';
   logo?: string | null;
+  featureInboxLocked?: boolean;
+  featureCampaignsLocked?: boolean;
+  featureChatbotLocked?: boolean;
+  featureAutomationLocked?: boolean;
 }
 
 export interface AuthTokens {

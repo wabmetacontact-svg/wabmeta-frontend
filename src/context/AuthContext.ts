@@ -18,6 +18,10 @@ export interface Organization {
     name: string;
     slug: string;
     planType: string;
+    featureInboxLocked?: boolean;
+    featureCampaignsLocked?: boolean;
+    featureChatbotLocked?: boolean;
+    featureAutomationLocked?: boolean;
 }
 
 export interface AuthContextType {
