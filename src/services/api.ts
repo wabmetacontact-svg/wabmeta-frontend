@@ -940,6 +940,11 @@ export const inbox = {
   // ✅ NEW: Template media resolve
   resolveTemplateMedia: (templateId: string) =>
     api.post('/inbox/template/resolve-media', { templateId }),
+  getLabels: () => api.get<ApiResponse>('/inbox/labels'),
+  createCustomLabel: (label: string) => api.post<ApiResponse>('/inbox/labels', { label }),
+  deleteCustomLabel: (label: string) => api.delete<ApiResponse>(`/inbox/labels/${label}`),
+  addLabels: (id: string, labels: string[]) => api.post<ApiResponse>(`/inbox/conversations/${id}/labels`, { labels }),
+  removeLabel: (id: string, label: string) => api.delete<ApiResponse>(`/inbox/conversations/${id}/labels/${label}`),
 };
 
 // ─── Voice message upload ────────────────────────────────────────────────────

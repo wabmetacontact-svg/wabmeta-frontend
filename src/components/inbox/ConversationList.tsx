@@ -29,10 +29,11 @@ interface Conversation {
   isTyping?: boolean;
 }
 
-type FilterTab = 'all' | 'unread' | 'archived';
+type FilterTab = 'all' | 'unread' | 'archived' | string;
 
 interface Props {
   conversations: Conversation[];
+  labels: { label: string; count: number }[];
   selectedId?: string | null;
   loading?: boolean;
   refreshing?: boolean;
@@ -46,11 +47,13 @@ interface Props {
   onArchiveConversation: (conv: Conversation, e: React.MouseEvent) => void;
   onAddLabel: (conv: Conversation, label: string) => void;
   onRemoveLabel: (conv: Conversation, label: string, e: React.MouseEvent) => void;
+  onCreateCustomLabel: (label: string) => void;
   onNewChat?: () => void;
 }
 
 const ConversationList: React.FC<Props> = ({
   conversations,
+  labels,
   selectedId,
   loading,
   refreshing,
@@ -64,6 +67,7 @@ const ConversationList: React.FC<Props> = ({
   onArchiveConversation,
   onAddLabel,
   onRemoveLabel,
+  onCreateCustomLabel,
   onNewChat,
 }) => {
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
@@ -190,6 +194,29 @@ const ConversationList: React.FC<Props> = ({
             </button>
           ))}
         </div>
+
+        {/* Labels Scrollable Bar */}
+        {labels && labels.length > 0 && (
+          <div className="mt-3 flex items-center gap-2 overflow-x-auto inbox-scroll pb-1">
+            {labels.map((l) => (
+              <button
+                key={l.label}
+                onClick={() => onFilterChange(filter === l.label ? 'all' : l.label)}
+                className={`
+                  flex-shrink-0 px-2.5 py-1 text-[11px] font-medium rounded-full border transition-all flex items-center gap-1.5
+                  ${
+                    filter === l.label
+                      ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-400'
+                      : 'bg-[#0a0e27]/[0.04] border-white/[0.06] text-gray-400 hover:text-gray-200 hover:border-white/[0.1]'
+                  }
+                `}
+              >
+                {l.label}
+                <span className="opacity-50 text-[9px]">{l.count}</span>
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* ── Conversation List ──────────────────────────────────────────── */}
@@ -249,6 +276,8 @@ const ConversationList: React.FC<Props> = ({
                     onArchive={(e) => onArchiveConversation(conv, e)}
                     onAddLabel={(label) => onAddLabel(conv, label)}
                     onRemoveLabel={(label, e) => onRemoveLabel(conv, label, e)}
+                    onCreateCustomLabel={onCreateCustomLabel}
+                    allLabels={labels.map(l => l.label)}
                     searchQuery={searchQuery}
                   />
                 ))}
@@ -278,6 +307,8 @@ const ConversationList: React.FC<Props> = ({
                     onArchive={(e) => onArchiveConversation(conv, e)}
                     onAddLabel={(label) => onAddLabel(conv, label)}
                     onRemoveLabel={(label, e) => onRemoveLabel(conv, label, e)}
+                    onCreateCustomLabel={onCreateCustomLabel}
+                    allLabels={labels.map(l => l.label)}
                     searchQuery={searchQuery}
                   />
                 ))}

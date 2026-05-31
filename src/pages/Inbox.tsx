@@ -172,6 +172,7 @@ const Inbox: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filter, setFilter] = useState<FilterTab>('all');
   const [whatsappAccountId, setWhatsappAccountId] = useState<string | null>(null);
+  const [labels, setLabels] = useState<{label: string, count: number}[]>([]);
 
   // UI State
   const [showContactInfo, setShowContactInfo] = useState(false);
@@ -240,6 +241,34 @@ const Inbox: React.FC = () => {
   }, []);
 
   // ============================================
+  // FETCH LABELS
+  // ============================================
+  const fetchLabels = async () => {
+    try {
+      const res = await inboxApi.getLabels();
+      if (res.data.success) {
+        setLabels(res.data.data);
+      }
+    } catch (e) {
+      console.error('Failed to fetch labels:', e);
+    }
+  };
+
+  useEffect(() => {
+    fetchLabels();
+  }, []);
+
+  const handleCreateCustomLabel = async (label: string) => {
+    try {
+      await inboxApi.createCustomLabel(label);
+      fetchLabels();
+    } catch (e) {
+      console.error('Failed to create custom label:', e);
+      toast.error('Failed to create label');
+    }
+  };
+
+  // ============================================
   // FETCH CONVERSATIONS
   // ============================================
   const fetchConversations = useCallback(
@@ -258,6 +287,9 @@ const Inbox: React.FC = () => {
           params.isArchived = false;
         } else if (filter === 'archived') {
           params.isArchived = true;
+        } else if (filter !== 'all') {
+          params.isArchived = false;
+          params.labels = filter;
         } else {
           params.isArchived = false;
         }
@@ -688,18 +720,22 @@ const Inbox: React.FC = () => {
 
   const handleAddLabel = useCallback(async (conv: Conversation, label: string) => {
     try {
-      await api.post(`/inbox/conversations/${conv.id}/labels`, { labels: [label] });
-      toast.success(`Label added: ${label}`);
-      const updatedLabels = [...new Set([...(conv.labels || []), label])];
+      await inboxApi.addLabels(conv.id, [label]);
       setConversations((prev) =>
-        prev.map((c) => (c.id === conv.id ? { ...c, labels: updatedLabels } : c))
+        prev.map((c) =>
+          c.id === conv.id
+            ? { ...c, labels: [...(c.labels || []), label] }
+            : c
+        )
       );
-      if (selectedConvRef.current?.id === conv.id) {
+      if (selectedConversation?.id === conv.id) {
         setSelectedConversation((prev) =>
-          prev ? { ...prev, labels: updatedLabels } : prev
+          prev ? { ...prev, labels: [...(prev.labels || []), label] } : prev
         );
       }
-    } catch {
+      fetchLabels(); // refresh counts
+    } catch (err) {
+      console.error('Add label failed:', err);
       toast.error('Failed to add label');
     }
   }, []);
@@ -708,9 +744,7 @@ const Inbox: React.FC = () => {
     async (conv: Conversation, label: string, e?: React.MouseEvent) => {
       e?.stopPropagation();
       try {
-        await api.delete(
-          `/inbox/conversations/${conv.id}/labels/${encodeURIComponent(label)}`
-        );
+        await inboxApi.removeLabel(conv.id, label);
         const updatedLabels = (conv.labels || []).filter((l) => l !== label);
         setConversations((prev) =>
           prev.map((c) => (c.id === conv.id ? { ...c, labels: updatedLabels } : c))
@@ -720,6 +754,7 @@ const Inbox: React.FC = () => {
             prev ? { ...prev, labels: updatedLabels } : prev
           );
         }
+        fetchLabels(); // refresh counts
       } catch {
         toast.error('Failed to remove label');
       }
@@ -1143,6 +1178,8 @@ const Inbox: React.FC = () => {
           onArchiveConversation={handleArchiveConversation}
           onAddLabel={handleAddLabel}
           onRemoveLabel={handleRemoveLabel}
+          onCreateCustomLabel={handleCreateCustomLabel}
+          labels={labels}
         />
       </div>
 

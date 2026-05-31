@@ -21,7 +21,6 @@ import {
   getLabelStyle,
   formatChatTime,
   getMessagePreview,
-  AVAILABLE_LABELS,
   type ContactLike,
 } from '../../utils/inboxHelpers';
 
@@ -52,6 +51,9 @@ interface Props {
   onDelete?: (e: React.MouseEvent) => void;
   onAddLabel: (label: string) => void;
   onRemoveLabel: (label: string, e: React.MouseEvent) => void;
+  onRemoveLabel: (label: string, e: React.MouseEvent) => void;
+  onCreateCustomLabel: (label: string) => void;
+  allLabels: string[];
   searchQuery?: string;
 }
 
@@ -65,10 +67,13 @@ const ConversationItem: React.FC<Props> = ({
   onDelete,
   onAddLabel,
   onRemoveLabel,
+  onCreateCustomLabel,
+  allLabels,
   searchQuery = '',
 }) => {
   const [showMenu, setShowMenu] = useState(false);
   const [showLabels, setShowLabels] = useState(false);
+  const [newLabelName, setNewLabelName] = useState('');
   const menuRef = useRef<HTMLDivElement>(null);
 
   const name = getContactName(conv.contact);
@@ -421,7 +426,7 @@ const ConversationItem: React.FC<Props> = ({
             Apply Label
           </div>
           <div className="max-h-64 overflow-y-auto inbox-scroll">
-            {AVAILABLE_LABELS.filter((l) => !(conv.labels || []).includes(l)).map(
+            {allLabels.filter((l) => !(conv.labels || []).includes(l)).map(
               (label) => {
                 const style = getLabelStyle(label);
                 return (
@@ -442,11 +447,47 @@ const ConversationItem: React.FC<Props> = ({
                 );
               }
             )}
-            {AVAILABLE_LABELS.filter((l) => !(conv.labels || []).includes(l)).length === 0 && (
+            {allLabels.filter((l) => !(conv.labels || []).includes(l)).length === 0 && (
               <div className="px-3 py-3 text-xs text-gray-500 text-center">
                 All labels applied
               </div>
             )}
+          </div>
+          
+          <div className="border-t border-white/[0.06] mt-1 p-2">
+            <div className="flex gap-1">
+              <input
+                type="text"
+                placeholder="New custom label..."
+                value={newLabelName}
+                onChange={(e) => setNewLabelName(e.target.value)}
+                onClick={(e) => e.stopPropagation()}
+                onKeyDown={(e) => {
+                  e.stopPropagation();
+                  if (e.key === 'Enter' && newLabelName.trim()) {
+                    onCreateCustomLabel(newLabelName.trim());
+                    onAddLabel(newLabelName.trim());
+                    setNewLabelName('');
+                    setShowLabels(false);
+                  }
+                }}
+                className="flex-1 bg-[#0a0e27]/[0.06] border border-white/[0.06] rounded-md px-2 py-1 text-xs text-white placeholder:text-gray-500 focus:outline-none focus:border-emerald-400/30"
+              />
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (newLabelName.trim()) {
+                    onCreateCustomLabel(newLabelName.trim());
+                    onAddLabel(newLabelName.trim());
+                    setNewLabelName('');
+                    setShowLabels(false);
+                  }
+                }}
+                className="px-2 py-1 bg-emerald-500/20 text-emerald-400 rounded-md text-xs font-medium hover:bg-emerald-500/30 transition-colors"
+              >
+                Add
+              </button>
+            </div>
           </div>
         </div>
       )}
