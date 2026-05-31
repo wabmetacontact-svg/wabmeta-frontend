@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Save, Loader2, Upload, FileSpreadsheet, Shield, Building2 } from 'lucide-react';
+import { ArrowLeft, Save, Loader2, Upload, FileSpreadsheet, Shield, Building2, Lock } from 'lucide-react';
 import { admin } from '../../services/api';
 import toast from 'react-hot-toast';
 import PageSkeleton from '../../components/common/PageSkeleton';
