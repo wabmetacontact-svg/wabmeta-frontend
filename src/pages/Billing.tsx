@@ -491,9 +491,11 @@ const Billing: React.FC = () => {
                 >
                   {subscription.status.toLowerCase()}
                 </span>
-                <span className="text-gray-400 capitalize">
-                  {subscription.billingCycle}
-                </span>
+                {subscription.billingCycle?.toLowerCase() !== 'manual' && (
+                  <span className="text-gray-400 capitalize">
+                    {subscription.billingCycle}
+                  </span>
+                )}
               </div>
               <p className="text-sm text-gray-400 mt-3 flex items-center">
                 <Calendar className="w-4 h-4 mr-2" />
