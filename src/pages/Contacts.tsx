@@ -37,6 +37,7 @@ import {
 import AddContactModal from '../components/contacts/AddContactModal';
 import ImportUploader from '../components/contacts/ImportUploader';
 import SimpleBulkPasteModal from '../components/contacts/SimpleBulkPasteModal';
+import AddToGroupModal from '../components/contacts/AddToGroupModal';
 import CsvUploadModal from '../components/contacts/CsvUploadModal';
 import UpgradeModal from '../components/common/UpgradeModal';
 import api from '../services/api';
@@ -370,6 +371,10 @@ const Contacts: React.FC = () => {
 
   const [showAddModal, setShowAddModal] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
+  const [showAddToGroupModal, setShowAddToGroupModal] = useState(false);
+  const [showDeleteAllModal, setShowDeleteAllModal] = useState(false);
+  const [deleteAllInput, setDeleteAllInput] = useState('');
+  const [deletingAll, setDeletingAll] = useState(false);
   const [editingContact, setEditingContact] = useState<Contact | null>(null);
 
   const [currentPage, setCurrentPage] = useState(1);
@@ -767,6 +772,34 @@ const Contacts: React.FC = () => {
   };
 
   // ============================================
+  // DELETE ALL CONTACTS
+  // ============================================
+
+  const handleDeleteAllContacts = async () => {
+    if (deleteAllInput !== 'DELETE') {
+      alert('Please type DELETE to confirm');
+      return;
+    }
+    
+    setDeletingAll(true);
+    try {
+      await api.delete('/contacts/all');
+      await fetchAll();
+      setShowDeleteAllModal(false);
+      setDeleteAllInput('');
+      alert('All contacts successfully deleted');
+    } catch (err: any) {
+      alert(
+        err.response?.data?.error ||
+        err.response?.data?.message ||
+        'Failed to delete all contacts'
+      );
+    } finally {
+      setDeletingAll(false);
+    }
+  };
+
+  // ============================================
   // STATS COMPUTATION
   // ============================================
 
@@ -833,6 +866,19 @@ const Contacts: React.FC = () => {
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
+          {meta.total > 0 && (
+            <button
+              onClick={() => {
+                setDeleteAllInput('');
+                setShowDeleteAllModal(true);
+              }}
+              className="flex items-center space-x-2 px-4 py-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-500 font-medium rounded-xl transition-colors border border-red-500/20"
+            >
+              <Trash2 className="w-4 h-4" />
+              <span className="hidden sm:inline">Delete All</span>
+            </button>
+          )}
+
           <button
             onClick={fetchAll}
             className="p-2.5 bg-[#0a0e27]/[0.04] rounded-xl hover:bg-gray-200 text-gray-300 transition-colors"
@@ -1060,8 +1106,15 @@ const Contacts: React.FC = () => {
               </div>
               <div className="flex items-center space-x-2">
                 <button
+                  onClick={() => setShowAddToGroupModal(true)}
+                  className="px-3 py-1.5 bg-[#0a0e27] border border-green-500/30 text-green-500 rounded-lg hover:bg-green-500/10 text-sm font-medium transition-colors"
+                >
+                  <Users className="w-4 h-4 inline mr-1" />
+                  Add to Group
+                </button>
+                <button
                   onClick={handleBulkRefreshProfiles}
-                  className="px-3 py-1.5 bg-[#0a0e27] border border-primary-300 text-primary-700 rounded-lg hover:bg-primary-100 text-sm font-medium transition-colors"
+                  className="px-3 py-1.5 bg-[#0a0e27] border border-primary-300 text-primary-500 rounded-lg hover:bg-primary-500/10 text-sm font-medium transition-colors"
                 >
                   <RefreshCw className="w-4 h-4 inline mr-1" />
                   Verify WhatsApp
@@ -1280,6 +1333,70 @@ const Contacts: React.FC = () => {
         }}
         groups={groups}
       />
+
+      <AddToGroupModal
+        isOpen={showAddToGroupModal}
+        onClose={() => setShowAddToGroupModal(false)}
+        selectedContactIds={selectedContacts}
+        onSuccess={() => {
+          setSelectedContacts([]);
+          fetchAll();
+        }}
+      />
+
+      {/* Delete All Modal */}
+      {showDeleteAllModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div 
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm"
+            onClick={deletingAll ? undefined : () => setShowDeleteAllModal(false)}
+          />
+          <div className="relative w-full max-w-md bg-[#0a0e27] border border-red-500/30 rounded-2xl shadow-xl animate-scale-in p-6">
+            <div className="w-12 h-12 bg-red-500/20 rounded-full flex items-center justify-center mb-4 text-red-500 mx-auto">
+              <Trash2 className="w-6 h-6" />
+            </div>
+            <h2 className="text-xl font-bold text-white text-center">Delete All Contacts</h2>
+            <p className="text-gray-400 text-center mt-2 text-sm">
+              Are you sure you want to delete ALL contacts? This will also remove them from all groups. This action CANNOT be undone.
+            </p>
+            
+            <div className="mt-6">
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Type <span className="font-bold text-red-500 select-none">DELETE</span> to confirm
+              </label>
+              <input
+                type="text"
+                value={deleteAllInput}
+                onChange={(e) => setDeleteAllInput(e.target.value)}
+                placeholder="DELETE"
+                className="w-full px-4 py-3 bg-[#050816] border border-white/[0.1] rounded-xl text-white placeholder:text-gray-600 focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 transition-colors"
+              />
+            </div>
+
+            <div className="mt-6 flex gap-3">
+              <button
+                onClick={() => setShowDeleteAllModal(false)}
+                disabled={deletingAll}
+                className="flex-1 px-4 py-2 text-sm font-medium text-gray-300 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] rounded-xl transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteAllContacts}
+                disabled={deleteAllInput !== 'DELETE' || deletingAll}
+                className="flex-1 px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl transition-colors flex items-center justify-center gap-2"
+              >
+                {deletingAll ? (
+                  <span className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                ) : (
+                  <Trash2 className="w-4 h-4" />
+                )}
+                {deletingAll ? 'Deleting...' : 'Delete All'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <UpgradeModal
         isOpen={showUpgradeModal}
