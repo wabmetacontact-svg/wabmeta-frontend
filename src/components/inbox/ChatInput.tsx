@@ -121,34 +121,32 @@ const ChatInput: React.FC<Props> = ({
 
   // ── Submit handler ──────────────────────────────────────────────────────
   const handleSubmit = useCallback(
-    async (e?: React.FormEvent) => {
+    (e?: React.FormEvent) => {
       e?.preventDefault();
-      if (!message.trim() || sending || disabled) return;
+      if (!message.trim() || disabled) return;
 
       if (!windowOpen) {
         onOpenTemplateModal();
         return;
       }
 
-      try {
-        setSending(true);
-        await onSendMessage(message.trim(), {
-          replyToId: replyTo?.id,
-        });
+      const textToSend = message.trim();
+      const replyId = replyTo?.id;
 
-        setMessage('');
-        onCancelReply?.();
-        if (textareaRef.current) {
-          textareaRef.current.style.height = 'auto';
-          textareaRef.current.focus();
-        }
-      } catch (error: any) {
-        toast.error(error.message || 'Failed to send message');
-      } finally {
-        setSending(false);
+      // 1. Reset UI immediately for optimistic typing
+      setMessage('');
+      onCancelReply?.();
+      if (textareaRef.current) {
+        textareaRef.current.style.height = 'auto';
+        textareaRef.current.focus();
       }
+
+      // 2. Send asynchronously without blocking the UI
+      onSendMessage(textToSend, { replyToId: replyId }).catch((error: any) => {
+        toast.error(error.message || 'Failed to send message');
+      });
     },
-    [message, sending, disabled, windowOpen, onOpenTemplateModal, onSendMessage, replyTo, onCancelReply]
+    [message, disabled, windowOpen, onOpenTemplateModal, onSendMessage, replyTo, onCancelReply]
   );
 
   // ── Keyboard shortcuts ──────────────────────────────────────────────────
