@@ -724,13 +724,13 @@ const Inbox: React.FC = () => {
       setConversations((prev) =>
         prev.map((c) =>
           c.id === conv.id
-            ? { ...c, labels: [...(c.labels || []), label] }
+            ? { ...c, labels: [label] }
             : c
         )
       );
       if (selectedConversation?.id === conv.id) {
         setSelectedConversation((prev) =>
-          prev ? { ...prev, labels: [...(prev.labels || []), label] } : prev
+          prev ? { ...prev, labels: [label] } : prev
         );
       }
       fetchLabels(); // refresh counts

@@ -260,12 +260,18 @@ const ConversationItem: React.FC<Props> = ({
                 return (
                   <div
                     key={labelName}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onRemoveLabel(labelName, e);
+                    }}
                     className={`
                       px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider
                       ${style.bg} ${style.text} border ${style.border}
+                      cursor-pointer hover:opacity-80 group/label flex items-center gap-1 transition-all
                     `}
                   >
                     {labelName}
+                    <X className="w-2.5 h-2.5 opacity-0 group-hover/label:opacity-80" />
                   </div>
                 );
               })}
