@@ -63,13 +63,37 @@ export const LABEL_COLORS: Record<string, { bg: string; text: string; dot: strin
 
 export const AVAILABLE_LABELS = Object.keys(LABEL_COLORS);
 
-export const getLabelStyle = (label: string) =>
-  LABEL_COLORS[label.toLowerCase()] || {
+export const CUSTOM_PALETTE = [
+  { name: 'emerald', color: '#10B981', style: { bg: 'bg-emerald-500/15', text: 'text-emerald-300', dot: 'bg-emerald-500', border: 'border-emerald-500/30' } },
+  { name: 'blue', color: '#3B82F6', style: { bg: 'bg-blue-500/15', text: 'text-blue-300', dot: 'bg-blue-500', border: 'border-blue-500/30' } },
+  { name: 'purple', color: '#8B5CF6', style: { bg: 'bg-purple-500/15', text: 'text-purple-300', dot: 'bg-purple-500', border: 'border-purple-500/30' } },
+  { name: 'pink', color: '#EC4899', style: { bg: 'bg-pink-500/15', text: 'text-pink-300', dot: 'bg-pink-500', border: 'border-pink-500/30' } },
+  { name: 'red', color: '#EF4444', style: { bg: 'bg-red-500/15', text: 'text-red-300', dot: 'bg-red-500', border: 'border-red-500/30' } },
+  { name: 'orange', color: '#F97316', style: { bg: 'bg-orange-500/15', text: 'text-orange-300', dot: 'bg-orange-500', border: 'border-orange-500/30' } },
+  { name: 'amber', color: '#F59E0B', style: { bg: 'bg-amber-500/15', text: 'text-amber-300', dot: 'bg-amber-500', border: 'border-amber-500/30' } },
+  { name: 'cyan', color: '#06B6D4', style: { bg: 'bg-cyan-500/15', text: 'text-cyan-300', dot: 'bg-cyan-500', border: 'border-cyan-500/30' } },
+];
+
+export const getLabelStyle = (label: string, customColorHex?: string) => {
+  // Check if it's a predefined label
+  if (LABEL_COLORS[label.toLowerCase()]) {
+    return LABEL_COLORS[label.toLowerCase()];
+  }
+  
+  // Check if a custom color was provided and matches our palette
+  if (customColorHex) {
+    const paletteMatch = CUSTOM_PALETTE.find(p => p.color.toLowerCase() === customColorHex.toLowerCase());
+    if (paletteMatch) return paletteMatch.style;
+  }
+
+  // Fallback
+  return {
     bg: 'bg-gray-500/15',
     text: 'text-gray-300',
     dot: 'bg-gray-500',
     border: 'border-gray-500/30',
   };
+};
 
 // ─── Time helpers ────────────────────────────────────────────────────────────
 export const formatChatTime = (dateString?: string | Date | null): string => {

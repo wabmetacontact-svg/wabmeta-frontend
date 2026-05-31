@@ -51,6 +51,7 @@ interface Props {
   conversation: ConversationData;
   messages: Message[];
   notes?: Note[];
+  allLabels?: { label: string; color?: string }[];
   isMobile?: boolean;
   onClose: () => void;
   onAddLabel: (label: string) => void;
@@ -70,6 +71,7 @@ const ContactInfoPanel: React.FC<Props> = ({
   conversation,
   messages,
   notes = [],
+  allLabels = [],
   isMobile = false,
   onClose,
   onAddLabel,
@@ -322,6 +324,7 @@ const ContactInfoPanel: React.FC<Props> = ({
         >
           <LabelManager
             labels={conversation.labels || []}
+            allLabels={allLabels}
             onAddLabel={onAddLabel}
             onRemoveLabel={onRemoveLabel}
           />

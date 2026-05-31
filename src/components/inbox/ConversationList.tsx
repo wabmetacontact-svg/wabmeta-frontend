@@ -33,7 +33,7 @@ type FilterTab = 'all' | 'unread' | 'archived' | string;
 
 interface Props {
   conversations: Conversation[];
-  labels: { label: string; count: number }[];
+  labels: { label: string; count: number; color?: string }[];
   selectedId?: string | null;
   loading?: boolean;
   refreshing?: boolean;
@@ -47,7 +47,7 @@ interface Props {
   onArchiveConversation: (conv: Conversation, e: React.MouseEvent) => void;
   onAddLabel: (conv: Conversation, label: string) => void;
   onRemoveLabel: (conv: Conversation, label: string, e: React.MouseEvent) => void;
-  onCreateCustomLabel: (label: string) => void;
+  onCreateCustomLabel: (label: string, color?: string) => void;
   onNewChat?: () => void;
 }
 
@@ -277,7 +277,7 @@ const ConversationList: React.FC<Props> = ({
                     onAddLabel={(label) => onAddLabel(conv, label)}
                     onRemoveLabel={(label, e) => onRemoveLabel(conv, label, e)}
                     onCreateCustomLabel={onCreateCustomLabel}
-                    allLabels={labels.map(l => l.label)}
+                    allLabels={labels.map(l => ({ label: l.label, color: l.color }))}
                     searchQuery={searchQuery}
                   />
                 ))}
@@ -308,7 +308,7 @@ const ConversationList: React.FC<Props> = ({
                     onAddLabel={(label) => onAddLabel(conv, label)}
                     onRemoveLabel={(label, e) => onRemoveLabel(conv, label, e)}
                     onCreateCustomLabel={onCreateCustomLabel}
-                    allLabels={labels.map(l => l.label)}
+                    allLabels={labels.map(l => ({ label: l.label, color: l.color }))}
                     searchQuery={searchQuery}
                   />
                 ))}

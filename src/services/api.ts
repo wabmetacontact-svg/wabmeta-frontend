@@ -941,7 +941,7 @@ export const inbox = {
   resolveTemplateMedia: (templateId: string) =>
     api.post('/inbox/template/resolve-media', { templateId }),
   getLabels: () => api.get<ApiResponse>('/inbox/labels'),
-  createCustomLabel: (label: string) => api.post<ApiResponse>('/inbox/labels', { label }),
+  createCustomLabel: (label: string, color?: string) => api.post<ApiResponse>('/inbox/labels', { label, color }),
   deleteCustomLabel: (label: string) => api.delete<ApiResponse>(`/inbox/labels/${label}`),
   addLabels: (id: string, labels: string[]) => api.post<ApiResponse>(`/inbox/conversations/${id}/labels`, { labels }),
   removeLabel: (id: string, label: string) => api.delete<ApiResponse>(`/inbox/conversations/${id}/labels/${label}`),

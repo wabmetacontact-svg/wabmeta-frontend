@@ -5,11 +5,12 @@ import { AVAILABLE_LABELS, getLabelStyle } from '../../utils/inboxHelpers';
 
 interface Props {
   labels: string[];
+  allLabels?: { label: string; color?: string }[];
   onAddLabel: (label: string) => void;
   onRemoveLabel: (label: string) => void;
 }
 
-const LabelManager: React.FC<Props> = ({ labels, onAddLabel, onRemoveLabel }) => {
+const LabelManager: React.FC<Props> = ({ labels, allLabels = [], onAddLabel, onRemoveLabel }) => {
   const [showPicker, setShowPicker] = useState(false);
   const pickerRef = useRef<HTMLDivElement>(null);
 
@@ -24,13 +25,21 @@ const LabelManager: React.FC<Props> = ({ labels, onAddLabel, onRemoveLabel }) =>
     return () => document.removeEventListener('mousedown', handler);
   }, [showPicker]);
 
-  const availableToAdd = AVAILABLE_LABELS.filter((l) => !labels.includes(l));
+  const mergedLabels = Array.from(new Map(
+    [
+      ...AVAILABLE_LABELS.map(l => ({ label: l })),
+      ...allLabels
+    ].map(item => [item.label, item])
+  ).values());
+
+  const availableToAdd = mergedLabels.filter((l) => !labels.includes(l.label));
 
   return (
     <div className="relative">
       <div className="flex flex-wrap gap-1.5">
-        {labels.map((label) => {
-          const style = getLabelStyle(label);
+        {labels.map((labelName) => {
+          const labelObj = allLabels.find(l => l.label === labelName);
+          const style = getLabelStyle(labelName, labelObj?.color);
           return (
             <span
               key={label}
@@ -42,9 +51,9 @@ const LabelManager: React.FC<Props> = ({ labels, onAddLabel, onRemoveLabel }) =>
               `}
             >
               <span className={`w-1.5 h-1.5 rounded-full ${style.dot}`} />
-              <span className="capitalize">{label}</span>
+              <span className="capitalize">{labelName}</span>
               <button
-                onClick={() => onRemoveLabel(label)}
+                onClick={() => onRemoveLabel(labelName)}
                 className="hover:scale-125 transition-transform"
               >
                 <X className="w-2.5 h-2.5" />
@@ -92,8 +101,8 @@ const LabelManager: React.FC<Props> = ({ labels, onAddLabel, onRemoveLabel }) =>
             Choose Label
           </div>
           <div className="max-h-56 overflow-y-auto inbox-scroll py-1">
-            {availableToAdd.map((label) => {
-              const style = getLabelStyle(label);
+            {availableToAdd.map(({ label, color }) => {
+              const style = getLabelStyle(label, color);
               return (
                 <button
                   key={label}

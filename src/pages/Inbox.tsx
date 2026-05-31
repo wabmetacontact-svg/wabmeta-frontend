@@ -172,7 +172,7 @@ const Inbox: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filter, setFilter] = useState<FilterTab>('all');
   const [whatsappAccountId, setWhatsappAccountId] = useState<string | null>(null);
-  const [labels, setLabels] = useState<{label: string, count: number}[]>([]);
+  const [labels, setLabels] = useState<{label: string, count: number, color?: string}[]>([]);
 
   // UI State
   const [showContactInfo, setShowContactInfo] = useState(false);
@@ -258,9 +258,9 @@ const Inbox: React.FC = () => {
     fetchLabels();
   }, []);
 
-  const handleCreateCustomLabel = async (label: string) => {
+  const handleCreateCustomLabel = async (label: string, color?: string) => {
     try {
-      await inboxApi.createCustomLabel(label);
+      await inboxApi.createCustomLabel(label, color);
       fetchLabels();
     } catch (e) {
       console.error('Failed to create custom label:', e);
@@ -1285,6 +1285,7 @@ const Inbox: React.FC = () => {
           conversation={selectedConversation}
           messages={messages}
           notes={notes}
+          allLabels={labels}
           onClose={() => setShowContactInfo(false)}
           onAddLabel={(label) => handleAddLabel(selectedConversation, label)}
           onRemoveLabel={(label) => handleRemoveLabel(selectedConversation, label)}

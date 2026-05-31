@@ -21,6 +21,8 @@ import {
   getLabelStyle,
   formatChatTime,
   getMessagePreview,
+  CUSTOM_PALETTE,
+  AVAILABLE_LABELS,
   type ContactLike,
 } from '../../utils/inboxHelpers';
 
@@ -51,9 +53,8 @@ interface Props {
   onDelete?: (e: React.MouseEvent) => void;
   onAddLabel: (label: string) => void;
   onRemoveLabel: (label: string, e: React.MouseEvent) => void;
-  onRemoveLabel: (label: string, e: React.MouseEvent) => void;
-  onCreateCustomLabel: (label: string) => void;
-  allLabels: string[];
+  onCreateCustomLabel: (label: string, color?: string) => void;
+  allLabels: { label: string; color?: string }[];
   searchQuery?: string;
 }
 
@@ -74,6 +75,7 @@ const ConversationItem: React.FC<Props> = ({
   const [showMenu, setShowMenu] = useState(false);
   const [showLabels, setShowLabels] = useState(false);
   const [newLabelName, setNewLabelName] = useState('');
+  const [selectedColor, setSelectedColor] = useState<string>('#10B981'); // default emerald
   const menuRef = useRef<HTMLDivElement>(null);
 
   const name = getContactName(conv.contact);
@@ -252,27 +254,19 @@ const ConversationItem: React.FC<Props> = ({
           {/* Labels */}
           {conv.labels && conv.labels.length > 0 && (
             <div className="flex flex-wrap gap-1 mt-1.5">
-              {conv.labels.slice(0, 3).map((label) => {
-                const style = getLabelStyle(label);
+              {conv.labels.slice(0, 3).map((labelName) => {
+                const labelObj = allLabels.find(l => l.label === labelName);
+                const style = getLabelStyle(labelName, labelObj?.color);
                 return (
-                  <span
-                    key={label}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onRemoveLabel(label, e);
-                    }}
+                  <div
+                    key={labelName}
                     className={`
-                      inline-flex items-center gap-1 px-1.5 py-0.5
-                      text-[9px] font-medium rounded-md
-                      cursor-pointer transition-all
-                      ${style.bg} ${style.text} ${style.border} border
-                      hover:opacity-80
+                      px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider
+                      ${style.bg} ${style.text} border ${style.border}
                     `}
                   >
-                    <span className={`w-1.5 h-1.5 rounded-full ${style.dot}`} />
-                    {label}
-                    <X className="w-2.5 h-2.5 opacity-0 group-hover:opacity-60" />
-                  </span>
+                    {labelName}
+                  </div>
                 );
               })}
               {conv.labels.length > 3 && (
@@ -426,9 +420,25 @@ const ConversationItem: React.FC<Props> = ({
             Apply Label
           </div>
           <div className="max-h-64 overflow-y-auto inbox-scroll">
-            {allLabels.filter((l) => !(conv.labels || []).includes(l)).map(
-              (label) => {
-                const style = getLabelStyle(label);
+            {(() => {
+              const mergedLabels = Array.from(new Map(
+                [
+                  ...AVAILABLE_LABELS.map(l => ({ label: l })), 
+                  ...allLabels
+                ].map(item => [item.label, item])
+              ).values());
+              const unappliedLabels = mergedLabels.filter((l) => !(conv.labels || []).includes(l.label));
+              
+              if (unappliedLabels.length === 0) {
+                return (
+                  <div className="px-3 py-3 text-xs text-gray-500 text-center">
+                    All labels applied
+                  </div>
+                );
+              }
+
+              return unappliedLabels.map(({ label, color }) => {
+                const style = getLabelStyle(label, color);
                 return (
                   <button
                     key={label}
@@ -445,16 +455,22 @@ const ConversationItem: React.FC<Props> = ({
                     </span>
                   </button>
                 );
-              }
-            )}
-            {allLabels.filter((l) => !(conv.labels || []).includes(l)).length === 0 && (
-              <div className="px-3 py-3 text-xs text-gray-500 text-center">
-                All labels applied
-              </div>
-            )}
+              });
+            })()}
           </div>
           
           <div className="border-t border-white/[0.06] mt-1 p-2">
+            <div className="flex gap-1 mb-2 overflow-x-auto inbox-scroll pb-1">
+              {CUSTOM_PALETTE.map((p) => (
+                <button
+                  key={p.color}
+                  onClick={(e) => { e.stopPropagation(); setSelectedColor(p.color); }}
+                  className={`w-5 h-5 rounded-full flex-shrink-0 border-2 ${selectedColor === p.color ? 'border-white' : 'border-transparent'}`}
+                  style={{ backgroundColor: p.color }}
+                  title={p.name}
+                />
+              ))}
+            </div>
             <div className="flex gap-1">
               <input
                 type="text"
@@ -465,25 +481,28 @@ const ConversationItem: React.FC<Props> = ({
                 onKeyDown={(e) => {
                   e.stopPropagation();
                   if (e.key === 'Enter' && newLabelName.trim()) {
-                    onCreateCustomLabel(newLabelName.trim());
+                    onCreateCustomLabel(newLabelName.trim(), selectedColor);
                     onAddLabel(newLabelName.trim());
                     setNewLabelName('');
                     setShowLabels(false);
                   }
                 }}
-                className="flex-1 bg-[#0a0e27]/[0.06] border border-white/[0.06] rounded-md px-2 py-1 text-xs text-white placeholder:text-gray-500 focus:outline-none focus:border-emerald-400/30"
+                className="
+                  flex-1 bg-white/[0.05] border border-white/[0.1] rounded text-sm px-2 py-1
+                  text-gray-200 placeholder-gray-500 focus:outline-none focus:border-emerald-500/50
+                "
               />
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   if (newLabelName.trim()) {
-                    onCreateCustomLabel(newLabelName.trim());
+                    onCreateCustomLabel(newLabelName.trim(), selectedColor);
                     onAddLabel(newLabelName.trim());
                     setNewLabelName('');
                     setShowLabels(false);
                   }
                 }}
-                className="px-2 py-1 bg-emerald-500/20 text-emerald-400 rounded-md text-xs font-medium hover:bg-emerald-500/30 transition-colors"
+                className="bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30 px-3 py-1 rounded text-sm font-medium transition-colors"
               >
                 Add
               </button>
