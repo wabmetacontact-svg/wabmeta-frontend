@@ -1212,8 +1212,6 @@ const Contacts: React.FC = () => {
               </div>
             </div>
           )}
-
-          )}
         </>
       ) : (
         <div className="space-y-4 animate-fade-in">
