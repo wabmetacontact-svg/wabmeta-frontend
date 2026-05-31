@@ -87,6 +87,26 @@ const API_BASE = 'https://wabmeta-api.onrender.com/api';
 
 const QUICK_REACTIONS = ['👍', '❤️', '😂', '😮', '😢', '🙏'];
 
+const forceDownload = async (url: string, filename: string, e: React.MouseEvent) => {
+  e.preventDefault();
+  e.stopPropagation();
+  try {
+    const response = await fetch(url);
+    const blob = await response.blob();
+    const blobUrl = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = blobUrl;
+    a.download = filename || 'download';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(blobUrl);
+  } catch (error) {
+    console.error("Download failed, opening in new tab", error);
+    window.open(url, '_blank');
+  }
+};
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function parseTemplateContent(content: string, meta: any): {
   isTemplate: boolean;
@@ -395,16 +415,12 @@ const MessageBubble: React.FC<Props> = ({
               className="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl"
               onClick={(e) => e.stopPropagation()}
             />
-            <a
-              href={imgSrc}
-              download
-              target="_blank"
-              rel="noopener noreferrer"
+            <button
               className="absolute bottom-4 right-4 p-2.5 bg-[#0a0e27]/10 hover:bg-[#0a0e27]/20 rounded-full text-white backdrop-blur-sm"
-              onClick={(e) => e.stopPropagation()}
+              onClick={(e) => forceDownload(imgSrc, 'image.jpg', e)}
             >
               <Download className="w-5 h-5" />
-            </a>
+            </button>
           </div>
         )}
       </div>
@@ -536,11 +552,8 @@ const MessageBubble: React.FC<Props> = ({
           </p>
         </div>
         {docSrc && (
-          <a
-            href={docSrc}
-            target="_blank"
-            rel="noopener noreferrer"
-            download={fileName}
+          <button
+            onClick={(e) => forceDownload(docSrc, fileName, e)}
             className="
               p-2 rounded-full
               bg-[#0a0e27]/10 hover:bg-[#0a0e27]/20
@@ -549,7 +562,7 @@ const MessageBubble: React.FC<Props> = ({
             "
           >
             <Download className="w-4 h-4" />
-          </a>
+          </button>
         )}
       </div>
     );
