@@ -20,6 +20,7 @@ import ContactInfoPanel from '../components/inbox/ContactInfoPanel';
 import MessageSearchBar from '../components/inbox/MessageSearchBar';
 import TypingIndicator from '../components/inbox/TypingIndicator';
 import SendTemplateModal from '../components/inbox/SendTemplateModal';
+import UpgradeModal from '../components/common/UpgradeModal';
 import CallScreen from '../components/inbox/CallScreen';
 import QuickRepliesPanel, { type QuickReply } from '../components/inbox/QuickRepliesPanel';
 
@@ -178,6 +179,7 @@ const Inbox: React.FC = () => {
   const [showCallScreen, setShowCallScreen] = useState(false);
   const [showMobileChat, setShowMobileChat] = useState(false);
   const [showQuickReplies, setShowQuickReplies] = useState(false);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
   // Reply / forward
   const [replyTo, setReplyTo] = useState<Message | null>(null);
@@ -467,7 +469,12 @@ const Inbox: React.FC = () => {
         }
       } catch (e: any) {
         console.error('Send error:', e);
-        toast.error(e.response?.data?.message || e.message || 'Failed to send message');
+        const errMessage = e.response?.data?.message || e.message;
+        if (errMessage === 'TRIAL_CHAT_LIMIT_REACHED') {
+          setShowUpgradeModal(true);
+        } else {
+          toast.error(errMessage || 'Failed to send message');
+        }
         setMessages((prev) =>
           prev.map((m) => (m.id === tempId ? { ...m, status: 'FAILED' } : m))
         );
@@ -552,7 +559,12 @@ const Inbox: React.FC = () => {
         toast.success('Sent!');
       } catch (e: any) {
         toast.dismiss();
-        toast.error(e.response?.data?.message || e.message || 'Failed to send media');
+        const errMessage = e.response?.data?.message || e.message;
+        if (errMessage === 'TRIAL_CHAT_LIMIT_REACHED') {
+          setShowUpgradeModal(true);
+        } else {
+          toast.error(errMessage || 'Failed to send media');
+        }
         setMessages((prev) =>
           prev.map((m) => (m.id === tempId ? { ...m, status: 'FAILED' } : m))
         );
@@ -1292,6 +1304,15 @@ const Inbox: React.FC = () => {
         onAdd={handleAddQuickReply}
         onUpdate={handleUpdateQuickReply}
         onDelete={handleDeleteQuickReply}
+      />
+
+      {/* Upgrade Modal */}
+      <UpgradeModal
+        isOpen={showUpgradeModal}
+        onClose={() => setShowUpgradeModal(false)}
+        feature="10+ Contacts"
+        minimumPlan="MONTHLY"
+        message="You have reached your free demo limit of chatting with 10 contacts. Please upgrade your plan to continue."
       />
     </div>
   );

@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { templates, whatsapp, inbox } from '../../services/api';
 import toast from 'react-hot-toast';
+import UpgradeModal from '../common/UpgradeModal';
 
 interface Template {
     id: string;
@@ -52,6 +53,7 @@ const SendTemplateModal: React.FC<SendTemplateModalProps> = ({
     const [search, setSearch] = useState('');
     const [variableValues, setVariableValues] = useState<Record<string, string>>({});
     const [headerMediaUrl, setHeaderMediaUrl] = useState('');
+    const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
     useEffect(() => {
         if (isOpen) {
@@ -293,7 +295,11 @@ const SendTemplateModal: React.FC<SendTemplateModalProps> = ({
                 error.response?.data?.message ||
                 error.message ||
                 'Failed to send template';
-            toast.error(errMsg);
+            if (errMsg === 'TRIAL_CHAT_LIMIT_REACHED') {
+                setShowUpgradeModal(true);
+            } else {
+                toast.error(errMsg);
+            }
         } finally {
             setSending(false);
         }
@@ -553,6 +559,15 @@ const SendTemplateModal: React.FC<SendTemplateModalProps> = ({
                     )}
                 </div>
             </div>
+
+            {/* Upgrade Modal */}
+            <UpgradeModal
+                isOpen={showUpgradeModal}
+                onClose={() => setShowUpgradeModal(false)}
+                feature="10+ Contacts"
+                minimumPlan="MONTHLY"
+                message="You have reached your free demo limit of chatting with 10 contacts. Please upgrade your plan to continue."
+            />
         </div>
     );
 };
