@@ -65,7 +65,7 @@ const ReplyPreview: React.FC<Props> = ({ replyTo, contactName = 'Contact', onCan
   return (
     <div className="
       flex-shrink-0 animate-slide-right
-      bg-white/[0.04] backdrop-blur-sm
+      bg-[#0a0e27]/[0.04] backdrop-blur-sm
       border-t border-white/[0.06]
       px-3 sm:px-4 py-2.5
     ">
@@ -96,7 +96,7 @@ const ReplyPreview: React.FC<Props> = ({ replyTo, contactName = 'Contact', onCan
           onClick={onCancel}
           className="
             p-1 rounded-md
-            hover:bg-white/[0.08]
+            hover:bg-[#0a0e27]/[0.08]
             text-gray-400 hover:text-white
             transition-colors flex-shrink-0
           "

@@ -110,7 +110,7 @@ const AttachmentMenu: React.FC<Props> = ({ isOpen, onClose, onSelect, position =
             className="
               flex flex-col items-center gap-2
               p-3 rounded-xl
-              bg-white/[0.03] hover:bg-white/[0.06]
+              bg-[#0a0e27]/[0.03] hover:bg-[#0a0e27]/[0.06]
               border border-white/[0.05] hover:border-white/[0.1]
               transition-all hover:scale-105 active:scale-95
               group

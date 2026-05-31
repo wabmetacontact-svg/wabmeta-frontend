@@ -30,14 +30,14 @@ const WebhookLogs: React.FC = () => {
   ];
 
   return (
-    <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
-      <div className="p-4 border-b border-gray-200 flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-gray-900">Webhook Logs</h3>
+    <div className="bg-[#0a0e27] border border-white/[0.1] rounded-xl overflow-hidden">
+      <div className="p-4 border-b border-white/[0.1] flex items-center justify-between">
+        <h3 className="text-lg font-semibold text-white">Webhook Logs</h3>
         <div className="flex space-x-2">
-          <button className="p-2 hover:bg-gray-100 rounded-lg text-gray-500">
+          <button className="p-2 hover:bg-[#0a0e27]/[0.04] rounded-lg text-gray-500">
             <RefreshCw className="w-4 h-4" />
           </button>
-          <button className="p-2 hover:bg-gray-100 rounded-lg text-gray-500">
+          <button className="p-2 hover:bg-[#0a0e27]/[0.04] rounded-lg text-gray-500">
             <Filter className="w-4 h-4" />
           </button>
         </div>
@@ -47,7 +47,7 @@ const WebhookLogs: React.FC = () => {
         {logs.map((log) => (
           <div key={log.id} className="group">
             <div 
-              className="p-4 flex items-center justify-between hover:bg-gray-50 cursor-pointer transition-colors"
+              className="p-4 flex items-center justify-between hover:bg-[#050816] cursor-pointer transition-colors"
               onClick={() => setExpandedLog(expandedLog === log.id ? null : log.id)}
             >
               <div className="flex items-center space-x-4">
@@ -57,7 +57,7 @@ const WebhookLogs: React.FC = () => {
                   <XCircle className="w-5 h-5 text-red-500" />
                 )}
                 <div>
-                  <p className="text-sm font-medium text-gray-900">{log.event}</p>
+                  <p className="text-sm font-medium text-white">{log.event}</p>
                   <p className="text-xs text-gray-500">{log.timestamp}</p>
                 </div>
               </div>
@@ -78,7 +78,7 @@ const WebhookLogs: React.FC = () => {
             </div>
             
             {expandedLog === log.id && (
-              <div className="px-4 pb-4 bg-gray-50">
+              <div className="px-4 pb-4 bg-[#050816]">
                 <pre className="p-3 bg-gray-900 text-gray-100 rounded-lg text-xs overflow-x-auto font-mono">
                   {log.payload}
                 </pre>

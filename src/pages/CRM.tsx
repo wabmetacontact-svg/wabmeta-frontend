@@ -76,13 +76,13 @@ const CRM: React.FC = () => {
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold text-gray-900 dark:text-white">CRM Dashboard</h1>
-                    <p className="text-gray-600 dark:text-gray-400">Manage your leads and deals</p>
+                    <h1 className="text-2xl font-bold text-white">CRM Dashboard</h1>
+                    <p className="text-gray-400">Manage your leads and deals</p>
                 </div>
                 <div className="flex items-center gap-3">
                     <Link
                         to="/dashboard/crm/leads"
-                        className="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                        className="px-4 py-2 bg-[#0a0e27]/[0.04] dark:bg-gray-700 text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
                     >
                         View All Leads
                     </Link>
@@ -98,11 +98,11 @@ const CRM: React.FC = () => {
 
             {/* Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+                <div className="bg-[#0a0e27] rounded-xl p-6 border border-white/[0.1]">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-sm text-gray-600 dark:text-gray-400">Total Leads</p>
-                            <p className="text-3xl font-bold text-gray-900 dark:text-white mt-1">
+                            <p className="text-sm text-gray-400">Total Leads</p>
+                            <p className="text-3xl font-bold text-white mt-1">
                                 {stats?.totalLeads || 0}
                             </p>
                             <p className="text-sm text-green-600 mt-1 flex items-center">
@@ -116,11 +116,11 @@ const CRM: React.FC = () => {
                     </div>
                 </div>
 
-                <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+                <div className="bg-[#0a0e27] rounded-xl p-6 border border-white/[0.1]">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-sm text-gray-600 dark:text-gray-400">Pipeline Value</p>
-                            <p className="text-3xl font-bold text-gray-900 dark:text-white mt-1">
+                            <p className="text-sm text-gray-400">Pipeline Value</p>
+                            <p className="text-3xl font-bold text-white mt-1">
                                 {formatCurrency(Number(stats?.totalValue) || 0)}
                             </p>
                             <p className="text-sm text-gray-500 mt-1">Across all stages</p>
@@ -131,10 +131,10 @@ const CRM: React.FC = () => {
                     </div>
                 </div>
 
-                <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+                <div className="bg-[#0a0e27] rounded-xl p-6 border border-white/[0.1]">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-sm text-gray-600 dark:text-gray-400">Won Deals</p>
+                            <p className="text-sm text-gray-400">Won Deals</p>
                             <p className="text-3xl font-bold text-green-600 mt-1">
                                 {stats?.wonLeads || 0}
                             </p>
@@ -148,11 +148,11 @@ const CRM: React.FC = () => {
                     </div>
                 </div>
 
-                <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+                <div className="bg-[#0a0e27] rounded-xl p-6 border border-white/[0.1]">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-sm text-gray-600 dark:text-gray-400">Win Rate</p>
-                            <p className="text-3xl font-bold text-gray-900 dark:text-white mt-1">
+                            <p className="text-sm text-gray-400">Win Rate</p>
+                            <p className="text-3xl font-bold text-white mt-1">
                                 {stats?.winRate || 0}%
                             </p>
                             <p className="text-sm text-red-500 mt-1 flex items-center">
@@ -170,9 +170,9 @@ const CRM: React.FC = () => {
             {/* Pipelines & Recent Leads */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Pipelines */}
-                <div className="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
-                    <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
-                        <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Pipelines</h2>
+                <div className="lg:col-span-2 bg-[#0a0e27] rounded-xl border border-white/[0.1]">
+                    <div className="p-4 border-b border-white/[0.1] flex items-center justify-between">
+                        <h2 className="text-lg font-semibold text-white">Pipelines</h2>
                         <Link to="/dashboard/crm/pipelines" className="text-sm text-green-600 hover:text-green-700">
                             Manage
                         </Link>
@@ -182,10 +182,10 @@ const CRM: React.FC = () => {
                             <Link
                                 key={pipeline.id}
                                 to={`/dashboard/crm/leads?pipelineId=${pipeline.id}`}
-                                className="block p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                                className="block p-4 bg-[#0a0e27]/[0.02] rounded-lg hover:bg-[#0a0e27]/[0.04] dark:hover:bg-gray-700 transition-colors"
                             >
                                 <div className="flex items-center justify-between mb-3">
-                                    <h3 className="font-medium text-gray-900 dark:text-white">{pipeline.name}</h3>
+                                    <h3 className="font-medium text-white">{pipeline.name}</h3>
                                     <span className="text-sm text-gray-500">{pipeline._count?.leads || 0} leads</span>
                                 </div>
                                 <div className="flex gap-1">
@@ -214,9 +214,9 @@ const CRM: React.FC = () => {
                 </div>
 
                 {/* Recent Leads */}
-                <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
-                    <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
-                        <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Recent Leads</h2>
+                <div className="bg-[#0a0e27] rounded-xl border border-white/[0.1]">
+                    <div className="p-4 border-b border-white/[0.1] flex items-center justify-between">
+                        <h2 className="text-lg font-semibold text-white">Recent Leads</h2>
                         <Link to="/dashboard/crm/leads" className="text-sm text-green-600 hover:text-green-700">
                             View All
                         </Link>
@@ -226,11 +226,11 @@ const CRM: React.FC = () => {
                             <Link
                                 key={lead.id}
                                 to={`/dashboard/crm/leads/${lead.id}`}
-                                className="block p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+                                className="block p-4 hover:bg-[#0a0e27]/[0.04] transition-colors"
                             >
                                 <div className="flex items-center justify-between">
                                     <div>
-                                        <p className="font-medium text-gray-900 dark:text-white">{lead.title}</p>
+                                        <p className="font-medium text-white">{lead.title}</p>
                                         <p className="text-sm text-gray-500">
                                             {lead.contact?.firstName} {lead.contact?.lastName}
                                         </p>
@@ -256,7 +256,7 @@ const CRM: React.FC = () => {
                         {recentLeads.length === 0 && (
                             <div className="text-center py-12 px-4">
                                 <Users className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                                <h3 className="text-gray-900 dark:text-white font-medium">No leads yet</h3>
+                                <h3 className="text-white font-medium">No leads yet</h3>
                                 <p className="text-gray-500 text-sm mt-1 mb-4">
                                     You haven't added any leads to your sales pipeline.
                                 </p>
@@ -271,7 +271,7 @@ const CRM: React.FC = () => {
                                     <button
                                         onClick={handleSync}
                                         disabled={syncing}
-                                        className="inline-flex items-center justify-center gap-2 px-4 py-2 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-sm disabled:opacity-50"
+                                        className="inline-flex items-center justify-center gap-2 px-4 py-2 border border-white/[0.1] text-gray-300 rounded-lg hover:bg-[#0a0e27]/[0.04] text-sm disabled:opacity-50"
                                     >
                                         {syncing ? <Loader2 className="w-4 h-4 animate-spin" /> : <TrendingUp className="w-4 h-4" />}
                                         Sync from Contacts

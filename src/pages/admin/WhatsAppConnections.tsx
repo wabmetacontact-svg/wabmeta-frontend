@@ -69,7 +69,7 @@ export default function WhatsAppConnections() {
         <div className="space-y-6">
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+                    <h1 className="text-2xl font-bold text-white">
                         WhatsApp Connections
                     </h1>
                     <p className="text-gray-500 mt-1">
@@ -78,16 +78,16 @@ export default function WhatsAppConnections() {
                 </div>
                 <button
                     onClick={fetchConnections}
-                    className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700"
+                    className="flex items-center gap-2 px-4 py-2 bg-[#0a0e27] border border-white/[0.1] rounded-xl hover:bg-[#0a0e27]/[0.04]"
                 >
                     <RefreshCw className="w-4 h-4" />
                     Refresh
                 </button>
             </div>
 
-            <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+            <div className="bg-[#0a0e27] rounded-2xl border border-white/[0.1] overflow-hidden">
                 <table className="w-full">
-                    <thead className="bg-gray-50 dark:bg-gray-900/50">
+                    <thead className="bg-[#050816]/50">
                         <tr>
                             <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase">
                                 Organization
@@ -111,14 +111,14 @@ export default function WhatsAppConnections() {
                     </thead>
                     <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
                         {connections.map((conn) => (
-                            <tr key={conn.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                            <tr key={conn.id} className="hover:bg-[#0a0e27]/[0.04]">
                                 <td className="px-6 py-4">
                                     <div className="flex items-center gap-3">
                                         <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
                                             <Building2 className="w-5 h-5 text-blue-600" />
                                         </div>
                                         <div>
-                                            <div className="font-medium text-gray-900 dark:text-white">
+                                            <div className="font-medium text-white">
                                                 {conn.organization.name}
                                             </div>
                                             <div className="text-sm text-gray-500">
@@ -130,7 +130,7 @@ export default function WhatsAppConnections() {
                                 <td className="px-6 py-4">
                                     <div className="flex items-center gap-2">
                                         <Phone className="w-4 h-4 text-gray-400" />
-                                        <span className="font-mono font-medium text-gray-900 dark:text-white">
+                                        <span className="font-mono font-medium text-white">
                                             {conn.phoneNumber}
                                         </span>
                                     </div>

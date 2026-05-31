@@ -33,9 +33,9 @@ const VariableMapper: React.FC<VariableMapperProps> = ({
 
   if (variables.length === 0) {
     return (
-      <div className="bg-gray-50 rounded-xl p-6 text-center">
+      <div className="bg-[#050816] rounded-xl p-6 text-center">
         <Info className="w-10 h-10 text-gray-400 mx-auto mb-3" />
-        <h4 className="font-medium text-gray-900 mb-2">No Variables</h4>
+        <h4 className="font-medium text-white mb-2">No Variables</h4>
         <p className="text-sm text-gray-500">
           The selected template doesn't have any variables to map.
         </p>
@@ -60,7 +60,7 @@ const VariableMapper: React.FC<VariableMapperProps> = ({
 
       <div className="space-y-4">
         {variables.map((variable) => (
-          <div key={variable} className="bg-white border border-gray-200 rounded-xl p-4">
+          <div key={variable} className="bg-[#0a0e27] border border-white/[0.1] rounded-xl p-4">
             <div className="flex items-center space-x-4">
               {/* Variable Badge */}
               <div className="shrink-0">
@@ -79,7 +79,7 @@ const VariableMapper: React.FC<VariableMapperProps> = ({
                 <select
                   value={mapping[variable] || ''}
                   onChange={(e) => updateMapping(variable, e.target.value)}
-                  className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
+                  className="w-full px-4 py-2.5 bg-[#0a0e27] border border-white/[0.1] rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
                 >
                   <option value="">Select a field...</option>
                   <optgroup label="Contact Fields">
@@ -104,7 +104,7 @@ const VariableMapper: React.FC<VariableMapperProps> = ({
             {mapping[variable] && (
               <div className="mt-3 pl-22">
                 <p className="text-sm text-gray-500">
-                  Preview: <span className="text-gray-700 font-medium">
+                  Preview: <span className="text-gray-300 font-medium">
                     {contactFields.find(f => f.value === mapping[variable])?.label || mapping[variable]}
                   </span> value will be used
                 </p>
@@ -115,8 +115,8 @@ const VariableMapper: React.FC<VariableMapperProps> = ({
       </div>
 
       {/* Mapping Summary */}
-      <div className="bg-gray-50 rounded-xl p-4">
-        <h4 className="font-medium text-gray-900 mb-3">Mapping Summary</h4>
+      <div className="bg-[#050816] rounded-xl p-4">
+        <h4 className="font-medium text-white mb-3">Mapping Summary</h4>
         <div className="space-y-2">
           {variables.map((variable) => (
             <div key={variable} className="flex items-center justify-between text-sm">

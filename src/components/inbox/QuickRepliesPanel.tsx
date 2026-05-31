@@ -154,7 +154,7 @@ const QuickRepliesPanel: React.FC<Props> = ({
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-lg hover:bg-white/[0.06] text-gray-400 hover:text-white transition-colors"
+            className="p-2 rounded-lg hover:bg-[#0a0e27]/[0.06] text-gray-400 hover:text-white transition-colors"
           >
             <X className="w-4 h-4" />
           </button>
@@ -171,9 +171,9 @@ const QuickRepliesPanel: React.FC<Props> = ({
               placeholder="Search replies..."
               className="
                 w-full pl-9 pr-3 py-2
-                bg-white/[0.04] border border-white/[0.06]
+                bg-[#0a0e27]/[0.04] border border-white/[0.06]
                 rounded-lg text-sm text-white placeholder:text-gray-500
-                focus:outline-none focus:bg-white/[0.06] focus:border-emerald-400/30
+                focus:outline-none focus:bg-[#0a0e27]/[0.06] focus:border-emerald-400/30
               "
             />
           </div>
@@ -215,7 +215,7 @@ const QuickRepliesPanel: React.FC<Props> = ({
                       placeholder="welcome"
                       className="
                         w-full pl-7 pr-3 py-2
-                        bg-white/[0.04] border border-white/[0.08]
+                        bg-[#0a0e27]/[0.04] border border-white/[0.08]
                         rounded-lg text-sm text-white placeholder:text-gray-500
                         focus:outline-none focus:border-emerald-400/40
                       "
@@ -233,7 +233,7 @@ const QuickRepliesPanel: React.FC<Props> = ({
                     placeholder="Greetings"
                     className="
                       w-full px-3 py-2 mt-1
-                      bg-white/[0.04] border border-white/[0.08]
+                      bg-[#0a0e27]/[0.04] border border-white/[0.08]
                       rounded-lg text-sm text-white placeholder:text-gray-500
                       focus:outline-none focus:border-emerald-400/40
                     "
@@ -251,7 +251,7 @@ const QuickRepliesPanel: React.FC<Props> = ({
                   rows={3}
                   className="
                     w-full px-3 py-2 mt-1
-                    bg-white/[0.04] border border-white/[0.08]
+                    bg-[#0a0e27]/[0.04] border border-white/[0.08]
                     rounded-lg text-sm text-white placeholder:text-gray-500
                     focus:outline-none focus:border-emerald-400/40
                     resize-none
@@ -290,7 +290,7 @@ const QuickRepliesPanel: React.FC<Props> = ({
             <div className="flex flex-col items-center justify-center py-16 px-4">
               <div className="
                 w-14 h-14 rounded-full
-                bg-white/[0.03] border border-white/[0.05]
+                bg-[#0a0e27]/[0.03] border border-white/[0.05]
                 flex items-center justify-center mb-3
               ">
                 <Zap className="w-6 h-6 text-gray-500" />
@@ -331,7 +331,7 @@ const QuickRepliesPanel: React.FC<Props> = ({
                         key={qr.id}
                         className="
                           group flex items-start gap-3 p-3
-                          bg-white/[0.03] hover:bg-white/[0.05]
+                          bg-[#0a0e27]/[0.03] hover:bg-[#0a0e27]/[0.05]
                           border border-white/[0.05] hover:border-emerald-400/20
                           rounded-lg transition-all
                           cursor-pointer
@@ -361,7 +361,7 @@ const QuickRepliesPanel: React.FC<Props> = ({
                                   e.stopPropagation();
                                   startEdit(qr);
                                 }}
-                                className="p-1.5 rounded-md hover:bg-white/[0.08] text-gray-400 hover:text-white transition-colors"
+                                className="p-1.5 rounded-md hover:bg-[#0a0e27]/[0.08] text-gray-400 hover:text-white transition-colors"
                               >
                                 <Edit2 className="w-3 h-3" />
                               </button>
@@ -389,9 +389,9 @@ const QuickRepliesPanel: React.FC<Props> = ({
         </div>
 
         {/* Footer */}
-        <div className="flex-shrink-0 px-5 py-3 border-t border-white/[0.06] bg-white/[0.02]">
+        <div className="flex-shrink-0 px-5 py-3 border-t border-white/[0.06] bg-[#0a0e27]/[0.02]">
           <p className="text-[10px] text-gray-500 text-center">
-            💡 Tip: Type <kbd className="px-1 py-0.5 bg-white/[0.06] rounded font-mono">/</kbd> in chat to use shortcuts
+            💡 Tip: Type <kbd className="px-1 py-0.5 bg-[#0a0e27]/[0.06] rounded font-mono">/</kbd> in chat to use shortcuts
           </p>
         </div>
       </div>

@@ -72,10 +72,10 @@ const CreateLeadModal: React.FC<Props> = ({ pipelineId, onClose, onCreated }) =>
 
     return (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white dark:bg-gray-800 rounded-xl w-full max-w-lg">
-                <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
-                    <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Create New Lead</h2>
-                    <button onClick={onClose} className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded">
+            <div className="bg-[#0a0e27] rounded-xl w-full max-w-lg">
+                <div className="flex items-center justify-between p-4 border-b border-white/[0.1]">
+                    <h2 className="text-lg font-semibold text-white">Create New Lead</h2>
+                    <button onClick={onClose} className="p-1 hover:bg-[#0a0e27]/[0.04] dark:hover:bg-gray-700 rounded">
                         <X className="w-5 h-5" />
                     </button>
                 </div>
@@ -83,14 +83,14 @@ const CreateLeadModal: React.FC<Props> = ({ pipelineId, onClose, onCreated }) =>
                 <form onSubmit={handleSubmit} className="p-4 space-y-4">
                     {/* Title */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        <label className="block text-sm font-medium text-gray-300 mb-1">
                             Lead Title *
                         </label>
                         <input
                             type="text"
                             value={formData.title}
                             onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                            className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg"
+                            className="w-full px-3 py-2 bg-[#050816] dark:bg-gray-700 border border-white/[0.1] dark:border-gray-600 rounded-lg"
                             placeholder="e.g., Website Development Project"
                             required
                         />
@@ -98,13 +98,13 @@ const CreateLeadModal: React.FC<Props> = ({ pipelineId, onClose, onCreated }) =>
 
                     {/* Contact Search */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        <label className="block text-sm font-medium text-gray-300 mb-1">
                             Link Contact (Optional)
                         </label>
                         {selectedContact ? (
                             <div className="flex items-center justify-between p-2 bg-green-50 dark:bg-green-900/20 rounded-lg">
                                 <div>
-                                    <p className="font-medium text-gray-900 dark:text-white">
+                                    <p className="font-medium text-white">
                                         {selectedContact.firstName} {selectedContact.lastName}
                                     </p>
                                     <p className="text-sm text-gray-500">{selectedContact.phone}</p>
@@ -124,11 +124,11 @@ const CreateLeadModal: React.FC<Props> = ({ pipelineId, onClose, onCreated }) =>
                                     type="text"
                                     value={searchContact}
                                     onChange={(e) => setSearchContact(e.target.value)}
-                                    className="w-full pl-9 pr-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg"
+                                    className="w-full pl-9 pr-4 py-2 bg-[#050816] dark:bg-gray-700 border border-white/[0.1] dark:border-gray-600 rounded-lg"
                                     placeholder="Search contacts..."
                                 />
                                 {searchContact && contacts.length > 0 && (
-                                    <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                                    <div className="absolute z-10 w-full mt-1 bg-[#0a0e27] dark:bg-gray-700 border border-white/[0.1] dark:border-gray-600 rounded-lg shadow-lg max-h-48 overflow-y-auto">
                                         {contacts.map((contact) => (
                                             <button
                                                 key={contact.id}
@@ -137,7 +137,7 @@ const CreateLeadModal: React.FC<Props> = ({ pipelineId, onClose, onCreated }) =>
                                                     setSelectedContact(contact);
                                                     setSearchContact('');
                                                 }}
-                                                className="w-full px-3 py-2 text-left hover:bg-gray-50 dark:hover:bg-gray-600"
+                                                className="w-full px-3 py-2 text-left hover:bg-[#050816] dark:hover:bg-gray-600"
                                             >
                                                 <p className="font-medium">{contact.firstName} {contact.lastName}</p>
                                                 <p className="text-sm text-gray-500">{contact.phone}</p>
@@ -152,25 +152,25 @@ const CreateLeadModal: React.FC<Props> = ({ pipelineId, onClose, onCreated }) =>
                     {/* Value & Priority */}
                     <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            <label className="block text-sm font-medium text-gray-300 mb-1">
                                 Deal Value (₹)
                             </label>
                             <input
                                 type="number"
                                 value={formData.value}
                                 onChange={(e) => setFormData({ ...formData, value: e.target.value })}
-                                className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg"
+                                className="w-full px-3 py-2 bg-[#050816] dark:bg-gray-700 border border-white/[0.1] dark:border-gray-600 rounded-lg"
                                 placeholder="0"
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            <label className="block text-sm font-medium text-gray-300 mb-1">
                                 Priority
                             </label>
                             <select
                                 value={formData.priority}
                                 onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
-                                className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg"
+                                className="w-full px-3 py-2 bg-[#050816] dark:bg-gray-700 border border-white/[0.1] dark:border-gray-600 rounded-lg"
                             >
                                 <option value="LOW">Low</option>
                                 <option value="MEDIUM">Medium</option>
@@ -183,26 +183,26 @@ const CreateLeadModal: React.FC<Props> = ({ pipelineId, onClose, onCreated }) =>
                     {/* Source & Expected Close Date */}
                     <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            <label className="block text-sm font-medium text-gray-300 mb-1">
                                 Source
                             </label>
                             <input
                                 type="text"
                                 value={formData.source}
                                 onChange={(e) => setFormData({ ...formData, source: e.target.value })}
-                                className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg"
+                                className="w-full px-3 py-2 bg-[#050816] dark:bg-gray-700 border border-white/[0.1] dark:border-gray-600 rounded-lg"
                                 placeholder="e.g., WhatsApp, Website"
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            <label className="block text-sm font-medium text-gray-300 mb-1">
                                 Expected Close
                             </label>
                             <input
                                 type="date"
                                 value={formData.expectedCloseDate}
                                 onChange={(e) => setFormData({ ...formData, expectedCloseDate: e.target.value })}
-                                className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg"
+                                className="w-full px-3 py-2 bg-[#050816] dark:bg-gray-700 border border-white/[0.1] dark:border-gray-600 rounded-lg"
                             />
                         </div>
                     </div>
@@ -212,7 +212,7 @@ const CreateLeadModal: React.FC<Props> = ({ pipelineId, onClose, onCreated }) =>
                         <button
                             type="button"
                             onClick={onClose}
-                            className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+                            className="px-4 py-2 text-gray-300 hover:bg-[#0a0e27]/[0.04] dark:hover:bg-gray-700 rounded-lg"
                         >
                             Cancel
                         </button>

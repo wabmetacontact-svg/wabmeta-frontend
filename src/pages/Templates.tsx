@@ -294,7 +294,7 @@ const Templates: React.FC = () => {
     };
 
     return (
-      <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${colors[category.toLowerCase()] || 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200'
+      <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${colors[category.toLowerCase()] || 'bg-[#0a0e27]/[0.04] text-white dark:bg-gray-800 dark:text-gray-200'
         }`}>
         {category.toUpperCase()}
       </span>
@@ -320,8 +320,8 @@ const Templates: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Message Templates</h1>
-          <p className="text-gray-500 dark:text-gray-400 mt-1">
+          <h1 className="text-2xl font-bold text-white">Message Templates</h1>
+          <p className="text-gray-400 mt-1">
             Create and manage your WhatsApp message templates
           </p>
         </div>
@@ -329,7 +329,7 @@ const Templates: React.FC = () => {
           <button
             onClick={handleSyncTemplates}
             disabled={syncing || loading}
-            className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50 transition-colors"
+            className="inline-flex items-center px-4 py-2 border border-white/[0.12] rounded-lg text-gray-300 hover:bg-[#0a0e27]/[0.04] disabled:opacity-50 transition-colors"
             title="Sync templates from Meta"
           >
             <RefreshCw className={`w-5 h-5 mr-2 ${syncing || loading ? 'animate-spin' : ''}`} />
@@ -365,11 +365,11 @@ const Templates: React.FC = () => {
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map((stat) => (
-          <div key={stat.label} className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
+          <div key={stat.label} className="bg-[#0a0e27] rounded-xl p-4 border border-white/[0.1]">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">{stat.label}</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{stat.value}</p>
+                <p className="text-sm text-gray-400">{stat.label}</p>
+                <p className="text-2xl font-bold text-white mt-1">{stat.value}</p>
               </div>
               <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${stat.color}`}>
                 <stat.icon className="w-6 h-6" />
@@ -380,7 +380,7 @@ const Templates: React.FC = () => {
       </div>
 
       {/* Search & Filters */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
+      <div className="bg-[#0a0e27] rounded-xl border border-white/[0.1] p-4">
         <div className="flex flex-col sm:flex-row gap-4">
           {/* Search */}
           <div className="flex-1 relative">
@@ -390,7 +390,7 @@ const Templates: React.FC = () => {
               placeholder="Search templates..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full pl-10 pr-4 py-2 border border-white/[0.12] rounded-lg bg-[#0a0e27] dark:bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-green-500"
             />
           </div>
 
@@ -398,8 +398,8 @@ const Templates: React.FC = () => {
           <button
             onClick={() => setShowFilters(!showFilters)}
             className={`inline-flex items-center px-4 py-2 border rounded-lg transition-colors ${showFilters
-              ? 'bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600'
-              : 'border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
+              ? 'bg-[#0a0e27]/[0.04] dark:bg-gray-700 border-white/[0.12]'
+              : 'border-white/[0.12] hover:bg-[#0a0e27]/[0.04]'
               }`}
           >
             <Filter className="w-5 h-5 mr-2" />
@@ -417,7 +417,7 @@ const Templates: React.FC = () => {
               onClick={() => setViewMode('grid')}
               className={`p-2 rounded-lg transition-colors ${viewMode === 'grid'
                 ? 'bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-400'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-gray-600'
+                : 'bg-[#0a0e27]/[0.04] text-gray-400 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-gray-600'
                 }`}
             >
               <LayoutGrid className="w-5 h-5" />
@@ -426,7 +426,7 @@ const Templates: React.FC = () => {
               onClick={() => setViewMode('list')}
               className={`p-2 rounded-lg transition-colors ${viewMode === 'list'
                 ? 'bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-400'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-gray-600'
+                : 'bg-[#0a0e27]/[0.04] text-gray-400 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-gray-600'
                 }`}
             >
               <List className="w-5 h-5" />
@@ -436,13 +436,13 @@ const Templates: React.FC = () => {
 
         {/* Expanded Filters */}
         {showFilters && (
-          <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 flex flex-wrap gap-4">
+          <div className="mt-4 pt-4 border-t border-white/[0.1] flex flex-wrap gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Status</label>
+              <label className="block text-sm font-medium text-gray-300 mb-1">Status</label>
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-500"
+                className="px-3 py-2 border border-white/[0.12] rounded-lg bg-[#0a0e27] dark:bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-green-500"
               >
                 <option value="">All Status</option>
                 <option value="APPROVED">Approved</option>
@@ -452,11 +452,11 @@ const Templates: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Category</label>
+              <label className="block text-sm font-medium text-gray-300 mb-1">Category</label>
               <select
                 value={categoryFilter}
                 onChange={(e) => setCategoryFilter(e.target.value)}
-                className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-500"
+                className="px-3 py-2 border border-white/[0.12] rounded-lg bg-[#0a0e27] dark:bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-green-500"
               >
                 <option value="">All Categories</option>
                 <option value="MARKETING">Marketing</option>
@@ -471,7 +471,7 @@ const Templates: React.FC = () => {
                   setStatusFilter('');
                   setCategoryFilter('');
                 }}
-                className="self-end px-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+                className="self-end px-3 py-2 text-sm text-gray-400 hover:text-white dark:hover:text-white"
               >
                 Clear all
               </button>
@@ -481,19 +481,19 @@ const Templates: React.FC = () => {
       </div>
 
       {/* ── Tab Switcher ── */}
-      <div className="flex items-center gap-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-1 w-fit">
+      <div className="flex items-center gap-1 bg-[#0a0e27] border border-white/[0.1] rounded-xl p-1 w-fit">
         <button
           onClick={() => setTemplateTab('text')}
           className={`flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-medium transition-all ${templateTab === 'text'
               ? 'bg-green-600 text-white shadow-sm'
-              : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+              : 'text-gray-400 hover:text-white dark:hover:text-white'
             }`}
         >
           <Type className="w-4 h-4" />
           Text Templates
           <span className={`ml-1 px-1.5 py-0.5 rounded-full text-xs font-semibold ${templateTab === 'text'
-              ? 'bg-white/20 text-white'
-              : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
+              ? 'bg-[#0a0e27]/20 text-white'
+              : 'bg-[#0a0e27]/[0.04] dark:bg-gray-700 text-gray-400'
             }`}>
             {textTemplates.length}
           </span>
@@ -502,14 +502,14 @@ const Templates: React.FC = () => {
           onClick={() => setTemplateTab('media')}
           className={`flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-medium transition-all ${templateTab === 'media'
               ? 'bg-green-600 text-white shadow-sm'
-              : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+              : 'text-gray-400 hover:text-white dark:hover:text-white'
             }`}
         >
           <Image className="w-4 h-4" />
           Media Templates
           <span className={`ml-1 px-1.5 py-0.5 rounded-full text-xs font-semibold ${templateTab === 'media'
-              ? 'bg-white/20 text-white'
-              : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
+              ? 'bg-[#0a0e27]/20 text-white'
+              : 'bg-[#0a0e27]/[0.04] dark:bg-gray-700 text-gray-400'
             }`}>
             {mediaTemplates.length}
           </span>
@@ -521,20 +521,20 @@ const Templates: React.FC = () => {
         <div className="flex items-center justify-center py-12">
           <div className="text-center">
             <Loader2 className="w-10 h-10 text-green-600 animate-spin mx-auto mb-4" />
-            <p className="text-gray-500 dark:text-gray-400">Loading templates...</p>
+            <p className="text-gray-400">Loading templates...</p>
           </div>
         </div>
       ) : activeTemplates.length === 0 ? (
-        <div className="text-center py-16 bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700">
-          <div className="w-20 h-20 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+        <div className="text-center py-16 bg-[#0a0e27] rounded-2xl border border-white/[0.1]">
+          <div className="w-20 h-20 bg-[#0a0e27]/[0.04] dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
             {templateTab === 'media'
               ? <Image className="w-10 h-10 text-gray-400" />
               : <FileText className="w-10 h-10 text-gray-400" />}
           </div>
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+          <h3 className="text-lg font-semibold text-white mb-2">
             No {templateTab === 'media' ? 'media' : 'text'} templates found
           </h3>
-          <p className="text-gray-500 dark:text-gray-400 mb-6 max-w-md mx-auto">
+          <p className="text-gray-400 mb-6 max-w-md mx-auto">
             {searchQuery || statusFilter || categoryFilter
               ? 'Try adjusting your filters or search query'
               : templateTab === 'media'
@@ -564,30 +564,30 @@ const Templates: React.FC = () => {
           ))}
         </div>
       ) : (
-        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+        <div className="bg-[#0a0e27] rounded-xl border border-white/[0.1] overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
+              <thead className="bg-[#050816] border-b border-white/[0.1]">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Template</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Category</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Language</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Created</th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Template</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Category</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Status</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Language</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Created</th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                 {activeTemplates.map((template) => (
-                  <tr key={template.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                  <tr key={template.id} className="hover:bg-[#0a0e27]/[0.04]">
                     <td className="px-6 py-4">
                       <div className="flex items-start">
-                        <div className="w-10 h-10 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center mr-3">
+                        <div className="w-10 h-10 bg-[#0a0e27]/[0.04] dark:bg-gray-700 rounded-lg flex items-center justify-center mr-3">
                           {getHeaderIcon(template.header.type)}
                         </div>
                         <div>
-                          <p className="font-medium text-gray-900 dark:text-white">{template.name}</p>
-                          <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-1 max-w-xs">{template.body}</p>
+                          <p className="font-medium text-white">{template.name}</p>
+                          <p className="text-sm text-gray-400 line-clamp-1 max-w-xs">{template.body}</p>
                           {template.status === 'rejected' && template.rejectionReason && (
                             <p className="text-xs text-red-600 dark:text-red-400 mt-1">Reason: {template.rejectionReason}</p>
                           )}
@@ -596,15 +596,15 @@ const Templates: React.FC = () => {
                     </td>
                     <td className="px-6 py-4">{getCategoryBadge(template.category)}</td>
                     <td className="px-6 py-4">{getStatusBadge(template.status)}</td>
-                    <td className="px-6 py-4"><span className="text-gray-600 dark:text-gray-400">{template.language}</span></td>
+                    <td className="px-6 py-4"><span className="text-gray-400">{template.language}</span></td>
                     <td className="px-6 py-4">
-                      <span className="text-gray-500 dark:text-gray-400 text-sm">
+                      <span className="text-gray-400 text-sm">
                         {new Date(template.createdAt).toLocaleDateString()}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-2">
-                        <button onClick={() => setPreviewTemplate(template)} className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors" title="Preview">
+                        <button onClick={() => setPreviewTemplate(template)} className="p-2 text-gray-400 hover:text-gray-400 dark:hover:text-gray-300 hover:bg-[#0a0e27]/[0.04] dark:hover:bg-gray-700 rounded-lg transition-colors" title="Preview">
                           <Eye className="w-4 h-4" />
                         </button>
                         <button onClick={() => navigate(`/dashboard/templates/edit/${template.id}`)} className="p-2 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors" title="Edit">
@@ -647,14 +647,14 @@ const Templates: React.FC = () => {
       {/* Delete Confirmation Modal */}
       {showDeleteModal && selectedTemplate && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-xl max-w-md w-full p-6">
+          <div className="bg-[#0a0e27] rounded-xl max-w-md w-full p-6">
             <div className="w-12 h-12 bg-red-100 dark:bg-red-900 rounded-full flex items-center justify-center mx-auto mb-4">
               <Trash2 className="w-6 h-6 text-red-600 dark:text-red-400" />
             </div>
-            <h3 className="text-lg font-bold text-center text-gray-900 dark:text-white mb-2">
+            <h3 className="text-lg font-bold text-center text-white mb-2">
               Delete Template
             </h3>
-            <p className="text-center text-gray-600 dark:text-gray-400 mb-6">
+            <p className="text-center text-gray-400 mb-6">
               Are you sure you want to delete "{selectedTemplate.name}"? This action cannot be undone.
             </p>
             <div className="flex gap-3">
@@ -663,7 +663,7 @@ const Templates: React.FC = () => {
                   setShowDeleteModal(false);
                   setSelectedTemplate(null);
                 }}
-                className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                className="flex-1 px-4 py-2 border border-white/[0.12] rounded-lg text-gray-300 hover:bg-[#0a0e27]/[0.04] transition-colors"
               >
                 Cancel
               </button>

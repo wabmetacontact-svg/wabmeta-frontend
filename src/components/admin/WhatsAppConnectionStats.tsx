@@ -29,7 +29,7 @@ const WhatsAppConnectionStats: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+      <div className="bg-[#0a0e27] rounded-xl p-6 border border-white/[0.1]">
         <div className="animate-pulse space-y-4">
           <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/3"></div>
           <div className="h-20 bg-gray-200 dark:bg-gray-700 rounded"></div>
@@ -47,9 +47,9 @@ const WhatsAppConnectionStats: React.FC = () => {
     : 0;
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+    <div className="bg-[#0a0e27] rounded-xl p-6 border border-white/[0.1]">
       <div className="flex items-center justify-between mb-6">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+        <h3 className="text-lg font-semibold text-white">
           WhatsApp Connections
         </h3>
         <TrendingUp className="w-5 h-5 text-green-600 dark:text-green-400" />
@@ -63,7 +63,7 @@ const WhatsAppConnectionStats: React.FC = () => {
               <Cloud className="w-5 h-5 text-green-600 dark:text-green-500" />
             </div>
             <div>
-              <p className="font-semibold text-gray-900 dark:text-white">Cloud API</p>
+              <p className="font-semibold text-white">Cloud API</p>
               <p className="text-xs text-green-600 dark:text-green-400">
                 {stats?.cloudApi?.active || 0} active
               </p>
@@ -86,7 +86,7 @@ const WhatsAppConnectionStats: React.FC = () => {
               <Smartphone className="w-5 h-5 text-orange-600 dark:text-orange-500" />
             </div>
             <div>
-              <p className="font-semibold text-gray-900 dark:text-white">Business App</p>
+              <p className="font-semibold text-white">Business App</p>
               <p className="text-xs text-orange-600 dark:text-orange-400">
                 {stats?.businessApp?.active || 0} active
               </p>
@@ -108,7 +108,7 @@ const WhatsAppConnectionStats: React.FC = () => {
                 <Server className="w-5 h-5 text-blue-600 dark:text-blue-500" />
               </div>
               <div>
-                <p className="font-semibold text-gray-900 dark:text-white">On-Premise</p>
+                <p className="font-semibold text-white">On-Premise</p>
                 <p className="text-xs text-blue-600 dark:text-blue-400">
                   {stats.onPremise?.active || 0} active
                 </p>
@@ -125,10 +125,10 @@ const WhatsAppConnectionStats: React.FC = () => {
       </div>
 
       {/* Total */}
-      <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+      <div className="mt-4 pt-4 border-t border-white/[0.1]">
         <div className="flex items-center justify-between">
-          <span className="text-sm text-gray-600 dark:text-gray-400">Total Connections</span>
-          <span className="text-lg font-bold text-gray-900 dark:text-white">
+          <span className="text-sm text-gray-400">Total Connections</span>
+          <span className="text-lg font-bold text-white">
             {totalConnections}
           </span>
         </div>

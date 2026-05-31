@@ -26,8 +26,8 @@ const CampaignStats: React.FC<CampaignStatsProps> = ({ stats, showProgress = tru
       label: 'Total Recipients',
       value: stats.total,
       icon: Send,
-      color: 'bg-gray-100 text-gray-600',
-      bgColor: 'bg-gray-50'
+      color: 'bg-[#0a0e27]/[0.04] text-gray-400',
+      bgColor: 'bg-[#050816]'
     },
     {
       label: 'Sent',
@@ -75,9 +75,9 @@ const CampaignStats: React.FC<CampaignStatsProps> = ({ stats, showProgress = tru
     <div className="space-y-6">
       {/* Progress Bar */}
       {showProgress && stats.pending > 0 && (
-        <div className="bg-white rounded-xl p-4 border border-gray-200">
+        <div className="bg-[#0a0e27] rounded-xl p-4 border border-white/[0.1]">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-gray-700">Campaign Progress</span>
+            <span className="text-sm font-medium text-gray-300">Campaign Progress</span>
             <span className="text-sm text-gray-500">
               {stats.sent} / {stats.total} sent
             </span>
@@ -121,7 +121,7 @@ const CampaignStats: React.FC<CampaignStatsProps> = ({ stats, showProgress = tru
                 <span className="text-xs font-medium text-gray-500">{stat.rate}</span>
               )}
             </div>
-            <p className="text-2xl font-bold text-gray-900">{stat.value.toLocaleString()}</p>
+            <p className="text-2xl font-bold text-white">{stat.value.toLocaleString()}</p>
             <p className="text-sm text-gray-500">{stat.label}</p>
           </div>
         ))}
@@ -129,27 +129,27 @@ const CampaignStats: React.FC<CampaignStatsProps> = ({ stats, showProgress = tru
 
       {/* Rates Summary */}
       <div className="grid grid-cols-3 gap-4">
-        <div className="bg-white rounded-xl p-4 border border-gray-200">
+        <div className="bg-[#0a0e27] rounded-xl p-4 border border-white/[0.1]">
           <div className="flex items-center justify-between">
-            <span className="text-gray-600">Delivery Rate</span>
+            <span className="text-gray-400">Delivery Rate</span>
             <div className={`flex items-center ${deliveryRate >= 95 ? 'text-green-600' : deliveryRate >= 80 ? 'text-yellow-600' : 'text-red-600'}`}>
               {deliveryRate >= 95 ? <TrendingUp className="w-4 h-4 mr-1" /> : <TrendingDown className="w-4 h-4 mr-1" />}
               <span className="font-bold">{deliveryRate}%</span>
             </div>
           </div>
         </div>
-        <div className="bg-white rounded-xl p-4 border border-gray-200">
+        <div className="bg-[#0a0e27] rounded-xl p-4 border border-white/[0.1]">
           <div className="flex items-center justify-between">
-            <span className="text-gray-600">Read Rate</span>
+            <span className="text-gray-400">Read Rate</span>
             <div className={`flex items-center ${readRate >= 50 ? 'text-green-600' : readRate >= 30 ? 'text-yellow-600' : 'text-red-600'}`}>
               {readRate >= 50 ? <TrendingUp className="w-4 h-4 mr-1" /> : <TrendingDown className="w-4 h-4 mr-1" />}
               <span className="font-bold">{readRate}%</span>
             </div>
           </div>
         </div>
-        <div className="bg-white rounded-xl p-4 border border-gray-200">
+        <div className="bg-[#0a0e27] rounded-xl p-4 border border-white/[0.1]">
           <div className="flex items-center justify-between">
-            <span className="text-gray-600">Reply Rate</span>
+            <span className="text-gray-400">Reply Rate</span>
             <div className={`flex items-center ${replyRate >= 10 ? 'text-green-600' : replyRate >= 5 ? 'text-yellow-600' : 'text-red-600'}`}>
               {replyRate >= 10 ? <TrendingUp className="w-4 h-4 mr-1" /> : <TrendingDown className="w-4 h-4 mr-1" />}
               <span className="font-bold">{replyRate}%</span>

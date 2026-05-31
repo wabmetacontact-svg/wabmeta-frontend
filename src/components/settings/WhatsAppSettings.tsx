@@ -74,8 +74,8 @@ const getQualityConfig = (rating: string | null) => {
     default:
       return {
         label: 'Unknown',
-        color: 'text-gray-700 dark:text-gray-300',
-        bg: 'bg-gray-100 dark:bg-gray-800',
+        color: 'text-gray-300',
+        bg: 'bg-[#0a0e27]/[0.04]',
         dot: 'bg-gray-400',
         ring: 'ring-gray-500/20',
       };
@@ -365,7 +365,7 @@ export default function WhatsAppSettings() {
       {/* ─── Header with Sync Button ──────────────────────────────────── */}
       <div className="flex items-start justify-between">
         <div>
-          <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+          <h2 className="text-xl font-bold text-white">
             WhatsApp Connection
           </h2>
           <p className="text-gray-500 mt-1">
@@ -385,9 +385,9 @@ export default function WhatsAppSettings() {
               onClick={() => syncAllQuality(true)}
               disabled={syncing}
               className="flex items-center gap-2 px-3 py-2 text-sm font-medium
-                text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800
-                border border-gray-200 dark:border-gray-700 rounded-lg
-                hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors
+                text-gray-300 bg-[#0a0e27]
+                border border-white/[0.1] rounded-lg
+                hover:bg-[#0a0e27]/[0.04] transition-colors
                 disabled:opacity-50"
             >
               <RefreshCw
@@ -404,7 +404,7 @@ export default function WhatsAppSettings() {
         className={`p-6 rounded-2xl border-2 transition-all ${
           hasConnectedAccount
             ? 'border-green-300 bg-green-50/50 dark:border-green-700 dark:bg-green-900/10'
-            : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800'
+            : 'border-white/[0.1] bg-[#0a0e27]'
         }`}
       >
         <div className="flex items-start justify-between mb-4">
@@ -413,7 +413,7 @@ export default function WhatsAppSettings() {
               <Cloud className="w-6 h-6 text-green-600" />
             </div>
             <div>
-              <h3 className="font-bold text-gray-900 dark:text-white">
+              <h3 className="font-bold text-white">
                 Meta WhatsApp Cloud API
               </h3>
               <p className="text-sm text-gray-500">
@@ -442,10 +442,10 @@ export default function WhatsAppSettings() {
               return (
                 <div
                   key={account.id}
-                  className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden"
+                  className="bg-[#0a0e27] rounded-xl border border-white/[0.1] overflow-hidden"
                 >
                   {/* Account Header */}
-                  <div className="p-4 border-b border-gray-100 dark:border-gray-700">
+                  <div className="p-4 border-b border-white/[0.08]">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 bg-green-100 dark:bg-green-900/40 rounded-full flex items-center justify-center">
@@ -453,7 +453,7 @@ export default function WhatsAppSettings() {
                         </div>
                         <div>
                           <div className="flex items-center gap-2">
-                            <span className="font-mono font-semibold text-gray-900 dark:text-white">
+                            <span className="font-mono font-semibold text-white">
                               {account.phoneNumber}
                             </span>
                             {account.isDefault && (
@@ -488,9 +488,9 @@ export default function WhatsAppSettings() {
                   </div>
 
                   {/* Stats Grid */}
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 p-4 bg-gray-50 dark:bg-gray-900/30">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 p-4 bg-[#050816]/30">
                     {/* Quality Rating */}
-                    <div className="bg-white dark:bg-gray-800 p-3 rounded-lg border border-gray-100 dark:border-gray-700">
+                    <div className="bg-[#0a0e27] p-3 rounded-lg border border-white/[0.08]">
                       <div className="flex items-center gap-1.5 text-xs text-gray-500 mb-1.5">
                         <TrendingUp className="w-3.5 h-3.5" />
                         Quality
@@ -506,18 +506,18 @@ export default function WhatsAppSettings() {
                     </div>
 
                     {/* Messaging Limit */}
-                    <div className="bg-white dark:bg-gray-800 p-3 rounded-lg border border-gray-100 dark:border-gray-700">
+                    <div className="bg-[#0a0e27] p-3 rounded-lg border border-white/[0.08]">
                       <div className="flex items-center gap-1.5 text-xs text-gray-500 mb-1.5">
                         <Activity className="w-3.5 h-3.5" />
                         Tier Limit
                       </div>
-                      <p className="text-sm font-bold text-gray-900 dark:text-white">
+                      <p className="text-sm font-bold text-white">
                         {getMessagingTierLabel(account.messagingLimit)}
                       </p>
                     </div>
 
                     {/* Verification Status */}
-                    <div className="bg-white dark:bg-gray-800 p-3 rounded-lg border border-gray-100 dark:border-gray-700">
+                    <div className="bg-[#0a0e27] p-3 rounded-lg border border-white/[0.08]">
                       <div className="flex items-center gap-1.5 text-xs text-gray-500 mb-1.5">
                         <Shield className="w-3.5 h-3.5" />
                         Verification
@@ -536,12 +536,12 @@ export default function WhatsAppSettings() {
                     </div>
 
                     {/* Daily Usage */}
-                    <div className="bg-white dark:bg-gray-800 p-3 rounded-lg border border-gray-100 dark:border-gray-700">
+                    <div className="bg-[#0a0e27] p-3 rounded-lg border border-white/[0.08]">
                       <div className="flex items-center gap-1.5 text-xs text-gray-500 mb-1.5">
                         <Activity className="w-3.5 h-3.5" />
                         Today's Usage
                       </div>
-                      <p className="text-sm font-bold text-gray-900 dark:text-white">
+                      <p className="text-sm font-bold text-white">
                         {account.dailyMessagesUsed}
                         <span className="text-gray-400 text-xs">
                           {' '}
@@ -566,7 +566,7 @@ export default function WhatsAppSettings() {
                   </div>
 
                   {/* Actions */}
-                  <div className="p-4 flex items-center justify-end gap-2 border-t border-gray-100 dark:border-gray-700">
+                  <div className="p-4 flex items-center justify-end gap-2 border-t border-white/[0.08]">
                     {!account.isDefault && connectedAccounts.length > 1 && (
                       <button
                         onClick={() => handleSetDefault(account.id)}
@@ -604,10 +604,10 @@ export default function WhatsAppSettings() {
         ) : (
           /* ─── Empty State ──────────────────────────────────────────── */
           <div className="text-center py-8">
-            <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center">
+            <div className="w-16 h-16 mx-auto mb-4 bg-[#0a0e27]/[0.04] dark:bg-gray-700 rounded-full flex items-center justify-center">
               <AlertCircle className="w-8 h-8 text-gray-400" />
             </div>
-            <h4 className="font-semibold text-gray-900 dark:text-white mb-1">
+            <h4 className="font-semibold text-white mb-1">
               No WhatsApp Account Connected
             </h4>
             <p className="text-sm text-gray-500 mb-6 max-w-md mx-auto">

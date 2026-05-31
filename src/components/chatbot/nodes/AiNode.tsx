@@ -10,7 +10,7 @@ const AiNode: React.FC<{ data: any; selected?: boolean }> = ({
   
   return (
     <div className={`
-      px-4 py-3 bg-white dark:bg-gray-700 rounded-xl shadow-lg 
+      px-4 py-3 bg-[#0a0e27] dark:bg-gray-700 rounded-xl shadow-lg 
       border-2 min-w-[220px] max-w-[300px] transition-all
       ${selected 
         ? 'border-emerald-500 shadow-emerald-200 dark:shadow-emerald-900' 
@@ -29,7 +29,7 @@ const AiNode: React.FC<{ data: any; selected?: boolean }> = ({
         <div className="p-1 bg-emerald-100 dark:bg-emerald-900/40 rounded-lg">
           <Brain className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
         </div>
-        <span className="font-semibold text-gray-900 dark:text-white text-sm">
+        <span className="font-semibold text-white text-sm">
           Gemini AI
         </span>
         <span className="ml-auto flex items-center gap-1 text-xs bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 px-2 py-0.5 rounded-full font-medium">
@@ -47,7 +47,7 @@ const AiNode: React.FC<{ data: any; selected?: boolean }> = ({
           text-xs rounded-lg p-2 max-h-16 overflow-hidden
           ${hasPrompt 
             ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-800 dark:text-emerald-300' 
-            : 'bg-gray-50 dark:bg-gray-800 text-gray-400 italic'
+            : 'bg-[#0a0e27] text-gray-400 italic'
           }
         `}>
           {hasPrompt 
@@ -65,7 +65,7 @@ const AiNode: React.FC<{ data: any; selected?: boolean }> = ({
           { icon: '🌐', label: 'Hindi + English' },
           { icon: '⚡', label: 'Fast Replies' },
         ].map((feature, i) => (
-          <div key={i} className="flex items-center gap-1 text-[10px] text-gray-500 dark:text-gray-400">
+          <div key={i} className="flex items-center gap-1 text-[10px] text-gray-400">
             <span>{feature.icon}</span>
             <span>{feature.label}</span>
           </div>

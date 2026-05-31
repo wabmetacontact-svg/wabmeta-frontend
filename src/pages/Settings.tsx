@@ -89,11 +89,11 @@ const Settings: React.FC = () => {
     <div className="max-w-7xl mx-auto px-4 py-6">
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center">
-          <SettingsIcon className="w-8 h-8 mr-3 text-gray-600 dark:text-gray-400" />
+        <h1 className="text-3xl font-bold text-white flex items-center">
+          <SettingsIcon className="w-8 h-8 mr-3 text-gray-400" />
           Settings
         </h1>
-        <p className="mt-1 text-gray-600 dark:text-gray-400">
+        <p className="mt-1 text-gray-400">
           Manage your account and application settings
         </p>
       </div>
@@ -101,7 +101,7 @@ const Settings: React.FC = () => {
       <div className="flex flex-col lg:flex-row gap-6">
         {/* Sidebar Tabs */}
         <div className="lg:w-64 flex-shrink-0">
-          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden sticky top-6">
+          <div className="bg-[#0a0e27] rounded-xl border border-white/[0.1] overflow-hidden sticky top-6">
             <nav className="flex flex-col">
               {tabs.map((tab) => (
                 <button
@@ -109,7 +109,7 @@ const Settings: React.FC = () => {
                   onClick={() => setActiveTab(tab.id as SettingsTab)}
                   className={`flex items-center px-4 py-3 text-left transition-colors border-l-4 ${activeTab === tab.id
                       ? 'bg-green-50 dark:bg-green-900/20 border-green-600 text-green-700 dark:text-green-400'
-                      : 'border-transparent text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700/50'
+                      : 'border-transparent text-gray-400 hover:bg-[#0a0e27]/[0.04]'
                     }`}
                 >
                   <tab.icon className={`w-5 h-5 mr-3 ${activeTab === tab.id ? 'text-green-600' : ''
@@ -119,7 +119,7 @@ const Settings: React.FC = () => {
                       }`}>
                       {tab.name}
                     </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-500 hidden sm:block">
+                    <p className="text-xs text-gray-500 hidden sm:block">
                       {tab.description}
                     </p>
                   </div>
@@ -128,28 +128,28 @@ const Settings: React.FC = () => {
             </nav>
 
             {/* Quick Links */}
-            <div className="border-t border-gray-200 dark:border-gray-700 p-4">
-              <p className="text-xs text-gray-500 dark:text-gray-500 uppercase tracking-wider mb-3">
+            <div className="border-t border-white/[0.1] p-4">
+              <p className="text-xs text-gray-500 uppercase tracking-wider mb-3">
                 Quick Links
               </p>
               <div className="space-y-2">
                 <Link
                   to="/dashboard/settings/profile"
-                  className="flex items-center text-sm text-gray-600 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-400"
+                  className="flex items-center text-sm text-gray-400 hover:text-green-600 dark:hover:text-green-400"
                 >
                   <User className="w-4 h-4 mr-2" />
                   My Profile
                 </Link>
                 <Link
                   to="/dashboard/settings/team"
-                  className="flex items-center text-sm text-gray-600 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-400"
+                  className="flex items-center text-sm text-gray-400 hover:text-green-600 dark:hover:text-green-400"
                 >
                   <Globe className="w-4 h-4 mr-2" />
                   Team Members
                 </Link>
                 <Link
                   to="/dashboard/settings/billing"
-                  className="flex items-center text-sm text-gray-600 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-400"
+                  className="flex items-center text-sm text-gray-400 hover:text-green-600 dark:hover:text-green-400"
                 >
                   <CreditCard className="w-4 h-4 mr-2" />
                   Billing & Plans
@@ -161,7 +161,7 @@ const Settings: React.FC = () => {
 
         {/* Main Content */}
         <div className="flex-1 min-w-0">
-          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+          <div className="bg-[#0a0e27] rounded-xl border border-white/[0.1] p-6">
             {renderTabContent()}
           </div>
         </div>

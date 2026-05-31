@@ -248,7 +248,7 @@ const Profile: React.FC = () => {
       <div className="flex items-center justify-center h-96">
         <div className="text-center max-w-md">
           <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-          <h2 className="text-xl font-bold text-gray-900 mb-2">Failed to Load Profile</h2>
+          <h2 className="text-xl font-bold text-white mb-2">Failed to Load Profile</h2>
           <p className="text-gray-500 mb-4">{error}</p>
           <button
             onClick={fetchProfile}
@@ -270,13 +270,13 @@ const Profile: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">My Profile</h1>
+          <h1 className="text-2xl font-bold text-white">My Profile</h1>
           <p className="text-gray-500 mt-1">Manage your personal information</p>
         </div>
         <button
           onClick={fetchProfile}
           disabled={loading}
-          className="flex items-center space-x-2 px-4 py-2 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors"
+          className="flex items-center space-x-2 px-4 py-2 bg-[#0a0e27] border border-white/[0.1] rounded-xl hover:bg-[#050816] transition-colors"
         >
           <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
           <span>Refresh</span>
@@ -309,7 +309,7 @@ const Profile: React.FC = () => {
         {/* Left Column - Avatar & Info */}
         <div className="lg:col-span-1 space-y-6">
           {/* Profile Card */}
-          <div className="bg-white border border-gray-200 rounded-2xl p-6 text-center">
+          <div className="bg-[#0a0e27] border border-white/[0.1] rounded-2xl p-6 text-center">
             {/* Avatar */}
             <div className="relative inline-block mb-4">
               <div className="w-28 h-28 rounded-full bg-primary-100 flex items-center justify-center overflow-hidden border-4 border-white shadow-lg">
@@ -337,7 +337,7 @@ const Profile: React.FC = () => {
             </div>
 
             {/* Name & Email */}
-            <h2 className="text-xl font-bold text-gray-900">
+            <h2 className="text-xl font-bold text-white">
               {profile?.firstName} {profile?.lastName}
             </h2>
             <p className="text-gray-500">{profile?.email}</p>
@@ -376,22 +376,22 @@ const Profile: React.FC = () => {
           </div>
 
           {/* Quick Links */}
-          <div className="bg-white border border-gray-200 rounded-2xl p-4">
-            <h3 className="font-semibold text-gray-900 mb-3">Quick Actions</h3>
+          <div className="bg-[#0a0e27] border border-white/[0.1] rounded-2xl p-4">
+            <h3 className="font-semibold text-white mb-3">Quick Actions</h3>
             <div className="space-y-2">
               <a
                 href="/dashboard/settings"
-                className="flex items-center space-x-3 p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors"
+                className="flex items-center space-x-3 p-3 bg-[#050816] rounded-xl hover:bg-[#0a0e27]/[0.04] transition-colors"
               >
                 <Building2 className="w-5 h-5 text-gray-400" />
-                <span className="text-gray-700">Organization Settings</span>
+                <span className="text-gray-300">Organization Settings</span>
               </a>
               <a
                 href="/dashboard/settings"
-                className="flex items-center space-x-3 p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors"
+                className="flex items-center space-x-3 p-3 bg-[#050816] rounded-xl hover:bg-[#0a0e27]/[0.04] transition-colors"
               >
                 <Shield className="w-5 h-5 text-gray-400" />
-                <span className="text-gray-700">Security Settings</span>
+                <span className="text-gray-300">Security Settings</span>
               </a>
             </div>
           </div>
@@ -400,14 +400,14 @@ const Profile: React.FC = () => {
         {/* Right Column - Edit Form & Sessions */}
         <div className="lg:col-span-2 space-y-6">
           {/* Edit Form */}
-          <div className="bg-white border border-gray-200 rounded-2xl p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-6">Edit Profile</h3>
+          <div className="bg-[#0a0e27] border border-white/[0.1] rounded-2xl p-6">
+            <h3 className="text-lg font-semibold text-white mb-6">Edit Profile</h3>
 
             <form onSubmit={handleSubmit} className="space-y-5">
               {/* Name Fields */}
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
                     First Name *
                   </label>
                   <div className="relative">
@@ -416,14 +416,14 @@ const Profile: React.FC = () => {
                       type="text"
                       value={formData.firstName}
                       onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-                      className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
+                      className="w-full pl-10 pr-4 py-2.5 border border-white/[0.1] rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
                       placeholder="John"
                       required
                     />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
                     Last Name
                   </label>
                   <div className="relative">
@@ -432,7 +432,7 @@ const Profile: React.FC = () => {
                       type="text"
                       value={formData.lastName}
                       onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-                      className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
+                      className="w-full pl-10 pr-4 py-2.5 border border-white/[0.1] rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
                       placeholder="Doe"
                     />
                   </div>
@@ -441,7 +441,7 @@ const Profile: React.FC = () => {
 
               {/* Email (Read-only) */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-300 mb-2">
                   Email Address
                 </label>
                 <div className="relative">
@@ -450,7 +450,7 @@ const Profile: React.FC = () => {
                     type="email"
                     value={profile?.email || ''}
                     disabled
-                    className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl bg-gray-50 text-gray-500 cursor-not-allowed"
+                    className="w-full pl-10 pr-4 py-2.5 border border-white/[0.1] rounded-xl bg-[#050816] text-gray-500 cursor-not-allowed"
                   />
                 </div>
                 <p className="text-xs text-gray-500 mt-1">Email cannot be changed</p>
@@ -458,7 +458,7 @@ const Profile: React.FC = () => {
 
               {/* Phone */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-300 mb-2">
                   Phone Number
                 </label>
                 <div className="relative">
@@ -467,7 +467,7 @@ const Profile: React.FC = () => {
                     type="tel"
                     value={formData.phone}
                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
+                    className="w-full pl-10 pr-4 py-2.5 border border-white/[0.1] rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
                     placeholder="+91 98765 43210"
                   />
                 </div>
@@ -494,9 +494,9 @@ const Profile: React.FC = () => {
           </div>
 
           {/* Active Sessions */}
-          <div className="bg-white border border-gray-200 rounded-2xl p-6">
+          <div className="bg-[#0a0e27] border border-white/[0.1] rounded-2xl p-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">Active Sessions</h3>
+              <h3 className="text-lg font-semibold text-white">Active Sessions</h3>
               <button
                 onClick={fetchSessions}
                 disabled={loadingSessions}
@@ -517,7 +517,7 @@ const Profile: React.FC = () => {
                   <div
                     key={session.id}
                     className={`flex items-center justify-between p-4 rounded-xl ${
-                      session.isCurrent ? 'bg-green-50 border border-green-200' : 'bg-gray-50'
+                      session.isCurrent ? 'bg-green-50 border border-green-200' : 'bg-[#050816]'
                     }`}
                   >
                     <div className="flex items-center space-x-3">
@@ -527,7 +527,7 @@ const Profile: React.FC = () => {
                         <Monitor className="w-5 h-5 text-gray-400" />
                       )}
                       <div>
-                        <p className="font-medium text-gray-900 flex items-center space-x-2">
+                        <p className="font-medium text-white flex items-center space-x-2">
                           <span>{session.userAgent?.split(' ')[0] || 'Unknown Device'}</span>
                           {session.isCurrent && (
                             <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">

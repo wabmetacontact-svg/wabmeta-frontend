@@ -317,11 +317,11 @@ const ImportContacts: React.FC = () => {
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Header */}
       <div className="flex items-center space-x-4">
-        <Link to="/dashboard/contacts" className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-          <ArrowLeft className="w-5 h-5 text-gray-600" />
+        <Link to="/dashboard/contacts" className="p-2 hover:bg-[#0a0e27]/[0.04] rounded-lg transition-colors">
+          <ArrowLeft className="w-5 h-5 text-gray-400" />
         </Link>
         <div className="flex-1">
-          <h1 className="text-2xl font-bold text-gray-900">Import Contacts</h1>
+          <h1 className="text-2xl font-bold text-white">Import Contacts</h1>
           <p className="text-gray-500 mt-1">Upload and import contacts from CSV</p>
         </div>
 
@@ -386,7 +386,7 @@ const ImportContacts: React.FC = () => {
       )}
 
       {/* Progress Steps */}
-      <div className="bg-white rounded-2xl p-6 border border-gray-200">
+      <div className="bg-[#0a0e27] rounded-2xl p-6 border border-white/[0.1]">
         <div className="flex items-center justify-between">
           {["Upload File", "Map Columns", "Preview", "Complete"].map((label, index) => {
             const isActive = index === visualStepIndex;
@@ -405,7 +405,7 @@ const ImportContacts: React.FC = () => {
                   >
                     {isCompleted ? <CheckCircle2 className="w-5 h-5" /> : index + 1}
                   </div>
-                  <span className={`ml-3 font-medium hidden sm:inline ${isActive ? "text-gray-900" : "text-gray-500"}`}>
+                  <span className={`ml-3 font-medium hidden sm:inline ${isActive ? "text-white" : "text-gray-500"}`}>
                     {label}
                   </span>
                 </div>
@@ -419,11 +419,11 @@ const ImportContacts: React.FC = () => {
       </div>
 
       {/* Content */}
-      <div className="bg-white rounded-2xl p-6 border border-gray-200">
+      <div className="bg-[#0a0e27] rounded-2xl p-6 border border-white/[0.1]">
         {step === "upload" && (
           <>
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-semibold text-gray-900">Upload Your File</h2>
+              <h2 className="text-lg font-semibold text-white">Upload Your File</h2>
               <button
                 onClick={downloadSampleCsv}
                 className="flex items-center gap-2 text-primary-600 hover:text-primary-700 text-sm font-medium transition-colors"
@@ -433,7 +433,7 @@ const ImportContacts: React.FC = () => {
                 Sample CSV
               </button>
             </div>
-            <div className="border-2 border-dashed border-gray-200 rounded-2xl p-12 text-center hover:bg-gray-50 transition-all cursor-pointer group"
+            <div className="border-2 border-dashed border-white/[0.1] rounded-2xl p-12 text-center hover:bg-[#050816] transition-all cursor-pointer group"
               onClick={() => document.getElementById('file-upload')?.click()}>
               <input
                 id="file-upload"
@@ -448,7 +448,7 @@ const ImportContacts: React.FC = () => {
               <div className="w-16 h-16 bg-primary-50 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
                 <Upload className="w-8 h-8 text-primary-500" />
               </div>
-              <p className="text-lg font-medium text-gray-900">Click to upload or drag and drop</p>
+              <p className="text-lg font-medium text-white">Click to upload or drag and drop</p>
               <p className="text-sm text-gray-500 mt-1">CSV files only (max 10MB)</p>
             </div>
           </>
@@ -456,7 +456,7 @@ const ImportContacts: React.FC = () => {
 
         {step === "mapping" && (
           <>
-            <h2 className="text-lg font-semibold text-gray-900 mb-2">Map Columns</h2>
+            <h2 className="text-lg font-semibold text-white mb-2">Map Columns</h2>
             <p className="text-gray-500 mb-6">Match your CSV columns to WabMeta fields</p>
 
             <div className="space-y-4">
@@ -466,15 +466,15 @@ const ImportContacts: React.FC = () => {
                 { key: "email", label: "Email", required: false },
                 { key: "company", label: "Company (saved in custom fields)", required: false },
               ].map((field) => (
-                <div key={field.key} className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl">
+                <div key={field.key} className="flex items-center gap-4 p-4 bg-[#050816] rounded-xl">
                   <div className="flex-1">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-300 mb-1">
                       {field.label} {field.required && <span className="text-red-500">*</span>}
                     </label>
                     <select
                       value={fieldMapping[field.key] || ""}
                       onChange={(e) => setFieldMapping({ ...fieldMapping, [field.key]: e.target.value })}
-                      className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg"
+                      className="w-full px-4 py-2 bg-[#0a0e27] border border-white/[0.1] rounded-lg"
                     >
                       <option value="">-- Select Column --</option>
                       {csvHeaders.map((h) => (
@@ -489,7 +489,7 @@ const ImportContacts: React.FC = () => {
             </div>
 
             <div className="flex justify-end gap-3 mt-6">
-              <button onClick={resetAll} className="px-5 py-2.5 text-gray-700 rounded-xl hover:bg-gray-100">
+              <button onClick={resetAll} className="px-5 py-2.5 text-gray-300 rounded-xl hover:bg-[#0a0e27]/[0.04]">
                 Cancel
               </button>
               <button onClick={handleConfirmMapping} className="px-5 py-2.5 bg-primary-500 hover:bg-primary-600 text-white rounded-xl">
@@ -501,7 +501,7 @@ const ImportContacts: React.FC = () => {
 
         {step === "preview" && (
           <>
-            <h2 className="text-lg font-semibold text-gray-900 mb-2">Preview Import</h2>
+            <h2 className="text-lg font-semibold text-white mb-2">Preview Import</h2>
             <p className="text-gray-500 mb-4">
               Contacts will be validated for <span className="font-medium">International format (with +)</span>. Invalid numbers will be skipped.
             </p>
@@ -533,16 +533,16 @@ const ImportContacts: React.FC = () => {
               </div>
             )}
 
-            <div className="overflow-x-auto rounded-xl border border-gray-200 max-h-96">
+            <div className="overflow-x-auto rounded-xl border border-white/[0.1] max-h-96">
               <table className="w-full">
-                <thead className="bg-gray-50 sticky top-0">
+                <thead className="bg-[#050816] sticky top-0">
                   <tr>
-                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">Row</th>
-                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">First</th>
-                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">Last</th>
-                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">Phone</th>
-                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">Email</th>
-                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">Status</th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-400">Row</th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-400">First</th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-400">Last</th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-400">Phone</th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-400">Email</th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-400">Status</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
@@ -550,7 +550,7 @@ const ImportContacts: React.FC = () => {
                     const ok = c.phone && /^\+\d{7,15}$/.test(c.phone);
                     return (
                       <tr key={idx}>
-                        <td className="px-4 py-3 text-gray-600">{c.__rowIndex}</td>
+                        <td className="px-4 py-3 text-gray-400">{c.__rowIndex}</td>
                         <td className="px-4 py-3">{c.firstName || "-"}</td>
                         <td className="px-4 py-3">{c.lastName || "-"}</td>
                         <td className="px-4 py-3">{c.phone || "-"}</td>
@@ -574,7 +574,7 @@ const ImportContacts: React.FC = () => {
             </div>
 
             <div className="flex justify-end gap-3 mt-6">
-              <button onClick={() => setStep("mapping")} className="px-5 py-2.5 text-gray-700 rounded-xl hover:bg-gray-100">
+              <button onClick={() => setStep("mapping")} className="px-5 py-2.5 text-gray-300 rounded-xl hover:bg-[#0a0e27]/[0.04]">
                 Back
               </button>
               <button 
@@ -590,7 +590,7 @@ const ImportContacts: React.FC = () => {
         {step === "importing" && (
           <div className="py-16 text-center">
             <Loader2 className="w-16 h-16 text-primary-500 animate-spin mx-auto mb-6" />
-            <h2 className="text-xl font-bold text-gray-900 mb-2">Importing...</h2>
+            <h2 className="text-xl font-bold text-white mb-2">Importing...</h2>
             <p className="text-gray-500">Uploading in one batch (fast & safe).</p>
           </div>
         )}
@@ -602,12 +602,12 @@ const ImportContacts: React.FC = () => {
                 <CheckCircle2 className="w-10 h-10 text-green-600" />
               </div>
 
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">Import Complete!</h2>
+              <h2 className="text-2xl font-bold text-white mb-2">Import Complete!</h2>
               <p className="text-gray-500 mb-8">Contacts processed successfully.</p>
 
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 max-w-2xl mx-auto mb-8">
-                <div className="bg-gray-50 rounded-xl p-4">
-                  <p className="text-3xl font-bold text-gray-900">{importResult.total}</p>
+                <div className="bg-[#050816] rounded-xl p-4">
+                  <p className="text-3xl font-bold text-white">{importResult.total}</p>
                   <p className="text-sm text-gray-500">Total Rows</p>
                 </div>
                 <div className="bg-green-50 rounded-xl p-4">
@@ -633,7 +633,7 @@ const ImportContacts: React.FC = () => {
                 </button>
                 <button
                   onClick={resetAll}
-                  className="px-6 py-2.5 text-gray-700 rounded-xl hover:bg-gray-100 flex items-center gap-2"
+                  className="px-6 py-2.5 text-gray-300 rounded-xl hover:bg-[#0a0e27]/[0.04] flex items-center gap-2"
                 >
                   <RefreshCw className="w-4 h-4" />
                   Import More
@@ -644,7 +644,7 @@ const ImportContacts: React.FC = () => {
             {failures.length > 0 && (
               <div className="mt-10">
                 <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-lg font-semibold text-gray-900">Import Errors</h3>
+                  <h3 className="text-lg font-semibold text-white">Import Errors</h3>
                   <button
                     onClick={downloadErrorCsv}
                     className="flex items-center gap-2 text-primary-600 hover:text-primary-700 font-medium"
@@ -654,18 +654,18 @@ const ImportContacts: React.FC = () => {
                   </button>
                 </div>
 
-                <div className="overflow-x-auto rounded-xl border border-gray-200">
+                <div className="overflow-x-auto rounded-xl border border-white/[0.1]">
                   <table className="w-full">
-                    <thead className="bg-gray-50">
+                    <thead className="bg-[#050816]">
                       <tr>
-                        <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">Row</th>
-                        <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">Error</th>
+                        <th className="px-4 py-3 text-left text-sm font-semibold text-gray-400">Row</th>
+                        <th className="px-4 py-3 text-left text-sm font-semibold text-gray-400">Error</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100">
                       {failures.slice(0, 200).map((f, i) => (
                         <tr key={i}>
-                          <td className="px-4 py-3 text-gray-700">{f.row}</td>
+                          <td className="px-4 py-3 text-gray-300">{f.row}</td>
                           <td className="px-4 py-3 text-red-700">{f.error}</td>
                         </tr>
                       ))}

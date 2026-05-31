@@ -59,7 +59,7 @@ const LabelManager: React.FC<Props> = ({ labels, onAddLabel, onRemoveLabel }) =>
             className="
               inline-flex items-center gap-1 px-2 py-1
               text-[10px] font-medium rounded-md
-              bg-white/[0.04] hover:bg-white/[0.08]
+              bg-[#0a0e27]/[0.04] hover:bg-[#0a0e27]/[0.08]
               border border-dashed border-white/[0.15]
               text-gray-300 hover:text-white
               transition-all
@@ -103,7 +103,7 @@ const LabelManager: React.FC<Props> = ({ labels, onAddLabel, onRemoveLabel }) =>
                   }}
                   className="
                     w-full flex items-center gap-2.5 px-3 py-2
-                    text-sm hover:bg-white/[0.05]
+                    text-sm hover:bg-[#0a0e27]/[0.05]
                     transition-colors
                   "
                 >

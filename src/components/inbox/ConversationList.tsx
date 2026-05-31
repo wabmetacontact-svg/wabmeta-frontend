@@ -96,7 +96,7 @@ const ConversationList: React.FC<Props> = ({
           <div className="flex items-center gap-2">
             <h2 className="text-lg font-bold text-white tracking-tight">Inbox</h2>
             {stats.total > 0 && (
-              <span className="text-[10px] font-mono text-gray-500 bg-white/[0.04] px-2 py-0.5 rounded-md">
+              <span className="text-[10px] font-mono text-gray-500 bg-[#0a0e27]/[0.04] px-2 py-0.5 rounded-md">
                 {stats.total}
               </span>
             )}
@@ -106,7 +106,7 @@ const ConversationList: React.FC<Props> = ({
             {onNewChat && (
               <button
                 onClick={onNewChat}
-                className="p-1.5 rounded-lg hover:bg-white/[0.06] text-gray-400 hover:text-emerald-400 transition-all"
+                className="p-1.5 rounded-lg hover:bg-[#0a0e27]/[0.06] text-gray-400 hover:text-emerald-400 transition-all"
                 title="New conversation"
               >
                 <MessageSquarePlus className="w-4 h-4" />
@@ -115,7 +115,7 @@ const ConversationList: React.FC<Props> = ({
             <button
               onClick={onRefresh}
               disabled={refreshing}
-              className="p-1.5 rounded-lg hover:bg-white/[0.06] text-gray-400 hover:text-white transition-all"
+              className="p-1.5 rounded-lg hover:bg-[#0a0e27]/[0.06] text-gray-400 hover:text-white transition-all"
               title="Refresh"
             >
               <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
@@ -133,17 +133,17 @@ const ConversationList: React.FC<Props> = ({
             onChange={(e) => onSearchChange(e.target.value)}
             className="
               w-full pl-9 pr-9 py-2.5
-              bg-white/[0.04] border border-white/[0.06]
+              bg-[#0a0e27]/[0.04] border border-white/[0.06]
               rounded-xl text-sm text-white
               placeholder:text-gray-500
-              focus:outline-none focus:bg-white/[0.06] focus:border-emerald-400/30
+              focus:outline-none focus:bg-[#0a0e27]/[0.06] focus:border-emerald-400/30
               transition-all
             "
           />
           {searchQuery && (
             <button
               onClick={() => onSearchChange('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 rounded-md hover:bg-white/[0.08]"
+              className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 rounded-md hover:bg-[#0a0e27]/[0.08]"
             >
               <X className="w-3.5 h-3.5 text-gray-400" />
             </button>
@@ -151,7 +151,7 @@ const ConversationList: React.FC<Props> = ({
         </div>
 
         {/* Filter Tabs */}
-        <div className="flex gap-1 bg-white/[0.03] border border-white/[0.06] p-1 rounded-xl">
+        <div className="flex gap-1 bg-[#0a0e27]/[0.03] border border-white/[0.06] p-1 rounded-xl">
           {[
             { key: 'all' as FilterTab, label: 'All', count: stats.total },
             { key: 'unread' as FilterTab, label: 'Unread', count: stats.unread },
@@ -165,7 +165,7 @@ const ConversationList: React.FC<Props> = ({
                 transition-all flex items-center justify-center gap-1.5
                 ${
                   filter === f.key
-                    ? 'bg-white/[0.08] text-white shadow-sm'
+                    ? 'bg-[#0a0e27]/[0.08] text-white shadow-sm'
                     : 'text-gray-400 hover:text-gray-200'
                 }
               `}
@@ -179,8 +179,8 @@ const ConversationList: React.FC<Props> = ({
                       f.key === 'unread' && filter === f.key
                         ? 'bg-emerald-500 text-white'
                         : filter === f.key
-                        ? 'bg-white/[0.1] text-white'
-                        : 'bg-white/[0.06] text-gray-400'
+                        ? 'bg-[#0a0e27]/[0.1] text-white'
+                        : 'bg-[#0a0e27]/[0.06] text-gray-400'
                     }
                   `}
                 >
@@ -203,7 +203,7 @@ const ConversationList: React.FC<Props> = ({
           <div className="flex flex-col items-center justify-center h-full px-4 text-center">
             <div className="
               w-16 h-16 rounded-full
-              bg-white/[0.04] border border-white/[0.06]
+              bg-[#0a0e27]/[0.04] border border-white/[0.06]
               flex items-center justify-center mb-4
             ">
               <InboxIcon className="w-7 h-7 text-gray-500" />
@@ -235,7 +235,7 @@ const ConversationList: React.FC<Props> = ({
                   <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500">
                     Pinned
                   </span>
-                  <span className="text-[10px] font-mono text-gray-600">
+                  <span className="text-[10px] font-mono text-gray-400">
                     {pinned.length}
                   </span>
                 </div>
@@ -263,7 +263,7 @@ const ConversationList: React.FC<Props> = ({
                     <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500">
                       All Chats
                     </span>
-                    <span className="text-[10px] font-mono text-gray-600">
+                    <span className="text-[10px] font-mono text-gray-400">
                       {regular.length}
                     </span>
                   </div>
@@ -289,7 +289,7 @@ const ConversationList: React.FC<Props> = ({
 
       {/* ── Footer Stats ──────────────────────────────────────────────── */}
       {stats.total > 0 && !loading && (
-        <div className="flex-shrink-0 px-4 py-2.5 border-t border-white/[0.06] bg-white/[0.02]">
+        <div className="flex-shrink-0 px-4 py-2.5 border-t border-white/[0.06] bg-[#0a0e27]/[0.02]">
           <div className="flex items-center justify-between text-[10px] font-mono text-gray-500">
             <span>{stats.total} total</span>
             <span className="flex items-center gap-3">

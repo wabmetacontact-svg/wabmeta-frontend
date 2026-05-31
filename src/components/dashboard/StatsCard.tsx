@@ -26,12 +26,12 @@ const StatsCard: React.FC<StatsCardProps> = ({
   };
 
   const getTrendColor = () => {
-    if (change === undefined || change === 0) return 'text-gray-500 bg-gray-100';
+    if (change === undefined || change === 0) return 'text-gray-500 bg-[#0a0e27]/[0.04]';
     return change > 0 ? 'text-green-600 bg-green-100' : 'text-red-600 bg-red-100';
   };
 
   return (
-    <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+    <div className="bg-[#0a0e27] rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
       <div className="flex items-start justify-between">
         <div className={`w-12 h-12 ${iconBg} rounded-xl flex items-center justify-center`}>
           <Icon className={`w-6 h-6 ${iconColor}`} />
@@ -47,7 +47,7 @@ const StatsCard: React.FC<StatsCardProps> = ({
       
       <div className="mt-4">
         <h3 className="text-sm font-medium text-gray-500">{title}</h3>
-        <p className="text-3xl font-bold text-gray-900 mt-1">{value}</p>
+        <p className="text-3xl font-bold text-white mt-1">{value}</p>
         {changeLabel && change !== undefined && (
           <p className="text-sm text-gray-500 mt-1">{changeLabel}</p>
         )}

@@ -124,8 +124,8 @@ const ConversationItem: React.FC<Props> = ({
           group flex items-start gap-3 px-3 py-3 cursor-pointer
           transition-all duration-200
           ${isSelected
-            ? 'bg-white/[0.06]'
-            : 'hover:bg-white/[0.03]'
+            ? 'bg-[#0a0e27]/[0.06]'
+            : 'hover:bg-[#0a0e27]/[0.03]'
           }
         `}
       >
@@ -289,7 +289,7 @@ const ConversationItem: React.FC<Props> = ({
           className="
             p-1 rounded-md
             opacity-0 group-hover:opacity-100
-            hover:bg-white/[0.08]
+            hover:bg-[#0a0e27]/[0.08]
             transition-all duration-200
             flex-shrink-0 self-start mt-1
           "
@@ -316,7 +316,7 @@ const ConversationItem: React.FC<Props> = ({
               onPin(e);
               setShowMenu(false);
             }}
-            className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-200 hover:bg-white/[0.05] transition-colors"
+            className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-200 hover:bg-[#0a0e27]/[0.05] transition-colors"
           >
             {conv.isPinned ? (
               <>
@@ -337,7 +337,7 @@ const ConversationItem: React.FC<Props> = ({
               setShowLabels(true);
               setShowMenu(false);
             }}
-            className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-200 hover:bg-white/[0.05] transition-colors"
+            className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-200 hover:bg-[#0a0e27]/[0.05] transition-colors"
           >
             <Tag className="w-4 h-4 text-gray-400" />
             Add label
@@ -349,7 +349,7 @@ const ConversationItem: React.FC<Props> = ({
                 onMute(e);
                 setShowMenu(false);
               }}
-              className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-200 hover:bg-white/[0.05] transition-colors"
+              className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-200 hover:bg-[#0a0e27]/[0.05] transition-colors"
             >
               <VolumeX className="w-4 h-4 text-gray-400" />
               {conv.isMuted ? 'Unmute' : 'Mute notifications'}
@@ -361,7 +361,7 @@ const ConversationItem: React.FC<Props> = ({
               e.stopPropagation();
               setShowMenu(false);
             }}
-            className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-200 hover:bg-white/[0.05] transition-colors"
+            className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-200 hover:bg-[#0a0e27]/[0.05] transition-colors"
           >
             <UserCheck className="w-4 h-4 text-gray-400" />
             Mark as read
@@ -374,7 +374,7 @@ const ConversationItem: React.FC<Props> = ({
               onArchive(e);
               setShowMenu(false);
             }}
-            className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-200 hover:bg-white/[0.05] transition-colors"
+            className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-200 hover:bg-[#0a0e27]/[0.05] transition-colors"
           >
             {conv.isArchived ? (
               <>
@@ -432,7 +432,7 @@ const ConversationItem: React.FC<Props> = ({
                       onAddLabel(label);
                       setShowLabels(false);
                     }}
-                    className="w-full flex items-center gap-2.5 px-3 py-2 text-sm hover:bg-white/[0.05] transition-colors"
+                    className="w-full flex items-center gap-2.5 px-3 py-2 text-sm hover:bg-[#0a0e27]/[0.05] transition-colors"
                   >
                     <span className={`w-3 h-3 rounded-full ${style.dot}`} />
                     <span className={`capitalize text-xs font-medium ${style.text}`}>

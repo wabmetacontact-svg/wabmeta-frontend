@@ -32,17 +32,17 @@ const SchedulePicker: React.FC<SchedulePickerProps> = ({
           className={`p-6 rounded-xl border-2 text-center transition-all ${
             scheduleType === 'now'
               ? 'border-primary-500 bg-primary-50'
-              : 'border-gray-200 hover:border-gray-300'
+              : 'border-white/[0.1] hover:border-white/[0.12]'
           }`}
         >
           <div className={`w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-3 ${
-            scheduleType === 'now' ? 'bg-primary-100' : 'bg-gray-100'
+            scheduleType === 'now' ? 'bg-primary-100' : 'bg-[#0a0e27]/[0.04]'
           }`}>
             <Send className={`w-7 h-7 ${
               scheduleType === 'now' ? 'text-primary-600' : 'text-gray-500'
             }`} />
           </div>
-          <h4 className="font-semibold text-gray-900 mb-1">Send Now</h4>
+          <h4 className="font-semibold text-white mb-1">Send Now</h4>
           <p className="text-sm text-gray-500">Start campaign immediately</p>
         </button>
 
@@ -51,29 +51,29 @@ const SchedulePicker: React.FC<SchedulePickerProps> = ({
           className={`p-6 rounded-xl border-2 text-center transition-all ${
             scheduleType === 'later'
               ? 'border-primary-500 bg-primary-50'
-              : 'border-gray-200 hover:border-gray-300'
+              : 'border-white/[0.1] hover:border-white/[0.12]'
           }`}
         >
           <div className={`w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-3 ${
-            scheduleType === 'later' ? 'bg-primary-100' : 'bg-gray-100'
+            scheduleType === 'later' ? 'bg-primary-100' : 'bg-[#0a0e27]/[0.04]'
           }`}>
             <Clock className={`w-7 h-7 ${
               scheduleType === 'later' ? 'text-primary-600' : 'text-gray-500'
             }`} />
           </div>
-          <h4 className="font-semibold text-gray-900 mb-1">Schedule</h4>
+          <h4 className="font-semibold text-white mb-1">Schedule</h4>
           <p className="text-sm text-gray-500">Send at a specific time</p>
         </button>
       </div>
 
       {/* Schedule Details */}
       {scheduleType === 'later' && (
-        <div className="bg-gray-50 rounded-xl p-6 space-y-4 animate-fade-in">
-          <h4 className="font-medium text-gray-900">Schedule Details</h4>
+        <div className="bg-[#050816] rounded-xl p-6 space-y-4 animate-fade-in">
+          <h4 className="font-medium text-white">Schedule Details</h4>
           
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-300 mb-2">
                 Date
               </label>
               <div className="relative">
@@ -83,13 +83,13 @@ const SchedulePicker: React.FC<SchedulePickerProps> = ({
                   value={scheduledDate}
                   min={today}
                   onChange={(e) => onDateChange(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full pl-10 pr-4 py-2.5 bg-[#0a0e27] border border-white/[0.1] rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-300 mb-2">
                 Time
               </label>
               <div className="relative">
@@ -99,7 +99,7 @@ const SchedulePicker: React.FC<SchedulePickerProps> = ({
                   value={scheduledTime}
                   min={scheduledDate === today ? minTime : undefined}
                   onChange={(e) => onTimeChange(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full pl-10 pr-4 py-2.5 bg-[#0a0e27] border border-white/[0.1] rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500"
                 />
               </div>
             </div>

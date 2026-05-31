@@ -193,11 +193,11 @@ const AssignPlanModal: React.FC<AssignPlanModalProps> = ({
             <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
 
             {/* Modal */}
-            <div className="relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden animate-fade-in">
+            <div className="relative bg-[#0a0e27] rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden animate-fade-in">
                 {/* Header */}
-                <div className="flex justify-between items-center p-6 border-b border-gray-200 dark:border-gray-700">
+                <div className="flex justify-between items-center p-6 border-b border-white/[0.1]">
                     <div>
-                        <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center">
+                        <h2 className="text-xl font-bold text-white flex items-center">
                             <Award className="w-6 h-6 mr-2 text-green-600" />
                             Assign Plan
                         </h2>
@@ -209,7 +209,7 @@ const AssignPlanModal: React.FC<AssignPlanModalProps> = ({
                     </div>
                     <button
                         onClick={onClose}
-                        className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full"
+                        className="p-2 hover:bg-[#0a0e27]/[0.04] dark:hover:bg-gray-700 rounded-full"
                     >
                         <X className="w-5 h-5 text-gray-500" />
                     </button>
@@ -227,7 +227,7 @@ const AssignPlanModal: React.FC<AssignPlanModalProps> = ({
                                     value={orgSearch}
                                     onChange={(e) => setOrgSearch(e.target.value)}
                                     placeholder="Search by organization name or email..."
-                                    className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                                    className="w-full pl-10 pr-4 py-3 border border-white/[0.12] rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent bg-[#0a0e27] dark:bg-gray-700 text-white"
                                     autoFocus
                                 />
                             </div>
@@ -244,14 +244,14 @@ const AssignPlanModal: React.FC<AssignPlanModalProps> = ({
                                         <button
                                             key={org.id}
                                             onClick={() => handleSelectOrg(org)}
-                                            className="w-full flex items-center justify-between p-4 border border-gray-200 dark:border-gray-600 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-left"
+                                            className="w-full flex items-center justify-between p-4 border border-white/[0.1] dark:border-gray-600 rounded-xl hover:bg-[#0a0e27]/[0.04] transition-colors text-left"
                                         >
                                             <div className="flex items-center">
                                                 <div className="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mr-3">
                                                     <User className="w-5 h-5 text-green-600" />
                                                 </div>
                                                 <div>
-                                                    <p className="font-medium text-gray-900 dark:text-white">
+                                                    <p className="font-medium text-white">
                                                         {org.name}
                                                     </p>
                                                     <p className="text-sm text-gray-500">
@@ -319,7 +319,7 @@ const AssignPlanModal: React.FC<AssignPlanModalProps> = ({
                                         onClick={() => handleSelectPlan(plan)}
                                         className={`relative p-4 border-2 rounded-xl text-left transition-all hover:shadow-md ${plan.isRecommended
                                             ? 'border-green-500 bg-green-50 dark:bg-green-900/20'
-                                            : 'border-gray-200 dark:border-gray-600 hover:border-green-300'
+                                            : 'border-white/[0.1] dark:border-gray-600 hover:border-green-300'
                                             }`}
                                     >
                                         {plan.isRecommended && (
@@ -328,7 +328,7 @@ const AssignPlanModal: React.FC<AssignPlanModalProps> = ({
                                                 Recommended
                                             </span>
                                         )}
-                                        <h3 className="font-semibold text-gray-900 dark:text-white">
+                                        <h3 className="font-semibold text-white">
                                             {plan.name}
                                         </h3>
                                         <p className="text-2xl font-bold text-green-600 mt-1">
@@ -347,10 +347,10 @@ const AssignPlanModal: React.FC<AssignPlanModalProps> = ({
                     {step === 'confirm' && selectedOrg && selectedPlan && (
                         <div className="space-y-6">
                             {/* Summary */}
-                            <div className="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-4 space-y-3">
+                            <div className="bg-[#0a0e27]/[0.02] rounded-xl p-4 space-y-3">
                                 <div className="flex justify-between">
                                     <span className="text-gray-500">Organization:</span>
-                                    <span className="font-medium text-gray-900 dark:text-white">
+                                    <span className="font-medium text-white">
                                         {selectedOrg.name}
                                     </span>
                                 </div>
@@ -360,13 +360,13 @@ const AssignPlanModal: React.FC<AssignPlanModalProps> = ({
                                 </div>
                                 <div className="flex justify-between">
                                     <span className="text-gray-500">Price:</span>
-                                    <span className="font-medium text-gray-900 dark:text-white">
+                                    <span className="font-medium text-white">
                                         ₹{selectedPlan.monthlyPrice.toLocaleString('en-IN')}
                                     </span>
                                 </div>
                                 <div className="flex justify-between">
                                     <span className="text-gray-500">Validity:</span>
-                                    <span className="font-medium text-gray-900 dark:text-white">
+                                    <span className="font-medium text-white">
                                         {getValidityDisplay()}
                                     </span>
                                 </div>
@@ -374,7 +374,7 @@ const AssignPlanModal: React.FC<AssignPlanModalProps> = ({
 
                             {/* Validity Options */}
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                <label className="block text-sm font-medium text-gray-300 mb-2">
                                     Subscription Validity
                                 </label>
                                 <div className="space-y-3">
@@ -387,7 +387,7 @@ const AssignPlanModal: React.FC<AssignPlanModalProps> = ({
                                             onChange={() => setValidityType('default')}
                                             className="w-4 h-4 text-green-600"
                                         />
-                                        <span className="ml-2 text-gray-700 dark:text-gray-300">
+                                        <span className="ml-2 text-gray-300">
                                             Use default validity ({selectedPlan.validityDays || 30} days)
                                         </span>
                                     </label>
@@ -400,7 +400,7 @@ const AssignPlanModal: React.FC<AssignPlanModalProps> = ({
                                             onChange={() => setValidityType('custom')}
                                             className="w-4 h-4 text-green-600"
                                         />
-                                        <span className="ml-2 text-gray-700 dark:text-gray-300">
+                                        <span className="ml-2 text-gray-300">
                                             Custom validity
                                         </span>
                                     </label>
@@ -420,7 +420,7 @@ const AssignPlanModal: React.FC<AssignPlanModalProps> = ({
                                                     }}
                                                     min={1}
                                                     max={365}
-                                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                                                    className="w-full px-3 py-2 border border-white/[0.12] rounded-lg focus:ring-2 focus:ring-green-500 bg-[#0a0e27] dark:bg-gray-700 text-white"
                                                 />
                                             </div>
                                             <div>
@@ -432,7 +432,7 @@ const AssignPlanModal: React.FC<AssignPlanModalProps> = ({
                                                     value={customEndDate}
                                                     onChange={(e) => setCustomEndDate(e.target.value)}
                                                     min={new Date().toISOString().split('T')[0]}
-                                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                                                    className="w-full px-3 py-2 border border-white/[0.12] rounded-lg focus:ring-2 focus:ring-green-500 bg-[#0a0e27] dark:bg-gray-700 text-white"
                                                 />
                                             </div>
                                         </div>
@@ -442,7 +442,7 @@ const AssignPlanModal: React.FC<AssignPlanModalProps> = ({
 
                             {/* Reason */}
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                <label className="block text-sm font-medium text-gray-300 mb-2">
                                     Reason (Optional)
                                 </label>
                                 <textarea
@@ -450,7 +450,7 @@ const AssignPlanModal: React.FC<AssignPlanModalProps> = ({
                                     onChange={(e) => setReason(e.target.value)}
                                     placeholder="Enter reason for this assignment..."
                                     rows={2}
-                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none"
+                                    className="w-full px-3 py-2 border border-white/[0.12] rounded-lg focus:ring-2 focus:ring-green-500 bg-[#0a0e27] dark:bg-gray-700 text-white resize-none"
                                 />
                             </div>
 
@@ -471,14 +471,14 @@ const AssignPlanModal: React.FC<AssignPlanModalProps> = ({
                 </div>
 
                 {/* Footer */}
-                <div className="flex justify-between items-center p-6 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
+                <div className="flex justify-between items-center p-6 border-t border-white/[0.1] bg-[#0a0e27]">
                     <button
                         onClick={() => {
                             if (step === 'plan') setStep('org');
                             else if (step === 'confirm') setStep('plan');
                             else onClose();
                         }}
-                        className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+                        className="px-4 py-2 text-gray-300 hover:bg-[#0a0e27]/[0.04] dark:hover:bg-gray-700 rounded-lg"
                     >
                         {step === 'org' ? 'Cancel' : 'Back'}
                     </button>

@@ -54,7 +54,7 @@ const CampaignCard: React.FC<CampaignCardProps> = ({
       case 'scheduled': return 'bg-purple-100 text-purple-700';
       case 'paused': return 'bg-yellow-100 text-yellow-700';
       case 'failed': return 'bg-red-100 text-red-700';
-      default: return 'bg-gray-100 text-gray-700';
+      default: return 'bg-[#0a0e27]/[0.04] text-gray-300';
     }
   };
 
@@ -73,11 +73,11 @@ const CampaignCard: React.FC<CampaignCardProps> = ({
   const campaignId = campaign._id || campaign.id;
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-5 hover:shadow-md transition-shadow group relative">
+    <div className="bg-[#0a0e27] rounded-xl border border-white/[0.1] p-5 hover:shadow-md transition-shadow group relative">
       <div className="flex justify-between items-start mb-4">
         <div>
           <div className="flex items-center space-x-2 mb-1">
-            <h3 className="font-semibold text-gray-900 group-hover:text-primary-600 transition-colors">
+            <h3 className="font-semibold text-white group-hover:text-primary-600 transition-colors">
               {campaign.name}
             </h3>
             <span className={`inline-flex items-center space-x-1 px-2 py-0.5 rounded-full text-xs font-medium capitalize ${getStatusColor(campaign.status)}`}>
@@ -91,16 +91,16 @@ const CampaignCard: React.FC<CampaignCardProps> = ({
         <div className="relative" ref={menuRef}>
           <button
             onClick={() => setShowMenu(!showMenu)}
-            className="p-1 hover:bg-gray-100 rounded-lg text-gray-400 transition-colors"
+            className="p-1 hover:bg-[#0a0e27]/[0.04] rounded-lg text-gray-400 transition-colors"
           >
             <MoreVertical className="w-5 h-5" />
           </button>
 
           {showMenu && (
-            <div className="absolute right-0 mt-1 w-48 bg-white rounded-xl shadow-lg border border-gray-100 py-1 z-10 animate-fade-in">
+            <div className="absolute right-0 mt-1 w-48 bg-[#0a0e27] rounded-xl shadow-lg border border-gray-100 py-1 z-10 animate-fade-in">
               <Link
                 to={`/dashboard/campaigns/${campaignId}`}
-                className="flex items-center space-x-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                className="flex items-center space-x-2 px-4 py-2 text-sm text-gray-300 hover:bg-[#050816] transition-colors"
               >
                 <BarChart2 className="w-4 h-4" />
                 <span>View Analytics</span>
@@ -150,13 +150,13 @@ const CampaignCard: React.FC<CampaignCardProps> = ({
                   onDuplicate(campaign);
                   setShowMenu(false);
                 }}
-                className="flex items-center space-x-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 w-full text-left transition-colors"
+                className="flex items-center space-x-2 px-4 py-2 text-sm text-gray-300 hover:bg-[#050816] w-full text-left transition-colors"
               >
                 <Copy className="w-4 h-4" />
                 <span>Duplicate</span>
               </button>
               
-              <div className="h-px bg-gray-100 my-1" />
+              <div className="h-px bg-[#0a0e27]/[0.04] my-1" />
               
               <button
                 onClick={() => {
@@ -175,12 +175,12 @@ const CampaignCard: React.FC<CampaignCardProps> = ({
 
       {/* Stats Grid */}
       <div className="grid grid-cols-3 gap-4 mb-4">
-        <div className="bg-gray-50 rounded-lg p-3 text-center">
+        <div className="bg-[#050816] rounded-lg p-3 text-center">
           <div className="flex items-center justify-center space-x-1 text-gray-500 mb-1">
             <Users className="w-3 h-3" />
             <span className="text-xs">Audience</span>
           </div>
-          <span className="font-semibold text-gray-900">{campaign.stats.total}</span>
+          <span className="font-semibold text-white">{campaign.stats.total}</span>
         </div>
         <div className="bg-green-50 rounded-lg p-3 text-center">
           <div className="flex items-center justify-center space-x-1 text-green-600 mb-1">

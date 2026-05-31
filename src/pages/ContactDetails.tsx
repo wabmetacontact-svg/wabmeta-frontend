@@ -107,7 +107,7 @@ const ContactDetails: React.FC = () => {
         <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
           <AlertCircle className="w-8 h-8 text-red-600" />
         </div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-2">Contact Not Found</h3>
+        <h3 className="text-lg font-semibold text-white mb-2">Contact Not Found</h3>
         <p className="text-gray-500 mb-6">{error || "The contact you're looking for doesn't exist."}</p>
         <button
           onClick={() => navigate('/dashboard/contacts')}
@@ -126,9 +126,9 @@ const ContactDetails: React.FC = () => {
         <div className="flex items-center space-x-4">
           <button
             onClick={() => navigate('/dashboard/contacts')}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            className="p-2 hover:bg-[#0a0e27]/[0.04] rounded-lg transition-colors"
           >
-            <ArrowLeft className="w-5 h-5 text-gray-600" />
+            <ArrowLeft className="w-5 h-5 text-gray-400" />
           </button>
           <div className="flex items-center space-x-4">
             <div className="w-16 h-16 bg-linear-to-br from-primary-500 to-whatsapp-teal rounded-full flex items-center justify-center text-white font-bold text-2xl shadow-lg">
@@ -136,7 +136,7 @@ const ContactDetails: React.FC = () => {
             </div>
             <div>
               <div className="flex items-center space-x-3">
-                <h1 className="text-2xl font-bold text-gray-900">{contact.name}</h1>
+                <h1 className="text-2xl font-bold text-white">{contact.name}</h1>
                 <span className={`px-2.5 py-1 rounded-full text-xs font-medium capitalize ${
                   contact.status === 'active' ? 'bg-green-100 text-green-700' : 
                   contact.status === 'inactive' ? 'bg-red-100 text-red-700' : 
@@ -158,7 +158,7 @@ const ContactDetails: React.FC = () => {
             <Send className="w-4 h-4" />
             <span>Send Message</span>
           </button>
-          <button className="p-2 hover:bg-gray-100 text-gray-600 rounded-xl transition-colors border border-gray-200">
+          <button className="p-2 hover:bg-[#0a0e27]/[0.04] text-gray-400 rounded-xl transition-colors border border-white/[0.1]">
             <Edit className="w-5 h-5" />
           </button>
           <button 
@@ -178,11 +178,11 @@ const ContactDetails: React.FC = () => {
           { label: 'Last Contacted', value: contact.lastContacted, icon: Clock, color: 'text-orange-600', bg: 'bg-orange-100' },
           { label: 'Added On', value: new Date(contact.createdAt).toLocaleDateString(), icon: Calendar, color: 'text-green-600', bg: 'bg-green-100' },
         ].map((stat, index) => (
-          <div key={index} className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+          <div key={index} className="bg-[#0a0e27] p-4 rounded-xl border border-white/[0.1] shadow-sm">
             <div className="flex items-start justify-between">
               <div>
                 <p className="text-sm text-gray-500">{stat.label}</p>
-                <p className="text-lg font-bold text-gray-900 mt-1">{stat.value}</p>
+                <p className="text-lg font-bold text-white mt-1">{stat.value}</p>
               </div>
               <div className={`p-2 rounded-lg ${stat.bg}`}>
                 <stat.icon className={`w-5 h-5 ${stat.color}`} />
@@ -196,8 +196,8 @@ const ContactDetails: React.FC = () => {
         {/* Left Column - Details */}
         <div className="lg:col-span-2 space-y-6">
           {/* Tabs */}
-          <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-            <div className="flex border-b border-gray-200">
+          <div className="bg-[#0a0e27] rounded-2xl border border-white/[0.1] overflow-hidden">
+            <div className="flex border-b border-white/[0.1]">
               {['overview', 'messages', 'activity'].map((tab) => (
                 <button
                   key={tab}
@@ -205,7 +205,7 @@ const ContactDetails: React.FC = () => {
                   className={`flex-1 px-6 py-4 text-sm font-medium transition-colors capitalize ${
                     activeTab === tab
                       ? 'text-primary-600 bg-primary-50 border-b-2 border-primary-500'
-                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                      : 'text-gray-400 hover:text-white hover:bg-[#050816]'
                   }`}
                 >
                   {tab}
@@ -217,37 +217,37 @@ const ContactDetails: React.FC = () => {
               {activeTab === 'overview' && (
                 <div className="space-y-6">
                   <div>
-                    <h3 className="font-semibold text-gray-900 mb-4">Contact Information</h3>
+                    <h3 className="font-semibold text-white mb-4">Contact Information</h3>
                     <div className="grid md:grid-cols-2 gap-6">
                       <div className="space-y-4">
-                        <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-xl">
+                        <div className="flex items-center space-x-3 p-3 bg-[#050816] rounded-xl">
                           <Phone className="w-5 h-5 text-gray-400" />
                           <div>
                             <p className="text-xs text-gray-500 font-medium uppercase">Phone</p>
-                            <p className="text-gray-900 font-medium">{contact.phone}</p>
+                            <p className="text-white font-medium">{contact.phone}</p>
                           </div>
                         </div>
-                        <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-xl">
+                        <div className="flex items-center space-x-3 p-3 bg-[#050816] rounded-xl">
                           <Mail className="w-5 h-5 text-gray-400" />
                           <div>
                             <p className="text-xs text-gray-500 font-medium uppercase">Email</p>
-                            <p className="text-gray-900 font-medium">{contact.email}</p>
+                            <p className="text-white font-medium">{contact.email}</p>
                           </div>
                         </div>
                       </div>
                       <div className="space-y-4">
-                        <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-xl">
+                        <div className="flex items-center space-x-3 p-3 bg-[#050816] rounded-xl">
                           <Building2 className="w-5 h-5 text-gray-400" />
                           <div>
                             <p className="text-xs text-gray-500 font-medium uppercase">Company</p>
-                            <p className="text-gray-900 font-medium">{contact.company}</p>
+                            <p className="text-white font-medium">{contact.company}</p>
                           </div>
                         </div>
-                        <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-xl">
+                        <div className="flex items-center space-x-3 p-3 bg-[#050816] rounded-xl">
                           <MapPin className="w-5 h-5 text-gray-400" />
                           <div>
                             <p className="text-xs text-gray-500 font-medium uppercase">Address</p>
-                            <p className="text-gray-900 font-medium">{contact.address}</p>
+                            <p className="text-white font-medium">{contact.address}</p>
                           </div>
                         </div>
                       </div>
@@ -255,7 +255,7 @@ const ContactDetails: React.FC = () => {
                   </div>
 
                   <div>
-                    <h3 className="font-semibold text-gray-900 mb-4">Notes</h3>
+                    <h3 className="font-semibold text-white mb-4">Notes</h3>
                     <div className="bg-yellow-50 border border-yellow-100 rounded-xl p-4">
                       <p className="text-yellow-800 text-sm">
                         {contact.notes || 'No notes added yet.'}
@@ -285,15 +285,15 @@ const ContactDetails: React.FC = () => {
         {/* Right Column - Sidebar */}
         <div className="space-y-6">
           {/* Tags */}
-          <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+          <div className="bg-[#0a0e27] rounded-2xl border border-white/[0.1] p-6 shadow-sm">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-semibold text-gray-900">Tags</h3>
+              <h3 className="font-semibold text-white">Tags</h3>
               <button className="text-primary-600 hover:text-primary-700 text-sm font-medium">Edit</button>
             </div>
             <div className="flex flex-wrap gap-2">
               {contact.tags && contact.tags.length > 0 ? (
                 contact.tags.map((tag: string) => (
-                  <span key={tag} className="inline-flex items-center px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm font-medium">
+                  <span key={tag} className="inline-flex items-center px-3 py-1 bg-[#0a0e27]/[0.04] text-gray-300 rounded-full text-sm font-medium">
                     <Tag className="w-3 h-3 mr-1" />
                     {tag}
                   </span>
@@ -305,18 +305,18 @@ const ContactDetails: React.FC = () => {
           </div>
 
           {/* Quick Actions */}
-          <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
-            <h3 className="font-semibold text-gray-900 mb-4">Quick Actions</h3>
+          <div className="bg-[#0a0e27] rounded-2xl border border-white/[0.1] p-6 shadow-sm">
+            <h3 className="font-semibold text-white mb-4">Quick Actions</h3>
             <div className="space-y-3">
-              <button className="w-full flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 rounded-xl transition-colors text-sm font-medium text-gray-700">
+              <button className="w-full flex items-center justify-between p-3 bg-[#050816] hover:bg-[#0a0e27]/[0.04] rounded-xl transition-colors text-sm font-medium text-gray-300">
                 <span>Add to Campaign</span>
                 <ArrowLeft className="w-4 h-4 rotate-180" />
               </button>
-              <button className="w-full flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 rounded-xl transition-colors text-sm font-medium text-gray-700">
+              <button className="w-full flex items-center justify-between p-3 bg-[#050816] hover:bg-[#0a0e27]/[0.04] rounded-xl transition-colors text-sm font-medium text-gray-300">
                 <span>Assign to Team Member</span>
                 <ArrowLeft className="w-4 h-4 rotate-180" />
               </button>
-              <button className="w-full flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 rounded-xl transition-colors text-sm font-medium text-gray-700">
+              <button className="w-full flex items-center justify-between p-3 bg-[#050816] hover:bg-[#0a0e27]/[0.04] rounded-xl transition-colors text-sm font-medium text-gray-300">
                 <span>Export Contact Data</span>
                 <ArrowLeft className="w-4 h-4 rotate-180" />
               </button>

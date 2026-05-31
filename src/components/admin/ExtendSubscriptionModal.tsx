@@ -90,18 +90,18 @@ const ExtendSubscriptionModal: React.FC<ExtendSubscriptionModalProps> = ({
             <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
 
             {/* Modal */}
-            <div className="relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full overflow-hidden animate-fade-in">
+            <div className="relative bg-[#0a0e27] rounded-2xl shadow-2xl max-w-md w-full overflow-hidden animate-fade-in">
                 {/* Header */}
-                <div className="flex justify-between items-center p-6 border-b border-gray-200 dark:border-gray-700">
+                <div className="flex justify-between items-center p-6 border-b border-white/[0.1]">
                     <div>
-                        <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center">
+                        <h2 className="text-xl font-bold text-white flex items-center">
                             <Calendar className="w-6 h-6 mr-2 text-green-600" />
                             Extend Subscription
                         </h2>
                     </div>
                     <button
                         onClick={onClose}
-                        className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full"
+                        className="p-2 hover:bg-[#0a0e27]/[0.04] dark:hover:bg-gray-700 rounded-full"
                     >
                         <X className="w-5 h-5 text-gray-500" />
                     </button>
@@ -110,10 +110,10 @@ const ExtendSubscriptionModal: React.FC<ExtendSubscriptionModalProps> = ({
                 {/* Content */}
                 <div className="p-6 space-y-6">
                     {/* Current Info */}
-                    <div className="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-4 space-y-2">
+                    <div className="bg-[#0a0e27]/[0.02] rounded-xl p-4 space-y-2">
                         <div className="flex justify-between text-sm">
                             <span className="text-gray-500">Organization:</span>
-                            <span className="font-medium text-gray-900 dark:text-white">
+                            <span className="font-medium text-white">
                                 {subscription.organization?.name || 'Unknown'}
                             </span>
                         </div>
@@ -125,7 +125,7 @@ const ExtendSubscriptionModal: React.FC<ExtendSubscriptionModalProps> = ({
                         </div>
                         <div className="flex justify-between text-sm">
                             <span className="text-gray-500">Current End Date:</span>
-                            <span className="font-medium text-gray-900 dark:text-white">
+                            <span className="font-medium text-white">
                                 {new Date(subscription.currentPeriodEnd).toLocaleDateString('en-IN')}
                             </span>
                         </div>
@@ -140,7 +140,7 @@ const ExtendSubscriptionModal: React.FC<ExtendSubscriptionModalProps> = ({
 
                     {/* Quick Options */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <label className="block text-sm font-medium text-gray-300 mb-2">
                             Quick Add Days
                         </label>
                         <div className="flex flex-wrap gap-2">
@@ -150,7 +150,7 @@ const ExtendSubscriptionModal: React.FC<ExtendSubscriptionModalProps> = ({
                                     onClick={() => setAdditionalDays(days)}
                                     className={`px-3 py-1.5 text-sm rounded-lg border transition-colors ${additionalDays === days
                                         ? 'bg-green-600 text-white border-green-600'
-                                        : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:border-green-400'
+                                        : 'bg-[#0a0e27] dark:bg-gray-700 text-gray-300 border-white/[0.12] hover:border-green-400'
                                         }`}
                                 >
                                     +{days} days
@@ -161,7 +161,7 @@ const ExtendSubscriptionModal: React.FC<ExtendSubscriptionModalProps> = ({
 
                     {/* Custom Days Input */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <label className="block text-sm font-medium text-gray-300 mb-2">
                             Or Enter Custom Days
                         </label>
                         <div className="flex items-center space-x-2">
@@ -171,7 +171,7 @@ const ExtendSubscriptionModal: React.FC<ExtendSubscriptionModalProps> = ({
                                 onChange={(e) => setAdditionalDays(parseInt(e.target.value) || 0)}
                                 min={1}
                                 max={730}
-                                className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                                className="flex-1 px-4 py-2 border border-white/[0.12] rounded-lg focus:ring-2 focus:ring-green-500 bg-[#0a0e27] dark:bg-gray-700 text-white"
                             />
                             <span className="text-gray-500">days</span>
                         </div>
@@ -201,7 +201,7 @@ const ExtendSubscriptionModal: React.FC<ExtendSubscriptionModalProps> = ({
 
                     {/* Reason */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <label className="block text-sm font-medium text-gray-300 mb-2">
                             Reason (Optional)
                         </label>
                         <textarea
@@ -209,16 +209,16 @@ const ExtendSubscriptionModal: React.FC<ExtendSubscriptionModalProps> = ({
                             onChange={(e) => setReason(e.target.value)}
                             placeholder="Enter reason for extension..."
                             rows={2}
-                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none"
+                            className="w-full px-3 py-2 border border-white/[0.12] rounded-lg focus:ring-2 focus:ring-green-500 bg-[#0a0e27] dark:bg-gray-700 text-white resize-none"
                         />
                     </div>
                 </div>
 
                 {/* Footer */}
-                <div className="flex justify-end space-x-3 p-6 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
+                <div className="flex justify-end space-x-3 p-6 border-t border-white/[0.1] bg-[#0a0e27]">
                     <button
                         onClick={onClose}
-                        className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+                        className="px-4 py-2 text-gray-300 hover:bg-[#0a0e27]/[0.04] dark:hover:bg-gray-700 rounded-lg"
                     >
                         Cancel
                     </button>

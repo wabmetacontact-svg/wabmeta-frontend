@@ -338,7 +338,7 @@ const VoiceRecorder: React.FC<Props> = ({ isRecording, onStart, onStop, onCancel
           onClick={cancelRecording}
           className="
             p-2 rounded-full
-            bg-white/10 hover:bg-white/15
+            bg-[#0a0e27]/10 hover:bg-[#0a0e27]/15
             text-gray-300 hover:text-white
             transition-colors
           "
@@ -390,7 +390,7 @@ const VoiceRecorder: React.FC<Props> = ({ isRecording, onStart, onStop, onCancel
           "
           title="Stop recording"
         >
-          <div className="w-3 h-3 bg-white rounded-sm" />
+          <div className="w-3 h-3 bg-[#0a0e27] rounded-sm" />
         </button>
       </div>
     );

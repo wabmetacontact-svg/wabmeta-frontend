@@ -109,7 +109,7 @@ const ContactInfoPanel: React.FC<Props> = ({
     if (!conversation.windowExpiresAt) {
       return {
         color: 'text-gray-400',
-        bg: 'bg-gray-500/10',
+        bg: 'bg-[#050816]0/10',
         border: 'border-gray-500/20',
         icon: AlertTriangle,
         label: 'No active session',
@@ -163,7 +163,7 @@ const ContactInfoPanel: React.FC<Props> = ({
           onClick={onClose}
           className="
             p-1.5 rounded-lg
-            hover:bg-white/[0.06]
+            hover:bg-[#0a0e27]/[0.06]
             text-gray-400 hover:text-white
             transition-colors
           "
@@ -223,7 +223,7 @@ const ContactInfoPanel: React.FC<Props> = ({
             { label: 'Received', value: stats.inbound, color: 'text-blue-400' },
             { label: 'Sent', value: stats.outbound, color: 'text-emerald-400' },
           ].map((s) => (
-            <div key={s.label} className="text-center p-2 rounded-lg bg-white/[0.03]">
+            <div key={s.label} className="text-center p-2 rounded-lg bg-[#0a0e27]/[0.03]">
               <p className={`text-base font-bold ${s.color}`}>{s.value}</p>
               <p className="text-[9px] uppercase tracking-wider text-gray-500 mt-0.5">{s.label}</p>
             </div>
@@ -298,7 +298,7 @@ const ContactInfoPanel: React.FC<Props> = ({
               onClick={onViewProfile}
               className="
                 w-full mt-3 py-2
-                bg-white/[0.04] hover:bg-white/[0.06]
+                bg-[#0a0e27]/[0.04] hover:bg-[#0a0e27]/[0.06]
                 border border-white/[0.05]
                 rounded-lg
                 text-xs font-medium text-gray-300 hover:text-white
@@ -370,7 +370,7 @@ const ContactInfoPanel: React.FC<Props> = ({
                 className="
                   w-full flex items-center gap-2.5 px-3 py-2
                   text-sm text-gray-300 hover:text-white
-                  hover:bg-white/[0.04] rounded-lg
+                  hover:bg-[#0a0e27]/[0.04] rounded-lg
                   transition-colors
                 "
               >
@@ -443,7 +443,7 @@ const Section: React.FC<SectionProps> = ({
         className="
           w-full flex items-center justify-between
           px-4 py-3
-          hover:bg-white/[0.02]
+          hover:bg-[#0a0e27]/[0.02]
           transition-colors
         "
       >
@@ -455,7 +455,7 @@ const Section: React.FC<SectionProps> = ({
           {count !== undefined && count > 0 && (
             <span className="
               text-[9px] font-mono font-bold
-              bg-white/[0.06] text-gray-400
+              bg-[#0a0e27]/[0.06] text-gray-400
               px-1.5 py-0.5 rounded-md
             ">
               {count}
@@ -488,12 +488,12 @@ const InfoRow: React.FC<InfoRowProps> = ({ icon: Icon, label, value, onCopy, act
   return (
     <div className="
       group flex items-start gap-2.5 py-2
-      hover:bg-white/[0.02] rounded-lg px-2 -mx-2
+      hover:bg-[#0a0e27]/[0.02] rounded-lg px-2 -mx-2
       transition-colors
     ">
       <div className="
         w-7 h-7 rounded-lg
-        bg-white/[0.04] border border-white/[0.05]
+        bg-[#0a0e27]/[0.04] border border-white/[0.05]
         flex items-center justify-center flex-shrink-0
       ">
         <Icon className="w-3.5 h-3.5 text-gray-400" />
@@ -509,7 +509,7 @@ const InfoRow: React.FC<InfoRowProps> = ({ icon: Icon, label, value, onCopy, act
           onClick={onCopy}
           className="
             p-1.5 rounded-md
-            hover:bg-white/[0.08]
+            hover:bg-[#0a0e27]/[0.08]
             text-gray-400 hover:text-white
             opacity-0 group-hover:opacity-100
             transition-all flex-shrink-0

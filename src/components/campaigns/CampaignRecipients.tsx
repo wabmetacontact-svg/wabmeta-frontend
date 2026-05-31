@@ -164,7 +164,7 @@ const CampaignRecipients: React.FC<Props> = ({ campaignId, onRetryFailed }) => {
     return (
       <span
         className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${
-          colors[status.toUpperCase()] || 'bg-gray-100 text-gray-700'
+          colors[status.toUpperCase()] || 'bg-[#0a0e27]/[0.04] text-gray-300'
         }`}
       >
         {getStatusIcon(status)}
@@ -174,11 +174,11 @@ const CampaignRecipients: React.FC<Props> = ({ campaignId, onRetryFailed }) => {
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
+    <div className="bg-[#0a0e27] rounded-xl border border-white/[0.1]">
       {/* Header */}
-      <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+      <div className="p-4 border-b border-white/[0.1]">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+          <h3 className="text-lg font-semibold text-white">
             Campaign Recipients
           </h3>
 
@@ -201,7 +201,7 @@ const CampaignRecipients: React.FC<Props> = ({ campaignId, onRetryFailed }) => {
             <button
               onClick={() => handleExport('all')}
               disabled={exporting}
-              className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 rounded-lg text-sm font-medium transition-colors"
+              className="flex items-center gap-2 px-3 py-1.5 bg-[#0a0e27]/[0.04] dark:bg-gray-700 text-gray-300 hover:bg-gray-200 rounded-lg text-sm font-medium transition-colors"
             >
               <Download className="w-4 h-4" />
               Export
@@ -211,8 +211,8 @@ const CampaignRecipients: React.FC<Props> = ({ campaignId, onRetryFailed }) => {
 
         {/* Summary Stats */}
         <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 mt-4">
-          <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-2 text-center">
-            <div className="text-lg font-bold text-gray-900 dark:text-white">{summary.total}</div>
+          <div className="bg-[#050816] dark:bg-gray-700 rounded-lg p-2 text-center">
+            <div className="text-lg font-bold text-white">{summary.total}</div>
             <div className="text-xs text-gray-500">Total</div>
           </div>
           <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-2 text-center">
@@ -249,7 +249,7 @@ const CampaignRecipients: React.FC<Props> = ({ campaignId, onRetryFailed }) => {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-              className="w-full pl-9 pr-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full pl-9 pr-4 py-2 bg-[#050816] dark:bg-gray-700 border border-white/[0.1] dark:border-gray-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
             />
           </div>
 
@@ -259,7 +259,7 @@ const CampaignRecipients: React.FC<Props> = ({ campaignId, onRetryFailed }) => {
               setStatusFilter(e.target.value);
               setPage(1);
             }}
-            className="px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+            className="px-3 py-2 bg-[#050816] dark:bg-gray-700 border border-white/[0.1] dark:border-gray-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
           >
             <option value="all">All Status</option>
             <option value="PENDING">Pending</option>
@@ -281,7 +281,7 @@ const CampaignRecipients: React.FC<Props> = ({ campaignId, onRetryFailed }) => {
           <div className="text-center py-12 text-gray-500">No recipients found</div>
         ) : (
           <table className="w-full">
-            <thead className="bg-gray-50 dark:bg-gray-700">
+            <thead className="bg-[#050816] dark:bg-gray-700">
               <tr>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                   Phone
@@ -302,11 +302,11 @@ const CampaignRecipients: React.FC<Props> = ({ campaignId, onRetryFailed }) => {
             </thead>
             <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
               {recipients.map((r) => (
-                <tr key={r.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                  <td className="px-4 py-3 text-sm font-mono text-gray-900 dark:text-white">
+                <tr key={r.id} className="hover:bg-[#0a0e27]/[0.04]">
+                  <td className="px-4 py-3 text-sm font-mono text-white">
                     {r.phone}
                   </td>
-                  <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">
+                  <td className="px-4 py-3 text-sm text-gray-300">
                     {r.fullName}
                   </td>
                   <td className="px-4 py-3">{getStatusBadge(r.status)}</td>
@@ -340,7 +340,7 @@ const CampaignRecipients: React.FC<Props> = ({ campaignId, onRetryFailed }) => {
 
       {/* Pagination */}
       {meta.totalPages > 1 && (
-        <div className="p-4 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
+        <div className="p-4 border-t border-white/[0.1] flex items-center justify-between">
           <span className="text-sm text-gray-500">
             Showing {(page - 1) * 50 + 1} – {Math.min(page * 50, meta.total)} of {meta.total}
           </span>
@@ -348,14 +348,14 @@ const CampaignRecipients: React.FC<Props> = ({ campaignId, onRetryFailed }) => {
             <button
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={page === 1}
-              className="px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded-lg disabled:opacity-50 text-sm"
+              className="px-3 py-1 bg-[#0a0e27]/[0.04] dark:bg-gray-700 rounded-lg disabled:opacity-50 text-sm"
             >
               Previous
             </button>
             <button
               onClick={() => setPage((p) => Math.min(meta.totalPages, p + 1))}
               disabled={page === meta.totalPages}
-              className="px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded-lg disabled:opacity-50 text-sm"
+              className="px-3 py-1 bg-[#0a0e27]/[0.04] dark:bg-gray-700 rounded-lg disabled:opacity-50 text-sm"
             >
               Next
             </button>

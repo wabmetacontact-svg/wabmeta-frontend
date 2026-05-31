@@ -126,7 +126,7 @@ const SubscriptionManagement: React.FC = () => {
             <div className="flex items-center justify-center min-h-screen">
                 <div className="text-center">
                     <RefreshCw className="w-10 h-10 animate-spin text-green-600 mx-auto" />
-                    <p className="mt-4 text-gray-600">Loading subscriptions...</p>
+                    <p className="mt-4 text-gray-400">Loading subscriptions...</p>
                 </div>
             </div>
         );
@@ -137,8 +137,8 @@ const SubscriptionManagement: React.FC = () => {
             {/* Header */}
             <div className="flex justify-between items-center mb-6">
                 <div>
-                    <h1 className="text-3xl font-bold text-gray-900">Subscription Management</h1>
-                    <p className="mt-1 text-gray-600">Manage user subscriptions and plans</p>
+                    <h1 className="text-3xl font-bold text-white">Subscription Management</h1>
+                    <p className="mt-1 text-gray-400">Manage user subscriptions and plans</p>
                 </div>
                 <button
                     onClick={() => setAssignModalOpen(true)}
@@ -180,12 +180,12 @@ const SubscriptionManagement: React.FC = () => {
             )}
 
             {/* Tabs */}
-            <div className="flex border-b border-gray-200 mb-6">
+            <div className="flex border-b border-white/[0.1] mb-6">
                 <button
                     onClick={() => setActiveTab('all')}
                     className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${activeTab === 'all'
                             ? 'border-green-600 text-green-600'
-                            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                            : 'border-transparent text-gray-500 hover:text-gray-300 hover:border-white/[0.12]'
                         }`}
                 >
                     All Accounts
@@ -194,7 +194,7 @@ const SubscriptionManagement: React.FC = () => {
                     onClick={() => setActiveTab('active')}
                     className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${activeTab === 'active'
                             ? 'border-green-600 text-green-600'
-                            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                            : 'border-transparent text-gray-500 hover:text-gray-300 hover:border-white/[0.12]'
                         }`}
                 >
                     👑 Active Subscribers
@@ -203,7 +203,7 @@ const SubscriptionManagement: React.FC = () => {
                     onClick={() => setActiveTab('expired')}
                     className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${activeTab === 'expired'
                             ? 'border-green-600 text-green-600'
-                            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                            : 'border-transparent text-gray-500 hover:text-gray-300 hover:border-white/[0.12]'
                         }`}
                 >
                     ⌛ Expired
@@ -212,7 +212,7 @@ const SubscriptionManagement: React.FC = () => {
                     onClick={() => setActiveTab('free')}
                     className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${activeTab === 'free'
                             ? 'border-green-600 text-green-600'
-                            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                            : 'border-transparent text-gray-500 hover:text-gray-300 hover:border-white/[0.12]'
                         }`}
                 >
                     🎁 Free/Trial
@@ -220,10 +220,10 @@ const SubscriptionManagement: React.FC = () => {
             </div>
 
             {/* Filters */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-6">
+            <div className="bg-[#0a0e27] rounded-xl shadow-sm border border-white/[0.1] p-4 mb-6">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-medium text-gray-300 mb-2">
                             Search
                         </label>
                         <div className="relative">
@@ -233,20 +233,20 @@ const SubscriptionManagement: React.FC = () => {
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
                                 placeholder="Search organizations..."
-                                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                                className="w-full pl-10 pr-4 py-2 border border-white/[0.12] rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                             />
                         </div>
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-medium text-gray-300 mb-2">
                             Status
                         </label>
                         <select
                             value={statusFilter}
                             onChange={(e) => setStatusFilter(e.target.value)}
                             disabled={activeTab !== 'all'}
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-400"
+                            className="w-full px-4 py-2 border border-white/[0.12] rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent disabled:bg-[#050816] disabled:text-gray-400"
                         >
                             <option value="">All Statuses</option>
                             <option value="ACTIVE">Active</option>
@@ -256,14 +256,14 @@ const SubscriptionManagement: React.FC = () => {
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-medium text-gray-300 mb-2">
                             Plan Type
                         </label>
                         <select
                             value={planFilter}
                             onChange={(e) => setPlanFilter(e.target.value)}
                             disabled={activeTab === 'free'}
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-400"
+                            className="w-full px-4 py-2 border border-white/[0.12] rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent disabled:bg-[#050816] disabled:text-gray-400"
                         >
                             <option value="">All Plans</option>
                             <option value="FREE_DEMO">Free Demo</option>
@@ -277,10 +277,10 @@ const SubscriptionManagement: React.FC = () => {
             </div>
 
             {/* Subscriptions Table */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <div className="bg-[#0a0e27] rounded-xl shadow-sm border border-white/[0.1] overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="w-full">
-                        <thead className="bg-gray-50 border-b border-gray-200">
+                        <thead className="bg-[#050816] border-b border-white/[0.1]">
                             <tr>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Organization
@@ -304,9 +304,9 @@ const SubscriptionManagement: React.FC = () => {
                         </thead>
                         <tbody className="divide-y divide-gray-200">
                             {subscriptions.map((sub) => (
-                                <tr key={sub.id} className="hover:bg-gray-50">
+                                <tr key={sub.id} className="hover:bg-[#050816]">
                                     <td className="px-6 py-4">
-                                        <div className="text-sm font-medium text-gray-900">
+                                        <div className="text-sm font-medium text-white">
                                             {sub.organization.name}
                                         </div>
                                         <div className="text-sm text-gray-500">
@@ -317,7 +317,7 @@ const SubscriptionManagement: React.FC = () => {
                                         </div>
                                     </td>
                                     <td className="px-6 py-4">
-                                        <span className="text-sm font-medium text-gray-900">
+                                        <span className="text-sm font-medium text-white">
                                             {sub.plan?.name || 'Unknown'}
                                         </span>
                                     </td>
@@ -327,14 +327,14 @@ const SubscriptionManagement: React.FC = () => {
                                                 ? 'bg-green-100 text-green-800'
                                                 : sub.status === 'EXPIRED'
                                                     ? 'bg-red-100 text-red-800'
-                                                    : 'bg-gray-100 text-gray-800'
+                                                    : 'bg-[#0a0e27]/[0.04] text-white'
                                                 }`}
                                         >
                                             {sub.status}
                                         </span>
                                     </td>
                                     <td className="px-6 py-4">
-                                        <div className="text-sm text-gray-900">
+                                        <div className="text-sm text-white">
                                             {new Date(sub.currentPeriodEnd).toLocaleDateString('en-IN')}
                                         </div>
                                         <div className="text-xs text-gray-500">
@@ -380,21 +380,21 @@ const SubscriptionManagement: React.FC = () => {
 
                 {/* Pagination */}
                 {totalPages > 1 && (
-                    <div className="px-6 py-4 border-t border-gray-200 flex justify-between items-center">
+                    <div className="px-6 py-4 border-t border-white/[0.1] flex justify-between items-center">
                         <button
                             onClick={() => setPage((p) => Math.max(1, p - 1))}
                             disabled={page === 1}
-                            className="px-4 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50"
+                            className="px-4 py-2 text-sm text-gray-300 bg-[#0a0e27] border border-white/[0.12] rounded-lg hover:bg-[#050816] disabled:opacity-50"
                         >
                             Previous
                         </button>
-                        <span className="text-sm text-gray-700">
+                        <span className="text-sm text-gray-300">
                             Page {page} of {totalPages}
                         </span>
                         <button
                             onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                             disabled={page === totalPages}
-                            className="px-4 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50"
+                            className="px-4 py-2 text-sm text-gray-300 bg-[#0a0e27] border border-white/[0.12] rounded-lg hover:bg-[#050816] disabled:opacity-50"
                         >
                             Next
                         </button>
@@ -446,11 +446,11 @@ const StatCard: React.FC<StatCardProps> = ({ title, value, icon: Icon, color }) 
     };
 
     return (
-        <div className="bg-white rounded-xl p-6 border border-gray-200">
+        <div className="bg-[#0a0e27] rounded-xl p-6 border border-white/[0.1]">
             <div className="flex items-center justify-between">
                 <div>
-                    <p className="text-sm text-gray-600">{title}</p>
-                    <p className="text-2xl font-bold text-gray-900 mt-1">{value}</p>
+                    <p className="text-sm text-gray-400">{title}</p>
+                    <p className="text-2xl font-bold text-white mt-1">{value}</p>
                 </div>
                 <div className={`p-3 rounded-xl ${colors[color]}`}>
                     <Icon className="w-6 h-6" />

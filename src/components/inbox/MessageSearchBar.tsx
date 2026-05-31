@@ -58,7 +58,7 @@ const MessageSearchBar: React.FC<Props> = ({
             placeholder="Search in conversation..."
             className="
               w-full pl-9 pr-3 py-2
-              bg-white/[0.05] border border-white/[0.08]
+              bg-[#0a0e27]/[0.05] border border-white/[0.08]
               rounded-lg text-sm text-white
               placeholder:text-gray-500
               focus:outline-none focus:border-emerald-400/40
@@ -77,7 +77,7 @@ const MessageSearchBar: React.FC<Props> = ({
               disabled={resultsCount === 0}
               className="
                 p-1.5 rounded-md
-                hover:bg-white/[0.08]
+                hover:bg-[#0a0e27]/[0.08]
                 text-gray-300 hover:text-white
                 disabled:opacity-30 disabled:cursor-not-allowed
                 transition-colors
@@ -90,7 +90,7 @@ const MessageSearchBar: React.FC<Props> = ({
               disabled={resultsCount === 0}
               className="
                 p-1.5 rounded-md
-                hover:bg-white/[0.08]
+                hover:bg-[#0a0e27]/[0.08]
                 text-gray-300 hover:text-white
                 disabled:opacity-30 disabled:cursor-not-allowed
                 transition-colors
@@ -105,7 +105,7 @@ const MessageSearchBar: React.FC<Props> = ({
           onClick={onClose}
           className="
             p-1.5 rounded-md
-            hover:bg-white/[0.08]
+            hover:bg-[#0a0e27]/[0.08]
             text-gray-300 hover:text-white
             transition-colors
           "

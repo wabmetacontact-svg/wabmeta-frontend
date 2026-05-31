@@ -52,13 +52,13 @@ const formatNumber = (value: number): string => {
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (!active || !payload || !payload.length) return null;
   return (
-    <div className="bg-white border border-gray-200 rounded-xl shadow-lg p-3">
-      <p className="text-sm font-medium text-gray-900 mb-2">{label}</p>
+    <div className="bg-[#0a0e27] border border-white/[0.1] rounded-xl shadow-lg p-3">
+      <p className="text-sm font-medium text-white mb-2">{label}</p>
       {payload.map((entry: any, index: number) => (
         <div key={index} className="flex items-center space-x-2 text-sm">
           <div className="w-3 h-3 rounded-full" style={{ backgroundColor: entry.color }} />
-          <span className="text-gray-600 capitalize">{entry.name}:</span>
-          <span className="font-medium text-gray-900">{formatNumber(entry.value)}</span>
+          <span className="text-gray-400 capitalize">{entry.name}:</span>
+          <span className="font-medium text-white">{formatNumber(entry.value)}</span>
         </div>
       ))}
     </div>
@@ -101,23 +101,23 @@ const ChartCard: React.FC<ChartCardProps> = ({
   const keysToRender = dataKeys || [dataKey];
 
   return (
-    <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+    <div className="bg-[#0a0e27] rounded-2xl p-6 shadow-sm border border-gray-100">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
+          <h2 className="text-lg font-semibold text-white">{title}</h2>
           {subtitle && <p className="text-sm text-gray-500 mt-1">{subtitle}</p>}
         </div>
         
         {showPeriodSelector && (
-          <div className="flex items-center space-x-1 bg-gray-100 rounded-lg p-1">
+          <div className="flex items-center space-x-1 bg-[#0a0e27]/[0.04] rounded-lg p-1">
             {[{ value: '7', label: '7D' }, { value: '30', label: '30D' }, { value: '90', label: '90D' }].map((p) => (
               <button
                 key={p.value}
                 onClick={() => handlePeriodChange(p.value as any)}
                 className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
                   activePeriod === p.value
-                    ? 'bg-white text-gray-900 shadow-sm'
-                    : 'text-gray-600 hover:text-gray-900'
+                    ? 'bg-[#0a0e27] text-white shadow-sm'
+                    : 'text-gray-400 hover:text-white'
                 }`}
               >
                 {p.label}
@@ -129,7 +129,7 @@ const ChartCard: React.FC<ChartCardProps> = ({
 
       {isEmpty ? (
         <div className="flex flex-col items-center justify-center h-64">
-          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+          <div className="w-16 h-16 bg-[#0a0e27]/[0.04] rounded-full flex items-center justify-center mb-4">
             <BarChart3 className="w-8 h-8 text-gray-400" />
           </div>
           <p className="text-gray-500">No data available</p>

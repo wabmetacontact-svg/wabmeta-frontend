@@ -312,21 +312,21 @@ const SendTemplateModal: React.FC<SendTemplateModalProps> = ({
             <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
 
             {/* Modal */}
-            <div className="relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden">
+            <div className="relative bg-[#0a0e27] rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden">
                 {/* Header */}
-                <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+                <div className="flex items-center justify-between p-6 border-b border-white/[0.1]">
                     <div>
-                        <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center">
+                        <h2 className="text-xl font-bold text-white flex items-center">
                             <FileText className="w-6 h-6 mr-2 text-green-600" />
                             Send Template Message
                         </h2>
-                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                        <p className="text-sm text-gray-400 mt-1">
                             To: {contactName || contactPhone}
                         </p>
                     </div>
                     <button
                         onClick={onClose}
-                        className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full"
+                        className="p-2 hover:bg-[#0a0e27]/[0.04] dark:hover:bg-gray-700 rounded-full"
                     >
                         <X className="w-5 h-5 text-gray-500" />
                     </button>
@@ -362,7 +362,7 @@ const SendTemplateModal: React.FC<SendTemplateModalProps> = ({
                                     value={search}
                                     onChange={(e) => setSearch(e.target.value)}
                                     placeholder="Search templates..."
-                                    className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-green-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                                    className="w-full pl-10 pr-4 py-3 border border-white/[0.12] rounded-xl focus:ring-2 focus:ring-green-500 bg-[#0a0e27] dark:bg-gray-700 text-white"
                                 />
                             </div>
 
@@ -377,15 +377,15 @@ const SendTemplateModal: React.FC<SendTemplateModalProps> = ({
                                         <button
                                             key={template.id}
                                             onClick={() => handleSelectTemplate(template)}
-                                            className="w-full p-4 text-left border border-gray-200 dark:border-gray-700 rounded-xl hover:border-green-300 dark:hover:border-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors"
+                                            className="w-full p-4 text-left border border-white/[0.1] rounded-xl hover:border-green-300 dark:hover:border-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors"
                                         >
                                             <div className="flex items-start justify-between">
                                                 <div className="flex-1 min-w-0">
                                                     <div className="flex items-center gap-2">
-                                                        <p className="font-medium text-gray-900 dark:text-white truncate">
+                                                        <p className="font-medium text-white truncate">
                                                             {template.name}
                                                         </p>
-                                                        <span className="px-2 py-0.5 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 text-xs rounded">
+                                                        <span className="px-2 py-0.5 bg-[#0a0e27]/[0.04] dark:bg-gray-700 text-gray-400 text-xs rounded">
                                                             {template.language}
                                                         </span>
                                                         <span className={`px-2 py-0.5 text-xs rounded ${template.category === 'MARKETING'
@@ -395,7 +395,7 @@ const SendTemplateModal: React.FC<SendTemplateModalProps> = ({
                                                             {template.category}
                                                         </span>
                                                     </div>
-                                                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">
+                                                    <p className="text-sm text-gray-400 mt-1 line-clamp-2">
                                                         {template.bodyText}
                                                     </p>
                                                 </div>
@@ -406,8 +406,8 @@ const SendTemplateModal: React.FC<SendTemplateModalProps> = ({
                                 </div>
                             ) : (
                                 <div className="text-center py-12">
-                                    <FileText className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
-                                    <p className="text-gray-500 dark:text-gray-400">
+                                    <FileText className="w-12 h-12 text-gray-300 dark:text-gray-400 mx-auto mb-3" />
+                                    <p className="text-gray-400">
                                         {search ? 'No templates found' : 'No approved templates available'}
                                     </p>
                                 </div>
@@ -419,8 +419,8 @@ const SendTemplateModal: React.FC<SendTemplateModalProps> = ({
                             {/* Selected Template */}
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <p className="text-sm text-gray-500 dark:text-gray-400">Selected Template</p>
-                                    <p className="font-medium text-gray-900 dark:text-white">{selectedTemplate.name}</p>
+                                    <p className="text-sm text-gray-400">Selected Template</p>
+                                    <p className="font-medium text-white">{selectedTemplate.name}</p>
                                 </div>
                                 <button
                                     onClick={() => setSelectedTemplate(null)}
@@ -432,15 +432,15 @@ const SendTemplateModal: React.FC<SendTemplateModalProps> = ({
 
                             {/* Media Header Input */}
                             {['IMAGE', 'VIDEO', 'DOCUMENT'].includes(selectedTemplate.headerType?.toUpperCase() || '') && (
-                                <div className="space-y-3 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl border border-gray-200 dark:border-gray-700">
-                                    <p className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center">
+                                <div className="space-y-3 p-4 bg-[#0a0e27]/[0.02] rounded-xl border border-white/[0.1]">
+                                    <p className="text-sm font-medium text-gray-300 flex items-center">
                                         {selectedTemplate.headerType === 'IMAGE' && <ImageIcon className="w-4 h-4 mr-2" />}
                                         {selectedTemplate.headerType === 'VIDEO' && <Video className="w-4 h-4 mr-2" />}
                                         {selectedTemplate.headerType === 'DOCUMENT' && <FileText className="w-4 h-4 mr-2" />}
                                         {selectedTemplate.headerType} Header
                                     </p>
                                     <div>
-                                        <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">
+                                        <label className="block text-xs text-gray-400 mb-1">
                                             Media URL
                                         </label>
                                         <input
@@ -448,7 +448,7 @@ const SendTemplateModal: React.FC<SendTemplateModalProps> = ({
                                             value={headerMediaUrl}
                                             onChange={(e) => setHeaderMediaUrl(e.target.value)}
                                             placeholder={`Enter ${selectedTemplate.headerType?.toLowerCase()} URL (e.g., https://example.com/file.jpg)`}
-                                            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                                            className="w-full px-4 py-2 border border-white/[0.12] rounded-lg focus:ring-2 focus:ring-green-500 bg-[#0a0e27] dark:bg-gray-700 text-white"
                                         />
                                         <p className="text-[10px] text-gray-400 mt-1">
                                             Note: For documents, use PDF, DOCX, or XLSX.
@@ -460,14 +460,14 @@ const SendTemplateModal: React.FC<SendTemplateModalProps> = ({
                             {/* Variables Input */}
                             {[...new Set([...extractVariables(selectedTemplate.bodyText), ...(selectedTemplate.headerType === 'TEXT' ? extractVariables(selectedTemplate.headerContent || '') : [])])].length > 0 && (
                                 <div className="space-y-3">
-                                    <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    <p className="text-sm font-medium text-gray-300">
                                         Fill Template Variables
                                     </p>
                                     {[...new Set([...extractVariables(selectedTemplate.bodyText), ...(selectedTemplate.headerType === 'TEXT' ? extractVariables(selectedTemplate.headerContent || '') : [])])]
                                         .sort((a,b) => parseInt(a.replace(/[^\d]/g, '')) - parseInt(b.replace(/[^\d]/g, '')))
                                         .map((variable) => (
                                         <div key={variable}>
-                                            <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">
+                                            <label className="block text-xs text-gray-400 mb-1">
                                                 Variable {variable}
                                             </label>
                                             <input
@@ -478,7 +478,7 @@ const SendTemplateModal: React.FC<SendTemplateModalProps> = ({
                                                     [variable]: e.target.value,
                                                 })}
                                                 placeholder={`Value for ${variable}`}
-                                                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                                                className="w-full px-4 py-2 border border-white/[0.12] rounded-lg focus:ring-2 focus:ring-green-500 bg-[#0a0e27] dark:bg-gray-700 text-white"
                                             />
                                         </div>
                                     ))}
@@ -487,7 +487,7 @@ const SendTemplateModal: React.FC<SendTemplateModalProps> = ({
 
                             {/* Preview */}
                             <div>
-                                <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                <p className="text-sm font-medium text-gray-300 mb-2">
                                     Message Preview
                                 </p>
                                 <div className="bg-green-50 dark:bg-green-900/20 rounded-xl p-4 border border-green-200 dark:border-green-800">
@@ -497,7 +497,7 @@ const SendTemplateModal: React.FC<SendTemplateModalProps> = ({
                                                 <img src={headerMediaUrl} alt="Header" className="w-full h-32 object-cover rounded-lg mb-2" />
                                             )}
                                             {selectedTemplate.headerType === 'TEXT' && (
-                                                <p className="font-bold text-gray-900 dark:text-white border-b border-green-100 dark:border-green-800 pb-1 mb-2">
+                                                <p className="font-bold text-white border-b border-green-100 dark:border-green-800 pb-1 mb-2">
                                                     {getHeaderPreview()}
                                                 </p>
                                             )}
@@ -509,11 +509,11 @@ const SendTemplateModal: React.FC<SendTemplateModalProps> = ({
                                             )}
                                         </div>
                                     )}
-                                    <p className="text-gray-800 dark:text-gray-200 whitespace-pre-wrap">
+                                    <p className="text-gray-200 whitespace-pre-wrap">
                                         {getPreviewText()}
                                     </p>
                                     {selectedTemplate.footerText && (
-                                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                                        <p className="text-sm text-gray-400 mt-2">
                                             {selectedTemplate.footerText}
                                         </p>
                                     )}
@@ -524,10 +524,10 @@ const SendTemplateModal: React.FC<SendTemplateModalProps> = ({
                 </div>
 
                 {/* Footer */}
-                <div className="flex justify-between items-center p-6 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
+                <div className="flex justify-between items-center p-6 border-t border-white/[0.1] bg-[#0a0e27]">
                     <button
                         onClick={onClose}
-                        className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+                        className="px-4 py-2 text-gray-300 hover:bg-[#0a0e27]/[0.04] dark:hover:bg-gray-700 rounded-lg"
                     >
                         Cancel
                     </button>

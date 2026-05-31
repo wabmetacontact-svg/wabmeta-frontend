@@ -1336,17 +1336,17 @@ const EmptyState: React.FC<{ onOpenQuickReplies: () => void }> = ({
               key={i}
               className="
                 flex items-center gap-2 p-2.5
-                bg-white/[0.03] border border-white/[0.06]
+                bg-[#0a0e27]/[0.03] border border-white/[0.06]
                 rounded-lg
               "
             >
               <div className="flex items-center gap-0.5">
                 {tip.keys.map((k, ki) => (
                   <React.Fragment key={ki}>
-                    {ki > 0 && <span className="text-gray-600 text-[10px]">+</span>}
+                    {ki > 0 && <span className="text-gray-400 text-[10px]">+</span>}
                     <kbd className="
                       px-1.5 py-0.5
-                      bg-white/[0.06] border border-white/[0.08]
+                      bg-[#0a0e27]/[0.06] border border-white/[0.08]
                       rounded text-[10px] font-mono text-gray-300
                     ">
                       {k}
@@ -1363,7 +1363,7 @@ const EmptyState: React.FC<{ onOpenQuickReplies: () => void }> = ({
           onClick={onOpenQuickReplies}
           className="
             inline-flex items-center gap-2 px-4 py-2
-            bg-white/[0.04] hover:bg-white/[0.08]
+            bg-[#0a0e27]/[0.04] hover:bg-[#0a0e27]/[0.08]
             border border-white/[0.08]
             rounded-xl
             text-sm text-gray-300 hover:text-white

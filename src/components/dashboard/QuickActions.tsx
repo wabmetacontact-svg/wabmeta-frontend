@@ -49,9 +49,9 @@ const QuickActions: React.FC = () => {
   ];
 
   return (
-    <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+    <div className="bg-[#0a0e27] rounded-2xl p-6 shadow-sm border border-gray-100">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-lg font-semibold text-gray-900">Quick Actions</h2>
+        <h2 className="text-lg font-semibold text-white">Quick Actions</h2>
         <Link 
           to="/dashboard/campaigns/new"
           className="flex items-center space-x-1 text-sm text-primary-600 hover:text-primary-700 font-medium"
@@ -71,7 +71,7 @@ const QuickActions: React.FC = () => {
             <div className={`w-10 h-10 ${action.iconBg} rounded-lg flex items-center justify-center mb-3 group-hover:scale-110 transition-transform`}>
               <action.icon className={`w-5 h-5 ${action.iconColor}`} />
             </div>
-            <h3 className="font-semibold text-gray-900 group-hover:text-primary-600 transition-colors">
+            <h3 className="font-semibold text-white group-hover:text-primary-600 transition-colors">
               {action.name}
             </h3>
             <p className="text-sm text-gray-500 mt-1">{action.description}</p>

@@ -806,12 +806,12 @@ const CreateTemplate: React.FC = () => {
   // ✅ ADD: Return statement se bilkul pehle
   if (loadingTemplate) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 
+      <div className="min-h-screen bg-[#050816] 
                       flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="w-10 h-10 text-primary-500 
                              animate-spin mx-auto mb-4" />
-          <p className="text-gray-600 dark:text-gray-400 font-medium">
+          <p className="text-gray-400 font-medium">
             Loading template...
           </p>
           <p className="text-gray-400 dark:text-gray-500 text-sm mt-1">
@@ -826,20 +826,20 @@ const CreateTemplate: React.FC = () => {
   // RENDER
   // ==========================================
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-[#050816]">
       {/* Header */}
-      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-16 z-20">
+      <div className="bg-[#0a0e27] border-b border-white/[0.1] sticky top-16 z-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-4">
               <Link
                 to="/dashboard/templates"
-                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                className="p-2 hover:bg-[#0a0e27]/[0.04] dark:hover:bg-gray-700 rounded-lg transition-colors"
               >
-                <ArrowLeft className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                <ArrowLeft className="w-5 h-5 text-gray-400" />
               </Link>
               <div>
-                <h1 className="text-xl font-bold text-gray-900 dark:text-white">
+                <h1 className="text-xl font-bold text-white">
                   {isEditMode 
                     ? 'Edit Template' 
                     : duplicateFrom 
@@ -847,7 +847,7 @@ const CreateTemplate: React.FC = () => {
                       : 'Create Template'
                   }
                 </h1>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
+                <p className="text-sm text-gray-400">
                   Design your WhatsApp message template
                 </p>
               </div>
@@ -856,7 +856,7 @@ const CreateTemplate: React.FC = () => {
             <div className="flex items-center space-x-3">
               <button
                 onClick={() => setShowPreview(true)}
-                className="flex items-center space-x-2 px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl transition-colors"
+                className="flex items-center space-x-2 px-4 py-2 text-gray-300 hover:bg-[#0a0e27]/[0.04] dark:hover:bg-gray-700 rounded-xl transition-colors"
               >
                 <Eye className="w-5 h-5" />
                 <span className="hidden sm:inline">Preview</span>
@@ -999,8 +999,8 @@ const CreateTemplate: React.FC = () => {
           {/* Left: Form */}
           <div className="space-y-6">
             {/* Tabs */}
-            <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
-              <div className="flex border-b border-gray-200 dark:border-gray-700">
+            <div className="bg-[#0a0e27] rounded-2xl border border-white/[0.1] overflow-hidden">
+              <div className="flex border-b border-white/[0.1]">
                 {[
                   { id: 'content', label: 'Content' },
                   { id: 'buttons', label: 'Buttons' },
@@ -1011,7 +1011,7 @@ const CreateTemplate: React.FC = () => {
                     onClick={() => setActiveTab(tab.id as any)}
                     className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${activeTab === tab.id
                       ? 'text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/20 border-b-2 border-primary-500'
-                      : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                      : 'text-gray-400 hover:text-white dark:hover:text-white'
                       }`}
                   >
                     {tab.label}
@@ -1025,7 +1025,7 @@ const CreateTemplate: React.FC = () => {
                   <div className="space-y-6">
                     {/* Template Name */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
                         Template Name *
                       </label>
                       <input
@@ -1043,24 +1043,24 @@ const CreateTemplate: React.FC = () => {
                         }
                         placeholder="e.g., order_confirmation"
                         maxLength={512}
-                        className={`w-full px-4 py-2.5 border rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 transition-all ${isApprovedTemplate 
-                          ? 'opacity-50 cursor-not-allowed bg-gray-100 dark:bg-gray-800' 
+                        className={`w-full px-4 py-2.5 border rounded-xl bg-[#0a0e27] dark:bg-gray-700 text-white focus:outline-none focus:ring-2 transition-all ${isApprovedTemplate 
+                          ? 'opacity-50 cursor-not-allowed bg-[#0a0e27]/[0.04]' 
                           : ''} ${errors.name
                           ? 'border-red-300 dark:border-red-600 focus:ring-red-500/20'
-                          : 'border-gray-200 dark:border-gray-600 focus:ring-primary-500/20 focus:border-primary-500'
+                          : 'border-white/[0.1] dark:border-gray-600 focus:ring-primary-500/20 focus:border-primary-500'
                           }`}
                       />
                       {errors.name && (
                         <p className="text-sm text-red-600 dark:text-red-400 mt-1">{errors.name}</p>
                       )}
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                      <p className="text-xs text-gray-400 mt-1">
                         Use lowercase letters, numbers, and underscores only
                       </p>
                     </div>
 
                     {/* Header Type */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
                         Header Type
                       </label>
                       <div className="grid grid-cols-5 gap-2">
@@ -1071,7 +1071,7 @@ const CreateTemplate: React.FC = () => {
                             onClick={() => updateFormData('header', { type: type.value })}
                             className={`flex flex-col items-center p-3 rounded-xl border-2 transition-all ${formData.header.type === type.value
                               ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400'
-                              : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500 text-gray-600 dark:text-gray-400'
+                              : 'border-white/[0.1] dark:border-gray-600 hover:border-white/[0.12] dark:hover:border-gray-500 text-gray-400'
                               }`}
                           >
                             <type.icon className="w-5 h-5 mb-1" />
@@ -1084,7 +1084,7 @@ const CreateTemplate: React.FC = () => {
                     {/* Header Content */}
                     {formData.header.type === 'text' && (
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <label className="block text-sm font-medium text-gray-300 mb-2">
                           Header Text *
                         </label>
                         <input
@@ -1098,9 +1098,9 @@ const CreateTemplate: React.FC = () => {
                           }
                           placeholder="Enter header text"
                           maxLength={60}
-                          className={`w-full px-4 py-2.5 border rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 transition-all ${errors.headerText
+                          className={`w-full px-4 py-2.5 border rounded-xl bg-[#0a0e27] dark:bg-gray-700 text-white focus:outline-none focus:ring-2 transition-all ${errors.headerText
                             ? 'border-red-300 dark:border-red-600 focus:ring-red-500/20'
-                            : 'border-gray-200 dark:border-gray-600 focus:ring-primary-500/20 focus:border-primary-500'
+                            : 'border-white/[0.1] dark:border-gray-600 focus:ring-primary-500/20 focus:border-primary-500'
                             }`}
                         />
                         {errors.headerText && (
@@ -1108,7 +1108,7 @@ const CreateTemplate: React.FC = () => {
                             {errors.headerText}
                           </p>
                         )}
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                        <p className="text-xs text-gray-400 mt-1">
                           {(formData.header.text || '').length}/60 characters
                         </p>
                       </div>
@@ -1116,8 +1116,8 @@ const CreateTemplate: React.FC = () => {
 
                     {['image', 'video', 'document'].includes(formData.header.type) && (
                       <div className="space-y-4">
-                        <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-5 border border-dashed border-gray-300 dark:border-gray-600">
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">
+                        <div className="bg-[#0a0e27] rounded-xl p-5 border border-dashed border-white/[0.12]">
+                          <label className="block text-sm font-medium text-gray-300 mb-4">
                             Upload Media for Approval Sample
                           </label>
 
@@ -1136,7 +1136,7 @@ const CreateTemplate: React.FC = () => {
                             />
                             <label
                               htmlFor="header-media-upload"
-                              className="flex items-center justify-center space-x-2 w-full px-4 py-3 bg-white dark:bg-gray-700 border-2 border-primary-300 dark:border-primary-700 text-primary-600 dark:text-primary-400 rounded-xl hover:bg-primary-50 dark:hover:bg-primary-900/10 cursor-pointer transition-all"
+                              className="flex items-center justify-center space-x-2 w-full px-4 py-3 bg-[#0a0e27] dark:bg-gray-700 border-2 border-primary-300 dark:border-primary-700 text-primary-600 dark:text-primary-400 rounded-xl hover:bg-primary-50 dark:hover:bg-primary-900/10 cursor-pointer transition-all"
                             >
                               {mediaUploading ? (
                                 <>
@@ -1190,7 +1190,7 @@ const CreateTemplate: React.FC = () => {
 
                     {/* Body */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
                         Message Body *
                       </label>
                       <textarea
@@ -1200,21 +1200,21 @@ const CreateTemplate: React.FC = () => {
                         placeholder="Enter your message here. Use {{1}}, {{2}}, etc. for variables."
                         rows={6}
                         maxLength={1024}
-                        className={`w-full px-4 py-3 border rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 transition-all resize-none ${isApprovedTemplate 
-                          ? 'opacity-50 cursor-not-allowed bg-gray-100 dark:bg-gray-800' 
+                        className={`w-full px-4 py-3 border rounded-xl bg-[#0a0e27] dark:bg-gray-700 text-white focus:outline-none focus:ring-2 transition-all resize-none ${isApprovedTemplate 
+                          ? 'opacity-50 cursor-not-allowed bg-[#0a0e27]/[0.04]' 
                           : ''} ${errors.body
                           ? 'border-red-300 dark:border-red-600 focus:ring-red-500/20'
-                          : 'border-gray-200 dark:border-gray-600 focus:ring-primary-500/20 focus:border-primary-500'
+                          : 'border-white/[0.1] dark:border-gray-600 focus:ring-primary-500/20 focus:border-primary-500'
                           }`}
                       />
                       {errors.body && (
                         <p className="text-sm text-red-600 dark:text-red-400 mt-1">{errors.body}</p>
                       )}
                       <div className="flex items-center justify-between mt-1">
-                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                        <p className="text-xs text-gray-400">
                           {formData.body.length}/1024 characters
                         </p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                        <p className="text-xs text-gray-400">
                           Use {'{{1}}'}, {'{{2}}'} for variables
                         </p>
                       </div>
@@ -1222,7 +1222,7 @@ const CreateTemplate: React.FC = () => {
 
                     {/* Footer */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
                         Footer (Optional)
                       </label>
                       <input
@@ -1231,9 +1231,9 @@ const CreateTemplate: React.FC = () => {
                         onChange={(e) => updateFormData('footer', e.target.value)}
                         placeholder="e.g., Reply STOP to unsubscribe"
                         maxLength={60}
-                        className={`w-full px-4 py-2.5 border rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 transition-all ${errors.footer
+                        className={`w-full px-4 py-2.5 border rounded-xl bg-[#0a0e27] dark:bg-gray-700 text-white focus:outline-none focus:ring-2 transition-all ${errors.footer
                           ? 'border-red-300 dark:border-red-600 focus:ring-red-500/20'
-                          : 'border-gray-200 dark:border-gray-600 focus:ring-primary-500/20 focus:border-primary-500'
+                          : 'border-white/[0.1] dark:border-gray-600 focus:ring-primary-500/20 focus:border-primary-500'
                           }`}
                       />
                       {errors.footer && (
@@ -1241,7 +1241,7 @@ const CreateTemplate: React.FC = () => {
                           {errors.footer}
                         </p>
                       )}
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                      <p className="text-xs text-gray-400 mt-1">
                         {formData.footer.length}/60 characters
                       </p>
                     </div>
@@ -1249,13 +1249,13 @@ const CreateTemplate: React.FC = () => {
                     {/* Variables */}
                     {extractedVariables.length > 0 && (
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <label className="block text-sm font-medium text-gray-300 mb-2">
                           Sample Variable Values *
                         </label>
                         <div className="space-y-3">
                           {extractedVariables.map((variable: string) => (
                             <div key={variable} className="flex items-center gap-3">
-                              <span className="w-16 text-sm text-gray-600 dark:text-gray-400">{`{{${variable}}}`}</span>
+                              <span className="w-16 text-sm text-gray-400">{`{{${variable}}}`}</span>
                               <input
                                 type="text"
                                 value={sampleVariables[variable] || ''}
@@ -1266,9 +1266,9 @@ const CreateTemplate: React.FC = () => {
                                   }))
                                 }
                                 placeholder="Example value"
-                                className={`flex-1 px-3 py-1.5 border rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500/20 ${errors.variables
+                                className={`flex-1 px-3 py-1.5 border rounded-lg text-sm bg-[#0a0e27] dark:bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-primary-500/20 ${errors.variables
                                   ? 'border-red-300 dark:border-red-600'
-                                  : 'border-gray-200 dark:border-gray-600'
+                                  : 'border-white/[0.1] dark:border-gray-600'
                                   }`}
                               />
                             </div>
@@ -1279,7 +1279,7 @@ const CreateTemplate: React.FC = () => {
                             {errors.variables}
                           </p>
                         )}
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                        <p className="text-xs text-gray-400 mt-2">
                           Sample values help Meta understand your template during review
                         </p>
                       </div>
@@ -1292,10 +1292,10 @@ const CreateTemplate: React.FC = () => {
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
                       <div>
-                        <h3 className="font-medium text-gray-900 dark:text-white">
+                        <h3 className="font-medium text-white">
                           Call-to-Action Buttons
                         </h3>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                        <p className="text-sm text-gray-400">
                           Add up to 3 buttons to your template
                         </p>
                       </div>
@@ -1321,7 +1321,7 @@ const CreateTemplate: React.FC = () => {
                     </div>
 
                     {formData.buttons.length === 0 && (
-                      <p className="text-gray-500 dark:text-gray-400 text-sm py-8 text-center">
+                      <p className="text-gray-400 text-sm py-8 text-center">
                         No buttons added. You can add up to 3 buttons.
                       </p>
                     )}
@@ -1329,10 +1329,10 @@ const CreateTemplate: React.FC = () => {
                     {formData.buttons.map((button, index) => (
                       <div
                         key={button.id}
-                        className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 space-y-3"
+                        className="bg-[#050816] dark:bg-gray-700 rounded-lg p-4 space-y-3"
                       >
                         <div className="flex items-center justify-between">
-                          <span className="font-medium text-gray-700 dark:text-gray-300">
+                          <span className="font-medium text-gray-300">
                             Button {index + 1}
                           </span>
                           <button
@@ -1351,7 +1351,7 @@ const CreateTemplate: React.FC = () => {
 
                         <div className="grid grid-cols-2 gap-3">
                           <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            <label className="block text-sm font-medium text-gray-300 mb-1">
                               Button Type
                             </label>
                             <select
@@ -1361,7 +1361,7 @@ const CreateTemplate: React.FC = () => {
                                 updated[index] = { ...updated[index], type: e.target.value as any };
                                 updateFormData('buttons', updated);
                               }}
-                              className="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+                              className="w-full px-3 py-2 border border-white/[0.1] dark:border-gray-600 rounded-lg text-sm bg-[#0a0e27] text-white focus:outline-none focus:ring-2 focus:ring-primary-500/20"
                             >
                               <option value="quick_reply">Quick Reply</option>
                               <option value="url">URL</option>
@@ -1370,7 +1370,7 @@ const CreateTemplate: React.FC = () => {
                           </div>
 
                           <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            <label className="block text-sm font-medium text-gray-300 mb-1">
                               Button Text *
                             </label>
                             <input
@@ -1383,9 +1383,9 @@ const CreateTemplate: React.FC = () => {
                               }}
                               placeholder="Button text"
                               maxLength={25}
-                              className={`w-full px-3 py-2 border rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500/20 ${errors[`button_${index}_text`]
+                              className={`w-full px-3 py-2 border rounded-lg text-sm bg-[#0a0e27] text-white focus:outline-none focus:ring-2 focus:ring-primary-500/20 ${errors[`button_${index}_text`]
                                 ? 'border-red-300 dark:border-red-600'
-                                : 'border-gray-200 dark:border-gray-600'
+                                : 'border-white/[0.1] dark:border-gray-600'
                                 }`}
                             />
                           </div>
@@ -1393,7 +1393,7 @@ const CreateTemplate: React.FC = () => {
 
                         {button.type === 'url' && (
                           <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            <label className="block text-sm font-medium text-gray-300 mb-1">
                               URL *
                             </label>
                             <input
@@ -1405,9 +1405,9 @@ const CreateTemplate: React.FC = () => {
                                 updateFormData('buttons', updated);
                               }}
                               placeholder="https://example.com"
-                              className={`w-full px-3 py-2 border rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500/20 ${errors[`button_${index}_url`]
+                              className={`w-full px-3 py-2 border rounded-lg text-sm bg-[#0a0e27] text-white focus:outline-none focus:ring-2 focus:ring-primary-500/20 ${errors[`button_${index}_url`]
                                 ? 'border-red-300 dark:border-red-600'
-                                : 'border-gray-200 dark:border-gray-600'
+                                : 'border-white/[0.1] dark:border-gray-600'
                                 }`}
                             />
                           </div>
@@ -1415,7 +1415,7 @@ const CreateTemplate: React.FC = () => {
 
                         {button.type === 'phone' && (
                           <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            <label className="block text-sm font-medium text-gray-300 mb-1">
                               Phone Number *
                             </label>
                             <input
@@ -1427,9 +1427,9 @@ const CreateTemplate: React.FC = () => {
                                 updateFormData('buttons', updated);
                               }}
                               placeholder="+1234567890"
-                              className={`w-full px-3 py-2 border rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500/20 ${errors[`button_${index}_phone`]
+                              className={`w-full px-3 py-2 border rounded-lg text-sm bg-[#0a0e27] text-white focus:outline-none focus:ring-2 focus:ring-primary-500/20 ${errors[`button_${index}_phone`]
                                 ? 'border-red-300 dark:border-red-600'
-                                : 'border-gray-200 dark:border-gray-600'
+                                : 'border-white/[0.1] dark:border-gray-600'
                                 }`}
                             />
                           </div>
@@ -1459,11 +1459,11 @@ const CreateTemplate: React.FC = () => {
                   <div className="space-y-6">
                     {/* WhatsApp Account Selection */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
                         WhatsApp Business Account *
                       </label>
                       {loadingAccounts ? (
-                        <div className="flex items-center space-x-2 text-gray-500 dark:text-gray-400 py-4">
+                        <div className="flex items-center space-x-2 text-gray-400 py-4">
                           <Loader2 className="w-5 h-5 animate-spin" />
                           <span>Loading WhatsApp accounts...</span>
                         </div>
@@ -1509,9 +1509,9 @@ const CreateTemplate: React.FC = () => {
                                 });
                               }
                             }}
-                            className={`w-full px-4 py-2.5 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white ${errors.account
+                            className={`w-full px-4 py-2.5 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 bg-[#0a0e27] dark:bg-gray-700 text-white ${errors.account
                               ? 'border-red-300 dark:border-red-600'
-                              : 'border-gray-200 dark:border-gray-600'
+                              : 'border-white/[0.1] dark:border-gray-600'
                               }`}
                           >
                             <option value="">Select an account</option>
@@ -1549,7 +1549,7 @@ const CreateTemplate: React.FC = () => {
                           <button
                             type="button"
                             onClick={loadAccounts}
-                            className="mt-2 inline-flex items-center text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+                            className="mt-2 inline-flex items-center text-xs text-gray-400 hover:text-gray-300 dark:hover:text-gray-200"
                           >
                             <RefreshCw className="w-3 h-3 mr-1" />
                             Refresh accounts
@@ -1560,7 +1560,7 @@ const CreateTemplate: React.FC = () => {
 
                     {/* Category */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
                         Category *
                       </label>
                       <div className="space-y-2">
@@ -1569,7 +1569,7 @@ const CreateTemplate: React.FC = () => {
                             key={category.value}
                             className={`flex items-start space-x-3 p-4 rounded-xl border-2 cursor-pointer transition-all ${formData.category === category.value
                               ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20'
-                              : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500'
+                              : 'border-white/[0.1] dark:border-gray-600 hover:border-white/[0.12] dark:hover:border-gray-500'
                               }`}
                           >
                             <input
@@ -1583,10 +1583,10 @@ const CreateTemplate: React.FC = () => {
                               className="mt-1"
                             />
                             <div>
-                              <p className="font-medium text-gray-900 dark:text-white">
+                              <p className="font-medium text-white">
                                 {category.label}
                               </p>
-                              <p className="text-sm text-gray-500 dark:text-gray-400">
+                              <p className="text-sm text-gray-400">
                                 {category.description}
                               </p>
                             </div>
@@ -1597,13 +1597,13 @@ const CreateTemplate: React.FC = () => {
 
                     {/* Language */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
                         Language *
                       </label>
                       <select
                         value={formData.language}
                         onChange={(e) => updateFormData('language', e.target.value)}
-                        className="w-full px-4 py-2.5 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                        className="w-full px-4 py-2.5 border border-white/[0.1] dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 bg-[#0a0e27] dark:bg-gray-700 text-white"
                       >
                         {languages.map((lang) => (
                           <option key={lang.value} value={lang.value}>
@@ -1645,30 +1645,30 @@ const CreateTemplate: React.FC = () => {
             </div>
 
             {/* Quick Stats */}
-            <div className="mt-4 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
-              <h4 className="font-medium text-gray-900 dark:text-white mb-3">Template Stats</h4>
+            <div className="mt-4 bg-[#0a0e27] rounded-xl border border-white/[0.1] p-4">
+              <h4 className="font-medium text-white mb-3">Template Stats</h4>
               <div className="grid grid-cols-2 gap-3 text-sm">
-                <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-2">
-                  <p className="text-gray-500 dark:text-gray-400">Body Length</p>
-                  <p className="font-semibold text-gray-900 dark:text-white">
+                <div className="bg-[#050816] dark:bg-gray-700 rounded-lg p-2">
+                  <p className="text-gray-400">Body Length</p>
+                  <p className="font-semibold text-white">
                     {formData.body.length}/1024
                   </p>
                 </div>
-                <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-2">
-                  <p className="text-gray-500 dark:text-gray-400">Variables</p>
-                  <p className="font-semibold text-gray-900 dark:text-white">
+                <div className="bg-[#050816] dark:bg-gray-700 rounded-lg p-2">
+                  <p className="text-gray-400">Variables</p>
+                  <p className="font-semibold text-white">
                     {extractedVariables.length}
                   </p>
                 </div>
-                <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-2">
-                  <p className="text-gray-500 dark:text-gray-400">Buttons</p>
-                  <p className="font-semibold text-gray-900 dark:text-white">
+                <div className="bg-[#050816] dark:bg-gray-700 rounded-lg p-2">
+                  <p className="text-gray-400">Buttons</p>
+                  <p className="font-semibold text-white">
                     {formData.buttons.length}/3
                   </p>
                 </div>
-                <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-2">
-                  <p className="text-gray-500 dark:text-gray-400">Category</p>
-                  <p className="font-semibold capitalize text-gray-900 dark:text-white">
+                <div className="bg-[#050816] dark:bg-gray-700 rounded-lg p-2">
+                  <p className="text-gray-400">Category</p>
+                  <p className="font-semibold capitalize text-white">
                     {formData.category}
                   </p>
                 </div>
@@ -1676,12 +1676,12 @@ const CreateTemplate: React.FC = () => {
 
               {/* Selected Account Info */}
               {selectedAccount && (
-                <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-600">
-                  <p className="text-xs text-gray-500 dark:text-gray-400">Submitting to:</p>
-                  <p className="text-sm font-medium text-gray-900 dark:text-white">
+                <div className="mt-3 pt-3 border-t border-white/[0.1] dark:border-gray-600">
+                  <p className="text-xs text-gray-400">Submitting to:</p>
+                  <p className="text-sm font-medium text-white">
                     {getAccountDisplayName(selectedAccount)}
                   </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                  <p className="text-xs text-gray-400">
                     {selectedAccount.phoneNumber}
                   </p>
                 </div>

@@ -50,7 +50,7 @@ const getNotifColor = (type: NotificationType) => {
     case 'billing':  return 'bg-orange-500/20 border-orange-400/30 text-orange-300';
     case 'alert':    return 'bg-red-500/20 border-red-400/30 text-red-300';
     case 'whatsapp': return 'bg-emerald-500/20 border-emerald-400/30 text-emerald-300';
-    case 'system':   return 'bg-gray-500/20 border-gray-400/30 text-gray-300';
+    case 'system':   return 'bg-[#050816]0/20 border-gray-400/30 text-gray-300';
     default:         return 'bg-blue-500/20 border-blue-400/30 text-blue-300';
   }
 };
@@ -138,8 +138,8 @@ const TopBar: React.FC<TopBarProps> = ({ onMenuClick, sidebarCollapsed }) => {
           <button
             onClick={onMenuClick}
             className="lg:hidden p-2 rounded-lg
-              bg-white/[0.04] border border-white/[0.06]
-              hover:bg-white/[0.08]
+              bg-[#0a0e27]/[0.04] border border-white/[0.06]
+              hover:bg-[#0a0e27]/[0.08]
               text-gray-400 hover:text-white
               transition-all duration-300"
           >
@@ -154,16 +154,16 @@ const TopBar: React.FC<TopBarProps> = ({ onMenuClick, sidebarCollapsed }) => {
                 type="text"
                 placeholder="Search contacts, campaigns, templates..."
                 className="w-72 lg:w-96 pl-10 pr-20 py-2.5 text-sm
-                  bg-white/[0.04] backdrop-blur-xl
+                  bg-[#0a0e27]/[0.04] backdrop-blur-xl
                   border border-white/[0.08]
                   rounded-xl
                   text-white placeholder:text-gray-500
-                  focus:outline-none focus:bg-white/[0.06] focus:border-green-400/30
+                  focus:outline-none focus:bg-[#0a0e27]/[0.06] focus:border-green-400/30
                   transition-all duration-300"
               />
               <div className="absolute right-3 top-1/2 -translate-y-1/2 hidden lg:flex items-center gap-1
                 px-2 py-0.5 rounded-md
-                bg-white/[0.05] border border-white/[0.08]">
+                bg-[#0a0e27]/[0.05] border border-white/[0.08]">
                 <Command className="w-3 h-3 text-gray-500" />
                 <span className="text-[10px] font-mono text-gray-500">K</span>
               </div>
@@ -178,8 +178,8 @@ const TopBar: React.FC<TopBarProps> = ({ onMenuClick, sidebarCollapsed }) => {
           <button
             onClick={() => setShowSearch(!showSearch)}
             className="md:hidden p-2 rounded-lg
-              bg-white/[0.04] border border-white/[0.06]
-              hover:bg-white/[0.08]
+              bg-[#0a0e27]/[0.04] border border-white/[0.06]
+              hover:bg-[#0a0e27]/[0.08]
               text-gray-400 hover:text-white
               transition-all duration-300"
           >
@@ -191,8 +191,8 @@ const TopBar: React.FC<TopBarProps> = ({ onMenuClick, sidebarCollapsed }) => {
             <button
               onClick={() => setShowNotifications(!showNotifications)}
               className="relative p-2 rounded-lg
-                bg-white/[0.04] border border-white/[0.06]
-                hover:bg-white/[0.08] hover:border-white/[0.12]
+                bg-[#0a0e27]/[0.04] border border-white/[0.06]
+                hover:bg-[#0a0e27]/[0.08] hover:border-white/[0.12]
                 text-gray-400 hover:text-white
                 transition-all duration-300"
             >
@@ -247,12 +247,12 @@ const TopBar: React.FC<TopBarProps> = ({ onMenuClick, sidebarCollapsed }) => {
                 <div className="max-h-96 overflow-y-auto">
                   {recentNotifications.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-10 px-4">
-                      <div className="w-12 h-12 rounded-full bg-white/[0.04] border border-white/[0.06]
+                      <div className="w-12 h-12 rounded-full bg-[#0a0e27]/[0.04] border border-white/[0.06]
                         flex items-center justify-center mb-3">
                         <InboxIcon className="w-5 h-5 text-gray-500" />
                       </div>
                       <p className="text-sm text-gray-400 font-medium">No notifications yet</p>
-                      <p className="text-xs text-gray-600 mt-1">
+                      <p className="text-xs text-gray-400 mt-1">
                         You're all caught up!
                       </p>
                     </div>
@@ -264,7 +264,7 @@ const TopBar: React.FC<TopBarProps> = ({ onMenuClick, sidebarCollapsed }) => {
                       const content = (
                         <div
                           className={`flex items-start gap-3 px-4 py-3
-                            hover:bg-white/[0.04] transition-colors cursor-pointer
+                            hover:bg-[#0a0e27]/[0.04] transition-colors cursor-pointer
                             ${!notification.read ? 'bg-green-500/[0.04]' : ''}
                           `}
                           onClick={() => {
@@ -329,8 +329,8 @@ const TopBar: React.FC<TopBarProps> = ({ onMenuClick, sidebarCollapsed }) => {
             <button
               onClick={() => setShowProfile(!showProfile)}
               className="flex items-center gap-2 p-1.5 rounded-xl
-                bg-white/[0.04] border border-white/[0.06]
-                hover:bg-white/[0.08] hover:border-white/[0.12]
+                bg-[#0a0e27]/[0.04] border border-white/[0.06]
+                hover:bg-[#0a0e27]/[0.08] hover:border-white/[0.12]
                 transition-all duration-300"
             >
               <div className="w-8 h-8 rounded-lg overflow-hidden flex-shrink-0">
@@ -386,7 +386,7 @@ const TopBar: React.FC<TopBarProps> = ({ onMenuClick, sidebarCollapsed }) => {
                       to={item.href}
                       onClick={() => setShowProfile(false)}
                       className="flex items-center gap-3 px-4 py-2
-                        text-gray-300 hover:text-white hover:bg-white/[0.04]
+                        text-gray-300 hover:text-white hover:bg-[#0a0e27]/[0.04]
                         transition-colors"
                     >
                       <item.icon className="w-4 h-4 text-gray-500" />
@@ -421,11 +421,11 @@ const TopBar: React.FC<TopBarProps> = ({ onMenuClick, sidebarCollapsed }) => {
               type="text"
               placeholder="Search..."
               className="w-full pl-10 pr-4 py-2.5 text-sm
-                bg-white/[0.04] backdrop-blur-xl
+                bg-[#0a0e27]/[0.04] backdrop-blur-xl
                 border border-white/[0.08]
                 rounded-xl
                 text-white placeholder:text-gray-500
-                focus:outline-none focus:bg-white/[0.06] focus:border-green-400/30"
+                focus:outline-none focus:bg-[#0a0e27]/[0.06] focus:border-green-400/30"
               autoFocus
             />
           </div>

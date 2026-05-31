@@ -149,18 +149,18 @@ const LeadsList: React.FC = () => {
             case 'URGENT': return 'bg-red-100 text-red-700';
             case 'HIGH': return 'bg-orange-100 text-orange-700';
             case 'MEDIUM': return 'bg-yellow-100 text-yellow-700';
-            case 'LOW': return 'bg-gray-100 text-gray-700';
-            default: return 'bg-gray-100 text-gray-700';
+            case 'LOW': return 'bg-[#0a0e27]/[0.04] text-gray-300';
+            default: return 'bg-[#0a0e27]/[0.04] text-gray-300';
         }
     };
 
     return (
         <div className="h-full flex flex-col">
             {/* Header */}
-            <div className="flex-shrink-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4">
+            <div className="flex-shrink-0 bg-[#0a0e27] border-b border-white/[0.1] px-6 py-4">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
-                        <h1 className="text-xl font-bold text-gray-900 dark:text-white">Leads</h1>
+                        <h1 className="text-xl font-bold text-white">Leads</h1>
 
                         {/* Pipeline Selector */}
                         <select
@@ -169,7 +169,7 @@ const LeadsList: React.FC = () => {
                                 const pip = pipelines.find(p => p.id === e.target.value);
                                 setSelectedPipeline(pip || null);
                             }}
-                            className="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 border-none rounded-lg text-sm"
+                            className="px-3 py-1.5 bg-[#0a0e27]/[0.04] dark:bg-gray-700 border-none rounded-lg text-sm"
                         >
                             {pipelines.map(p => (
                                 <option key={p.id} value={p.id}>{p.name}</option>
@@ -186,21 +186,21 @@ const LeadsList: React.FC = () => {
                                 placeholder="Search leads..."
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
-                                className="pl-9 pr-4 py-2 w-64 bg-gray-100 dark:bg-gray-700 border-none rounded-lg text-sm"
+                                className="pl-9 pr-4 py-2 w-64 bg-[#0a0e27]/[0.04] dark:bg-gray-700 border-none rounded-lg text-sm"
                             />
                         </div>
 
                         {/* View Toggle */}
-                        <div className="flex bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
+                        <div className="flex bg-[#0a0e27]/[0.04] dark:bg-gray-700 rounded-lg p-1">
                             <button
                                 onClick={() => setViewMode('kanban')}
-                                className={`p-1.5 rounded ${viewMode === 'kanban' ? 'bg-white dark:bg-gray-600 shadow-sm' : ''}`}
+                                className={`p-1.5 rounded ${viewMode === 'kanban' ? 'bg-[#0a0e27] dark:bg-gray-600 shadow-sm' : ''}`}
                             >
                                 <LayoutGrid className="w-4 h-4" />
                             </button>
                             <button
                                 onClick={() => setViewMode('list')}
-                                className={`p-1.5 rounded ${viewMode === 'list' ? 'bg-white dark:bg-gray-600 shadow-sm' : ''}`}
+                                className={`p-1.5 rounded ${viewMode === 'list' ? 'bg-[#0a0e27] dark:bg-gray-600 shadow-sm' : ''}`}
                             >
                                 <List className="w-4 h-4" />
                             </button>
@@ -210,7 +210,7 @@ const LeadsList: React.FC = () => {
                         <button
                             onClick={handleSync}
                             disabled={syncing}
-                            className="flex items-center gap-2 px-4 py-2 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-sm disabled:opacity-50"
+                            className="flex items-center gap-2 px-4 py-2 border border-white/[0.1] text-gray-300 rounded-lg hover:bg-[#0a0e27]/[0.04] text-sm disabled:opacity-50"
                         >
                             {syncing ? <Loader2 className="w-4 h-4 animate-spin" /> : <TrendingUp className="w-4 h-4" />}
                             Sync
@@ -240,7 +240,7 @@ const LeadsList: React.FC = () => {
                             {selectedPipeline?.stages.map((stage) => (
                                 <div
                                     key={stage.id}
-                                    className="w-80 flex-shrink-0 bg-gray-100 dark:bg-gray-800 rounded-xl flex flex-col"
+                                    className="w-80 flex-shrink-0 bg-[#0a0e27]/[0.04] rounded-xl flex flex-col"
                                 >
                                     {/* Stage Header */}
                                     <div
@@ -252,7 +252,7 @@ const LeadsList: React.FC = () => {
                                                 className="w-3 h-3 rounded-full"
                                                 style={{ backgroundColor: stage.color }}
                                             />
-                                            <span className="font-medium text-gray-900 dark:text-white">
+                                            <span className="font-medium text-white">
                                                 {stage.name}
                                             </span>
                                             <span className="text-sm text-gray-500">
@@ -279,11 +279,11 @@ const LeadsList: React.FC = () => {
                                                                 {...provided.draggableProps}
                                                                 {...provided.dragHandleProps}
                                                                 onClick={() => navigate(`/dashboard/crm/leads/${lead.id}`)}
-                                                                className={`bg-white dark:bg-gray-700 rounded-lg p-3 shadow-sm cursor-pointer hover:shadow-md transition-shadow ${snapshot.isDragging ? 'shadow-lg ring-2 ring-green-500' : ''
+                                                                className={`bg-[#0a0e27] dark:bg-gray-700 rounded-lg p-3 shadow-sm cursor-pointer hover:shadow-md transition-shadow ${snapshot.isDragging ? 'shadow-lg ring-2 ring-green-500' : ''
                                                                     }`}
                                                             >
                                                                 <div className="flex items-start justify-between mb-2">
-                                                                    <h4 className="font-medium text-gray-900 dark:text-white text-sm">
+                                                                    <h4 className="font-medium text-white text-sm">
                                                                         {lead.title}
                                                                     </h4>
                                                                     <span className={`px-1.5 py-0.5 text-xs rounded ${getPriorityColor(lead.priority)}`}>
@@ -326,9 +326,9 @@ const LeadsList: React.FC = () => {
             ) : (
                 /* List View */
                 <div className="flex-1 overflow-auto p-4">
-                    <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
+                    <div className="bg-[#0a0e27] rounded-xl border border-white/[0.1]">
                         <table className="w-full">
-                            <thead className="bg-gray-50 dark:bg-gray-700">
+                            <thead className="bg-[#050816] dark:bg-gray-700">
                                 <tr>
                                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Lead</th>
                                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Contact</th>
@@ -344,10 +344,10 @@ const LeadsList: React.FC = () => {
                                     <tr
                                         key={lead.id}
                                         onClick={() => navigate(`/dashboard/crm/leads/${lead.id}`)}
-                                        className="hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer"
+                                        className="hover:bg-[#0a0e27]/[0.04] cursor-pointer"
                                     >
                                         <td className="px-4 py-3">
-                                            <p className="font-medium text-gray-900 dark:text-white">{lead.title}</p>
+                                            <p className="font-medium text-white">{lead.title}</p>
                                         </td>
                                         <td className="px-4 py-3 text-sm text-gray-500">
                                             {lead.contact ? `${lead.contact.firstName || ''} ${lead.contact.lastName || ''}` : '-'}
@@ -372,7 +372,7 @@ const LeadsList: React.FC = () => {
                                             {new Date(lead.createdAt).toLocaleDateString()}
                                         </td>
                                         <td className="px-4 py-3">
-                                            <button className="p-1 hover:bg-gray-100 dark:hover:bg-gray-600 rounded">
+                                            <button className="p-1 hover:bg-[#0a0e27]/[0.04] dark:hover:bg-gray-600 rounded">
                                                 <MoreVertical className="w-4 h-4 text-gray-400" />
                                             </button>
                                         </td>

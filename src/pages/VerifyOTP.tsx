@@ -183,7 +183,7 @@ const VerifyOTP: React.FC = () => {
 
         {/* Email display */}
         <div className="text-center">
-          <p className="text-gray-600 mb-1">
+          <p className="text-gray-400 mb-1">
             Verification code sent to
           </p>
           <p className="font-semibold text-primary-600 text-lg bg-primary-50 py-2 px-4 rounded-lg inline-block">
@@ -209,7 +209,7 @@ const VerifyOTP: React.FC = () => {
 
         {/* OTP Input */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-4 text-center">
+          <label className="block text-sm font-medium text-gray-300 mb-4 text-center">
             Enter 6-digit verification code
           </label>
           <OTPInput

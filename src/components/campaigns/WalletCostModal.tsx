@@ -57,7 +57,7 @@ const getCategoryColor = (category: string): string => {
   if (upper.includes('MARKETING')) return 'text-purple-600 bg-purple-100';
   if (upper.includes('UTIL')) return 'text-blue-600 bg-blue-100';
   if (upper.includes('AUTH')) return 'text-orange-600 bg-orange-100';
-  return 'text-gray-600 bg-gray-100';
+  return 'text-gray-400 bg-[#0a0e27]/[0.04]';
 };
 
 const WalletCostModal: React.FC<WalletCostModalProps> = ({
@@ -78,10 +78,10 @@ const WalletCostModal: React.FC<WalletCostModalProps> = ({
           className="absolute inset-0 bg-black/60 backdrop-blur-sm"
           onClick={onClose}
         />
-        <div className="relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md p-6 animate-scale-in">
+        <div className="relative bg-[#0a0e27] rounded-2xl shadow-2xl w-full max-w-md p-6 animate-scale-in">
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+            className="absolute top-4 right-4 p-2 hover:bg-[#0a0e27]/[0.04] dark:hover:bg-gray-700 rounded-lg transition-colors"
           >
             <X className="w-5 h-5 text-gray-500" />
           </button>
@@ -90,10 +90,10 @@ const WalletCostModal: React.FC<WalletCostModalProps> = ({
             <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
               <Info className="w-8 h-8 text-blue-600 dark:text-blue-400" />
             </div>
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+            <h2 className="text-xl font-bold text-white mb-2">
               No Wallet Connected
             </h2>
-            <p className="text-gray-500 dark:text-gray-400 text-sm">
+            <p className="text-gray-400 text-sm">
               Campaign charges will be billed directly by Meta to your registered payment method.
             </p>
           </div>
@@ -106,7 +106,7 @@ const WalletCostModal: React.FC<WalletCostModalProps> = ({
           <div className="flex gap-3">
             <button
               onClick={onClose}
-              className="flex-1 px-4 py-3 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 font-medium transition-colors"
+              className="flex-1 px-4 py-3 border border-white/[0.1] dark:border-gray-600 text-gray-300 rounded-xl hover:bg-[#0a0e27]/[0.04] font-medium transition-colors"
             >
               Cancel
             </button>
@@ -127,14 +127,14 @@ const WalletCostModal: React.FC<WalletCostModalProps> = ({
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-        <div className="relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md p-8 text-center">
+        <div className="relative bg-[#0a0e27] rounded-2xl shadow-2xl w-full max-w-md p-8 text-center">
           <div className="w-16 h-16 bg-primary-100 dark:bg-primary-900/30 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
             <Wallet className="w-8 h-8 text-primary-600" />
           </div>
-          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+          <h2 className="text-xl font-bold text-white mb-2">
             Calculating Cost...
           </h2>
-          <p className="text-gray-500 dark:text-gray-400 text-sm">
+          <p className="text-gray-400 text-sm">
             Analyzing recipients and computing country-wise rates
           </p>
           <div className="mt-6 flex gap-1 justify-center">
@@ -162,7 +162,7 @@ const WalletCostModal: React.FC<WalletCostModalProps> = ({
         className="absolute inset-0 bg-black/60 backdrop-blur-sm"
         onClick={onClose}
       />
-      <div className="relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-lg animate-scale-in overflow-hidden">
+      <div className="relative bg-[#0a0e27] rounded-2xl shadow-2xl w-full max-w-lg animate-scale-in overflow-hidden">
         {/* ── Header ── */}
         <div
           className={`px-6 py-5 ${
@@ -173,7 +173,7 @@ const WalletCostModal: React.FC<WalletCostModalProps> = ({
         >
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
+              <div className="w-10 h-10 bg-[#0a0e27]/20 rounded-xl flex items-center justify-center">
                 {insufficient ? (
                   <AlertTriangle className="w-5 h-5 text-white" />
                 ) : (
@@ -189,7 +189,7 @@ const WalletCostModal: React.FC<WalletCostModalProps> = ({
             </div>
             <button
               onClick={onClose}
-              className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+              className="p-2 hover:bg-[#0a0e27]/20 rounded-lg transition-colors"
             >
               <X className="w-5 h-5 text-white" />
             </button>
@@ -218,8 +218,8 @@ const WalletCostModal: React.FC<WalletCostModalProps> = ({
 
           {/* ── Balance vs Cost Cards ── */}
           <div className="grid grid-cols-2 gap-3">
-            <div className="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-4">
-              <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">
+            <div className="bg-[#0a0e27]/[0.02] rounded-xl p-4">
+              <p className="text-xs text-gray-400 mb-1">
                 Wallet Balance
               </p>
               <p
@@ -234,11 +234,11 @@ const WalletCostModal: React.FC<WalletCostModalProps> = ({
               <p className="text-xs text-gray-400 mt-1">Available</p>
             </div>
 
-            <div className="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-4">
-              <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">
+            <div className="bg-[#0a0e27]/[0.02] rounded-xl p-4">
+              <p className="text-xs text-gray-400 mb-1">
                 Estimated Cost
               </p>
-              <p className="text-xl font-bold text-gray-900 dark:text-white">
+              <p className="text-xl font-bold text-white">
                 {formatINR(estimate.estimatedCost)}
               </p>
               <p className="text-xs text-gray-400 mt-1">
@@ -286,24 +286,24 @@ const WalletCostModal: React.FC<WalletCostModalProps> = ({
           {/* ── Country Breakdown Table ── */}
           {breakdown.countryBreakdown.length > 0 && (
             <div>
-              <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2">
+              <h3 className="text-sm font-semibold text-gray-300 mb-2 flex items-center gap-2">
                 <Globe className="w-4 h-4 text-primary-500" />
                 Country-wise Breakdown
               </h3>
-              <div className="bg-gray-50 dark:bg-gray-700/30 rounded-xl overflow-hidden">
+              <div className="bg-[#050816] dark:bg-gray-700/30 rounded-xl overflow-hidden">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b border-gray-200 dark:border-gray-600">
-                      <th className="text-left py-2.5 px-3 text-xs font-semibold text-gray-500 dark:text-gray-400">
+                    <tr className="border-b border-white/[0.1] dark:border-gray-600">
+                      <th className="text-left py-2.5 px-3 text-xs font-semibold text-gray-400">
                         Country
                       </th>
-                      <th className="text-right py-2.5 px-3 text-xs font-semibold text-gray-500 dark:text-gray-400">
+                      <th className="text-right py-2.5 px-3 text-xs font-semibold text-gray-400">
                         Recipients
                       </th>
-                      <th className="text-right py-2.5 px-3 text-xs font-semibold text-gray-500 dark:text-gray-400">
+                      <th className="text-right py-2.5 px-3 text-xs font-semibold text-gray-400">
                         Rate
                       </th>
-                      <th className="text-right py-2.5 px-3 text-xs font-semibold text-gray-500 dark:text-gray-400">
+                      <th className="text-right py-2.5 px-3 text-xs font-semibold text-gray-400">
                         Cost
                       </th>
                     </tr>
@@ -316,30 +316,30 @@ const WalletCostModal: React.FC<WalletCostModalProps> = ({
                           key={idx}
                           className="border-b border-gray-100 dark:border-gray-600/50 last:border-0"
                         >
-                          <td className="py-2.5 px-3 font-medium text-gray-900 dark:text-white">
+                          <td className="py-2.5 px-3 font-medium text-white">
                             {item.country}
                           </td>
-                          <td className="py-2.5 px-3 text-right text-gray-600 dark:text-gray-300">
+                          <td className="py-2.5 px-3 text-right text-gray-400 dark:text-gray-300">
                             {item.count.toLocaleString()}
                           </td>
-                          <td className="py-2.5 px-3 text-right text-gray-600 dark:text-gray-300">
+                          <td className="py-2.5 px-3 text-right text-gray-400 dark:text-gray-300">
                             {formatINR(item.rate)}
                           </td>
-                          <td className="py-2.5 px-3 text-right font-semibold text-gray-900 dark:text-white">
+                          <td className="py-2.5 px-3 text-right font-semibold text-white">
                             {formatINR(item.cost)}
                           </td>
                         </tr>
                       ))}
                   </tbody>
                   <tfoot>
-                    <tr className="bg-gray-100 dark:bg-gray-600/30">
+                    <tr className="bg-[#0a0e27]/[0.04] dark:bg-gray-600/30">
                       <td
                         colSpan={3}
-                        className="py-2.5 px-3 font-bold text-gray-900 dark:text-white text-xs"
+                        className="py-2.5 px-3 font-bold text-white text-xs"
                       >
                         TOTAL ({breakdown.totalRecipients.toLocaleString()} recipients)
                       </td>
-                      <td className="py-2.5 px-3 text-right font-bold text-gray-900 dark:text-white">
+                      <td className="py-2.5 px-3 text-right font-bold text-white">
                         {formatINR(estimate.estimatedCost)}
                       </td>
                     </tr>
@@ -355,7 +355,7 @@ const WalletCostModal: React.FC<WalletCostModalProps> = ({
           )}
 
           {/* ── Note ── */}
-          <div className="flex items-start gap-2 text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/30 rounded-lg p-3">
+          <div className="flex items-start gap-2 text-xs text-gray-400 bg-[#050816] dark:bg-gray-700/30 rounded-lg p-3">
             <Info className="w-4 h-4 flex-shrink-0 mt-0.5" />
             <p>
               Cost is estimated based on Meta's country-wise pricing. Actual cost may vary slightly
@@ -365,10 +365,10 @@ const WalletCostModal: React.FC<WalletCostModalProps> = ({
         </div>
 
         {/* ── Footer Actions ── */}
-        <div className="px-6 py-4 bg-gray-50 dark:bg-gray-700/30 border-t border-gray-200 dark:border-gray-600 flex gap-3">
+        <div className="px-6 py-4 bg-[#050816] dark:bg-gray-700/30 border-t border-white/[0.1] dark:border-gray-600 flex gap-3">
           <button
             onClick={onClose}
-            className="flex-1 px-4 py-3 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-600 font-medium transition-colors"
+            className="flex-1 px-4 py-3 border border-white/[0.1] dark:border-gray-600 text-gray-300 rounded-xl hover:bg-[#0a0e27]/[0.04] dark:hover:bg-gray-600 font-medium transition-colors"
           >
             Cancel
           </button>

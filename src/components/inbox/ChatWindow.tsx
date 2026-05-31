@@ -231,7 +231,7 @@ const ChatWindow: React.FC<Props> = ({
               <div key={item.key} className="flex justify-center my-4">
                 <span className="
                   px-3 py-1
-                  bg-white/[0.06] backdrop-blur-sm
+                  bg-[#0a0e27]/[0.06] backdrop-blur-sm
                   border border-white/[0.05]
                   text-gray-300 text-[11px] font-medium
                   rounded-full shadow-sm

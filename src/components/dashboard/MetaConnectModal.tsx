@@ -274,11 +274,11 @@ const MetaConnectModal: React.FC<MetaConnectModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="w-full max-w-2xl bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-slate-800 overflow-hidden">
+      <div className="w-full max-w-2xl bg-[#0a0e27] dark:bg-slate-900 rounded-2xl shadow-2xl border border-white/[0.1] dark:border-slate-800 overflow-hidden">
         {/* Header */}
         <div className="bg-gradient-to-r from-green-500 to-green-600 px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
+            <div className="w-10 h-10 bg-[#0a0e27]/20 rounded-xl flex items-center justify-center">
               <MessageSquare className="w-5 h-5 text-white" />
             </div>
             <h3 className="text-lg font-semibold text-white">
@@ -288,7 +288,7 @@ const MetaConnectModal: React.FC<MetaConnectModalProps> = ({
           <button
             onClick={onClose}
             disabled={loading}
-            className="p-2 rounded-xl hover:bg-white/20 transition-colors disabled:opacity-50"
+            className="p-2 rounded-xl hover:bg-[#0a0e27]/20 transition-colors disabled:opacity-50"
           >
             <X className="w-5 h-5 text-white" />
           </button>
@@ -405,9 +405,9 @@ const MetaConnectModal: React.FC<MetaConnectModalProps> = ({
 
           {/* SDK Loading */}
           {sdkLoading && (
-            <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-3 flex items-center gap-2">
+            <div className="bg-[#0a0e27] rounded-xl p-3 flex items-center gap-2">
               <Loader2 className="w-4 h-4 text-gray-500 animate-spin" />
-              <p className="text-sm text-gray-600 dark:text-gray-400">
+              <p className="text-sm text-gray-400">
                 Loading Facebook SDK...
               </p>
             </div>

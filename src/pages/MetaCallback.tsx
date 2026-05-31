@@ -372,7 +372,7 @@ const MetaCallback: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-green-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center p-4">
-      <div className="max-w-md w-full bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 text-center">
+      <div className="max-w-md w-full bg-[#0a0e27] rounded-2xl shadow-xl p-8 text-center">
         {/* Status Icon */}
         <div className="mb-6">
           {ui.status === 'loading' && (
@@ -396,7 +396,7 @@ const MetaCallback: React.FC = () => {
         <h1
           className={`text-2xl font-bold mb-2 ${ui.status === 'error'
               ? 'text-red-900 dark:text-red-200'
-              : 'text-gray-900 dark:text-white'
+              : 'text-white'
             }`}
         >
           {ui.status === 'loading' && 'Connecting...'}
@@ -405,7 +405,7 @@ const MetaCallback: React.FC = () => {
         </h1>
 
         {/* Message */}
-        <p className="text-gray-600 dark:text-gray-400 mb-4">{ui.message}</p>
+        <p className="text-gray-400 mb-4">{ui.message}</p>
 
         {/* Details */}
         {ui.details && (
@@ -414,7 +414,7 @@ const MetaCallback: React.FC = () => {
                 ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300'
                 : ui.status === 'error'
                   ? 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300'
-                  : 'bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
+                  : 'bg-[#050816] dark:bg-gray-700 text-gray-400 dark:text-gray-300'
               }`}
           >
             {ui.details}
@@ -441,7 +441,7 @@ const MetaCallback: React.FC = () => {
 
         {/* Success redirect message */}
         {ui.status === 'success' && (
-          <p className="text-sm text-gray-500 dark:text-gray-400">
+          <p className="text-sm text-gray-400">
             {window.opener ? 'Closing window...' : 'Redirecting to dashboard...'}
           </p>
         )}
@@ -471,7 +471,7 @@ const MetaCallback: React.FC = () => {
                   navigate('/dashboard');
                 }
               }}
-              className="w-full py-3 px-4 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 font-medium transition-colors"
+              className="w-full py-3 px-4 text-gray-400 hover:text-white dark:hover:text-gray-200 font-medium transition-colors"
             >
               {window.opener ? 'Close Window' : 'Return to Dashboard'}
             </button>
@@ -479,8 +479,8 @@ const MetaCallback: React.FC = () => {
         )}
 
         {/* Footer */}
-        <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
-          <div className="flex items-center justify-center text-sm text-gray-500 dark:text-gray-400">
+        <div className="mt-8 pt-6 border-t border-white/[0.1]">
+          <div className="flex items-center justify-center text-sm text-gray-400">
             <AlertTriangle className="w-4 h-4 mr-2" />
             <span>Secure connection with Meta</span>
           </div>

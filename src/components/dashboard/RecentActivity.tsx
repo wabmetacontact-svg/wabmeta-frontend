@@ -85,8 +85,8 @@ const getIconStyle = (type: string, action?: string) => {
     case 'warning': return 'bg-yellow-100 text-yellow-600';
     case 'chatbot': return 'bg-indigo-100 text-indigo-600';
     case 'billing': return 'bg-pink-100 text-pink-600';
-    case 'system': return 'bg-gray-100 text-gray-600';
-    default: return 'bg-gray-100 text-gray-600';
+    case 'system': return 'bg-[#0a0e27]/[0.04] text-gray-400';
+    default: return 'bg-[#0a0e27]/[0.04] text-gray-400';
   }
 };
 
@@ -98,7 +98,7 @@ const getBackgroundStyle = (type: string) => {
     case 'success':
     case 'template': return 'hover:bg-green-50';
     case 'warning': return 'hover:bg-yellow-50';
-    default: return 'hover:bg-gray-50';
+    default: return 'hover:bg-[#050816]';
   }
 };
 
@@ -157,16 +157,16 @@ const RecentActivity: React.FC<RecentActivityProps> = ({ activities }) => {
   // Empty state
   if (displayActivities.length === 0) {
     return (
-      <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 h-full flex flex-col">
+      <div className="bg-[#0a0e27] rounded-2xl p-6 shadow-sm border border-gray-100 h-full flex flex-col">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-lg font-semibold text-gray-900">Recent Activity</h2>
+          <h2 className="text-lg font-semibold text-white">Recent Activity</h2>
         </div>
         
         <div className="flex-1 flex flex-col items-center justify-center py-8 text-center">
-          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <div className="w-16 h-16 bg-[#0a0e27]/[0.04] rounded-full flex items-center justify-center mx-auto mb-4">
             <Clock className="w-8 h-8 text-gray-400" />
           </div>
-          <h3 className="text-sm font-medium text-gray-900 mb-1">No recent activity</h3>
+          <h3 className="text-sm font-medium text-white mb-1">No recent activity</h3>
           <p className="text-sm text-gray-500">
             Your recent actions will appear here once you start using the platform.
           </p>
@@ -176,10 +176,10 @@ const RecentActivity: React.FC<RecentActivityProps> = ({ activities }) => {
   }
 
   return (
-    <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 h-full flex flex-col">
+    <div className="bg-[#0a0e27] rounded-2xl p-6 shadow-sm border border-gray-100 h-full flex flex-col">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-lg font-semibold text-gray-900">Recent Activity</h2>
+        <h2 className="text-lg font-semibold text-white">Recent Activity</h2>
         <Link 
           to="/dashboard/activity" // Ensure this route exists or change to appropriate logs page
           className="flex items-center space-x-1 text-sm text-primary-600 hover:text-primary-700 font-medium transition-colors"
@@ -208,7 +208,7 @@ const RecentActivity: React.FC<RecentActivityProps> = ({ activities }) => {
               
               {/* Content */}
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-900 line-clamp-1">
+                <p className="text-sm font-medium text-white line-clamp-1">
                   {title}
                 </p>
                 <p className="text-sm text-gray-500 line-clamp-1">

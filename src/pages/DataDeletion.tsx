@@ -2,11 +2,11 @@ import React from 'react';
 
 const DataDeletion: React.FC = () => {
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-4xl mx-auto bg-white rounded-lg shadow p-8">
+    <div className="min-h-screen bg-[#050816] py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-4xl mx-auto bg-[#0a0e27] rounded-lg shadow p-8">
         <h1 className="text-3xl font-bold mb-6">Data Deletion Instructions</h1>
         
-        <div className="space-y-6 text-gray-700">
+        <div className="space-y-6 text-gray-300">
           <section>
             <h2 className="text-xl font-semibold mb-3">Request Data Deletion</h2>
             <p>
@@ -22,7 +22,7 @@ const DataDeletion: React.FC = () => {
               <li>Click "Delete Account"</li>
               <li>Confirm deletion</li>
             </ol>
-            <p className="mt-2 text-sm text-gray-600">
+            <p className="mt-2 text-sm text-gray-400">
               This will permanently delete all your data within 30 days.
             </p>
           </section>
@@ -40,7 +40,7 @@ const DataDeletion: React.FC = () => {
               <li>Subject: "Data Deletion Request"</li>
               <li>Confirmation that you want to delete all your data</li>
             </ul>
-            <p className="mt-2 text-sm text-gray-600">
+            <p className="mt-2 text-sm text-gray-400">
               We will process your request within 30 days.
             </p>
           </section>

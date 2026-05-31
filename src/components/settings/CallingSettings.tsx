@@ -124,10 +124,10 @@ const CallingSettings: React.FC = () => {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+        <h3 className="text-lg font-semibold text-white">
           WhatsApp Calling
         </h3>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+        <p className="text-sm text-gray-400 mt-1">
           Configure call settings for your WhatsApp Business number
         </p>
       </div>
@@ -148,9 +148,9 @@ const CallingSettings: React.FC = () => {
       </div>
 
       {/* ── SECTION 1: Basic Toggles ── */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
-        <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/80">
-          <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">Basic Settings</p>
+      <div className="bg-[#0a0e27] rounded-xl border border-white/[0.1] overflow-hidden">
+        <div className="px-4 py-3 border-b border-white/[0.08] bg-[#0a0e27]/80">
+          <p className="text-sm font-semibold text-gray-300">Basic Settings</p>
         </div>
 
         {[
@@ -178,15 +178,15 @@ const CallingSettings: React.FC = () => {
         ].map((item) => (
           <div
             key={item.label}
-            className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-gray-700 last:border-0"
+            className="flex items-center justify-between px-4 py-3 border-b border-white/[0.08] last:border-0"
           >
             <div className="flex items-center space-x-3">
               <div className="w-9 h-9 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
                 <item.icon className="w-4 h-4 text-green-600" />
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-900 dark:text-white">{item.label}</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">{item.desc}</p>
+                <p className="text-sm font-medium text-white">{item.label}</p>
+                <p className="text-xs text-gray-400">{item.desc}</p>
               </div>
             </div>
             <button
@@ -205,19 +205,19 @@ const CallingSettings: React.FC = () => {
       </div>
 
       {/* ── SECTION 2: Country Restriction ── */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
-        <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/80">
+      <div className="bg-[#0a0e27] rounded-xl border border-white/[0.1] overflow-hidden">
+        <div className="px-4 py-3 border-b border-white/[0.08] bg-[#0a0e27]/80">
           <div className="flex items-center gap-2">
             <Globe className="w-4 h-4 text-gray-500" />
-            <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">Country Restriction</p>
+            <p className="text-sm font-semibold text-gray-300">Country Restriction</p>
           </div>
         </div>
         <div className="px-4 py-3 flex items-center justify-between">
           <div>
-            <p className="text-sm font-medium text-gray-900 dark:text-white">
+            <p className="text-sm font-medium text-white">
               🇮🇳 Restrict to India Only
             </p>
-            <p className="text-xs text-gray-500 dark:text-gray-400">
+            <p className="text-xs text-gray-400">
               Call button will only be shown to users in India
             </p>
           </div>
@@ -239,12 +239,12 @@ const CallingSettings: React.FC = () => {
       </div>
 
       {/* ── SECTION 3: Call Hours ── */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
-        <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/80">
+      <div className="bg-[#0a0e27] rounded-xl border border-white/[0.1] overflow-hidden">
+        <div className="px-4 py-3 border-b border-white/[0.08] bg-[#0a0e27]/80">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Clock className="w-4 h-4 text-gray-500" />
-              <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+              <p className="text-sm font-semibold text-gray-300">
                 Business Hours (IST — Asia/Kolkata)
               </p>
             </div>
@@ -256,7 +256,7 @@ const CallingSettings: React.FC = () => {
               )}
             </button>
           </div>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+          <p className="text-xs text-gray-400 mt-1">
             {callHoursEnabled
               ? 'Call button will only be visible during these hours'
               : 'OFF — Call button is visible 24/7'}
@@ -271,7 +271,7 @@ const CallingSettings: React.FC = () => {
                 className={`flex items-center gap-3 p-2 rounded-lg transition-colors ${
                   h.enabled
                     ? 'bg-green-50 dark:bg-green-900/10'
-                    : 'bg-gray-50 dark:bg-gray-700/30 opacity-60'
+                    : 'bg-[#050816] dark:bg-gray-700/30 opacity-60'
                 }`}
               >
                 {/* Day toggle */}
@@ -280,7 +280,7 @@ const CallingSettings: React.FC = () => {
                   className={`w-10 text-xs font-semibold rounded px-1 py-0.5 transition-colors ${
                     h.enabled
                       ? 'bg-green-500 text-white'
-                      : 'bg-gray-300 dark:bg-gray-600 text-gray-600 dark:text-gray-400'
+                      : 'bg-gray-300 dark:bg-gray-600 text-gray-400'
                   }`}
                 >
                   {DAY_SHORT[h.day]}
@@ -295,7 +295,7 @@ const CallingSettings: React.FC = () => {
                       onChange={(e) =>
                         updateHour(h.day, 'openTime', e.target.value.replace(':', ''))
                       }
-                      className="text-xs border border-gray-200 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-28"
+                      className="text-xs border border-white/[0.1] dark:border-gray-600 rounded px-2 py-1 bg-[#0a0e27] text-white w-28"
                     />
                     <span className="text-xs text-gray-400">to</span>
                     <input
@@ -304,7 +304,7 @@ const CallingSettings: React.FC = () => {
                       onChange={(e) =>
                         updateHour(h.day, 'closeTime', e.target.value.replace(':', ''))
                       }
-                      className="text-xs border border-gray-200 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-28"
+                      className="text-xs border border-white/[0.1] dark:border-gray-600 rounded px-2 py-1 bg-[#0a0e27] text-white w-28"
                     />
                     <span className="text-xs text-green-600 dark:text-green-400 ml-auto">
                       {formatTime(h.openTime)} – {formatTime(h.closeTime)}

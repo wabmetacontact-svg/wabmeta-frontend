@@ -338,13 +338,13 @@ const CampaignDetails: React.FC = () => {
         <div className="flex items-center gap-4">
           <button
             onClick={() => navigate('/dashboard/campaigns')}
-            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg text-gray-600 dark:text-gray-400"
+            className="p-2 hover:bg-[#0a0e27]/[0.06] rounded-lg text-gray-400"
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
 
           <div className="flex flex-col">
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">
+            <h1 className="text-2xl font-bold text-white tracking-tight">
               {campaign?.name}
             </h1>
             <div className="flex items-center gap-3 mt-1">
@@ -354,7 +354,7 @@ const CampaignDetails: React.FC = () => {
                 campaign?.status === 'RUNNING' ? 'bg-green-100 text-green-700 dark:bg-green-900/30' :
                 campaign?.status === 'PAUSED' ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30' :
                 campaign?.status === 'FAILED' ? 'bg-red-100 text-red-700 dark:bg-red-900/30' :
-                'bg-gray-100 text-gray-700 dark:bg-gray-800'
+                'bg-[#0a0e27]/[0.04] text-gray-300 dark:bg-gray-800'
               }`}>
                 {campaign?.status}
               </span>
@@ -385,7 +385,7 @@ const CampaignDetails: React.FC = () => {
         <div className="flex items-center gap-3">
           <button
             onClick={handleExport}
-            className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors shadow-sm text-sm"
+            className="flex items-center gap-2 px-4 py-2 bg-[#0a0e27] border border-white/[0.1] text-gray-300 rounded-lg hover:bg-[#0a0e27]/[0.04] transition-colors shadow-sm text-sm"
           >
             <Download className="w-4 h-4" />
             Export
@@ -394,7 +394,7 @@ const CampaignDetails: React.FC = () => {
           <button
             onClick={refresh}
             disabled={refreshing}
-            className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors shadow-sm text-sm"
+            className="flex items-center gap-2 px-4 py-2 bg-[#0a0e27] border border-white/[0.1] text-gray-300 rounded-lg hover:bg-[#0a0e27]/[0.04] transition-colors shadow-sm text-sm"
           >
             <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
             Refresh
@@ -414,12 +414,12 @@ const CampaignDetails: React.FC = () => {
 
       {/* ✅ FIXED: Progress Bar - capped at 100% */}
       {campaign?.status === 'RUNNING' && displayStats && (
-        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 shadow-sm">
+        <div className="bg-[#0a0e27] rounded-xl border border-white/[0.1] p-4 shadow-sm">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            <span className="text-sm font-medium text-gray-300">
               Campaign Progress
             </span>
-            <span className="text-sm text-gray-500 dark:text-gray-400">
+            <span className="text-sm text-gray-400">
               {/* ✅ FIX: Never show more than total */}
               {Math.min(
                 displayStats.sent + displayStats.failed,
@@ -513,11 +513,11 @@ const CampaignDetails: React.FC = () => {
                 <li>Template quality score has dropped</li>
                 <li>Sending to too many inactive/cold contacts</li>
               </ul>
-              <div className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-amber-200 dark:border-amber-800">
-                <p className="text-xs font-bold text-gray-700 dark:text-gray-300 mb-2">
+              <div className="bg-[#0a0e27] rounded-lg p-3 border border-amber-200 dark:border-amber-800">
+                <p className="text-xs font-bold text-gray-300 mb-2">
                   💡 How to fix:
                 </p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-gray-600 dark:text-gray-400">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-gray-400">
                   <div className="flex items-start gap-1.5">
                     <span className="text-green-500 font-bold">1.</span>
                     <span>Only send to contacts who opted-in</span>
@@ -613,7 +613,7 @@ const CampaignDetails: React.FC = () => {
       {/* FAILURE ANALYSIS */}
       {/* ============================== */}
       {displayStats && displayStats.failureReasons && displayStats.failureReasons.length > 0 && (
-        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 shadow-sm">
+        <div className="bg-[#0a0e27] rounded-xl border border-white/[0.1] p-6 shadow-sm">
           <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-2 mb-4">
             <AlertTriangle className="w-4 h-4 text-red-500" />
             Failure Analysis
@@ -625,7 +625,7 @@ const CampaignDetails: React.FC = () => {
                 className="flex items-start justify-between bg-red-50/50 dark:bg-red-900/10 rounded-xl p-4 border border-red-100/30 dark:border-red-900/20"
               >
                 <div className="flex-1 mr-4">
-                  <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                  <p className="text-sm font-semibold text-gray-300">
                     {fr.reason}
                   </p>
                   
@@ -640,7 +640,7 @@ const CampaignDetails: React.FC = () => {
                     </Link>
                   )}
                 </div>
-                <span className="text-sm font-black text-red-600 dark:text-red-500 bg-white dark:bg-gray-800 px-3 py-1 rounded-full shadow-sm whitespace-nowrap">
+                <span className="text-sm font-black text-red-600 dark:text-red-500 bg-[#0a0e27] px-3 py-1 rounded-full shadow-sm whitespace-nowrap">
                   {fr.count} contacts
                 </span>
               </div>
@@ -652,7 +652,7 @@ const CampaignDetails: React.FC = () => {
       {/* ============================== */}
       {/* SEARCH & FILTERS */}
       {/* ============================== */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700 shadow-sm">
+      <div className="bg-[#0a0e27] rounded-xl p-4 border border-white/[0.1] shadow-sm">
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -662,14 +662,14 @@ const CampaignDetails: React.FC = () => {
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-              className="w-full pl-10 pr-4 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900 dark:text-white"
+              className="w-full pl-10 pr-4 py-2.5 bg-[#050816] dark:bg-gray-700 border border-white/[0.1] dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-white"
             />
           </div>
 
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
-            className="px-4 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900 dark:text-white"
+            className="px-4 py-2.5 bg-[#050816] dark:bg-gray-700 border border-white/[0.1] dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-white"
           >
             <option value="all">All Status</option>
             <option value="PENDING">Pending</option>
@@ -694,7 +694,7 @@ const CampaignDetails: React.FC = () => {
       <div className="flex items-center justify-between px-1">
         <div className="flex items-center gap-2">
           <Users className="w-5 h-5 text-gray-500" />
-          <h2 className="text-lg font-bold text-gray-900 dark:text-white">
+          <h2 className="text-lg font-bold text-white">
             Recipient Contacts
             <span className="text-gray-400 text-sm font-medium ml-2">
               ({meta.total.toLocaleString()} total)
@@ -709,11 +709,11 @@ const CampaignDetails: React.FC = () => {
         )}
       </div>
 
-      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden shadow-sm">
+      <div className="bg-[#0a0e27] rounded-xl border border-white/[0.1] overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead>
-              <tr className="bg-gray-50/50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-700">
+              <tr className="bg-[#050816]/50 dark:bg-gray-700/50 border-b border-white/[0.1]">
                 <th className="px-4 py-4 w-10">
                   <input
                     type="checkbox"
@@ -723,7 +723,7 @@ const CampaignDetails: React.FC = () => {
                         e.target.checked ? contacts.map((c) => c.contactId) : []
                       )
                     }
-                    className="rounded border-gray-300 dark:border-gray-600 text-green-600 focus:ring-green-500"
+                    className="rounded border-white/[0.12] text-green-600 focus:ring-green-500"
                   />
                 </th>
                 <th className="px-4 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">
@@ -750,7 +750,7 @@ const CampaignDetails: React.FC = () => {
                 return (
                   <tr
                     key={contact.id}
-                    className="hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors"
+                    className="hover:bg-[#0a0e27]/[0.04]/30 transition-colors"
                   >
                     {/* Checkbox */}
                     <td className="px-4 py-4">
@@ -764,13 +764,13 @@ const CampaignDetails: React.FC = () => {
                               : [...prev, contact.contactId]
                           );
                         }}
-                        className="rounded border-gray-300 dark:border-gray-600 text-green-600 focus:ring-green-500"
+                        className="rounded border-white/[0.12] text-green-600 focus:ring-green-500"
                       />
                     </td>
 
                     {/* Contact name & phone */}
                     <td className="px-4 py-4">
-                      <p className="font-bold text-gray-900 dark:text-gray-100">
+                      <p className="font-bold text-white dark:text-gray-100">
                         {displayName}
                       </p>
                       {displayName !== displayPhone && (
@@ -792,7 +792,7 @@ const CampaignDetails: React.FC = () => {
 
                     {/* Delivery Timeline */}
                     <td className="px-4 py-4">
-                      <div className="flex items-center gap-4 text-[11px] font-medium text-gray-500 dark:text-gray-400">
+                      <div className="flex items-center gap-4 text-[11px] font-medium text-gray-400">
                         {contact.sentAt && (
                           <div className="flex flex-col">
                             <span className="text-[8px] uppercase opacity-60">Sent</span>
@@ -847,7 +847,7 @@ const CampaignDetails: React.FC = () => {
                 <tr>
                   <td
                     colSpan={5}
-                    className="px-6 py-12 text-center text-gray-500 dark:text-gray-400"
+                    className="px-6 py-12 text-center text-gray-400"
                   >
                     No contacts found matching your criteria.
                   </td>
@@ -859,22 +859,22 @@ const CampaignDetails: React.FC = () => {
 
         {/* Pagination */}
         {meta.totalPages > 1 && (
-          <div className="px-4 py-3 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
-            <span className="text-sm text-gray-500 dark:text-gray-400">
+          <div className="px-4 py-3 border-t border-white/[0.1] flex items-center justify-between">
+            <span className="text-sm text-gray-400">
               Page {meta.page} of {meta.totalPages} ({meta.total.toLocaleString()} total)
             </span>
             <div className="flex gap-2">
               <button
                 onClick={() => loadContacts(meta.page - 1)}
                 disabled={meta.page === 1}
-                className="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg disabled:opacity-50 text-sm hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                className="px-3 py-1.5 bg-[#0a0e27]/[0.04] dark:bg-gray-700 text-gray-300 rounded-lg disabled:opacity-50 text-sm hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
               >
                 Previous
               </button>
               <button
                 onClick={() => loadContacts(meta.page + 1)}
                 disabled={meta.page >= meta.totalPages}
-                className="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg disabled:opacity-50 text-sm hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                className="px-3 py-1.5 bg-[#0a0e27]/[0.04] dark:bg-gray-700 text-gray-300 rounded-lg disabled:opacity-50 text-sm hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
               >
                 Next
               </button>
@@ -902,16 +902,16 @@ const StatCard: React.FC<{
 }> = ({ label, value, icon: Icon, iconBg, iconColor, onClick, active, pulse }) => (
   <div
     onClick={onClick}
-    className={`bg-white dark:bg-gray-800 rounded-xl p-5 border transition-all shadow-sm ${
+    className={`bg-[#0a0e27] rounded-xl p-5 border transition-all shadow-sm ${
       active
         ? 'border-green-500 ring-2 ring-green-500/20 shadow-green-500/10'
-        : 'border-gray-200 dark:border-gray-700'
+        : 'border-white/[0.1]'
     } ${onClick ? 'cursor-pointer hover:shadow-md hover:-translate-y-0.5' : ''}`}
   >
     <div className="flex items-center justify-between">
       <div className="flex-1">
-        <p className="text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap">{label}</p>
-        <p className={`text-2xl font-bold text-gray-900 dark:text-white mt-1 ${
+        <p className="text-sm text-gray-400 whitespace-nowrap">{label}</p>
+        <p className={`text-2xl font-bold text-white mt-1 ${
           pulse ? 'animate-pulse' : ''
         }`}>
           {value.toLocaleString()}

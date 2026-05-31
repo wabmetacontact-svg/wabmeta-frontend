@@ -51,7 +51,7 @@ const ConnectionStatus: React.FC<Props> = ({
           {/* Info */}
           <div className="min-w-0">
             <div className="flex items-center gap-2 mb-1">
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+              <h3 className="text-lg font-bold text-white">
                 WhatsApp Connected
               </h3>
               <CheckCircle className="w-5 h-5 text-green-500" />
@@ -59,7 +59,7 @@ const ConnectionStatus: React.FC<Props> = ({
             
             {/* Primary Account */}
             {defaultAccount && (
-              <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
+              <div className="flex items-center gap-2 text-gray-300">
                 <Phone className="w-4 h-4" />
                 <span className="font-semibold">{defaultAccount.displayName}</span>
                 <span className="text-gray-500">•</span>
@@ -72,7 +72,7 @@ const ConnectionStatus: React.FC<Props> = ({
             
             {/* Additional Accounts Count */}
             {connectedAccounts.length > 1 && (
-              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+              <p className="text-sm text-gray-400 mt-1">
                 +{connectedAccounts.length - 1} more account{connectedAccounts.length > 2 ? 's' : ''} connected
               </p>
             )}
@@ -83,7 +83,7 @@ const ConnectionStatus: React.FC<Props> = ({
         <div className="flex items-center gap-3 lg:shrink-0">
           <Link
             to="/dashboard/settings?tab=whatsapp"
-            className="inline-flex items-center gap-2 px-4 py-2 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2 text-gray-300 bg-[#0a0e27] border border-white/[0.1] rounded-xl hover:bg-[#0a0e27]/[0.04] transition-colors"
           >
             <Settings className="w-4 h-4" />
             <span>Manage</span>
@@ -103,28 +103,28 @@ const ConnectionStatus: React.FC<Props> = ({
       {/* Accounts List (if multiple) */}
       {connectedAccounts.length > 1 && (
         <div className="mt-4 pt-4 border-t border-green-200 dark:border-green-800">
-          <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+          <p className="text-sm font-medium text-gray-300 mb-3">
             All Connected Accounts:
           </p>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {connectedAccounts.map((account) => (
               <div
                 key={account.id}
-                className="flex items-center gap-3 p-3 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700"
+                className="flex items-center gap-3 p-3 bg-[#0a0e27] rounded-xl border border-white/[0.1]"
               >
                 <div className="w-10 h-10 bg-green-100 dark:bg-green-900/50 rounded-full flex items-center justify-center">
                   <Phone className="w-5 h-5 text-green-600" />
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-1">
-                    <p className="font-medium text-gray-900 dark:text-white text-sm truncate">
+                    <p className="font-medium text-white text-sm truncate">
                       {account.displayName || 'WhatsApp'}
                     </p>
                     {account.isDefault && (
                       <Star className="w-3 h-3 text-yellow-500 fill-yellow-500 shrink-0" />
                     )}
                   </div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 font-mono">
+                  <p className="text-xs text-gray-400 font-mono">
                     {account.phoneNumber}
                   </p>
                 </div>

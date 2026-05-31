@@ -146,15 +146,15 @@ const StatusBadge: React.FC<StatusBadgeProps> = ({ status }) => {
         };
       case 'INACTIVE':
         return {
-          bg: 'bg-gray-100',
-          text: 'text-gray-700',
+          bg: 'bg-[#0a0e27]/[0.04]',
+          text: 'text-gray-300',
           icon: UserX,
           label: 'Inactive'
         };
       default:
         return {
-          bg: 'bg-gray-100',
-          text: 'text-gray-700',
+          bg: 'bg-[#0a0e27]/[0.04]',
+          text: 'text-gray-300',
           icon: Users,
           label: status || 'Unknown'
         };
@@ -194,14 +194,14 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/50" onClick={onCancel} />
-      <div className="relative bg-white dark:bg-gray-900 rounded-2xl shadow-xl max-w-md w-full p-6">
-        <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">{title}</h3>
-        <p className="text-gray-600 dark:text-gray-400 mb-6">{message}</p>
+      <div className="relative bg-[#0a0e27] rounded-2xl shadow-xl max-w-md w-full p-6">
+        <h3 className="text-lg font-bold text-white mb-2">{title}</h3>
+        <p className="text-gray-400 mb-6">{message}</p>
         <div className="flex gap-3 justify-end">
           <button
             onClick={onCancel}
             disabled={loading}
-            className="px-4 py-2 text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors disabled:opacity-50"
+            className="px-4 py-2 text-gray-300 bg-[#0a0e27]/[0.04] rounded-xl hover:bg-gray-200 transition-colors disabled:opacity-50"
           >
             Cancel
           </button>
@@ -234,34 +234,34 @@ const UserDetailsModal: React.FC<UserDetailsModalProps> = ({ isOpen, user, onClo
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      <div className="relative bg-white dark:bg-gray-900 rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6">
+      <div className="relative bg-[#0a0e27] rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6">
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 p-2 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+          className="absolute top-4 right-4 p-2 text-gray-500 hover:bg-[#0a0e27]/[0.06] rounded-lg transition-colors"
         >
           <X className="w-5 h-5" />
         </button>
 
-        <div className="mb-6 flex space-x-4 items-center border-b border-gray-100 dark:border-gray-800 pb-4">
+        <div className="mb-6 flex space-x-4 items-center border-b border-white/[0.05] pb-4">
           <div className="w-16 h-16 bg-gradient-to-br from-primary-400 to-primary-600 rounded-full flex items-center justify-center text-white font-bold text-2xl">
             {getUserInitials(user)}
           </div>
           <div>
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+            <h2 className="text-xl font-bold text-white">
               {getUserDisplayName(user)}
             </h2>
-            <p className="text-gray-500 dark:text-gray-400">{user.email}</p>
+            <p className="text-gray-400">{user.email}</p>
           </div>
         </div>
 
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+          <h3 className="text-lg font-semibold text-white">
             WhatsApp Accounts ({user.whatsappAccounts?.length || 0})
           </h3>
 
           {!user.whatsappAccounts || user.whatsappAccounts.length === 0 ? (
-            <div className="text-center py-8 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
-              <p className="text-gray-500 dark:text-gray-400">
+            <div className="text-center py-8 bg-[#0a0e27]/50 rounded-lg">
+              <p className="text-gray-400">
                 No WhatsApp accounts connected
               </p>
             </div>
@@ -270,12 +270,12 @@ const UserDetailsModal: React.FC<UserDetailsModalProps> = ({ isOpen, user, onClo
               {user.whatsappAccounts.map((account) => (
                 <div
                   key={account.id}
-                  className="p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700"
+                  className="p-4 bg-[#0a0e27] rounded-lg border border-white/[0.1]"
                 >
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
-                        <h4 className="font-semibold text-gray-900 dark:text-white">
+                        <h4 className="font-semibold text-white">
                           {account.verifiedName || 'Unnamed Account'}
                         </h4>
                         {account.isDefault && (
@@ -285,7 +285,7 @@ const UserDetailsModal: React.FC<UserDetailsModalProps> = ({ isOpen, user, onClo
                         )}
                       </div>
                       
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                      <p className="text-sm text-gray-400">
                         {account.displayPhoneNumber}
                       </p>
                     </div>
@@ -297,16 +297,16 @@ const UserDetailsModal: React.FC<UserDetailsModalProps> = ({ isOpen, user, onClo
                     />
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4 mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
+                  <div className="grid grid-cols-2 gap-4 mt-3 pt-3 border-t border-white/[0.08]">
                     <div>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">Quality Rating</p>
-                      <p className="text-sm font-medium text-gray-900 dark:text-white">
+                      <p className="text-xs text-gray-400">Quality Rating</p>
+                      <p className="text-sm font-medium text-white">
                         {account.qualityRating || 'N/A'}
                       </p>
                     </div>
                     <div>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">Phone Number ID</p>
-                      <p className="text-sm font-mono text-gray-900 dark:text-white">
+                      <p className="text-xs text-gray-400">Phone Number ID</p>
+                      <p className="text-sm font-mono text-white">
                         {account.phoneNumberId.slice(0, 12)}...
                       </p>
                     </div>
@@ -331,9 +331,9 @@ const UserDetailsModal: React.FC<UserDetailsModalProps> = ({ isOpen, user, onClo
               </p>
             </div>
             
-            <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-              <p className="text-xs text-gray-600 dark:text-gray-400 mb-1">Active</p>
-              <p className="text-xl font-bold text-gray-700 dark:text-gray-300">
+            <div className="p-3 bg-[#0a0e27] rounded-lg border border-white/[0.1]">
+              <p className="text-xs text-gray-400 mb-1">Active</p>
+              <p className="text-xl font-bold text-gray-300">
                 {user.whatsappSummary?.activeAccounts || 0}
               </p>
             </div>
@@ -383,21 +383,21 @@ const PasswordModal: React.FC<PasswordModalProps> = ({ isOpen, user, onClose, on
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      <div className="relative bg-white dark:bg-gray-900 rounded-2xl shadow-xl max-w-md w-full p-6">
-        <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+      <div className="relative bg-[#0a0e27] rounded-2xl shadow-xl max-w-md w-full p-6">
+        <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
           <ShieldCheck className="w-5 h-5 text-primary-500" />
           Manage Password
         </h2>
         
-        <p className="text-gray-500 dark:text-gray-400 text-sm mb-6">
+        <p className="text-gray-400 text-sm mb-6">
           Set a new password for <strong>{user.email}</strong>.
         </p>
 
         <div className="space-y-4">
           {user.password && (
-            <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-100 dark:border-gray-700">
+            <div className="p-3 bg-[#0a0e27] rounded-lg border border-white/[0.08]">
               <p className="text-xs text-gray-500 mb-1">Current Password Hash (Database):</p>
-              <p className="text-xs font-mono text-gray-400 break-all bg-white dark:bg-gray-900 p-2 rounded">
+              <p className="text-xs font-mono text-gray-400 break-all bg-[#0a0e27] p-2 rounded">
                 {user.password}
               </p>
             </div>
@@ -405,7 +405,7 @@ const PasswordModal: React.FC<PasswordModalProps> = ({ isOpen, user, onClose, on
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-gray-300 mb-1">
                 New Password
               </label>
               <div className="relative">
@@ -414,13 +414,13 @@ const PasswordModal: React.FC<PasswordModalProps> = ({ isOpen, user, onClose, on
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   placeholder="Enter new password"
-                  className="w-full px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none"
+                  className="w-full px-4 py-2 bg-[#0a0e27] border border-white/[0.1] rounded-xl focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none"
                   required
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-400"
                 >
                   <Eye className="w-4 h-4" />
                 </button>
@@ -431,7 +431,7 @@ const PasswordModal: React.FC<PasswordModalProps> = ({ isOpen, user, onClose, on
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-200"
+                className="px-4 py-2 text-gray-300 bg-[#0a0e27]/[0.04] rounded-xl hover:bg-gray-200"
               >
                 Cancel
               </button>
@@ -671,9 +671,9 @@ const UserManagement: React.FC = () => {
 
       {deleteModal.isOpen && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 max-w-md w-full mx-4">
+          <div className="bg-[#0a0e27] rounded-xl p-6 max-w-md w-full mx-4">
             <h3 className="text-lg font-bold mb-4">User Owns Organizations</h3>
-            <p className="text-gray-600 dark:text-gray-400 mb-6 font-medium">
+            <p className="text-gray-400 mb-6 font-medium">
               This user owns organizations. Forced delete will remove all associated data.
             </p>
             <div className="space-y-3">
@@ -685,7 +685,7 @@ const UserManagement: React.FC = () => {
               </button>
               <button
                 onClick={() => setDeleteModal({ isOpen: false, user: null, hasOrganizations: false })}
-                className="w-full p-3 border border-gray-200 rounded-xl hover:bg-gray-50 font-medium"
+                className="w-full p-3 border border-white/[0.1] rounded-xl hover:bg-[#050816] font-medium"
               >
                 Cancel
               </button>
@@ -697,7 +697,7 @@ const UserManagement: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">User Management</h1>
+          <h1 className="text-2xl font-bold text-white">User Management</h1>
           <p className="text-gray-500 text-sm mt-1">{pagination.total.toLocaleString()} users total</p>
         </div>
         <div className="flex space-x-3 w-full sm:w-auto">
@@ -706,7 +706,7 @@ const UserManagement: React.FC = () => {
             <input
               type="text"
               placeholder="Search users..."
-              className="w-full sm:w-64 pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl"
+              className="w-full sm:w-64 pl-10 pr-4 py-2.5 border border-white/[0.1] rounded-xl"
               value={search}
               onChange={(e) => {
                 setSearch(e.target.value);
@@ -714,7 +714,7 @@ const UserManagement: React.FC = () => {
               }}
             />
           </div>
-          <button onClick={fetchUsers} className="p-2.5 bg-white border border-gray-200 rounded-xl hover:bg-gray-50">
+          <button onClick={fetchUsers} className="p-2.5 bg-[#0a0e27] border border-white/[0.1] rounded-xl hover:bg-[#050816]">
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
           </button>
         </div>
@@ -727,10 +727,10 @@ const UserManagement: React.FC = () => {
         </div>
       )}
 
-      <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
+      <div className="bg-[#0a0e27] border border-white/[0.1] rounded-2xl overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-gray-50 border-b border-gray-200">
+            <thead className="bg-[#050816] border-b border-white/[0.1]">
               <tr>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">User</th>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider font-bold">Status</th>
@@ -740,14 +740,14 @@ const UserManagement: React.FC = () => {
             </thead>
             <tbody className="divide-y divide-gray-100">
               {users.map((user) => (
-                <tr key={user.id} className="hover:bg-gray-50 transition-colors">
+                <tr key={user.id} className="hover:bg-[#050816] transition-colors">
                   <td className="px-6 py-4">
                     <div className="flex items-center">
                       <div className="w-10 h-10 bg-primary-500 rounded-full flex items-center justify-center text-white font-bold shrink-0">
                         {getUserInitials(user)}
                       </div>
                       <div className="ml-3 min-w-0">
-                        <div className="text-sm font-bold text-gray-900 truncate">{getUserDisplayName(user)}</div>
+                        <div className="text-sm font-bold text-white truncate">{getUserDisplayName(user)}</div>
                         <div className="text-sm text-gray-500 truncate">{user.email}</div>
                       </div>
                     </div>

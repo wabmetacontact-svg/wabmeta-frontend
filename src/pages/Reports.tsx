@@ -151,11 +151,11 @@ const Reports: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center">
+          <h1 className="text-3xl font-bold text-white flex items-center">
             <BarChart3 className="w-8 h-8 mr-3 text-green-600" />
             Reports & Analytics
           </h1>
-          <p className="mt-1 text-gray-600 dark:text-gray-400">
+          <p className="mt-1 text-gray-400">
             Track your WhatsApp business performance
           </p>
         </div>
@@ -165,7 +165,7 @@ const Reports: React.FC = () => {
           <select
             value={dateRange}
             onChange={(e) => setDateRange(e.target.value as any)}
-            className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500"
+            className="px-4 py-2 border border-white/[0.12] rounded-lg bg-[#0a0e27] text-white focus:ring-2 focus:ring-green-500"
           >
             <option value="7">Last 7 days</option>
             <option value="14">Last 14 days</option>
@@ -177,7 +177,7 @@ const Reports: React.FC = () => {
           <button
             onClick={() => fetchAllData(true)}
             disabled={refreshing}
-            className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg"
+            className="p-2 text-gray-500 hover:text-gray-300 dark:hover:text-gray-200 hover:bg-[#0a0e27]/[0.06] rounded-lg"
           >
             <RefreshCw className={`w-5 h-5 ${refreshing ? 'animate-spin' : ''}`} />
           </button>
@@ -194,7 +194,7 @@ const Reports: React.FC = () => {
       </div>
 
       {/* Tabs */}
-      <div className="flex space-x-1 bg-gray-100 dark:bg-gray-800 p-1 rounded-xl mb-6 w-fit">
+      <div className="flex space-x-1 bg-[#0a0e27]/[0.04] p-1 rounded-xl mb-6 w-fit">
         {[
           { id: 'overview', label: 'Overview', icon: BarChart3 },
           { id: 'messages', label: 'Messages', icon: MessageSquare },
@@ -205,8 +205,8 @@ const Reports: React.FC = () => {
             key={tab.id}
             onClick={() => setActiveTab(tab.id as any)}
             className={`flex items-center px-4 py-2 rounded-lg font-medium transition-all ${activeTab === tab.id
-                ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
-                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+                ? 'bg-[#0a0e27] dark:bg-gray-700 text-white shadow-sm'
+                : 'text-gray-400 hover:text-white dark:hover:text-gray-200'
               }`}
           >
             <tab.icon className="w-4 h-4 mr-2" />
@@ -252,8 +252,8 @@ const Reports: React.FC = () => {
           {/* Charts Row */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Message Trends */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+            <div className="bg-[#0a0e27] rounded-xl p-6 border border-white/[0.1]">
+              <h3 className="text-lg font-semibold text-white mb-4">
                 Message Trends
               </h3>
               {messageData?.chartData && messageData.chartData.length > 0 ? (
@@ -274,8 +274,8 @@ const Reports: React.FC = () => {
             </div>
 
             {/* Contact Growth */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+            <div className="bg-[#0a0e27] rounded-xl p-6 border border-white/[0.1]">
+              <h3 className="text-lg font-semibold text-white mb-4">
                 Contact Growth
               </h3>
               {contactData?.chartData && contactData.chartData.length > 0 ? (
@@ -370,8 +370,8 @@ const Reports: React.FC = () => {
           </div>
 
           {/* Message Chart */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+          <div className="bg-[#0a0e27] rounded-xl p-6 border border-white/[0.1]">
+            <h3 className="text-lg font-semibold text-white mb-4">
               Daily Message Volume
             </h3>
             {messageData.chartData && messageData.chartData.length > 0 ? (
@@ -389,14 +389,14 @@ const Reports: React.FC = () => {
 
           {/* Message Type Breakdown */}
           {messageData.typeBreakdown && messageData.typeBreakdown.length > 0 && (
-            <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+            <div className="bg-[#0a0e27] rounded-xl p-6 border border-white/[0.1]">
+              <h3 className="text-lg font-semibold text-white mb-4">
                 Message Types
               </h3>
               <div className="space-y-3">
                 {messageData.typeBreakdown.map((item: any) => (
                   <div key={item.type} className="flex items-center">
-                    <span className="w-24 text-sm text-gray-600 dark:text-gray-400 capitalize">
+                    <span className="w-24 text-sm text-gray-400 capitalize">
                       {item.type.toLowerCase()}
                     </span>
                     <div className="flex-1 mx-4">
@@ -407,7 +407,7 @@ const Reports: React.FC = () => {
                         />
                       </div>
                     </div>
-                    <span className="text-sm font-medium text-gray-900 dark:text-white w-16 text-right">
+                    <span className="text-sm font-medium text-white w-16 text-right">
                       {item.count}
                     </span>
                   </div>
@@ -454,32 +454,32 @@ const Reports: React.FC = () => {
           </div>
 
           {/* Recent Campaigns Table */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
-            <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+          <div className="bg-[#0a0e27] rounded-xl border border-white/[0.1] overflow-hidden">
+            <div className="p-6 border-b border-white/[0.1]">
+              <h3 className="text-lg font-semibold text-white">
                 Recent Campaigns
               </h3>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-gray-50 dark:bg-gray-700/50">
+                <thead className="bg-[#0a0e27]/[0.02]">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">
                       Campaign
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">
                       Status
                     </th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-400 uppercase">
                       Sent
                     </th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-400 uppercase">
                       Delivered
                     </th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-400 uppercase">
                       Read
                     </th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-400 uppercase">
                       Delivery %
                     </th>
                   </tr>
@@ -487,9 +487,9 @@ const Reports: React.FC = () => {
                 <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                   {campaignData.campaigns?.length > 0 ? (
                     campaignData.campaigns.map((campaign: any) => (
-                      <tr key={campaign.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                      <tr key={campaign.id} className="hover:bg-[#0a0e27]/[0.04]">
                         <td className="px-6 py-4">
-                          <div className="text-sm font-medium text-gray-900 dark:text-white">
+                          <div className="text-sm font-medium text-white">
                             {campaign.name}
                           </div>
                           <div className="text-xs text-gray-500">
@@ -504,19 +504,19 @@ const Reports: React.FC = () => {
                                   ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400'
                                   : campaign.status === 'FAILED'
                                     ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
-                                    : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-400'
+                                    : 'bg-[#0a0e27]/[0.04] text-white dark:bg-gray-700 dark:text-gray-400'
                               }`}
                           >
                             {campaign.status}
                           </span>
                         </td>
-                        <td className="px-6 py-4 text-right text-sm text-gray-900 dark:text-white">
+                        <td className="px-6 py-4 text-right text-sm text-white">
                           {campaign.sentCount.toLocaleString()}
                         </td>
-                        <td className="px-6 py-4 text-right text-sm text-gray-900 dark:text-white">
+                        <td className="px-6 py-4 text-right text-sm text-white">
                           {campaign.deliveredCount.toLocaleString()}
                         </td>
-                        <td className="px-6 py-4 text-right text-sm text-gray-900 dark:text-white">
+                        <td className="px-6 py-4 text-right text-sm text-white">
                           {campaign.readCount.toLocaleString()}
                         </td>
                         <td className="px-6 py-4 text-right">
@@ -573,8 +573,8 @@ const Reports: React.FC = () => {
           </div>
 
           {/* Contact Growth Chart */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+          <div className="bg-[#0a0e27] rounded-xl p-6 border border-white/[0.1]">
+            <h3 className="text-lg font-semibold text-white mb-4">
               Contact Growth
             </h3>
             {contactData.chartData && contactData.chartData.length > 0 ? (
@@ -594,17 +594,17 @@ const Reports: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Source Breakdown */}
             {contactData.sourceBreakdown && contactData.sourceBreakdown.length > 0 && (
-              <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+              <div className="bg-[#0a0e27] rounded-xl p-6 border border-white/[0.1]">
+                <h3 className="text-lg font-semibold text-white mb-4">
                   Contact Sources
                 </h3>
                 <div className="space-y-3">
                   {contactData.sourceBreakdown.map((item: any) => (
                     <div key={item.source} className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600 dark:text-gray-400">
+                      <span className="text-sm text-gray-400">
                         {item.source}
                       </span>
-                      <span className="text-sm font-medium text-gray-900 dark:text-white">
+                      <span className="text-sm font-medium text-white">
                         {item.count} ({item.percentage}%)
                       </span>
                     </div>
@@ -615,8 +615,8 @@ const Reports: React.FC = () => {
 
             {/* Top Tags */}
             {contactData.topTags && contactData.topTags.length > 0 && (
-              <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+              <div className="bg-[#0a0e27] rounded-xl p-6 border border-white/[0.1]">
+                <h3 className="text-lg font-semibold text-white mb-4">
                   Top Tags
                 </h3>
                 <div className="flex flex-wrap gap-2">
@@ -671,7 +671,7 @@ const StatCard: React.FC<StatCardProps> = ({
 
   return (
     <div
-      className={`bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 ${compact ? 'p-4' : 'p-6'
+      className={`bg-[#0a0e27] rounded-xl border border-white/[0.1] ${compact ? 'p-4' : 'p-6'
         }`}
     >
       <div className="flex items-center justify-between">
@@ -694,12 +694,12 @@ const StatCard: React.FC<StatCardProps> = ({
       </div>
       <div className={compact ? 'mt-2' : 'mt-4'}>
         <p
-          className={`font-bold text-gray-900 dark:text-white ${compact ? 'text-xl' : 'text-2xl'
+          className={`font-bold text-white ${compact ? 'text-xl' : 'text-2xl'
             }`}
         >
           {typeof value === 'number' ? value.toLocaleString() : value}
         </p>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{title}</p>
+        <p className="text-sm text-gray-400 mt-1">{title}</p>
         {subValue && (
           <p className="text-xs text-gray-400 dark:text-gray-500">{subValue}</p>
         )}
@@ -736,11 +736,11 @@ const QuickStat: React.FC<QuickStatProps> = ({
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700 flex items-center">
+    <div className="bg-[#0a0e27] rounded-xl p-4 border border-white/[0.1] flex items-center">
       <Icon className={`w-8 h-8 ${colors[color]} mr-3`} />
       <div>
-        <p className="text-xl font-bold text-gray-900 dark:text-white">{value}</p>
-        <p className="text-xs text-gray-500 dark:text-gray-400">
+        <p className="text-xl font-bold text-white">{value}</p>
+        <p className="text-xs text-gray-400">
           {label}
           {subLabel && <span className="ml-1 opacity-70">{subLabel}</span>}
         </p>

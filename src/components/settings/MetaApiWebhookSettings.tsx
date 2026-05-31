@@ -35,16 +35,16 @@ const MetaApiWebhookSettings: React.FC = () => {
     })();
   }, []);
 
-  if (loading) return <div className="p-4 bg-white rounded-xl border">Loading Meta settings...</div>;
+  if (loading) return <div className="p-4 bg-[#0a0e27] rounded-xl border">Loading Meta settings...</div>;
 
   return (
-    <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">WhatsApp API & Webhook</h3>
+    <div className="bg-[#0a0e27] rounded-2xl p-6 shadow-sm border border-gray-100">
+      <h3 className="text-lg font-semibold text-white mb-4">WhatsApp API & Webhook</h3>
 
       {!data?.connected ? (
-        <div className="text-gray-600">Not connected yet.</div>
+        <div className="text-gray-400">Not connected yet.</div>
       ) : (
-        <div className="space-y-3 text-sm text-gray-700">
+        <div className="space-y-3 text-sm text-gray-300">
           <div><span className="font-medium">Status:</span> {data.status}</div>
           <div><span className="font-medium">WhatsApp Business Account ID (WABA):</span> {data.waba?.id}</div>
           <div><span className="font-medium">WABA Name:</span> {data.waba?.name}</div>
@@ -52,7 +52,7 @@ const MetaApiWebhookSettings: React.FC = () => {
           <div className="pt-2">
             <div className="font-medium mb-1">Phone Numbers</div>
             {(data.phoneNumbers || []).map((p) => (
-              <div key={p.id} className="p-3 rounded-xl border bg-gray-50">
+              <div key={p.id} className="p-3 rounded-xl border bg-[#050816]">
                 <div><span className="font-medium">Phone Number ID:</span> {p.phoneNumberId}</div>
                 <div><span className="font-medium">Number:</span> {p.number}</div>
                 {p.verifiedName && <div><span className="font-medium">Verified Name:</span> {p.verifiedName}</div>}
@@ -63,7 +63,7 @@ const MetaApiWebhookSettings: React.FC = () => {
 
           <div className="pt-2">
             <div className="font-medium mb-1">Permanent Access Token</div>
-            <div className="text-gray-600">
+            <div className="text-gray-400">
               For security, token is not shown in full.
               <div><span className="font-medium">Stored Token (masked):</span> {data.token?.masked || "—"}</div>
               {data.token?.expiresAt && (

@@ -121,7 +121,7 @@ const WhatsAppStatusBadge: React.FC<{
   }
 
   return (
-    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-[#0a0e27]/[0.04] text-gray-400">
       <Clock className="w-3 h-3 mr-1" />
       Pending Verification
     </span>
@@ -171,7 +171,7 @@ const ContactRow: React.FC<{
     'Unknown';
 
   return (
-    <tr className="hover:bg-gray-50 transition-colors">
+    <tr className="hover:bg-[#050816] transition-colors">
       {/* Checkbox */}
       <td className="px-4 py-3">
         <button onClick={() => onSelect(contact.id)}>
@@ -193,7 +193,7 @@ const ContactRow: React.FC<{
 
           <div>
             <div className="flex items-center gap-2">
-              <p className="font-medium text-gray-900">{displayName}</p>
+              <p className="font-medium text-white">{displayName}</p>
               {contact.whatsappProfileName && contact.whatsappProfileName !== contact.firstName && (
                 <span className="text-xs text-gray-400">
                   (was: {contact.firstName})
@@ -210,7 +210,7 @@ const ContactRow: React.FC<{
       {/* Email */}
       <td className="px-4 py-3">
         {contact.email ? (
-          <div className="flex items-center text-sm text-gray-600">
+          <div className="flex items-center text-sm text-gray-400">
             <Mail className="w-4 h-4 mr-1 text-gray-400" />
             {contact.email}
           </div>
@@ -265,7 +265,7 @@ const ContactRow: React.FC<{
       <td className="px-4 py-3 relative">
         <button
           onClick={() => setShowMenu(!showMenu)}
-          className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+          className="p-2 hover:bg-[#0a0e27]/[0.04] rounded-lg transition-colors"
         >
           <MoreVertical className="w-4 h-4 text-gray-500" />
         </button>
@@ -276,13 +276,13 @@ const ContactRow: React.FC<{
               className="fixed inset-0 z-10"
               onClick={() => setShowMenu(false)}
             />
-            <div className="absolute right-0 mt-1 w-48 bg-white rounded-xl shadow-lg border border-gray-200 z-20">
+            <div className="absolute right-0 mt-1 w-48 bg-[#0a0e27] rounded-xl shadow-lg border border-white/[0.1] z-20">
               <button
                 onClick={() => {
                   onEdit(contact);
                   setShowMenu(false);
                 }}
-                className="w-full flex items-center px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
+                className="w-full flex items-center px-4 py-2.5 text-sm text-gray-300 hover:bg-[#050816]"
               >
                 <Edit2 className="w-4 h-4 mr-2" />
                 Edit Contact
@@ -294,7 +294,7 @@ const ContactRow: React.FC<{
                     onRefreshProfile(contact.id);
                     setShowMenu(false);
                   }}
-                  className="w-full flex items-center px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
+                  className="w-full flex items-center px-4 py-2.5 text-sm text-gray-300 hover:bg-[#050816]"
                 >
                   <RefreshCw className="w-4 h-4 mr-2" />
                   Verify WhatsApp
@@ -303,7 +303,7 @@ const ContactRow: React.FC<{
 
               <Link
                 to={`/dashboard/inbox?contact=${contact.phone}`}
-                className="w-full flex items-center px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
+                className="w-full flex items-center px-4 py-2.5 text-sm text-gray-300 hover:bg-[#050816]"
               >
                 <MessageCircle className="w-4 h-4 mr-2" />
                 Send Message
@@ -823,7 +823,7 @@ const Contacts: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Contacts</h1>
+          <h1 className="text-2xl font-bold text-white">Contacts</h1>
           <p className="text-gray-500 mt-1">
             Manage your contact list
             <span className="text-gray-400 ml-1">
@@ -835,7 +835,7 @@ const Contacts: React.FC = () => {
         <div className="flex flex-wrap items-center gap-3">
           <button
             onClick={fetchAll}
-            className="p-2.5 bg-gray-100 rounded-xl hover:bg-gray-200 text-gray-700 transition-colors"
+            className="p-2.5 bg-[#0a0e27]/[0.04] rounded-xl hover:bg-gray-200 text-gray-300 transition-colors"
             title="Refresh"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
@@ -847,8 +847,8 @@ const Contacts: React.FC = () => {
             disabled={featuresLoading}
             className={`flex items-center space-x-2 px-4 py-2.5 rounded-xl font-medium transition-colors ${
               features.simpleBulkPaste
-                ? 'bg-gray-100 hover:bg-gray-200 text-gray-700'
-                : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                ? 'bg-[#0a0e27]/[0.04] hover:bg-gray-200 text-gray-300'
+                : 'bg-[#0a0e27]/[0.04] text-gray-400 cursor-not-allowed'
             }`}
           >
             {!features.simpleBulkPaste ? <Lock className="w-4 h-4" /> : <Upload className="w-4 h-4" />}
@@ -866,8 +866,8 @@ const Contacts: React.FC = () => {
             disabled={featuresLoading}
             className={`flex items-center space-x-2 px-4 py-2.5 rounded-xl font-medium transition-colors ${
               features.csvUpload
-                ? 'bg-gray-100 hover:bg-gray-200 text-gray-700'
-                : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                ? 'bg-[#0a0e27]/[0.04] hover:bg-gray-200 text-gray-300'
+                : 'bg-[#0a0e27]/[0.04] text-gray-400 cursor-not-allowed'
             }`}
           >
             {!features.csvUpload ? <Lock className="w-4 h-4" /> : <FileSpreadsheet className="w-4 h-4" />}
@@ -881,7 +881,7 @@ const Contacts: React.FC = () => {
 
           <button
             onClick={handleExport}
-            className="flex items-center space-x-2 px-4 py-2.5 bg-gray-100 rounded-xl hover:bg-gray-200 text-gray-700 font-medium transition-colors"
+            className="flex items-center space-x-2 px-4 py-2.5 bg-[#0a0e27]/[0.04] rounded-xl hover:bg-gray-200 text-gray-300 font-medium transition-colors"
           >
             <Download className="w-4 h-4" />
             <span>Export</span>
@@ -906,7 +906,7 @@ const Contacts: React.FC = () => {
         <div className="bg-gradient-to-r from-purple-600 via-blue-600 to-green-500 rounded-2xl p-6 text-white shadow-lg">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="flex items-center gap-4">
-              <div className="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center shrink-0">
+              <div className="w-14 h-14 bg-[#0a0e27]/20 rounded-2xl flex items-center justify-center shrink-0">
                 <Crown className="w-7 h-7" />
               </div>
               <div>
@@ -922,7 +922,7 @@ const Contacts: React.FC = () => {
                 setUpgradeMinPlan('MONTHLY');
                 setShowUpgradeModal(true);
               }}
-              className="px-6 py-3 bg-white text-purple-600 rounded-xl font-bold hover:bg-gray-100 transition-colors shadow-md shrink-0"
+              className="px-6 py-3 bg-[#0a0e27] text-purple-600 rounded-xl font-bold hover:bg-[#0a0e27]/[0.04] transition-colors shadow-md shrink-0"
             >
               View Plans
             </button>
@@ -948,12 +948,12 @@ const Contacts: React.FC = () => {
         {stats.map((stat) => (
           <div
             key={stat.label}
-            className="bg-white rounded-xl p-4 border border-gray-200 hover:shadow-md transition-shadow"
+            className="bg-[#0a0e27] rounded-xl p-4 border border-white/[0.1] hover:shadow-md transition-shadow"
           >
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-500">{stat.label}</p>
-                <p className="text-2xl font-bold text-gray-900 mt-1">
+                <p className="text-2xl font-bold text-white mt-1">
                   {stat.value}
                 </p>
               </div>
@@ -968,7 +968,7 @@ const Contacts: React.FC = () => {
       </div>
 
       {/* Tabs */}
-      <div className="flex space-x-6 border-b border-gray-200 mt-2">
+      <div className="flex space-x-6 border-b border-white/[0.1] mt-2">
         <button
           onClick={() => {
             setActiveTab('contacts');
@@ -977,7 +977,7 @@ const Contacts: React.FC = () => {
           }}
           className={`pb-3 text-sm font-medium border-b-2 transition-colors flex items-center gap-2 ${activeTab === 'contacts'
             ? 'border-primary-500 text-primary-600'
-            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            : 'border-transparent text-gray-500 hover:text-gray-300 hover:border-white/[0.12]'
             }`}
         >
           <Users className="w-4 h-4" />
@@ -987,30 +987,30 @@ const Contacts: React.FC = () => {
           onClick={() => setActiveTab('groups')}
           className={`pb-3 text-sm font-medium border-b-2 transition-colors flex items-center gap-2 ${activeTab === 'groups'
             ? 'border-primary-500 text-primary-600'
-            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            : 'border-transparent text-gray-500 hover:text-gray-300 hover:border-white/[0.12]'
             }`}
         >
           <Layers className="w-4 h-4" />
           <span>Groups</span>
-          <span className="bg-gray-100 text-gray-600 py-0.5 px-2 rounded-full text-xs">{groups.length}</span>
+          <span className="bg-[#0a0e27]/[0.04] text-gray-400 py-0.5 px-2 rounded-full text-xs">{groups.length}</span>
         </button>
       </div>
 
       {activeTab === 'contacts' || (activeTab === 'groups' && activeGroup) ? (
         <>
           {activeTab === 'groups' && activeGroup && (
-            <div className="flex items-center space-x-4 mb-4 bg-white rounded-xl p-4 border border-gray-200">
-              <button onClick={() => { setActiveGroup(null); setCurrentPage(1); }} className="p-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-gray-700 transition-colors">
+            <div className="flex items-center space-x-4 mb-4 bg-[#0a0e27] rounded-xl p-4 border border-white/[0.1]">
+              <button onClick={() => { setActiveGroup(null); setCurrentPage(1); }} className="p-2 bg-[#0a0e27]/[0.04] hover:bg-gray-200 rounded-lg text-gray-300 transition-colors">
                 <ArrowLeft className="w-5 h-5" />
               </button>
               <div>
-                <h2 className="text-xl font-bold text-gray-900">{activeGroup.name}</h2>
+                <h2 className="text-xl font-bold text-white">{activeGroup.name}</h2>
                 <p className="text-sm text-gray-500">Viewing {activeGroup.contactCount.toLocaleString()} numbers in this group</p>
               </div>
             </div>
           )}
           {/* Filters */}
-          <div className="bg-white rounded-xl border border-gray-200 p-4">
+          <div className="bg-[#0a0e27] rounded-xl border border-white/[0.1] p-4">
             <div className="flex flex-col md:flex-row md:items-center gap-4">
               {/* Search */}
               <div className="flex-1 relative">
@@ -1020,7 +1020,7 @@ const Contacts: React.FC = () => {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search by name, phone, or email..."
-                  className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full pl-10 pr-4 py-2.5 border border-white/[0.1] rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500"
                 />
               </div>
 
@@ -1028,7 +1028,7 @@ const Contacts: React.FC = () => {
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="px-4 py-2.5 border border-white/[0.1] rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500"
               >
                 <option value="all">All Status</option>
                 <option value="active">Active</option>
@@ -1040,7 +1040,7 @@ const Contacts: React.FC = () => {
               <select
                 value={whatsappFilter}
                 onChange={(e) => setWhatsappFilter(e.target.value)}
-                className="px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="px-4 py-2.5 border border-white/[0.1] rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500"
               >
                 <option value="all">All WhatsApp</option>
                 <option value="verified">Verified</option>
@@ -1061,7 +1061,7 @@ const Contacts: React.FC = () => {
               <div className="flex items-center space-x-2">
                 <button
                   onClick={handleBulkRefreshProfiles}
-                  className="px-3 py-1.5 bg-white border border-primary-300 text-primary-700 rounded-lg hover:bg-primary-100 text-sm font-medium transition-colors"
+                  className="px-3 py-1.5 bg-[#0a0e27] border border-primary-300 text-primary-700 rounded-lg hover:bg-primary-100 text-sm font-medium transition-colors"
                 >
                   <RefreshCw className="w-4 h-4 inline mr-1" />
                   Verify WhatsApp
@@ -1075,7 +1075,7 @@ const Contacts: React.FC = () => {
                 </button>
                 <button
                   onClick={() => setSelectedContacts([])}
-                  className="px-3 py-1.5 text-gray-600 hover:text-gray-900 text-sm"
+                  className="px-3 py-1.5 text-gray-400 hover:text-white text-sm"
                 >
                   Clear
                 </button>
@@ -1085,11 +1085,11 @@ const Contacts: React.FC = () => {
 
           {/* Empty State */}
           {meta.total === 0 && !error && !loading && (
-            <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
-              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="bg-[#0a0e27] rounded-xl border border-white/[0.1] p-12 text-center">
+              <div className="w-16 h-16 bg-[#0a0e27]/[0.04] rounded-full flex items-center justify-center mx-auto mb-4">
                 <Users className="w-8 h-8 text-gray-400" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-900">No Contacts Yet</h3>
+              <h3 className="text-lg font-semibold text-white">No Contacts Yet</h3>
               <p className="text-gray-500 mt-2 mb-6">
                 Add your first contact to get started with WhatsApp messaging.
               </p>
@@ -1103,7 +1103,7 @@ const Contacts: React.FC = () => {
                 </button>
                 <button
                   onClick={() => setShowImportModal(true)}
-                  className="px-4 py-2.5 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors"
+                  className="px-4 py-2.5 bg-[#0a0e27]/[0.04] text-gray-300 rounded-xl hover:bg-gray-200 transition-colors"
                 >
                   <Upload className="w-4 h-4 inline mr-1" />
                   Import CSV
@@ -1114,10 +1114,10 @@ const Contacts: React.FC = () => {
 
           {/* Contacts Table */}
           {contacts.length > 0 && (
-            <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+            <div className="bg-[#0a0e27] rounded-xl border border-white/[0.1] overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full">
-                  <thead className="bg-gray-50 border-b border-gray-200">
+                  <thead className="bg-[#050816] border-b border-white/[0.1]">
                     <tr>
                       <th className="px-4 py-3 w-10">
                         <button onClick={handleSelectAll}>
@@ -1128,22 +1128,22 @@ const Contacts: React.FC = () => {
                           )}
                         </button>
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
                         Contact
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
                         Email
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
                         WhatsApp
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
                         Status
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
                         Tags
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
                         Last Contact
                       </th>
                       <th className="px-4 py-3 w-10"></th>
@@ -1172,7 +1172,7 @@ const Contacts: React.FC = () => {
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="flex justify-between items-center bg-white p-4 rounded-xl border border-gray-200">
+            <div className="flex justify-between items-center bg-[#0a0e27] p-4 rounded-xl border border-white/[0.1]">
               <span className="text-sm text-gray-500">
                 Page {meta.page} of {totalPages} • {meta.total.toLocaleString()} total contacts
               </span>
@@ -1180,7 +1180,7 @@ const Contacts: React.FC = () => {
                 <button
                   disabled={meta.page === 1}
                   onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                  className="flex items-center px-3 py-1.5 border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className="flex items-center px-3 py-1.5 border border-white/[0.1] rounded-lg hover:bg-[#050816] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   <ChevronLeft className="w-4 h-4 mr-1" />
                   Previous
@@ -1188,7 +1188,7 @@ const Contacts: React.FC = () => {
                 <button
                   disabled={meta.page === totalPages}
                   onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-                  className="flex items-center px-3 py-1.5 border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className="flex items-center px-3 py-1.5 border border-white/[0.1] rounded-lg hover:bg-[#050816] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   Next
                   <ChevronRight className="w-4 h-4 ml-1" />
@@ -1200,7 +1200,7 @@ const Contacts: React.FC = () => {
       ) : (
         <div className="space-y-4 animate-fade-in">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-gray-900">Your Groups</h2>
+            <h2 className="text-lg font-semibold text-white">Your Groups</h2>
             {/* Create Group functionality could be added here in the future */}
           </div>
 
@@ -1211,11 +1211,11 @@ const Contacts: React.FC = () => {
           ) : groups.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {groups.map((group) => (
-                <div key={group.id} onClick={() => { setActiveGroup(group); setCurrentPage(1); }} className="bg-white border border-gray-200 rounded-xl p-5 hover:border-primary-300 hover:shadow-md transition-all relative group/card cursor-pointer">
+                <div key={group.id} onClick={() => { setActiveGroup(group); setCurrentPage(1); }} className="bg-[#0a0e27] border border-white/[0.1] rounded-xl p-5 hover:border-primary-300 hover:shadow-md transition-all relative group/card cursor-pointer">
                   <div className="w-12 h-12 bg-primary-50 rounded-xl flex items-center justify-center mb-4 text-primary-600 group-hover/card:scale-110 transition-transform">
                     <Layers className="w-6 h-6" />
                   </div>
-                  <h3 className="font-semibold text-gray-900 text-lg mb-1">{group.name}</h3>
+                  <h3 className="font-semibold text-white text-lg mb-1">{group.name}</h3>
                   <div className="flex items-center text-gray-500 space-x-2 text-sm">
                     <Users className="w-4 h-4" />
                     <span>{group.contactCount.toLocaleString()} {group.contactCount === 1 ? 'number' : 'numbers'}</span>
@@ -1231,11 +1231,11 @@ const Contacts: React.FC = () => {
               ))}
             </div>
           ) : (
-            <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
-              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="bg-[#0a0e27] rounded-xl border border-white/[0.1] p-12 text-center">
+              <div className="w-16 h-16 bg-[#0a0e27]/[0.04] rounded-full flex items-center justify-center mx-auto mb-4">
                 <Layers className="w-8 h-8 text-gray-400" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-900">No Groups Found</h3>
+              <h3 className="text-lg font-semibold text-white">No Groups Found</h3>
               <p className="text-gray-500 mt-2 mb-6 max-w-sm mx-auto">Groups you create during CSV imports will automatically appear here.</p>
             </div>
           )}

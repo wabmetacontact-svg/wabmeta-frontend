@@ -63,7 +63,7 @@ export default function OrganizationFeatures() {
             <div className="flex items-center gap-4">
                 <button
                     onClick={() => navigate(-1)}
-                    className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg"
+                    className="p-2 hover:bg-[#0a0e27]/[0.06] rounded-lg"
                 >
                     <ArrowLeft className="w-5 h-5" />
                 </button>
@@ -72,7 +72,7 @@ export default function OrganizationFeatures() {
                         <Building2 className="w-6 h-6 text-blue-600" />
                     </div>
                     <div>
-                        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+                        <h1 className="text-2xl font-bold text-white">
                             {orgName}
                         </h1>
                         <p className="text-gray-500">
@@ -83,8 +83,8 @@ export default function OrganizationFeatures() {
             </div>
 
             {/* Features Card */}
-            <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6">
-                <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-6">
+            <div className="bg-[#0a0e27] rounded-2xl border border-white/[0.1] p-6">
+                <h2 className="text-lg font-bold text-white mb-6">
                     Feature Access Control
                 </h2>
 
@@ -92,7 +92,7 @@ export default function OrganizationFeatures() {
                     {/* Admin Override Toggle */}
                     <div className={`p-5 rounded-xl border-2 transition-all ${features.adminOverride
                         ? 'border-yellow-400 bg-yellow-50 dark:bg-yellow-900/20'
-                        : 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50'
+                        : 'border-white/[0.1] bg-[#050816]/50'
                         }`}>
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-4">
@@ -101,7 +101,7 @@ export default function OrganizationFeatures() {
                                     <Shield className={`w-6 h-6 ${features.adminOverride ? 'text-yellow-600' : 'text-gray-500'}`} />
                                 </div>
                                 <div>
-                                    <p className="font-bold text-gray-900 dark:text-white text-lg">
+                                    <p className="font-bold text-white text-lg">
                                         Admin Override
                                     </p>
                                     <p className="text-sm text-gray-500">
@@ -121,7 +121,7 @@ export default function OrganizationFeatures() {
                                     }))}
                                     className="sr-only peer"
                                 />
-                                <div className="w-14 h-7 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-yellow-300 rounded-full peer dark:bg-gray-600 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-yellow-500"></div>
+                                <div className="w-14 h-7 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-yellow-300 rounded-full peer dark:bg-gray-600 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-[#0a0e27] after:border-white/[0.12] after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-yellow-500"></div>
                             </label>
                         </div>
                     </div>
@@ -130,14 +130,14 @@ export default function OrganizationFeatures() {
                     <div className={`space-y-4 transition-opacity ${features.adminOverride ? 'opacity-100' : 'opacity-50 pointer-events-none'}`}>
 
                         {/* Simple Bulk Paste */}
-                        <div className="p-5 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700">
+                        <div className="p-5 bg-[#0a0e27] rounded-xl border border-white/[0.1]">
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-4">
                                     <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/50 rounded-xl flex items-center justify-center">
                                         <Upload className="w-6 h-6 text-blue-600" />
                                     </div>
                                     <div>
-                                        <p className="font-bold text-gray-900 dark:text-white">
+                                        <p className="font-bold text-white">
                                             Simple Bulk Paste
                                         </p>
                                         <p className="text-sm text-gray-500">
@@ -156,20 +156,20 @@ export default function OrganizationFeatures() {
                                         disabled={!features.adminOverride}
                                         className="sr-only peer"
                                     />
-                                    <div className="w-14 h-7 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer dark:bg-gray-600 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-blue-600 disabled:opacity-50"></div>
+                                    <div className="w-14 h-7 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer dark:bg-gray-600 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-[#0a0e27] after:border-white/[0.12] after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-blue-600 disabled:opacity-50"></div>
                                 </label>
                             </div>
                         </div>
 
                         {/* CSV Upload */}
-                        <div className="p-5 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700">
+                        <div className="p-5 bg-[#0a0e27] rounded-xl border border-white/[0.1]">
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-4">
                                     <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/50 rounded-xl flex items-center justify-center">
                                         <FileSpreadsheet className="w-6 h-6 text-purple-600" />
                                     </div>
                                     <div>
-                                        <p className="font-bold text-gray-900 dark:text-white">
+                                        <p className="font-bold text-white">
                                             CSV Import
                                         </p>
                                         <p className="text-sm text-gray-500">
@@ -188,7 +188,7 @@ export default function OrganizationFeatures() {
                                         disabled={!features.adminOverride}
                                         className="sr-only peer"
                                     />
-                                    <div className="w-14 h-7 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer dark:bg-gray-600 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-purple-600 disabled:opacity-50"></div>
+                                    <div className="w-14 h-7 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer dark:bg-gray-600 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-[#0a0e27] after:border-white/[0.12] after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-purple-600 disabled:opacity-50"></div>
                                 </label>
                             </div>
                         </div>

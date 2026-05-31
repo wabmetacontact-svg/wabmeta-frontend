@@ -146,7 +146,7 @@ const ChatHeader: React.FC<Props> = ({
               onClick={onBack}
               className="
                 lg:hidden p-1.5 -ml-1 rounded-lg
-                hover:bg-white/[0.06]
+                hover:bg-[#0a0e27]/[0.06]
                 text-gray-300 hover:text-white
                 transition-colors flex-shrink-0
               "
@@ -240,7 +240,7 @@ const ChatHeader: React.FC<Props> = ({
             title="Search in chat"
             className="
               p-2 rounded-lg
-              hover:bg-white/[0.06]
+              hover:bg-[#0a0e27]/[0.06]
               text-gray-400 hover:text-white
               transition-all hover:scale-110
               hidden sm:block
@@ -257,7 +257,7 @@ const ChatHeader: React.FC<Props> = ({
               p-2 rounded-lg transition-all hover:scale-110
               ${showContactInfo
                 ? 'bg-emerald-500/15 text-emerald-400'
-                : 'hover:bg-white/[0.06] text-gray-400 hover:text-white'
+                : 'hover:bg-[#0a0e27]/[0.06] text-gray-400 hover:text-white'
               }
             `}
           >
@@ -271,7 +271,7 @@ const ChatHeader: React.FC<Props> = ({
               title="More"
               className="
                 p-2 rounded-lg
-                hover:bg-white/[0.06]
+                hover:bg-[#0a0e27]/[0.06]
                 text-gray-400 hover:text-white
                 transition-all
               "
@@ -297,7 +297,7 @@ const ChatHeader: React.FC<Props> = ({
                     onSearchMessages();
                     setShowMenu(false);
                   }}
-                  className="sm:hidden w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-200 hover:bg-white/[0.05] transition-colors"
+                  className="sm:hidden w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-200 hover:bg-[#0a0e27]/[0.05] transition-colors"
                 >
                   <Search className="w-4 h-4 text-gray-400" />
                   Search messages
@@ -309,7 +309,7 @@ const ChatHeader: React.FC<Props> = ({
                       onMute();
                       setShowMenu(false);
                     }}
-                    className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-200 hover:bg-white/[0.05] transition-colors"
+                    className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-200 hover:bg-[#0a0e27]/[0.05] transition-colors"
                   >
                     {conversation.isMuted ? (
                       <>
@@ -329,7 +329,7 @@ const ChatHeader: React.FC<Props> = ({
                   onClick={() => {
                     setShowMenu(false);
                   }}
-                  className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-200 hover:bg-white/[0.05] transition-colors"
+                  className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-200 hover:bg-[#0a0e27]/[0.05] transition-colors"
                 >
                   <Star className="w-4 h-4 text-gray-400" />
                   Starred messages
@@ -339,7 +339,7 @@ const ChatHeader: React.FC<Props> = ({
                   onClick={() => {
                     setShowMenu(false);
                   }}
-                  className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-200 hover:bg-white/[0.05] transition-colors"
+                  className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-200 hover:bg-[#0a0e27]/[0.05] transition-colors"
                 >
                   <Tag className="w-4 h-4 text-gray-400" />
                   Manage labels
@@ -351,7 +351,7 @@ const ChatHeader: React.FC<Props> = ({
                       onExportChat();
                       setShowMenu(false);
                     }}
-                    className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-200 hover:bg-white/[0.05] transition-colors"
+                    className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-200 hover:bg-[#0a0e27]/[0.05] transition-colors"
                   >
                     <Download className="w-4 h-4 text-gray-400" />
                     Export chat
@@ -366,7 +366,7 @@ const ChatHeader: React.FC<Props> = ({
                       onArchive();
                       setShowMenu(false);
                     }}
-                    className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-200 hover:bg-white/[0.05] transition-colors"
+                    className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-200 hover:bg-[#0a0e27]/[0.05] transition-colors"
                   >
                     <Archive className="w-4 h-4 text-gray-400" />
                     {conversation.isArchived ? 'Unarchive chat' : 'Archive chat'}

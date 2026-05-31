@@ -88,14 +88,14 @@ const BusinessProfile: React.FC<Props> = ({ organization, onUpdate }) => {
   };
 
   return (
-    <div className="bg-white border border-gray-200 rounded-xl p-6">
-      <h3 className="text-lg font-semibold text-gray-900 mb-6">Business Profile</h3>
+    <div className="bg-[#0a0e27] border border-white/[0.1] rounded-xl p-6">
+      <h3 className="text-lg font-semibold text-white mb-6">Business Profile</h3>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Logo */}
         <div className="flex items-center space-x-6">
           <div className="relative">
-            <div className="w-20 h-20 rounded-xl bg-gray-100 flex items-center justify-center overflow-hidden border-2 border-dashed border-gray-300">
+            <div className="w-20 h-20 rounded-xl bg-[#0a0e27]/[0.04] flex items-center justify-center overflow-hidden border-2 border-dashed border-white/[0.12]">
               {formData.logo ? (
                 <img
                   src={formData.logo}
@@ -106,7 +106,7 @@ const BusinessProfile: React.FC<Props> = ({ organization, onUpdate }) => {
                 <Building2 className="w-8 h-8 text-gray-400" />
               )}
             </div>
-            <label className="absolute bottom-0 right-0 p-1.5 bg-white border border-gray-200 rounded-full cursor-pointer hover:bg-gray-50 transition-colors">
+            <label className="absolute bottom-0 right-0 p-1.5 bg-[#0a0e27] border border-white/[0.1] rounded-full cursor-pointer hover:bg-[#050816] transition-colors">
               <Camera className="w-4 h-4 text-gray-500" />
               <input
                 type="file"
@@ -117,14 +117,14 @@ const BusinessProfile: React.FC<Props> = ({ organization, onUpdate }) => {
             </label>
           </div>
           <div>
-            <p className="text-sm font-medium text-gray-900">Organization Logo</p>
+            <p className="text-sm font-medium text-white">Organization Logo</p>
             <p className="text-sm text-gray-500">Square image, at least 200x200px</p>
           </div>
         </div>
 
         {/* Organization Name */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-300 mb-2">
             Organization Name
           </label>
           <div className="relative">
@@ -133,7 +133,7 @@ const BusinessProfile: React.FC<Props> = ({ organization, onUpdate }) => {
               type="text"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
+              className="w-full pl-10 pr-4 py-2.5 border border-white/[0.1] rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
               placeholder="Your Company Name"
             />
           </div>
@@ -141,7 +141,7 @@ const BusinessProfile: React.FC<Props> = ({ organization, onUpdate }) => {
 
         {/* Website */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-300 mb-2">
             Website
           </label>
           <div className="relative">
@@ -150,7 +150,7 @@ const BusinessProfile: React.FC<Props> = ({ organization, onUpdate }) => {
               type="url"
               value={formData.website}
               onChange={(e) => setFormData({ ...formData, website: e.target.value })}
-              className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
+              className="w-full pl-10 pr-4 py-2.5 border border-white/[0.1] rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
               placeholder="https://example.com"
             />
           </div>
@@ -158,13 +158,13 @@ const BusinessProfile: React.FC<Props> = ({ organization, onUpdate }) => {
 
         {/* Industry */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-300 mb-2">
             Industry
           </label>
           <select
             value={formData.industry}
             onChange={(e) => setFormData({ ...formData, industry: e.target.value })}
-            className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 bg-white"
+            className="w-full px-4 py-2.5 border border-white/[0.1] rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 bg-[#0a0e27]"
           >
             <option value="">Select industry</option>
             {industries.map((industry) => (
@@ -177,7 +177,7 @@ const BusinessProfile: React.FC<Props> = ({ organization, onUpdate }) => {
 
         {/* Timezone */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-300 mb-2">
             Timezone
           </label>
           <div className="relative">
@@ -185,7 +185,7 @@ const BusinessProfile: React.FC<Props> = ({ organization, onUpdate }) => {
             <select
               value={formData.timezone}
               onChange={(e) => setFormData({ ...formData, timezone: e.target.value })}
-              className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 bg-white appearance-none"
+              className="w-full pl-10 pr-4 py-2.5 border border-white/[0.1] rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 bg-[#0a0e27] appearance-none"
             >
               {timezones.map((tz) => (
                 <option key={tz.value} value={tz.value}>

@@ -239,8 +239,8 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, setCollapsed }) => {
             <button
               onClick={() => setCollapsed(true)}
               className="p-1.5 rounded-lg
-                bg-white/[0.04] border border-white/[0.06]
-                hover:bg-white/[0.08] hover:border-white/[0.12]
+                bg-[#0a0e27]/[0.04] border border-white/[0.06]
+                hover:bg-[#0a0e27]/[0.08] hover:border-white/[0.12]
                 text-gray-400 hover:text-white
                 transition-all duration-300"
             >
@@ -253,8 +253,8 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, setCollapsed }) => {
           <button
             onClick={() => setCollapsed(false)}
             className="mx-auto mt-3 p-1.5 rounded-lg
-              bg-white/[0.04] border border-white/[0.06]
-              hover:bg-white/[0.08] hover:border-white/[0.12]
+              bg-[#0a0e27]/[0.04] border border-white/[0.06]
+              hover:bg-[#0a0e27]/[0.08] hover:border-white/[0.12]
               text-gray-400 hover:text-white
               transition-all duration-300"
           >
@@ -265,9 +265,9 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, setCollapsed }) => {
         {/* ✅ USER GREETING CARD */}
         {!collapsed && (
           <div className="mx-3 mt-4 p-3 rounded-2xl
-            bg-white/[0.04] backdrop-blur-xl
+            bg-[#0a0e27]/[0.04] backdrop-blur-xl
             border border-white/[0.08]
-            relative overflow-hidden group hover:bg-white/[0.06] transition-all duration-300">
+            relative overflow-hidden group hover:bg-[#0a0e27]/[0.06] transition-all duration-300">
 
             <div className="absolute inset-0 pointer-events-none"
               style={{
@@ -314,14 +314,14 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, setCollapsed }) => {
                   <h3 className="text-[10px] font-mono uppercase tracking-[0.15em] text-gray-500">
                     {group.title}
                   </h3>
-                  <span className="text-[10px] font-mono text-gray-600">
+                  <span className="text-[10px] font-mono text-gray-400">
                     {String(group.count).padStart(2, '0')}
                   </span>
                 </div>
               )}
 
               {collapsed && groupIndex > 0 && (
-                <div className="mx-3 my-3 h-px bg-white/[0.05]" />
+                <div className="mx-3 my-3 h-px bg-[#0a0e27]/[0.05]" />
               )}
 
               <div className="space-y-1">
@@ -374,7 +374,7 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, setCollapsed }) => {
                         {/* Hover background */}
                         {!active && (
                           <div className="absolute inset-0 rounded-xl
-                            bg-white/[0.04] opacity-0 group-hover/item:opacity-100
+                            bg-[#0a0e27]/[0.04] opacity-0 group-hover/item:opacity-100
                             transition-opacity duration-300" />
                         )}
 
@@ -397,7 +397,7 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, setCollapsed }) => {
                                 <span className={`px-1.5 py-0.5 text-[10px] font-mono font-bold rounded-full
                                   ${item.badgeColor 
                                     ? `${item.badgeColor} text-white` 
-                                    : 'bg-white/[0.08] border border-white/[0.1] text-gray-300'
+                                    : 'bg-[#0a0e27]/[0.08] border border-white/[0.1] text-gray-300'
                                   }
                                 `}>
                                   {item.badge}
@@ -419,8 +419,8 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, setCollapsed }) => {
                                 to={sub.href}
                                 className={`block px-3 py-1.5 text-xs rounded-lg transition-all duration-300
                                   ${subActive
-                                    ? "text-green-400 bg-white/[0.04] font-medium"
-                                    : "text-gray-500 hover:text-white hover:bg-white/[0.04]"
+                                    ? "text-green-400 bg-[#0a0e27]/[0.04] font-medium"
+                                    : "text-gray-500 hover:text-white hover:bg-[#0a0e27]/[0.04]"
                                   }
                                 `}
                               >
@@ -449,7 +449,7 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, setCollapsed }) => {
                           )}
                           {!isLocked && item.badge && (
                             <span className={`ml-2 px-1.5 py-0.5 text-[10px] rounded-full
-                              ${item.badgeColor || 'bg-white/[0.1]'} text-white
+                              ${item.badgeColor || 'bg-[#0a0e27]/[0.1]'} text-white
                             `}>
                               {item.badge}
                             </span>
@@ -526,7 +526,7 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, setCollapsed }) => {
               to="/dashboard/help"
               onMouseEnter={() => prefetchRouteChunk("/dashboard/help")}
               className={`flex items-center px-3 py-2.5 rounded-xl
-                text-gray-400 hover:text-white hover:bg-white/[0.04]
+                text-gray-400 hover:text-white hover:bg-[#0a0e27]/[0.04]
                 transition-all duration-300
                 ${collapsed ? "justify-center" : ""}
               `}
@@ -574,9 +574,9 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, setCollapsed }) => {
           {/* User Card */}
           {!collapsed && email && (
             <div className="mt-3 p-2.5 rounded-xl
-              bg-white/[0.03] backdrop-blur-xl
+              bg-[#0a0e27]/[0.03] backdrop-blur-xl
               border border-white/[0.06]
-              hover:bg-white/[0.05] transition-all duration-300 cursor-pointer">
+              hover:bg-[#0a0e27]/[0.05] transition-all duration-300 cursor-pointer">
               <div className="flex items-center gap-2.5">
                 <div className="w-8 h-8 rounded-lg
                   bg-gradient-to-br from-green-500 to-emerald-600

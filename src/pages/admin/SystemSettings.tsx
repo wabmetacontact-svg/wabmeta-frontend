@@ -6,15 +6,15 @@ const SystemSettings: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-gray-900">System Settings</h1>
+      <h1 className="text-2xl font-bold text-white">System Settings</h1>
 
-      <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
-        <h3 className="text-lg font-bold text-gray-900 mb-4">General Configuration</h3>
+      <div className="bg-[#0a0e27] border border-white/[0.1] rounded-2xl p-6 shadow-sm">
+        <h3 className="text-lg font-bold text-white mb-4">General Configuration</h3>
         
         <div className="space-y-4">
-          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-200">
+          <div className="flex items-center justify-between p-4 bg-[#050816] rounded-xl border border-white/[0.1]">
             <div>
-              <h4 className="font-medium text-gray-900">Maintenance Mode</h4>
+              <h4 className="font-medium text-white">Maintenance Mode</h4>
               <p className="text-sm text-gray-500">Disable access for all non-admin users.</p>
             </div>
             <button 
@@ -26,20 +26,20 @@ const SystemSettings: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Global Message Limit (Per User/Day)</label>
+            <label className="block text-sm font-medium text-gray-300 mb-2">Global Message Limit (Per User/Day)</label>
             <input 
               type="number" 
               defaultValue={1000} 
-              className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="w-full px-4 py-2 border border-white/[0.1] rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Support Email</label>
+            <label className="block text-sm font-medium text-gray-300 mb-2">Support Email</label>
             <input 
               type="email" 
               defaultValue="support@wabmeta.com" 
-              className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="w-full px-4 py-2 border border-white/[0.1] rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500"
             />
           </div>
         </div>
@@ -61,7 +61,7 @@ const SystemSettings: React.FC = () => {
               Actions here can cause data loss. Proceed with caution.
             </p>
             <div className="mt-4">
-              <button className="px-4 py-2 bg-white border border-red-200 text-red-600 font-medium rounded-lg hover:bg-red-100 transition-colors">
+              <button className="px-4 py-2 bg-[#0a0e27] border border-red-200 text-red-600 font-medium rounded-lg hover:bg-red-100 transition-colors">
                 Clear All Cache
               </button>
             </div>

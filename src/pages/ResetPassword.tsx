@@ -107,8 +107,8 @@ const ResetPassword: React.FC = () => {
           </div>
 
           <div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">Link Expired or Invalid</h3>
-            <p className="text-gray-600">
+            <h3 className="text-xl font-semibold text-white mb-2">Link Expired or Invalid</h3>
+            <p className="text-gray-400">
               This password reset link is invalid or has expired.
               Please request a new one.
             </p>
@@ -124,7 +124,7 @@ const ResetPassword: React.FC = () => {
           </Button>
 
           <p className="text-center">
-            <Link to="/login" className="text-sm text-gray-600 hover:text-gray-900 flex items-center justify-center gap-1">
+            <Link to="/login" className="text-sm text-gray-400 hover:text-white flex items-center justify-center gap-1">
               <ArrowLeft className="w-4 h-4" />
               Back to login
             </Link>
@@ -144,8 +144,8 @@ const ResetPassword: React.FC = () => {
           </div>
 
           <div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">All done!</h3>
-            <p className="text-gray-600">
+            <h3 className="text-xl font-semibold text-white mb-2">All done!</h3>
+            <p className="text-gray-400">
               Your password has been reset successfully.
               You can now login with your new password.
             </p>
@@ -232,7 +232,7 @@ const ResetPassword: React.FC = () => {
         </Button>
 
         <p className="text-center">
-          <Link to="/login" className="text-sm text-gray-600 hover:text-gray-900 flex items-center justify-center gap-1">
+          <Link to="/login" className="text-sm text-gray-400 hover:text-white flex items-center justify-center gap-1">
             <ArrowLeft className="w-4 h-4" />
             Back to login
           </Link>

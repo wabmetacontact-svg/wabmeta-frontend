@@ -448,7 +448,7 @@ const ChatInput: React.FC<Props> = ({
               onClick={() => handleQuickReplySelect(qr)}
               className="
                 w-full px-3 py-2 text-left
-                hover:bg-white/[0.04]
+                hover:bg-[#0a0e27]/[0.04]
                 transition-colors group
               "
             >
@@ -479,28 +479,28 @@ const ChatInput: React.FC<Props> = ({
         ">
           <button
             onClick={() => wrapSelection('*', '*')}
-            className="p-1.5 rounded-md hover:bg-white/[0.06] text-gray-400 hover:text-white transition-colors"
+            className="p-1.5 rounded-md hover:bg-[#0a0e27]/[0.06] text-gray-400 hover:text-white transition-colors"
             title="Bold (Ctrl+B)"
           >
             <Bold className="w-3.5 h-3.5" />
           </button>
           <button
             onClick={() => wrapSelection('_', '_')}
-            className="p-1.5 rounded-md hover:bg-white/[0.06] text-gray-400 hover:text-white transition-colors"
+            className="p-1.5 rounded-md hover:bg-[#0a0e27]/[0.06] text-gray-400 hover:text-white transition-colors"
             title="Italic (Ctrl+I)"
           >
             <Italic className="w-3.5 h-3.5" />
           </button>
           <button
             onClick={() => wrapSelection('```', '```')}
-            className="p-1.5 rounded-md hover:bg-white/[0.06] text-gray-400 hover:text-white transition-colors"
+            className="p-1.5 rounded-md hover:bg-[#0a0e27]/[0.06] text-gray-400 hover:text-white transition-colors"
             title="Code"
           >
             <Code className="w-3.5 h-3.5" />
           </button>
           <button
             onClick={() => wrapSelection('~', '~')}
-            className="p-1.5 rounded-md hover:bg-white/[0.06] text-gray-400 hover:text-white transition-colors text-sm font-medium"
+            className="p-1.5 rounded-md hover:bg-[#0a0e27]/[0.06] text-gray-400 hover:text-white transition-colors text-sm font-medium"
             title="Strikethrough"
           >
             <span className="line-through">S</span>
@@ -508,7 +508,7 @@ const ChatInput: React.FC<Props> = ({
           <div className="ml-auto">
             <button
               onClick={() => setShowFormatting(false)}
-              className="p-1.5 rounded-md hover:bg-white/[0.06] text-gray-400 hover:text-white transition-colors"
+              className="p-1.5 rounded-md hover:bg-[#0a0e27]/[0.06] text-gray-400 hover:text-white transition-colors"
             >
               <X className="w-3.5 h-3.5" />
             </button>
@@ -542,7 +542,7 @@ const ChatInput: React.FC<Props> = ({
                 transition-all hover:scale-105 active:scale-95
                 ${showAttachments
                   ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
-                  : 'hover:bg-white/[0.06] text-gray-400 hover:text-white border border-transparent'
+                  : 'hover:bg-[#0a0e27]/[0.06] text-gray-400 hover:text-white border border-transparent'
                 }
                 disabled:opacity-50 disabled:cursor-not-allowed
               `}
@@ -572,7 +572,7 @@ const ChatInput: React.FC<Props> = ({
               transition-all hover:scale-105 active:scale-95
               ${showFormatting
                 ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
-                : 'hover:bg-white/[0.06] text-gray-400 hover:text-white border border-transparent'
+                : 'hover:bg-[#0a0e27]/[0.06] text-gray-400 hover:text-white border border-transparent'
               }
             `}
             title="Formatting"
@@ -592,11 +592,11 @@ const ChatInput: React.FC<Props> = ({
               rows={1}
               className="
                 w-full px-4 py-3
-                bg-white/[0.04] border border-white/[0.08]
+                bg-[#0a0e27]/[0.04] border border-white/[0.08]
                 rounded-2xl
                 text-white placeholder:text-gray-500
                 text-sm leading-relaxed
-                focus:outline-none focus:bg-white/[0.06] focus:border-emerald-400/40
+                focus:outline-none focus:bg-[#0a0e27]/[0.06] focus:border-emerald-400/40
                 resize-none transition-all
                 disabled:opacity-50 disabled:cursor-not-allowed
                 inbox-scroll
@@ -629,7 +629,7 @@ const ChatInput: React.FC<Props> = ({
                 transition-all hover:scale-105 active:scale-95
                 ${showEmoji
                   ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
-                  : 'hover:bg-white/[0.06] text-gray-400 hover:text-white border border-transparent'
+                  : 'hover:bg-[#0a0e27]/[0.06] text-gray-400 hover:text-white border border-transparent'
                 }
               `}
               title="Emoji"
@@ -692,14 +692,14 @@ const ChatInput: React.FC<Props> = ({
         {/* Helper text */}
         <div className="hidden sm:flex items-center justify-between mt-1.5 px-1">
           <p className="text-[10px] text-gray-500 font-mono">
-            <kbd className="px-1 py-0.5 bg-white/[0.04] rounded text-[9px]">Enter</kbd>
+            <kbd className="px-1 py-0.5 bg-[#0a0e27]/[0.04] rounded text-[9px]">Enter</kbd>
             <span className="mx-1">to send,</span>
-            <kbd className="px-1 py-0.5 bg-white/[0.04] rounded text-[9px]">Shift + Enter</kbd>
+            <kbd className="px-1 py-0.5 bg-[#0a0e27]/[0.04] rounded text-[9px]">Shift + Enter</kbd>
             <span className="mx-1">for new line</span>
             {quickReplies.length > 0 && (
               <>
                 <span className="mx-2">•</span>
-                <kbd className="px-1 py-0.5 bg-white/[0.04] rounded text-[9px]">/</kbd>
+                <kbd className="px-1 py-0.5 bg-[#0a0e27]/[0.04] rounded text-[9px]">/</kbd>
                 <span className="mx-1">for quick replies</span>
               </>
             )}

@@ -38,7 +38,7 @@ const CampaignFilters: React.FC<CampaignFiltersProps> = ({
     { value: 'completed', label: 'Completed', icon: CheckCircle2, color: 'text-green-600' },
     { value: 'paused', label: 'Paused', icon: Pause, color: 'text-yellow-600' },
     { value: 'failed', label: 'Failed', icon: XCircle, color: 'text-red-600' },
-    { value: 'draft', label: 'Draft', icon: Clock, color: 'text-gray-600' },
+    { value: 'draft', label: 'Draft', icon: Clock, color: 'text-gray-400' },
   ];
 
   const dateRanges = [
@@ -71,12 +71,12 @@ const CampaignFilters: React.FC<CampaignFiltersProps> = ({
             placeholder="Search campaigns..."
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+            className="w-full pl-10 pr-4 py-2.5 bg-[#0a0e27] border border-white/[0.1] rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
           />
           {searchQuery && (
             <button
               onClick={() => onSearchChange('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-400"
             >
               <X className="w-4 h-4" />
             </button>
@@ -88,7 +88,7 @@ const CampaignFilters: React.FC<CampaignFiltersProps> = ({
           className={`flex items-center space-x-2 px-4 py-2.5 rounded-xl border transition-colors ${
             showFilters || activeFilterCount > 0
               ? 'bg-primary-50 border-primary-200 text-primary-700'
-              : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'
+              : 'bg-[#0a0e27] border-white/[0.1] text-gray-300 hover:bg-[#050816]'
           }`}
         >
           <Filter className="w-5 h-5" />
@@ -103,9 +103,9 @@ const CampaignFilters: React.FC<CampaignFiltersProps> = ({
       </div>
 
       {showFilters && (
-        <div className="bg-white border border-gray-200 rounded-2xl p-4 space-y-4 animate-fade-in">
+        <div className="bg-[#0a0e27] border border-white/[0.1] rounded-2xl p-4 space-y-4 animate-fade-in">
           <div className="flex items-center justify-between">
-            <h3 className="font-semibold text-gray-900">Filter Campaigns</h3>
+            <h3 className="font-semibold text-white">Filter Campaigns</h3>
             {activeFilterCount > 0 && (
               <button
                 onClick={clearFilters}
@@ -118,7 +118,7 @@ const CampaignFilters: React.FC<CampaignFiltersProps> = ({
 
           <div className="grid sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
+              <label className="block text-sm font-medium text-gray-300 mb-2">Status</label>
               <div className="space-y-2">
                 {statuses.map((status) => (
                   <label
@@ -126,28 +126,28 @@ const CampaignFilters: React.FC<CampaignFiltersProps> = ({
                     className={`flex items-center space-x-3 p-2 rounded-lg cursor-pointer transition-colors ${
                       filters.statuses.includes(status.value)
                         ? 'bg-primary-50'
-                        : 'hover:bg-gray-50'
+                        : 'hover:bg-[#050816]'
                     }`}
                   >
                     <input
                       type="checkbox"
                       checked={filters.statuses.includes(status.value)}
                       onChange={() => toggleStatus(status.value)}
-                      className="w-4 h-4 text-primary-500 border-gray-300 rounded focus:ring-primary-500"
+                      className="w-4 h-4 text-primary-500 border-white/[0.12] rounded focus:ring-primary-500"
                     />
                     <status.icon className={`w-4 h-4 ${status.color}`} />
-                    <span className="text-sm text-gray-700">{status.label}</span>
+                    <span className="text-sm text-gray-300">{status.label}</span>
                   </label>
                 ))}
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Date Range</label>
+              <label className="block text-sm font-medium text-gray-300 mb-2">Date Range</label>
               <select
                 value={filters.dateRange}
                 onChange={(e) => onFilterChange({ ...filters, dateRange: e.target.value })}
-                className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="w-full px-4 py-2.5 bg-[#0a0e27] border border-white/[0.1] rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500"
               >
                 {dateRanges.map((range) => (
                   <option key={range.value} value={range.value}>

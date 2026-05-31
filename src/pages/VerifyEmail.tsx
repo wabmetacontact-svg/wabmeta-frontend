@@ -141,10 +141,10 @@ const VerifyEmail: React.FC = () => {
             <Loader2 className="w-10 h-10 text-primary-600 animate-spin" />
           </div>
           <div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">
+            <h3 className="text-xl font-semibold text-white mb-2">
               Verifying your email...
             </h3>
-            <p className="text-gray-600">Please wait while we verify your email address.</p>
+            <p className="text-gray-400">Please wait while we verify your email address.</p>
           </div>
         </div>
       </AuthLayout>
@@ -161,10 +161,10 @@ const VerifyEmail: React.FC = () => {
           </div>
 
           <div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">
+            <h3 className="text-xl font-semibold text-white mb-2">
               You're all set!
             </h3>
-            <p className="text-gray-600">
+            <p className="text-gray-400">
               Your email has been verified successfully.
               You can now access all features of your account.
             </p>
@@ -201,15 +201,15 @@ const VerifyEmail: React.FC = () => {
           </div>
 
           <div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">
+            <h3 className="text-xl font-semibold text-white mb-2">
               Verification Failed
             </h3>
-            <p className="text-gray-600">{error}</p>
+            <p className="text-gray-400">{error}</p>
           </div>
 
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2 text-left">
+              <label className="block text-sm font-medium text-gray-300 mb-2 text-left">
                 Enter your email to resend verification
               </label>
               <input
@@ -217,7 +217,7 @@ const VerifyEmail: React.FC = () => {
                 placeholder="your@email.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
+                className="w-full px-4 py-3 border border-white/[0.1] rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
               />
             </div>
 
@@ -244,7 +244,7 @@ const VerifyEmail: React.FC = () => {
           </div>
 
           <p className="text-center">
-            <Link to="/login" className="text-sm text-gray-600 hover:text-gray-900">
+            <Link to="/login" className="text-sm text-gray-400 hover:text-white">
               ← Back to login
             </Link>
           </p>
@@ -262,18 +262,18 @@ const VerifyEmail: React.FC = () => {
         </div>
 
         <div>
-          <h3 className="text-xl font-semibold text-gray-900 mb-2">
+          <h3 className="text-xl font-semibold text-white mb-2">
             Check your inbox
           </h3>
           {email ? (
             <>
-              <p className="text-gray-600 mb-2">We've sent a verification link to</p>
-              <p className="font-semibold text-gray-900 bg-gray-100 py-2 px-4 rounded-lg inline-block">
+              <p className="text-gray-400 mb-2">We've sent a verification link to</p>
+              <p className="font-semibold text-white bg-[#0a0e27]/[0.04] py-2 px-4 rounded-lg inline-block">
                 {email}
               </p>
             </>
           ) : (
-            <p className="text-gray-600">
+            <p className="text-gray-400">
               {messageFromState || "We've sent a verification link to your email address."}
             </p>
           )}
@@ -319,7 +319,7 @@ const VerifyEmail: React.FC = () => {
                   placeholder="Enter your email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
+                  className="w-full px-4 py-3 border border-white/[0.1] rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
                 />
               </div>
             ) : null}

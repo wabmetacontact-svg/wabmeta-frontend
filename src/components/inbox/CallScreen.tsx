@@ -190,7 +190,7 @@ const CallScreen: React.FC<CallScreenProps> = ({ contact, conversationId, onClos
         {(callState === 'ended' || callState === 'failed') && (
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 p-1.5 bg-white/20 hover:bg-white/30 rounded-full transition-colors"
+            className="absolute top-4 right-4 p-1.5 bg-[#0a0e27]/20 hover:bg-[#0a0e27]/30 rounded-full transition-colors"
           >
             <X className="w-4 h-4" />
           </button>
@@ -211,11 +211,11 @@ const CallScreen: React.FC<CallScreenProps> = ({ contact, conversationId, onClos
           <div className="relative mb-6">
             {(callState === 'ringing' || callState === 'initiating') && (
               <>
-                <div className="absolute inset-0 rounded-full bg-white/20 animate-ping scale-150" />
-                <div className="absolute inset-0 rounded-full bg-white/10 animate-ping scale-125 animation-delay-300" />
+                <div className="absolute inset-0 rounded-full bg-[#0a0e27]/20 animate-ping scale-150" />
+                <div className="absolute inset-0 rounded-full bg-[#0a0e27]/10 animate-ping scale-125 animation-delay-300" />
               </>
             )}
-            <div className="relative w-24 h-24 bg-white/20 rounded-full flex items-center justify-center text-4xl font-bold shadow-lg border-4 border-white/30">
+            <div className="relative w-24 h-24 bg-[#0a0e27]/20 rounded-full flex items-center justify-center text-4xl font-bold shadow-lg border-4 border-white/30">
               {getInitial(contact)}
             </div>
           </div>
@@ -247,7 +247,7 @@ const CallScreen: React.FC<CallScreenProps> = ({ contact, conversationId, onClos
 
           {/* Info box for ringing state */}
           {callState === 'ringing' && (
-            <div className="mt-4 bg-white/10 rounded-xl px-4 py-3 w-full">
+            <div className="mt-4 bg-[#0a0e27]/10 rounded-xl px-4 py-3 w-full">
               <div className="flex gap-2 items-start">
                 <Info className="w-4 h-4 text-blue-200 shrink-0 mt-0.5" />
                 <p className="text-xs text-white/80 leading-relaxed">
@@ -264,7 +264,7 @@ const CallScreen: React.FC<CallScreenProps> = ({ contact, conversationId, onClos
 
           {/* Error message */}
           {callState === 'failed' && errorMsg && (
-            <div className="mt-4 bg-white/10 rounded-xl px-4 py-3 w-full">
+            <div className="mt-4 bg-[#0a0e27]/10 rounded-xl px-4 py-3 w-full">
               <p className="text-xs text-red-200 leading-relaxed">{errorMsg}</p>
             </div>
           )}
@@ -288,8 +288,8 @@ const CallScreen: React.FC<CallScreenProps> = ({ contact, conversationId, onClos
               {/* Mute */}
               <ControlButton
                 active={isMuted}
-                activeColor="bg-white text-gray-800"
-                inactiveColor="bg-white/20 text-white"
+                activeColor="bg-[#0a0e27] text-white"
+                inactiveColor="bg-[#0a0e27]/20 text-white"
                 onClick={() => setIsMuted(m => !m)}
                 label={isMuted ? 'Unmute' : 'Mute'}
                 icon={isMuted ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
@@ -299,7 +299,7 @@ const CallScreen: React.FC<CallScreenProps> = ({ contact, conversationId, onClos
               <ControlButton
                 active={isSpeaker}
                 activeColor="bg-blue-400 text-white"
-                inactiveColor="bg-white/20 text-white"
+                inactiveColor="bg-[#0a0e27]/20 text-white"
                 onClick={() => setIsSpeaker(s => !s)}
                 label="Speaker"
                 icon={isSpeaker ? <Volume2 className="w-5 h-5" /> : <VolumeX className="w-5 h-5" />}
@@ -309,7 +309,7 @@ const CallScreen: React.FC<CallScreenProps> = ({ contact, conversationId, onClos
               <ControlButton
                 active={isRecording}
                 activeColor="bg-red-500 text-white"
-                inactiveColor="bg-white/20 text-white"
+                inactiveColor="bg-[#0a0e27]/20 text-white"
                 onClick={toggleRecording}
                 label={isRecording ? 'Stop REC' : 'Record'}
                 icon={isRecording
@@ -348,7 +348,7 @@ const CallScreen: React.FC<CallScreenProps> = ({ contact, conversationId, onClos
           <div className="bg-black/20 px-6 pt-4 pb-8 flex justify-center gap-4">
             <button
               onClick={onClose}
-              className="flex items-center gap-2 px-5 py-2.5 bg-white/20 hover:bg-white/30 rounded-full text-sm font-medium transition-colors"
+              className="flex items-center gap-2 px-5 py-2.5 bg-[#0a0e27]/20 hover:bg-[#0a0e27]/30 rounded-full text-sm font-medium transition-colors"
             >
               <X className="w-4 h-4" /> Close
             </button>
@@ -362,7 +362,7 @@ const CallScreen: React.FC<CallScreenProps> = ({ contact, conversationId, onClos
                 const el = document.getElementById('__call_retry_trigger__');
                 if (el) el.click();
               }}
-              className="flex items-center gap-2 px-5 py-2.5 bg-white/20 hover:bg-white/30 rounded-full text-sm font-medium transition-colors"
+              className="flex items-center gap-2 px-5 py-2.5 bg-[#0a0e27]/20 hover:bg-[#0a0e27]/30 rounded-full text-sm font-medium transition-colors"
             >
               <PhoneCall className="w-4 h-4" /> Retry
             </button>

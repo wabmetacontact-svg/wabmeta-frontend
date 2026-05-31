@@ -82,7 +82,7 @@ const ChatbotList: React.FC = () => {
       case 'PAUSED':
         return 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300';
       default:
-        return 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400';
+        return 'bg-[#0a0e27]/[0.04] text-gray-400 dark:bg-gray-700 dark:text-gray-400';
     }
   };
 
@@ -99,8 +99,8 @@ const ChatbotList: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Chatbots</h1>
-          <p className="text-gray-600 dark:text-gray-400">Build and manage automated conversation flows</p>
+          <h1 className="text-2xl font-bold text-white">Chatbots</h1>
+          <p className="text-gray-400">Build and manage automated conversation flows</p>
         </div>
         <Link
           to="/dashboard/chatbots/new"
@@ -115,19 +115,19 @@ const ChatbotList: React.FC = () => {
       <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-xl p-4">
         <p className="text-sm font-semibold text-blue-700 dark:text-blue-300 mb-2">🚀 Chatbot Setup Guide:</p>
         <div className="flex items-center gap-2 text-xs text-blue-600 dark:text-blue-400 flex-wrap">
-          <span className="flex items-center gap-1 bg-white dark:bg-blue-900/40 px-2 py-1 rounded-full border border-blue-200 dark:border-blue-600">
+          <span className="flex items-center gap-1 bg-[#0a0e27] dark:bg-blue-900/40 px-2 py-1 rounded-full border border-blue-200 dark:border-blue-600">
             1️⃣ Create Chatbot
           </span>
           <span className="text-blue-400">→</span>
-          <span className="flex items-center gap-1 bg-white dark:bg-blue-900/40 px-2 py-1 rounded-full border border-blue-200 dark:border-blue-600">
+          <span className="flex items-center gap-1 bg-[#0a0e27] dark:bg-blue-900/40 px-2 py-1 rounded-full border border-blue-200 dark:border-blue-600">
           2️⃣ Add nodes in the Flow Builder
           </span>
           <span className="text-blue-400">→</span>
-          <span className="flex items-center gap-1 bg-white dark:bg-blue-900/40 px-2 py-1 rounded-full border border-blue-200 dark:border-blue-600">
+          <span className="flex items-center gap-1 bg-[#0a0e27] dark:bg-blue-900/40 px-2 py-1 rounded-full border border-blue-200 dark:border-blue-600">
           3️⃣ Set Keywords in Settings
           </span>
           <span className="text-blue-400">→</span>
-          <span className="flex items-center gap-1 bg-white dark:bg-blue-900/40 px-2 py-1 rounded-full border border-blue-200 dark:border-blue-600">
+          <span className="flex items-center gap-1 bg-[#0a0e27] dark:bg-blue-900/40 px-2 py-1 rounded-full border border-blue-200 dark:border-blue-600">
             4️⃣ Save → Activate ✅
           </span>
         </div>
@@ -141,7 +141,7 @@ const ChatbotList: React.FC = () => {
           placeholder="Search chatbots..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full pl-10 pr-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent"
+          className="w-full pl-10 pr-4 py-2 bg-[#0a0e27] border border-white/[0.1] rounded-lg text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent"
         />
       </div>
 
@@ -150,7 +150,7 @@ const ChatbotList: React.FC = () => {
         {filteredChatbots.map((chatbot) => (
           <div
             key={chatbot.id}
-            className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-md transition-shadow"
+            className="bg-[#0a0e27] rounded-xl border border-white/[0.1] p-5 hover:shadow-md transition-shadow"
           >
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-center gap-3">
@@ -158,7 +158,7 @@ const ChatbotList: React.FC = () => {
                   <Bot className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900 dark:text-white">{chatbot.name}</h3>
+                  <h3 className="font-semibold text-white">{chatbot.name}</h3>
                   <span className={`inline-block px-2 py-0.5 text-xs rounded-full font-medium ${getStatusBadge(chatbot.status)}`}>
                     {chatbot.status}
                   </span>
@@ -166,27 +166,27 @@ const ChatbotList: React.FC = () => {
               </div>
 
               <div className="relative group">
-                <button className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors">
+                <button className="p-1 hover:bg-[#0a0e27]/[0.04] dark:hover:bg-gray-700 rounded transition-colors">
                   <MoreVertical className="w-5 h-5 text-gray-400" />
                 </button>
-                <div className="absolute right-0 mt-1 w-40 bg-white dark:bg-gray-700 rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 py-1 hidden group-hover:block z-10">
+                <div className="absolute right-0 mt-1 w-40 bg-[#0a0e27] dark:bg-gray-700 rounded-lg shadow-lg border border-white/[0.1] dark:border-gray-600 py-1 hidden group-hover:block z-10">
                   <button
                     onClick={() => navigate(`/dashboard/chatbots/${chatbot.id}`)}
-                    className="flex items-center gap-2 w-full px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300"
+                    className="flex items-center gap-2 w-full px-3 py-2 text-sm hover:bg-[#050816] dark:hover:bg-gray-600 text-gray-300"
                   >
                     <Settings className="w-4 h-4" />
                     Edit Flow
                   </button>
                   <button
                     onClick={() => handleToggleStatus(chatbot)}
-                    className="flex items-center gap-2 w-full px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300"
+                    className="flex items-center gap-2 w-full px-3 py-2 text-sm hover:bg-[#050816] dark:hover:bg-gray-600 text-gray-300"
                   >
                     {chatbot.status === 'ACTIVE' ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
                     {chatbot.status === 'ACTIVE' ? 'Pause' : 'Activate'}
                   </button>
                   <button
                     onClick={() => handleDuplicate(chatbot)}
-                    className="flex items-center gap-2 w-full px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300"
+                    className="flex items-center gap-2 w-full px-3 py-2 text-sm hover:bg-[#050816] dark:hover:bg-gray-600 text-gray-300"
                   >
                     <Copy className="w-4 h-4" />
                     Duplicate
@@ -203,7 +203,7 @@ const ChatbotList: React.FC = () => {
             </div>
 
             {chatbot.description && (
-              <p className="text-sm text-gray-500 dark:text-gray-400 mb-3 line-clamp-2">{chatbot.description}</p>
+              <p className="text-sm text-gray-400 mb-3 line-clamp-2">{chatbot.description}</p>
             )}
 
             <div className="space-y-2">
@@ -215,7 +215,7 @@ const ChatbotList: React.FC = () => {
                     </span>
                   ))}
                   {chatbot.triggerKeywords.length > 3 && (
-                    <span className="px-2 py-0.5 bg-gray-100 dark:bg-gray-700 text-gray-500 text-xs rounded">
+                    <span className="px-2 py-0.5 bg-[#0a0e27]/[0.04] dark:bg-gray-700 text-gray-500 text-xs rounded">
                       +{chatbot.triggerKeywords.length - 3} more
                     </span>
                   )}
@@ -230,7 +230,7 @@ const ChatbotList: React.FC = () => {
               )}
             </div>
 
-            <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
+            <div className="flex items-center justify-between mt-4 pt-4 border-t border-white/[0.08]">
               <span className="text-xs text-gray-500">
                 {chatbot.flowData?.nodes?.length || 0} nodes
               </span>
@@ -254,8 +254,8 @@ const ChatbotList: React.FC = () => {
         {filteredChatbots.length === 0 && (
           <div className="col-span-full text-center py-12">
             <Bot className="w-16 h-16 mx-auto text-gray-300 mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No chatbots yet</h3>
-            <p className="text-gray-500 dark:text-gray-400 mb-4">Create your first chatbot and start automating conversations</p>
+            <h3 className="text-lg font-medium text-white mb-2">No chatbots yet</h3>
+            <p className="text-gray-400 mb-4">Create your first chatbot and start automating conversations</p>
             <Link
               to="/dashboard/chatbots/new"
               className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"

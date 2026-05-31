@@ -44,7 +44,7 @@ const getNotificationIconStyle = (type: NotificationType) => {
     case 'billing':  return 'bg-orange-500/20 text-orange-400 border-orange-400/30';
     case 'alert':    return 'bg-red-500/20 text-red-400 border-red-400/30';
     case 'whatsapp': return 'bg-emerald-500/20 text-emerald-400 border-emerald-400/30';
-    case 'system':   return 'bg-gray-500/20 text-gray-400 border-gray-400/30';
+    case 'system':   return 'bg-[#050816]0/20 text-gray-400 border-gray-400/30';
     default:         return 'bg-blue-500/20 text-blue-400 border-blue-400/30';
   }
 };
@@ -109,18 +109,18 @@ const Notifications: React.FC = () => {
         <div className="flex items-center space-x-3">
           <button
             onClick={refresh}
-            className="p-2 text-gray-400 hover:text-white hover:bg-white/[0.04] rounded-lg transition-colors"
+            className="p-2 text-gray-400 hover:text-white hover:bg-[#0a0e27]/[0.04] rounded-lg transition-colors"
             title="Refresh"
           >
             <RefreshCw className="w-5 h-5" />
           </button>
 
-          <div className="flex bg-white/[0.04] border border-white/[0.06] rounded-xl p-1">
+          <div className="flex bg-[#0a0e27]/[0.04] border border-white/[0.06] rounded-xl p-1">
             <button
               onClick={() => setFilter('all')}
               className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
                 filter === 'all'
-                  ? 'bg-white/[0.08] text-white shadow-sm'
+                  ? 'bg-[#0a0e27]/[0.08] text-white shadow-sm'
                   : 'text-gray-400 hover:text-white'
               }`}
             >
@@ -130,7 +130,7 @@ const Notifications: React.FC = () => {
               onClick={() => setFilter('unread')}
               className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
                 filter === 'unread'
-                  ? 'bg-white/[0.08] text-white shadow-sm'
+                  ? 'bg-[#0a0e27]/[0.08] text-white shadow-sm'
                   : 'text-gray-400 hover:text-white'
               }`}
             >
@@ -143,7 +143,7 @@ const Notifications: React.FC = () => {
       {/* Actions Bar */}
       {notifications.length > 0 && (
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3
-          bg-white/[0.03] border border-white/[0.06] rounded-xl px-4 py-3">
+          bg-[#0a0e27]/[0.03] border border-white/[0.06] rounded-xl px-4 py-3">
           <div className="flex items-center space-x-4">
             <button
               onClick={markAllAsRead}
@@ -187,7 +187,7 @@ const Notifications: React.FC = () => {
                         className={`w-full px-4 py-2 text-left text-sm transition-colors ${
                           typeFilter === type.value
                             ? 'text-green-400 bg-green-500/10'
-                            : 'text-gray-300 hover:bg-white/[0.04] hover:text-white'
+                            : 'text-gray-300 hover:bg-[#0a0e27]/[0.04] hover:text-white'
                         }`}
                       >
                         {type.label}
@@ -210,10 +210,10 @@ const Notifications: React.FC = () => {
       )}
 
       {/* Notifications List */}
-      <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl overflow-hidden">
+      <div className="bg-[#0a0e27]/[0.03] border border-white/[0.06] rounded-2xl overflow-hidden">
         {filteredNotifications.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center px-4">
-            <div className="w-16 h-16 bg-white/[0.04] border border-white/[0.06] 
+            <div className="w-16 h-16 bg-[#0a0e27]/[0.04] border border-white/[0.06] 
               rounded-full flex items-center justify-center mb-4">
               <Inbox className="w-8 h-8 text-gray-500" />
             </div>
@@ -250,7 +250,7 @@ const Notifications: React.FC = () => {
               return (
                 <div
                   key={notification.id}
-                  className={`flex items-start gap-4 p-4 hover:bg-white/[0.03] transition-colors ${
+                  className={`flex items-start gap-4 p-4 hover:bg-[#0a0e27]/[0.03] transition-colors ${
                     !notification.read ? 'bg-green-500/[0.04]' : ''
                   }`}
                 >
@@ -327,10 +327,10 @@ const Notifications: React.FC = () => {
       </div>
 
       {/* Settings Card */}
-      <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-6">
+      <div className="bg-[#0a0e27]/[0.03] border border-white/[0.06] rounded-2xl p-6">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-white/[0.04] border border-white/[0.06]">
+            <div className="p-2 rounded-xl bg-[#0a0e27]/[0.04] border border-white/[0.06]">
               <Settings className="w-5 h-5 text-gray-400" />
             </div>
             <div>
@@ -340,8 +340,8 @@ const Notifications: React.FC = () => {
           </div>
           <Link
             to="/dashboard/settings"
-            className="px-4 py-2 text-sm font-medium text-white bg-white/[0.04] 
-              border border-white/[0.08] hover:bg-white/[0.08] rounded-xl transition-colors"
+            className="px-4 py-2 text-sm font-medium text-white bg-[#0a0e27]/[0.04] 
+              border border-white/[0.08] hover:bg-[#0a0e27]/[0.08] rounded-xl transition-colors"
           >
             Configure
           </Link>

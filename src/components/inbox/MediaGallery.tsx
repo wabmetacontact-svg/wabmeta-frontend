@@ -102,7 +102,7 @@ const MediaGallery: React.FC<Props> = ({ messages, loading }) => {
   return (
     <div className="flex flex-col">
       {/* Tabs */}
-      <div className="flex gap-1 p-1 bg-white/[0.03] border border-white/[0.06] rounded-xl mb-3">
+      <div className="flex gap-1 p-1 bg-[#0a0e27]/[0.03] border border-white/[0.06] rounded-xl mb-3">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.key;
@@ -114,8 +114,8 @@ const MediaGallery: React.FC<Props> = ({ messages, loading }) => {
                 flex-1 flex flex-col items-center gap-1 py-2 px-1
                 rounded-lg transition-all
                 ${isActive
-                  ? 'bg-white/[0.08] text-white'
-                  : 'text-gray-400 hover:text-gray-200 hover:bg-white/[0.03]'
+                  ? 'bg-[#0a0e27]/[0.08] text-white'
+                  : 'text-gray-400 hover:text-gray-200 hover:bg-[#0a0e27]/[0.03]'
                 }
               `}
             >
@@ -125,7 +125,7 @@ const MediaGallery: React.FC<Props> = ({ messages, loading }) => {
                 {tab.count > 0 && (
                   <span className={`
                     text-[9px] font-mono font-bold px-1 rounded
-                    ${isActive ? 'bg-emerald-500/20 text-emerald-300' : 'bg-white/[0.05] text-gray-500'}
+                    ${isActive ? 'bg-emerald-500/20 text-emerald-300' : 'bg-[#0a0e27]/[0.05] text-gray-500'}
                   `}>
                     {tab.count}
                   </span>
@@ -145,7 +145,7 @@ const MediaGallery: React.FC<Props> = ({ messages, loading }) => {
         <div className="flex flex-col items-center justify-center py-8 px-4">
           <div className="
             w-12 h-12 rounded-full
-            bg-white/[0.03] border border-white/[0.05]
+            bg-[#0a0e27]/[0.03] border border-white/[0.05]
             flex items-center justify-center mb-2
           ">
             {React.createElement(
@@ -171,7 +171,7 @@ const MediaGallery: React.FC<Props> = ({ messages, loading }) => {
                     onClick={() => setPreviewIndex(idx)}
                     className="
                       aspect-square rounded-lg overflow-hidden
-                      bg-white/[0.04] border border-white/[0.05]
+                      bg-[#0a0e27]/[0.04] border border-white/[0.05]
                       hover:border-emerald-400/30 hover:scale-105
                       transition-all relative group
                     "
@@ -198,7 +198,7 @@ const MediaGallery: React.FC<Props> = ({ messages, loading }) => {
                       )
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
-                        <ImageIcon className="w-5 h-5 text-gray-600" />
+                        <ImageIcon className="w-5 h-5 text-gray-400" />
                       </div>
                     )}
                   </button>
@@ -207,8 +207,8 @@ const MediaGallery: React.FC<Props> = ({ messages, loading }) => {
               {grouped.media.length > 9 && (
                 <button className="
                   aspect-square rounded-lg
-                  bg-white/[0.04] border border-white/[0.05]
-                  hover:bg-white/[0.06]
+                  bg-[#0a0e27]/[0.04] border border-white/[0.05]
+                  hover:bg-[#0a0e27]/[0.06]
                   transition-all
                   flex items-center justify-center
                   text-xs font-bold text-gray-400
@@ -233,13 +233,13 @@ const MediaGallery: React.FC<Props> = ({ messages, loading }) => {
                   xls: 'text-green-400 bg-green-500/10 border-green-500/20',
                   xlsx: 'text-green-400 bg-green-500/10 border-green-500/20',
                 };
-                const color = extColors[ext] || 'text-gray-400 bg-gray-500/10 border-gray-500/20';
+                const color = extColors[ext] || 'text-gray-400 bg-[#050816]0/10 border-gray-500/20';
                 return (
                   <div
                     key={msg.id}
                     className="
                       flex items-center gap-2.5 p-2
-                      bg-white/[0.03] hover:bg-white/[0.05]
+                      bg-[#0a0e27]/[0.03] hover:bg-[#0a0e27]/[0.05]
                       border border-white/[0.05]
                       rounded-lg transition-colors group
                     "
@@ -268,7 +268,7 @@ const MediaGallery: React.FC<Props> = ({ messages, loading }) => {
                         rel="noopener noreferrer"
                         className="
                           p-1.5 rounded-md
-                          hover:bg-white/[0.08]
+                          hover:bg-[#0a0e27]/[0.08]
                           text-gray-400 hover:text-white
                           opacity-0 group-hover:opacity-100
                           transition-all flex-shrink-0
@@ -301,7 +301,7 @@ const MediaGallery: React.FC<Props> = ({ messages, loading }) => {
                     rel="noopener noreferrer"
                     className="
                       flex items-start gap-2.5 p-2
-                      bg-white/[0.03] hover:bg-white/[0.05]
+                      bg-[#0a0e27]/[0.03] hover:bg-[#0a0e27]/[0.05]
                       border border-white/[0.05]
                       rounded-lg transition-colors group
                     "
@@ -320,7 +320,7 @@ const MediaGallery: React.FC<Props> = ({ messages, loading }) => {
                       <p className="text-[10px] text-gray-500 truncate mt-0.5">
                         {url}
                       </p>
-                      <p className="text-[10px] text-gray-600 mt-0.5">
+                      <p className="text-[10px] text-gray-400 mt-0.5">
                         {formatMessageTime(msg.createdAt || msg.timestamp)}
                       </p>
                     </div>
@@ -340,7 +340,7 @@ const MediaGallery: React.FC<Props> = ({ messages, loading }) => {
                     key={msg.id}
                     className="
                       flex items-center gap-2.5 p-2
-                      bg-white/[0.03] hover:bg-white/[0.05]
+                      bg-[#0a0e27]/[0.03] hover:bg-[#0a0e27]/[0.05]
                       border border-white/[0.05]
                       rounded-lg transition-colors
                     "
@@ -383,7 +383,7 @@ const MediaGallery: React.FC<Props> = ({ messages, loading }) => {
           {/* Close */}
           <button
             onClick={() => setPreviewIndex(null)}
-            className="absolute top-4 right-4 p-2.5 bg-white/10 hover:bg-white/20 rounded-full text-white backdrop-blur-sm z-10"
+            className="absolute top-4 right-4 p-2.5 bg-[#0a0e27]/10 hover:bg-[#0a0e27]/20 rounded-full text-white backdrop-blur-sm z-10"
           >
             <X className="w-5 h-5" />
           </button>
@@ -395,7 +395,7 @@ const MediaGallery: React.FC<Props> = ({ messages, loading }) => {
                 e.stopPropagation();
                 prevMedia();
               }}
-              className="absolute left-4 p-3 bg-white/10 hover:bg-white/20 rounded-full text-white backdrop-blur-sm z-10"
+              className="absolute left-4 p-3 bg-[#0a0e27]/10 hover:bg-[#0a0e27]/20 rounded-full text-white backdrop-blur-sm z-10"
             >
               <ChevronLeft className="w-5 h-5" />
             </button>
@@ -426,7 +426,7 @@ const MediaGallery: React.FC<Props> = ({ messages, loading }) => {
                 e.stopPropagation();
                 nextMedia();
               }}
-              className="absolute right-4 p-3 bg-white/10 hover:bg-white/20 rounded-full text-white backdrop-blur-sm z-10"
+              className="absolute right-4 p-3 bg-[#0a0e27]/10 hover:bg-[#0a0e27]/20 rounded-full text-white backdrop-blur-sm z-10"
             >
               <ChevronRight className="w-5 h-5" />
             </button>
