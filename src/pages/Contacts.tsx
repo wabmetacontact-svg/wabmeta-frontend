@@ -31,7 +31,8 @@ import {
   ArrowLeft,
   FileSpreadsheet,
   Lock,
-  Crown
+  Crown,
+  UserPlus
 } from 'lucide-react';
 
 import AddContactModal from '../components/contacts/AddContactModal';
@@ -372,6 +373,7 @@ const Contacts: React.FC = () => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
   const [showAddToGroupModal, setShowAddToGroupModal] = useState(false);
+  const [pasteTargetGroupId, setPasteTargetGroupId] = useState('');
   const [showDeleteAllModal, setShowDeleteAllModal] = useState(false);
   const [deleteAllInput, setDeleteAllInput] = useState('');
   const [deletingAll, setDeletingAll] = useState(false);
@@ -543,6 +545,7 @@ const Contacts: React.FC = () => {
       setShowUpgradeModal(true);
       return;
     }
+    setPasteTargetGroupId('');
     setShowBulkPaste(true);
   };
 
@@ -1231,17 +1234,39 @@ const Contacts: React.FC = () => {
                     <Layers className="w-6 h-6" />
                   </div>
                   <h3 className="font-semibold text-white text-lg mb-1">{group.name}</h3>
-                  <div className="flex items-center text-gray-500 space-x-2 text-sm">
-                    <Users className="w-4 h-4" />
-                    <span>{group.contactCount.toLocaleString()} {group.contactCount === 1 ? 'number' : 'numbers'}</span>
+                  <div className="flex flex-col gap-1 text-gray-500 text-sm">
+                    <div className="flex items-center space-x-2">
+                      <Users className="w-4 h-4" />
+                      <span>{group.contactCount.toLocaleString()} {group.contactCount === 1 ? 'number' : 'numbers'}</span>
+                    </div>
+                    {group.createdAt && (
+                      <div className="flex items-center space-x-2">
+                        <Calendar className="w-4 h-4" />
+                        <span>{new Date(group.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                      </div>
+                    )}
                   </div>
-                  <button 
-                    onClick={(e) => handleDeleteGroup(e, group.id, group.name)}
-                    className="absolute top-4 right-4 p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg opacity-0 group-hover/card:opacity-100 transition-opacity"
-                    title="Delete Group"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+                  
+                  <div className="absolute top-4 right-4 flex items-center gap-2 opacity-0 group-hover/card:opacity-100 transition-opacity">
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setPasteTargetGroupId(group.id);
+                        setShowBulkPaste(true);
+                      }}
+                      className="p-2 text-gray-400 hover:text-green-500 hover:bg-green-500/10 rounded-lg transition-colors"
+                      title="Add Contacts to Group"
+                    >
+                      <UserPlus className="w-4 h-4" />
+                    </button>
+                    <button 
+                      onClick={(e) => handleDeleteGroup(e, group.id, group.name)}
+                      className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-500/10 rounded-lg transition-colors"
+                      title="Delete Group"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -1278,12 +1303,16 @@ const Contacts: React.FC = () => {
       {/* New Modals */}
       <SimpleBulkPasteModal
         isOpen={showBulkPaste}
-        onClose={() => setShowBulkPaste(false)}
+        onClose={() => {
+          setShowBulkPaste(false);
+          setPasteTargetGroupId('');
+        }}
         onSuccess={() => {
           fetchContacts();
           refetchFeatures();
         }}
         groups={groups}
+        initialGroupId={pasteTargetGroupId}
       />
 
       <CsvUploadModal

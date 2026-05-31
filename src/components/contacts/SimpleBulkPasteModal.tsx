@@ -16,11 +16,12 @@ interface Props {
     onClose: () => void;
     onSuccess: () => void;
     groups?: Array<{ id: string; name: string }>;
+    initialGroupId?: string;
 }
 
-export default function SimpleBulkPasteModal({ isOpen, onClose, onSuccess, groups = [] }: Props) {
+export default function SimpleBulkPasteModal({ isOpen, onClose, onSuccess, groups = [], initialGroupId = '' }: Props) {
     const [phoneNumbers, setPhoneNumbers] = useState('');
-    const [selectedGroup, setSelectedGroup] = useState('');
+    const [selectedGroup, setSelectedGroup] = useState(initialGroupId);
     const [tags, setTags] = useState('');
     const [loading, setLoading] = useState(false);
     const [result, setResult] = useState<any>(null);
@@ -34,6 +35,12 @@ export default function SimpleBulkPasteModal({ isOpen, onClose, onSuccess, group
     useEffect(() => {
         setLocalGroups(groups);
     }, [groups]);
+
+    useEffect(() => {
+        if (isOpen) {
+            setSelectedGroup(initialGroupId);
+        }
+    }, [isOpen, initialGroupId]);
 
     if (!isOpen) return null;
 
