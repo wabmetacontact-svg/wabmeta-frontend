@@ -652,8 +652,8 @@ const CampaignDetails: React.FC = () => {
       {/* ============================== */}
       {/* SEARCH & FILTERS */}
       {/* ============================== */}
-      <div className="bg-[#0a0e27] rounded-xl p-4 border border-white/[0.1] shadow-sm">
-        <div className="flex flex-col sm:flex-row gap-4">
+      <div className="relative overflow-hidden rounded-2xl bg-white/[0.02] border border-white/[0.05] p-4 backdrop-blur-xl">
+        <div className="flex flex-col sm:flex-row gap-4 relative z-10">
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
             <input
@@ -662,14 +662,14 @@ const CampaignDetails: React.FC = () => {
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-              className="w-full pl-10 pr-4 py-2.5 bg-[#050816] dark:bg-gray-700 border border-white/[0.1] dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-white"
+              className="w-full pl-10 pr-4 py-2.5 bg-white/[0.03] border border-white/[0.05] rounded-xl text-white placeholder:text-gray-500 focus:outline-none focus:border-white/[0.1] focus:bg-white/[0.05] transition-colors shadow-[inset_0_1px_2px_rgba(0,0,0,0.2)]"
             />
           </div>
 
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
-            className="px-4 py-2.5 bg-[#050816] dark:bg-gray-700 border border-white/[0.1] dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-white"
+            className="px-4 py-2.5 bg-white/[0.03] border border-white/[0.05] rounded-xl text-gray-300 focus:outline-none focus:border-white/[0.1] focus:bg-white/[0.05] transition-colors shadow-[inset_0_1px_2px_rgba(0,0,0,0.2)] [&>option]:bg-[#0a0e27]"
           >
             <option value="all">All Status</option>
             <option value="PENDING">Pending</option>
@@ -709,11 +709,11 @@ const CampaignDetails: React.FC = () => {
         )}
       </div>
 
-      <div className="bg-[#0a0e27] rounded-xl border border-white/[0.1] overflow-hidden shadow-sm">
+      <div className="relative overflow-hidden rounded-2xl bg-white/[0.02] border border-white/[0.05] backdrop-blur-xl">
         <div className="overflow-x-auto">
           <table className="w-full text-left">
-            <thead>
-              <tr className="bg-[#050816]/50 dark:bg-gray-700/50 border-b border-white/[0.1]">
+            <thead className="bg-white/[0.02] border-b border-white/[0.05]">
+              <tr>
                 <th className="px-4 py-4 w-10">
                   <input
                     type="checkbox"
@@ -740,7 +740,7 @@ const CampaignDetails: React.FC = () => {
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+            <tbody className="divide-y divide-white/[0.02]">
               {contacts.map((contact) => {
                 const config = statusConfig[contact.status] || statusConfig.PENDING;
                 const Icon = config.icon;
@@ -750,7 +750,7 @@ const CampaignDetails: React.FC = () => {
                 return (
                   <tr
                     key={contact.id}
-                    className="hover:bg-[#0a0e27]/[0.04]/30 transition-colors"
+                    className="hover:bg-emerald-500/[0.02] hover:shadow-[inset_0_0_0_1px_rgba(16,185,129,0.4)] transition-all duration-200 group/row"
                   >
                     {/* Checkbox */}
                     <td className="px-4 py-4">
@@ -899,29 +899,30 @@ const StatCard: React.FC<{
   onClick?: () => void;
   active?: boolean;
   pulse?: boolean;
-}> = ({ label, value, icon: Icon, iconBg, iconColor, onClick, active, pulse }) => (
+}> = ({ label, value, icon: Icon, iconBg, iconColor, onClick, active, pulse }) => {
+  const colorClass = iconColor.split(' ')[0] || 'text-gray-400';
+  return (
   <div
     onClick={onClick}
-    className={`bg-[#0a0e27] rounded-xl p-5 border transition-all shadow-sm ${
+    className={`relative overflow-hidden rounded-2xl bg-white/[0.02] border p-6 transition-all duration-300 group/stat ${
       active
-        ? 'border-green-500 ring-2 ring-green-500/20 shadow-green-500/10'
-        : 'border-white/[0.1]'
-    } ${onClick ? 'cursor-pointer hover:shadow-md hover:-translate-y-0.5' : ''}`}
+        ? 'border-emerald-500/50 shadow-[0_0_15px_rgba(16,185,129,0.15)] bg-white/[0.04]'
+        : 'border-white/[0.05] hover:bg-white/[0.04] hover:border-white/[0.1]'
+    } ${onClick ? 'cursor-pointer' : ''}`}
   >
-    <div className="flex items-center justify-between">
-      <div className="flex-1">
-        <p className="text-sm text-gray-400 whitespace-nowrap">{label}</p>
-        <p className={`text-2xl font-bold text-white mt-1 ${
-          pulse ? 'animate-pulse' : ''
-        }`}>
-          {value.toLocaleString()}
-        </p>
-      </div>
-      <div className={`flex-none p-3 rounded-lg ${iconBg}`}>
-        <Icon className={`w-6 h-6 ${iconColor}`} />
-      </div>
+    <div className="absolute top-0 right-0 p-4 opacity-[0.05] group-hover/stat:scale-110 group-hover/stat:opacity-[0.12] transition-all duration-500">
+      <Icon size={80} className={colorClass} />
+    </div>
+    <div className="relative z-10">
+      <p className={`text-xs font-mono uppercase tracking-widest mb-1 ${colorClass}`}>{label}</p>
+      <p className={`text-3xl font-bold text-white ${
+        pulse ? 'animate-pulse' : ''
+      }`}>
+        {value.toLocaleString()}
+      </p>
     </div>
   </div>
 );
+}
 
 export default CampaignDetails;

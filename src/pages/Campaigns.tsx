@@ -445,59 +445,51 @@ const Campaigns: React.FC = () => {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-[#0a0e27] rounded-xl p-6 border border-white/[0.1] shadow-sm">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-400 font-medium">Total Campaigns</p>
-              <p className="text-2xl font-bold text-white mt-1">
-                {safeNumber(stats.total)}
-              </p>
-            </div>
-            <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-              <BarChart3 className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-            </div>
+        <div className="relative overflow-hidden rounded-2xl bg-white/[0.02] border border-white/[0.05] p-6 group/stat hover:bg-white/[0.04] transition-all">
+          <div className="absolute top-0 right-0 p-4 opacity-[0.08] group-hover/stat:scale-110 group-hover/stat:opacity-[0.15] transition-all duration-500">
+            <BarChart3 size={80} style={{ color: '#3B82F6' }} />
+          </div>
+          <div className="relative z-10">
+            <p className="text-xs font-mono uppercase tracking-widest mb-1" style={{ color: '#3B82F6' }}>Total Campaigns</p>
+            <h3 className="text-3xl font-bold text-white">
+              {safeNumber(stats.total)}
+            </h3>
           </div>
         </div>
 
-        <div className="bg-[#0a0e27] rounded-xl p-6 border border-white/[0.1] shadow-sm">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-400 font-medium">Active</p>
-              <p className="text-2xl font-bold text-white mt-1">
-                {safeNumber(stats.active)}
-              </p>
-            </div>
-            <div className="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
-              <Play className="w-6 h-6 text-green-600 dark:text-green-400" />
-            </div>
+        <div className="relative overflow-hidden rounded-2xl bg-white/[0.02] border border-white/[0.05] p-6 group/stat hover:bg-white/[0.04] transition-all">
+          <div className="absolute top-0 right-0 p-4 opacity-[0.08] group-hover/stat:scale-110 group-hover/stat:opacity-[0.15] transition-all duration-500">
+            <Play size={80} style={{ color: '#10B981' }} />
+          </div>
+          <div className="relative z-10">
+            <p className="text-xs font-mono uppercase tracking-widest mb-1" style={{ color: '#10B981' }}>Active</p>
+            <h3 className="text-3xl font-bold text-white">
+              {safeNumber(stats.active)}
+            </h3>
           </div>
         </div>
 
-        <div className="bg-[#0a0e27] rounded-xl p-6 border border-white/[0.1] shadow-sm">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-400 font-medium">Messages Sent</p>
-              <p className="text-2xl font-bold text-white mt-1">
-                {safeLocaleString(stats.totalSent)}
-              </p>
-            </div>
-            <div className="p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
-              <Send className="w-6 h-6 text-purple-600 dark:text-purple-400" />
-            </div>
+        <div className="relative overflow-hidden rounded-2xl bg-white/[0.02] border border-white/[0.05] p-6 group/stat hover:bg-white/[0.04] transition-all">
+          <div className="absolute top-0 right-0 p-4 opacity-[0.08] group-hover/stat:scale-110 group-hover/stat:opacity-[0.15] transition-all duration-500">
+            <Send size={80} style={{ color: '#8B5CF6' }} />
+          </div>
+          <div className="relative z-10">
+            <p className="text-xs font-mono uppercase tracking-widest mb-1" style={{ color: '#8B5CF6' }}>Messages Sent</p>
+            <h3 className="text-3xl font-bold text-white">
+              {safeLocaleString(stats.totalSent)}
+            </h3>
           </div>
         </div>
 
-        <div className="bg-[#0a0e27] rounded-xl p-6 border border-white/[0.1] shadow-sm">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-400 font-medium">Delivered</p>
-              <p className="text-2xl font-bold text-white mt-1">
-                {safeLocaleString(stats.totalDelivered)}
-              </p>
-            </div>
-            <div className="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
-              <CheckCircle className="w-6 h-6 text-green-600 dark:text-green-400" />
-            </div>
+        <div className="relative overflow-hidden rounded-2xl bg-white/[0.02] border border-white/[0.05] p-6 group/stat hover:bg-white/[0.04] transition-all">
+          <div className="absolute top-0 right-0 p-4 opacity-[0.08] group-hover/stat:scale-110 group-hover/stat:opacity-[0.15] transition-all duration-500">
+            <CheckCircle size={80} style={{ color: '#25D366' }} />
+          </div>
+          <div className="relative z-10">
+            <p className="text-xs font-mono uppercase tracking-widest mb-1" style={{ color: '#25D366' }}>Delivered</p>
+            <h3 className="text-3xl font-bold text-white">
+              {safeLocaleString(stats.totalDelivered)}
+            </h3>
           </div>
         </div>
       </div>
@@ -545,7 +537,7 @@ const Campaigns: React.FC = () => {
           campaigns.map((campaign) => (
             <div
               key={campaign.id}
-              className="bg-[#0a0e27] rounded-xl p-6 border border-white/[0.1] hover:shadow-md transition-all group"
+              className="relative overflow-hidden rounded-2xl bg-white/[0.02] border border-white/[0.05] p-6 hover:bg-white/[0.04] hover:border-emerald-500/50 hover:shadow-[0_0_20px_rgba(16,185,129,0.1)] transition-all duration-300 group"
             >
               <div className="flex items-start justify-between mb-4">
                 <div className="flex-1 min-w-0">
