@@ -539,26 +539,6 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, setCollapsed }) => {
     return location.pathname.startsWith(href);
   };
 
-  // CTA config per channel
-  const ctaConfig = {
-    whatsapp: {
-      text: "New campaign",
-      href: "/dashboard/campaigns/create",
-      color: "from-green-500 to-emerald-500",
-      shadow: "rgba(16,185,129,0.35)",
-      shadowHover: "rgba(16,185,129,0.5)",
-    },
-    instagram: {
-      text: "New automation",
-      href: "/instagram/dm-automation/create",
-      color: "from-[#833ab4] to-[#fd1d1d]",
-      shadow: "rgba(131,58,180,0.35)",
-      shadowHover: "rgba(131,58,180,0.5)",
-    },
-  };
-
-  const cta = ctaConfig[activeChannel];
-
   // Active indicator color per channel
   const activeColor =
     activeChannel === "instagram"
@@ -822,60 +802,7 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, setCollapsed }) => {
             </div>
           ))}
 
-          {/* ── CTA Button ── */}
-          {!collapsed && (
-            <div className="mt-6 mx-1">
-              <Link
-                to={cta.href}
-                className={`group/cta relative flex items-center justify-center gap-2
-                  w-full py-3 px-4 rounded-xl
-                  bg-gradient-to-r ${cta.color}
-                  text-white text-sm font-semibold
-                  hover:-translate-y-0.5
-                  transition-all duration-500
-                  border border-white/20
-                  overflow-hidden`}
-                style={{
-                  boxShadow: `0 8px 24px ${cta.shadow}`,
-                }}
-                onMouseEnter={(e) => {
-                  (e.currentTarget as HTMLElement).style.boxShadow =
-                    `0 12px 32px ${cta.shadowHover}`;
-                }}
-                onMouseLeave={(e) => {
-                  (e.currentTarget as HTMLElement).style.boxShadow =
-                    `0 8px 24px ${cta.shadow}`;
-                }}
-              >
-                <span
-                  className="absolute inset-0 bg-gradient-to-r from-transparent via-white/25 to-transparent
-                    -translate-x-full group-hover/cta:translate-x-full transition-transform duration-1000"
-                />
-                <Plus className="relative w-4 h-4" />
-                <span className="relative">{cta.text}</span>
-              </Link>
-            </div>
-          )}
 
-          {collapsed && (
-            <div className="mt-6">
-              <Link
-                to={cta.href}
-                className={`relative mx-auto flex items-center justify-center
-                  w-11 h-11 rounded-xl
-                  bg-gradient-to-br ${cta.color}
-                  text-white border border-white/20
-                  hover:scale-110 transition-all duration-300`}
-                style={{
-                  boxShadow: `0 8px 20px ${cta.shadow}`,
-                }}
-                onMouseEnter={() => setHoveredItem("create")}
-                onMouseLeave={() => setHoveredItem(null)}
-              >
-                <Plus className="w-5 h-5" />
-              </Link>
-            </div>
-          )}
         </nav>
 
         {/* ── BOTTOM SECTION ── */}
