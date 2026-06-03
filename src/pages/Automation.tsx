@@ -101,41 +101,37 @@ const AutomationPage: React.FC = () => {
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-[#0a0e27] rounded-xl p-5 border border-white/[0.1]">
-          <div className="flex items-center gap-3">
-            <div className="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
-              <Zap className="w-6 h-6 text-green-600" />
-            </div>
-            <div>
-              <p className="text-sm text-gray-500">Active Automations</p>
-              <p className="text-2xl font-bold text-white">
-                {automations.filter((a) => a.isActive).length}
-              </p>
-            </div>
+        <div className="relative overflow-hidden rounded-2xl bg-white/[0.02] border border-white/[0.05] p-6 group/stat hover:bg-white/[0.04] transition-all">
+          <div className="absolute top-0 right-0 p-4 opacity-[0.08] group-hover/stat:scale-110 group-hover/stat:opacity-[0.15] transition-all duration-500">
+            <Zap size={80} style={{ color: '#10B981' }} />
+          </div>
+          <div className="relative z-10 flex flex-col justify-between h-full">
+            <p className="text-xs font-mono uppercase tracking-widest mb-1 text-emerald-500">Active Automations</p>
+            <p className="text-3xl font-bold text-white mt-1">
+              {automations.filter((a) => a.isActive).length}
+            </p>
           </div>
         </div>
-        <div className="bg-[#0a0e27] rounded-xl p-5 border border-white/[0.1]">
-          <div className="flex items-center gap-3">
-            <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-              <Play className="w-6 h-6 text-blue-600" />
-            </div>
-            <div>
-              <p className="text-sm text-gray-500">Total Executions</p>
-              <p className="text-2xl font-bold text-white">
-                {automations.reduce((sum, a) => sum + a.executionCount, 0)}
-              </p>
-            </div>
+
+        <div className="relative overflow-hidden rounded-2xl bg-white/[0.02] border border-white/[0.05] p-6 group/stat hover:bg-white/[0.04] transition-all">
+          <div className="absolute top-0 right-0 p-4 opacity-[0.08] group-hover/stat:scale-110 group-hover/stat:opacity-[0.15] transition-all duration-500">
+            <Play size={80} style={{ color: '#3B82F6' }} />
+          </div>
+          <div className="relative z-10 flex flex-col justify-between h-full">
+            <p className="text-xs font-mono uppercase tracking-widest mb-1 text-blue-500">Total Executions</p>
+            <p className="text-3xl font-bold text-white mt-1">
+              {automations.reduce((sum, a) => sum + a.executionCount, 0)}
+            </p>
           </div>
         </div>
-        <div className="bg-[#0a0e27] rounded-xl p-5 border border-white/[0.1]">
-          <div className="flex items-center gap-3">
-            <div className="p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
-              <MessageSquare className="w-6 h-6 text-purple-600" />
-            </div>
-            <div>
-              <p className="text-sm text-gray-500">Messages Sent</p>
-              <p className="text-2xl font-bold text-white">-</p>
-            </div>
+
+        <div className="relative overflow-hidden rounded-2xl bg-white/[0.02] border border-white/[0.05] p-6 group/stat hover:bg-white/[0.04] transition-all">
+          <div className="absolute top-0 right-0 p-4 opacity-[0.08] group-hover/stat:scale-110 group-hover/stat:opacity-[0.15] transition-all duration-500">
+            <MessageSquare size={80} style={{ color: '#8B5CF6' }} />
+          </div>
+          <div className="relative z-10 flex flex-col justify-between h-full">
+            <p className="text-xs font-mono uppercase tracking-widest mb-1 text-purple-500">Messages Sent</p>
+            <p className="text-3xl font-bold text-white mt-1">-</p>
           </div>
         </div>
       </div>
@@ -148,7 +144,7 @@ const AutomationPage: React.FC = () => {
           placeholder="Search automations..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full pl-10 pr-4 py-2 bg-[#0a0e27] border border-white/[0.1] rounded-lg"
+          className="w-full pl-10 pr-4 py-2.5 bg-white/[0.03] border border-white/[0.05] rounded-xl text-white placeholder:text-gray-500 focus:outline-none focus:border-white/[0.1] focus:bg-white/[0.05] transition-colors shadow-[inset_0_1px_2px_rgba(0,0,0,0.2)]"
         />
       </div>
 
@@ -157,7 +153,7 @@ const AutomationPage: React.FC = () => {
         {filteredAutomations.map((automation) => (
           <div
             key={automation.id}
-            className="bg-[#0a0e27] rounded-xl border border-white/[0.1] p-5 hover:shadow-md transition-shadow"
+            className="bg-white/[0.02] rounded-2xl border border-white/[0.05] p-5 hover:bg-emerald-500/[0.02] hover:shadow-[inset_0_0_0_1px_rgba(16,185,129,0.4)] transition-all duration-200 group/row"
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">

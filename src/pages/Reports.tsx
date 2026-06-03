@@ -194,7 +194,7 @@ const Reports: React.FC = () => {
       </div>
 
       {/* Tabs */}
-      <div className="flex space-x-1 bg-[#0a0e27]/[0.04] p-1 rounded-xl mb-6 w-fit">
+      <div className="flex space-x-1 bg-white/[0.02] border border-white/[0.05] p-1 rounded-xl mb-6 w-fit backdrop-blur-xl">
         {[
           { id: 'overview', label: 'Overview', icon: BarChart3 },
           { id: 'messages', label: 'Messages', icon: MessageSquare },
@@ -205,8 +205,8 @@ const Reports: React.FC = () => {
             key={tab.id}
             onClick={() => setActiveTab(tab.id as any)}
             className={`flex items-center px-4 py-2 rounded-lg font-medium transition-all ${activeTab === tab.id
-                ? 'bg-[#0a0e27] dark:bg-gray-700 text-white shadow-sm'
-                : 'text-gray-400 hover:text-white dark:hover:text-gray-200'
+                ? 'bg-emerald-600 text-white shadow-sm'
+                : 'text-gray-400 hover:text-white'
               }`}
           >
             <tab.icon className="w-4 h-4 mr-2" />
@@ -252,7 +252,7 @@ const Reports: React.FC = () => {
           {/* Charts Row */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Message Trends */}
-            <div className="bg-[#0a0e27] rounded-xl p-6 border border-white/[0.1]">
+            <div className="relative overflow-hidden bg-white/[0.02] border border-white/[0.05] rounded-2xl p-6 backdrop-blur-xl">
               <h3 className="text-lg font-semibold text-white mb-4">
                 Message Trends
               </h3>
@@ -274,7 +274,7 @@ const Reports: React.FC = () => {
             </div>
 
             {/* Contact Growth */}
-            <div className="bg-[#0a0e27] rounded-xl p-6 border border-white/[0.1]">
+            <div className="relative overflow-hidden bg-white/[0.02] border border-white/[0.05] rounded-2xl p-6 backdrop-blur-xl">
               <h3 className="text-lg font-semibold text-white mb-4">
                 Contact Growth
               </h3>
@@ -389,7 +389,7 @@ const Reports: React.FC = () => {
 
           {/* Message Type Breakdown */}
           {messageData.typeBreakdown && messageData.typeBreakdown.length > 0 && (
-            <div className="bg-[#0a0e27] rounded-xl p-6 border border-white/[0.1]">
+            <div className="relative overflow-hidden bg-white/[0.02] border border-white/[0.05] rounded-2xl p-6 backdrop-blur-xl">
               <h3 className="text-lg font-semibold text-white mb-4">
                 Message Types
               </h3>
@@ -454,15 +454,15 @@ const Reports: React.FC = () => {
           </div>
 
           {/* Recent Campaigns Table */}
-          <div className="bg-[#0a0e27] rounded-xl border border-white/[0.1] overflow-hidden">
-            <div className="p-6 border-b border-white/[0.1]">
+          <div className="relative overflow-hidden bg-white/[0.02] border border-white/[0.05] rounded-2xl backdrop-blur-xl">
+            <div className="p-6 border-b border-white/[0.05]">
               <h3 className="text-lg font-semibold text-white">
                 Recent Campaigns
               </h3>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-[#0a0e27]/[0.02]">
+                <thead className="bg-white/[0.02] border-b border-white/[0.05]">
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">
                       Campaign
@@ -484,10 +484,10 @@ const Reports: React.FC = () => {
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                <tbody className="divide-y divide-white/[0.02]">
                   {campaignData.campaigns?.length > 0 ? (
                     campaignData.campaigns.map((campaign: any) => (
-                      <tr key={campaign.id} className="hover:bg-[#0a0e27]/[0.04]">
+                      <tr key={campaign.id} className="hover:bg-emerald-500/[0.02] hover:shadow-[inset_0_0_0_1px_rgba(16,185,129,0.4)] transition-all duration-200 group/row">
                         <td className="px-6 py-4">
                           <div className="text-sm font-medium text-white">
                             {campaign.name}
@@ -594,7 +594,7 @@ const Reports: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Source Breakdown */}
             {contactData.sourceBreakdown && contactData.sourceBreakdown.length > 0 && (
-              <div className="bg-[#0a0e27] rounded-xl p-6 border border-white/[0.1]">
+              <div className="relative overflow-hidden bg-white/[0.02] border border-white/[0.05] rounded-2xl p-6 backdrop-blur-xl">
                 <h3 className="text-lg font-semibold text-white mb-4">
                   Contact Sources
                 </h3>
@@ -615,7 +615,7 @@ const Reports: React.FC = () => {
 
             {/* Top Tags */}
             {contactData.topTags && contactData.topTags.length > 0 && (
-              <div className="bg-[#0a0e27] rounded-xl p-6 border border-white/[0.1]">
+              <div className="relative overflow-hidden bg-white/[0.02] border border-white/[0.05] rounded-2xl p-6 backdrop-blur-xl">
                 <h3 className="text-lg font-semibold text-white mb-4">
                   Top Tags
                 </h3>
@@ -662,47 +662,49 @@ const StatCard: React.FC<StatCardProps> = ({
   compact = false,
 }) => {
   const colors = {
-    blue: 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400',
-    green: 'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400',
-    purple: 'bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400',
-    orange: 'bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400',
-    red: 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400',
+    blue: 'text-blue-500',
+    green: 'text-emerald-500',
+    purple: 'text-purple-500',
+    orange: 'text-orange-500',
+    red: 'text-red-500',
   };
 
   return (
     <div
-      className={`bg-[#0a0e27] rounded-xl border border-white/[0.1] ${compact ? 'p-4' : 'p-6'
+      className={`relative overflow-hidden bg-white/[0.02] border border-white/[0.05] rounded-2xl group/stat hover:bg-white/[0.04] transition-all backdrop-blur-xl ${compact ? 'p-4' : 'p-6'
         }`}
     >
-      <div className="flex items-center justify-between">
-        <div className={`p-2 rounded-lg ${colors[color]}`}>
-          <Icon className={compact ? 'w-4 h-4' : 'w-5 h-5'} />
+      <div className="absolute top-0 right-0 p-4 opacity-[0.08] group-hover/stat:scale-110 group-hover/stat:opacity-[0.15] transition-all duration-500">
+        <Icon size={compact ? 60 : 80} className={colors[color]} />
+      </div>
+      <div className="relative z-10 flex flex-col justify-between h-full">
+        <div className="flex items-center justify-between mb-2">
+          <p className={`text-xs font-mono uppercase tracking-widest ${colors[color]}`}>{title}</p>
+          {change !== undefined && (
+            <div
+              className={`flex items-center text-sm ${change >= 0 ? 'text-emerald-500' : 'text-red-500'
+                }`}
+            >
+              {change >= 0 ? (
+                <ArrowUpRight className="w-4 h-4" />
+              ) : (
+                <ArrowDownRight className="w-4 h-4" />
+              )}
+              {Math.abs(change)}%
+            </div>
+          )}
         </div>
-        {change !== undefined && (
-          <div
-            className={`flex items-center text-sm ${change >= 0 ? 'text-green-600' : 'text-red-600'
+        <div>
+          <p
+            className={`font-bold text-white mt-1 ${compact ? 'text-2xl' : 'text-3xl'
               }`}
           >
-            {change >= 0 ? (
-              <ArrowUpRight className="w-4 h-4" />
-            ) : (
-              <ArrowDownRight className="w-4 h-4" />
-            )}
-            {Math.abs(change)}%
-          </div>
-        )}
-      </div>
-      <div className={compact ? 'mt-2' : 'mt-4'}>
-        <p
-          className={`font-bold text-white ${compact ? 'text-xl' : 'text-2xl'
-            }`}
-        >
-          {typeof value === 'number' ? value.toLocaleString() : value}
-        </p>
-        <p className="text-sm text-gray-400 mt-1">{title}</p>
-        {subValue && (
-          <p className="text-xs text-gray-400 dark:text-gray-500">{subValue}</p>
-        )}
+            {typeof value === 'number' ? value.toLocaleString() : value}
+          </p>
+          {subValue && (
+            <p className="text-xs text-gray-500 mt-1">{subValue}</p>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -736,7 +738,7 @@ const QuickStat: React.FC<QuickStatProps> = ({
   };
 
   return (
-    <div className="bg-[#0a0e27] rounded-xl p-4 border border-white/[0.1] flex items-center">
+    <div className="relative overflow-hidden bg-white/[0.02] border border-white/[0.05] rounded-2xl p-4 flex items-center backdrop-blur-xl">
       <Icon className={`w-8 h-8 ${colors[color]} mr-3`} />
       <div>
         <p className="text-xl font-bold text-white">{value}</p>

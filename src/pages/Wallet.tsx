@@ -143,8 +143,8 @@ const NotActiveView: React.FC<NotActiveViewProps> = ({
 
       {/* Status Card */}
       <div
-        className="bg-[#0a0e27] rounded-2xl shadow-sm
-                      border border-white/[0.1] p-6 mb-6"
+        className="relative overflow-hidden bg-white/[0.02] rounded-2xl shadow-xl
+                      border border-white/[0.05] p-6 mb-6 backdrop-blur-xl"
       >
         {isPending ? (
           /* ── Pending State ── */
@@ -226,9 +226,8 @@ const NotActiveView: React.FC<NotActiveViewProps> = ({
 
       {/* Wallet Feature Description */}
       <div
-        className="bg-gradient-to-br from-green-50 to-emerald-50
-                      dark:from-green-900/20 dark:to-emerald-900/20
-                      rounded-2xl p-6 border border-green-200 dark:border-green-800"
+        className="relative overflow-hidden bg-emerald-500/10 backdrop-blur-xl
+                      rounded-2xl p-6 border border-emerald-500/20"
       >
         <h3 className="font-bold text-green-800 dark:text-green-300 mb-4 flex items-center gap-2">
           <Info className="w-5 h-5" />
@@ -418,8 +417,8 @@ const ActiveWalletView: React.FC<ActiveWalletViewProps> = ({
         {/* Credit Card (if enabled) */}
         {walletData.creditEnabled ? (
           <div
-            className="bg-[#0a0e27] rounded-2xl p-6
-                          border border-white/[0.1] shadow-sm"
+            className="relative overflow-hidden bg-white/[0.02] rounded-2xl p-6
+                          border border-white/[0.05] shadow-xl backdrop-blur-xl"
           >
             <div className="flex items-center gap-2 mb-3">
               <CreditCard className="w-4 h-4 text-blue-500" />
@@ -454,8 +453,8 @@ const ActiveWalletView: React.FC<ActiveWalletViewProps> = ({
         ) : (
           /* Wallet Info Card (when no credit) */
           <div
-            className="bg-[#0a0e27] rounded-2xl p-6
-                          border border-white/[0.1] shadow-sm"
+            className="relative overflow-hidden bg-white/[0.02] rounded-2xl p-6
+                          border border-white/[0.05] shadow-xl backdrop-blur-xl"
           >
             <div className="flex items-center gap-2 mb-3">
               <Info className="w-4 h-4 text-gray-400" />
@@ -502,8 +501,8 @@ const ActiveWalletView: React.FC<ActiveWalletViewProps> = ({
 
       {/* Tabs */}
       <div
-        className="bg-[#0a0e27] rounded-2xl border
-                      border-white/[0.1] overflow-hidden shadow-sm"
+        className="relative overflow-hidden bg-white/[0.02] rounded-2xl border
+                      border-white/[0.05] shadow-xl backdrop-blur-xl"
       >
         {/* Tab Headers */}
         <div className="flex border-b border-white/[0.1]">
@@ -518,8 +517,8 @@ const ActiveWalletView: React.FC<ActiveWalletViewProps> = ({
               className={`flex-1 py-3.5 text-sm font-medium capitalize
                           transition-all
                 ${activeTab === tab.id
-                  ? "text-green-600 border-b-2 border-green-600 bg-green-50 dark:bg-green-900/20"
-                  : "text-gray-500 hover:text-gray-300 dark:hover:text-gray-300 hover:bg-[#0a0e27]/[0.04]"
+                  ? "text-emerald-500 border-b-2 border-emerald-500 bg-emerald-500/10"
+                  : "text-gray-500 hover:text-gray-300 hover:bg-white/[0.04]"
                 }`}
             >
               {tab.label}
@@ -596,10 +595,7 @@ const WalletOverview: React.FC<{ walletData: WalletData }> = ({
           bg: "bg-blue-50 dark:bg-blue-900/20",
         },
       ].map((item, i) => (
-        <div
-          key={i}
-          className={`${item.bg} rounded-xl p-4 border border-transparent`}
-        >
+          className={`${item.bg.replace(/bg-.*50\s/, 'bg-white/[0.02] ')} rounded-xl p-4 border border-white/[0.05] relative overflow-hidden`}
           <div className="flex items-center gap-2 mb-1">
             <item.icon className={`w-4 h-4 ${item.color}`} />
             <span className="text-xs text-gray-400">

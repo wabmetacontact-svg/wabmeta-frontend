@@ -101,21 +101,21 @@ const Settings: React.FC = () => {
       <div className="flex flex-col lg:flex-row gap-6">
         {/* Sidebar Tabs */}
         <div className="lg:w-64 flex-shrink-0">
-          <div className="bg-[#0a0e27] rounded-xl border border-white/[0.1] overflow-hidden sticky top-6">
+          <div className="relative overflow-hidden bg-white/[0.02] rounded-2xl border border-white/[0.05] sticky top-6 backdrop-blur-xl">
             <nav className="flex flex-col">
               {tabs.map((tab) => (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id as SettingsTab)}
-                  className={`flex items-center px-4 py-3 text-left transition-colors border-l-4 ${activeTab === tab.id
-                      ? 'bg-green-50 dark:bg-green-900/20 border-green-600 text-green-700 dark:text-green-400'
-                      : 'border-transparent text-gray-400 hover:bg-[#0a0e27]/[0.04]'
+                  className={`flex items-center px-4 py-3 text-left transition-all border-l-4 ${activeTab === tab.id
+                      ? 'bg-emerald-500/10 border-emerald-500 text-emerald-500'
+                      : 'border-transparent text-gray-400 hover:bg-white/[0.04]'
                     }`}
                 >
-                  <tab.icon className={`w-5 h-5 mr-3 ${activeTab === tab.id ? 'text-green-600' : ''
+                  <tab.icon className={`w-5 h-5 mr-3 ${activeTab === tab.id ? 'text-emerald-500' : ''
                     }`} />
                   <div>
-                    <p className={`font-medium ${activeTab === tab.id ? 'text-green-700 dark:text-green-400' : ''
+                    <p className={`font-medium ${activeTab === tab.id ? 'text-emerald-500' : ''
                       }`}>
                       {tab.name}
                     </p>
@@ -128,28 +128,28 @@ const Settings: React.FC = () => {
             </nav>
 
             {/* Quick Links */}
-            <div className="border-t border-white/[0.1] p-4">
+            <div className="border-t border-white/[0.05] p-4 relative z-10">
               <p className="text-xs text-gray-500 uppercase tracking-wider mb-3">
                 Quick Links
               </p>
               <div className="space-y-2">
                 <Link
                   to="/dashboard/settings/profile"
-                  className="flex items-center text-sm text-gray-400 hover:text-green-600 dark:hover:text-green-400"
+                  className="flex items-center text-sm text-gray-400 hover:text-emerald-500"
                 >
                   <User className="w-4 h-4 mr-2" />
                   My Profile
                 </Link>
                 <Link
                   to="/dashboard/settings/team"
-                  className="flex items-center text-sm text-gray-400 hover:text-green-600 dark:hover:text-green-400"
+                  className="flex items-center text-sm text-gray-400 hover:text-emerald-500"
                 >
                   <Globe className="w-4 h-4 mr-2" />
                   Team Members
                 </Link>
                 <Link
                   to="/dashboard/settings/billing"
-                  className="flex items-center text-sm text-gray-400 hover:text-green-600 dark:hover:text-green-400"
+                  className="flex items-center text-sm text-gray-400 hover:text-emerald-500"
                 >
                   <CreditCard className="w-4 h-4 mr-2" />
                   Billing & Plans
@@ -161,8 +161,10 @@ const Settings: React.FC = () => {
 
         {/* Main Content */}
         <div className="flex-1 min-w-0">
-          <div className="bg-[#0a0e27] rounded-xl border border-white/[0.1] p-6">
-            {renderTabContent()}
+          <div className="relative overflow-hidden bg-white/[0.02] rounded-2xl border border-white/[0.05] p-6 backdrop-blur-xl">
+            <div className="relative z-10">
+              {renderTabContent()}
+            </div>
           </div>
         </div>
       </div>

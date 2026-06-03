@@ -469,10 +469,9 @@ const Billing: React.FC = () => {
         </div>
       </div>
 
-      {/* Current Plan */}
       {subscription && (
-        <div className="bg-[#0a0e27] rounded-xl shadow-sm border border-white/[0.1] p-6 mb-8">
-          <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
+        <div className="relative overflow-hidden bg-white/[0.02] rounded-2xl shadow-xl border border-white/[0.05] p-6 mb-8 backdrop-blur-xl">
+          <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 relative z-10">
             <div>
               <h2 className="text-lg font-semibold text-white mb-1">
                 Current Plan
@@ -573,12 +572,12 @@ const Billing: React.FC = () => {
 
       {/* Billing Cycle Toggle */}
       <div className="flex justify-center mb-8">
-        <div className="bg-[#0a0e27]/[0.04] rounded-xl p-1.5 inline-flex">
+        <div className="bg-white/[0.02] border border-white/[0.05] rounded-xl p-1.5 inline-flex backdrop-blur-xl">
           <button
             onClick={() => setBillingCycle('monthly')}
             className={`px-6 py-2.5 rounded-lg font-medium transition-all ${billingCycle === 'monthly'
-              ? 'bg-[#0a0e27] dark:bg-gray-700 text-white shadow-sm'
-              : 'text-gray-400 hover:text-white dark:hover:text-gray-200'
+              ? 'bg-emerald-600 text-white shadow-sm'
+              : 'text-gray-400 hover:text-white'
               }`}
           >
             Monthly
@@ -586,8 +585,8 @@ const Billing: React.FC = () => {
           <button
             onClick={() => setBillingCycle('yearly')}
             className={`px-6 py-2.5 rounded-lg font-medium transition-all flex items-center ${billingCycle === 'yearly'
-              ? 'bg-[#0a0e27] dark:bg-gray-700 text-white shadow-sm'
-              : 'text-gray-400 hover:text-white dark:hover:text-gray-200'
+              ? 'bg-emerald-600 text-white shadow-sm'
+              : 'text-gray-400 hover:text-white'
               }`}
           >
             Yearly
@@ -613,7 +612,7 @@ const Billing: React.FC = () => {
           <p className="text-gray-400">Choose the best plan that fits your business needs</p>
         </div>
 
-        <div className="overflow-x-auto rounded-2xl border border-white/[0.1] shadow-xl bg-[#0a0e27]">
+        <div className="overflow-x-auto rounded-2xl border border-white/[0.05] shadow-2xl bg-white/[0.02] backdrop-blur-xl">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-[#050816]/50">
@@ -710,7 +709,7 @@ const Billing: React.FC = () => {
           ))}
         </div>
       ) : (
-        <div className="text-center py-20 mb-12 bg-[#0a0e27] rounded-3xl border-2 border-dashed border-white/[0.1] shadow-sm">
+        <div className="text-center py-20 mb-12 bg-white/[0.02] backdrop-blur-xl rounded-3xl border-2 border-dashed border-white/[0.05] shadow-sm">
           <Loader2 className="w-10 h-10 animate-spin text-green-600 mx-auto mb-4" />
           <p className="text-gray-400 font-medium text-lg">
             Synchronizing with server...
@@ -719,19 +718,19 @@ const Billing: React.FC = () => {
       )}
 
       {/* Invoices / Billing History */}
-      <div className="bg-[#0a0e27] rounded-xl shadow-sm border border-white/[0.1] p-6">
-        <h2 className="text-lg font-semibold text-white mb-4">
+      <div className="relative overflow-hidden bg-white/[0.02] rounded-2xl shadow-xl border border-white/[0.05] p-6 backdrop-blur-xl">
+        <h2 className="text-lg font-semibold text-white mb-4 relative z-10">
           Billing History
         </h2>
         {invoices.length > 0 ? (
-          <div className="space-y-2">
+          <div className="space-y-2 relative z-10">
             {invoices.map((invoice) => (
               <div
                 key={invoice.id}
-                className="flex items-center justify-between p-4 hover:bg-[#0a0e27]/[0.04] rounded-lg transition-colors"
+                className="flex items-center justify-between p-4 hover:bg-emerald-500/[0.02] hover:shadow-[inset_0_0_0_1px_rgba(16,185,129,0.4)] rounded-xl transition-all group"
               >
                 <div className="flex items-center gap-4">
-                  <div className="p-2 bg-[#0a0e27]/[0.04] dark:bg-gray-700 rounded-lg">
+                  <div className="p-2 bg-white/[0.04] rounded-lg">
                     <CreditCard className="w-5 h-5 text-gray-400" />
                   </div>
                   <div>
@@ -830,8 +829,8 @@ const UsageCard: React.FC<UsageCardProps> = ({
   const isCritical = safePercentage >= 95;
 
   return (
-    <div className="bg-[#0a0e27] rounded-xl p-5 border border-white/[0.1] hover:shadow-md transition-shadow">
-      <div className="flex items-center justify-between mb-4">
+    <div className="relative overflow-hidden bg-white/[0.02] border border-white/[0.05] rounded-2xl p-5 hover:bg-emerald-500/[0.02] hover:shadow-[inset_0_0_0_1px_rgba(16,185,129,0.4)] transition-all duration-200 group/stat backdrop-blur-xl">
+      <div className="flex items-center justify-between mb-4 relative z-10">
         <div className={`p-2.5 rounded-lg ${colorClasses[color]}`}>
           <Icon className="w-5 h-5" />
         </div>
@@ -888,12 +887,12 @@ const PricingCard: React.FC<PricingCardProps> = ({
 
   return (
     <div
-      className={`bg-[#0a0e27] rounded-xl p-6 border-2 transition-all hover:shadow-lg ${plan.popular
-        ? 'border-green-500 dark:border-green-400 shadow-green-100 dark:shadow-none'
+      className={`relative overflow-hidden bg-white/[0.02] rounded-2xl p-6 transition-all backdrop-blur-xl border-2 ${plan.popular
+        ? 'border-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.3)]'
         : isCurrentPlan
-          ? 'border-blue-500 dark:border-blue-400'
-          : 'border-white/[0.1] hover:border-white/[0.12] dark:hover:border-gray-600'
-        } relative`}
+          ? 'border-blue-500'
+          : 'border-white/[0.05] hover:border-white/[0.1] hover:bg-white/[0.04]'
+        }`}
     >
       {/* Badges */}
       {plan.popular && (

@@ -112,22 +112,22 @@ const ChatbotList: React.FC = () => {
       </div>
 
       {/* How it works - Quick Guide */}
-      <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-xl p-4">
-        <p className="text-sm font-semibold text-blue-700 dark:text-blue-300 mb-2">🚀 Chatbot Setup Guide:</p>
-        <div className="flex items-center gap-2 text-xs text-blue-600 dark:text-blue-400 flex-wrap">
-          <span className="flex items-center gap-1 bg-[#0a0e27] dark:bg-blue-900/40 px-2 py-1 rounded-full border border-blue-200 dark:border-blue-600">
+      <div className="bg-[#050816]/50 border border-white/[0.05] rounded-xl p-4">
+        <p className="text-sm font-semibold text-blue-500 mb-2">🚀 Chatbot Setup Guide:</p>
+        <div className="flex items-center gap-2 text-xs text-blue-400 flex-wrap">
+          <span className="flex items-center gap-1 bg-blue-500/10 px-2 py-1 rounded-full border border-blue-500/20">
             1️⃣ Create Chatbot
           </span>
-          <span className="text-blue-400">→</span>
-          <span className="flex items-center gap-1 bg-[#0a0e27] dark:bg-blue-900/40 px-2 py-1 rounded-full border border-blue-200 dark:border-blue-600">
+          <span className="text-blue-500/50">→</span>
+          <span className="flex items-center gap-1 bg-blue-500/10 px-2 py-1 rounded-full border border-blue-500/20">
           2️⃣ Add nodes in the Flow Builder
           </span>
-          <span className="text-blue-400">→</span>
-          <span className="flex items-center gap-1 bg-[#0a0e27] dark:bg-blue-900/40 px-2 py-1 rounded-full border border-blue-200 dark:border-blue-600">
+          <span className="text-blue-500/50">→</span>
+          <span className="flex items-center gap-1 bg-blue-500/10 px-2 py-1 rounded-full border border-blue-500/20">
           3️⃣ Set Keywords in Settings
           </span>
-          <span className="text-blue-400">→</span>
-          <span className="flex items-center gap-1 bg-[#0a0e27] dark:bg-blue-900/40 px-2 py-1 rounded-full border border-blue-200 dark:border-blue-600">
+          <span className="text-blue-500/50">→</span>
+          <span className="flex items-center gap-1 bg-blue-500/10 px-2 py-1 rounded-full border border-blue-500/20">
             4️⃣ Save → Activate ✅
           </span>
         </div>
@@ -141,7 +141,7 @@ const ChatbotList: React.FC = () => {
           placeholder="Search chatbots..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full pl-10 pr-4 py-2 bg-[#0a0e27] border border-white/[0.1] rounded-lg text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent"
+          className="w-full pl-10 pr-4 py-2.5 bg-white/[0.03] border border-white/[0.05] rounded-xl text-white placeholder:text-gray-500 focus:outline-none focus:border-white/[0.1] focus:bg-white/[0.05] transition-colors shadow-[inset_0_1px_2px_rgba(0,0,0,0.2)]"
         />
       </div>
 
@@ -150,7 +150,7 @@ const ChatbotList: React.FC = () => {
         {filteredChatbots.map((chatbot) => (
           <div
             key={chatbot.id}
-            className="bg-[#0a0e27] rounded-xl border border-white/[0.1] p-5 hover:shadow-md transition-shadow"
+            className="relative overflow-hidden rounded-2xl bg-white/[0.02] border border-white/[0.05] p-5 hover:bg-emerald-500/[0.02] hover:shadow-[inset_0_0_0_1px_rgba(16,185,129,0.4)] transition-all duration-200 group"
           >
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-center gap-3">
@@ -169,31 +169,31 @@ const ChatbotList: React.FC = () => {
                 <button className="p-1 hover:bg-[#0a0e27]/[0.04] dark:hover:bg-gray-700 rounded transition-colors">
                   <MoreVertical className="w-5 h-5 text-gray-400" />
                 </button>
-                <div className="absolute right-0 mt-1 w-40 bg-[#0a0e27] dark:bg-gray-700 rounded-lg shadow-lg border border-white/[0.1] dark:border-gray-600 py-1 hidden group-hover:block z-10">
+                <div className="absolute right-0 mt-1 w-40 bg-[#0a0e27] rounded-xl shadow-xl border border-white/[0.1] py-1 hidden group-hover:block z-20">
                   <button
                     onClick={() => navigate(`/dashboard/chatbots/${chatbot.id}`)}
-                    className="flex items-center gap-2 w-full px-3 py-2 text-sm hover:bg-[#050816] dark:hover:bg-gray-600 text-gray-300"
+                    className="flex items-center gap-2 w-full px-3 py-2 text-sm hover:bg-white/[0.04] text-gray-300"
                   >
                     <Settings className="w-4 h-4" />
                     Edit Flow
                   </button>
                   <button
                     onClick={() => handleToggleStatus(chatbot)}
-                    className="flex items-center gap-2 w-full px-3 py-2 text-sm hover:bg-[#050816] dark:hover:bg-gray-600 text-gray-300"
+                    className="flex items-center gap-2 w-full px-3 py-2 text-sm hover:bg-white/[0.04] text-gray-300"
                   >
                     {chatbot.status === 'ACTIVE' ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
                     {chatbot.status === 'ACTIVE' ? 'Pause' : 'Activate'}
                   </button>
                   <button
                     onClick={() => handleDuplicate(chatbot)}
-                    className="flex items-center gap-2 w-full px-3 py-2 text-sm hover:bg-[#050816] dark:hover:bg-gray-600 text-gray-300"
+                    className="flex items-center gap-2 w-full px-3 py-2 text-sm hover:bg-white/[0.04] text-gray-300"
                   >
                     <Copy className="w-4 h-4" />
                     Duplicate
                   </button>
                   <button
                     onClick={() => handleDelete(chatbot)}
-                    className="flex items-center gap-2 w-full px-3 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+                    className="flex items-center gap-2 w-full px-3 py-2 text-sm text-red-500 hover:bg-red-500/10"
                   >
                     <Trash2 className="w-4 h-4" />
                     Delete
