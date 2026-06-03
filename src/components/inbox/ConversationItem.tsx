@@ -16,6 +16,7 @@ import {
   Instagram,
   MessageSquare
 } from 'lucide-react';
+import { FaWhatsapp } from "react-icons/fa";
 import {
   getContactName,
   getContactInitial,
@@ -136,7 +137,7 @@ const ConversationItem: React.FC<Props> = ({
     }
     return (
       <div className="absolute -top-1 -left-1 w-5 h-5 rounded-full bg-[#25D366] flex items-center justify-center border-2 border-[#0a0e27] shadow-lg z-10">
-        <MessageSquare size={10} className="text-white" />
+        <FaWhatsapp size={10} className="text-white" />
       </div>
     );
   };
