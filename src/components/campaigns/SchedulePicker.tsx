@@ -31,15 +31,15 @@ const SchedulePicker: React.FC<SchedulePickerProps> = ({
           onClick={() => onTypeChange('now')}
           className={`p-6 rounded-xl border-2 text-center transition-all ${
             scheduleType === 'now'
-              ? 'border-primary-500 bg-primary-50'
-              : 'border-white/[0.1] hover:border-white/[0.12]'
+              ? 'border-emerald-500 bg-emerald-500/[0.02] shadow-[inset_0_0_0_1px_rgba(16,185,129,0.4)]'
+              : 'border-white/[0.05] hover:bg-emerald-500/[0.02] hover:shadow-[inset_0_0_0_1px_rgba(16,185,129,0.4)] bg-white/[0.02]'
           }`}
         >
           <div className={`w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-3 ${
-            scheduleType === 'now' ? 'bg-primary-100' : 'bg-[#0a0e27]/[0.04]'
+            scheduleType === 'now' ? 'bg-emerald-500/20' : 'bg-white/[0.04]'
           }`}>
             <Send className={`w-7 h-7 ${
-              scheduleType === 'now' ? 'text-primary-600' : 'text-gray-500'
+              scheduleType === 'now' ? 'text-emerald-500' : 'text-gray-500'
             }`} />
           </div>
           <h4 className="font-semibold text-white mb-1">Send Now</h4>
@@ -50,15 +50,15 @@ const SchedulePicker: React.FC<SchedulePickerProps> = ({
           onClick={() => onTypeChange('later')}
           className={`p-6 rounded-xl border-2 text-center transition-all ${
             scheduleType === 'later'
-              ? 'border-primary-500 bg-primary-50'
-              : 'border-white/[0.1] hover:border-white/[0.12]'
+              ? 'border-emerald-500 bg-emerald-500/[0.02] shadow-[inset_0_0_0_1px_rgba(16,185,129,0.4)]'
+              : 'border-white/[0.05] hover:bg-emerald-500/[0.02] hover:shadow-[inset_0_0_0_1px_rgba(16,185,129,0.4)] bg-white/[0.02]'
           }`}
         >
           <div className={`w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-3 ${
-            scheduleType === 'later' ? 'bg-primary-100' : 'bg-[#0a0e27]/[0.04]'
+            scheduleType === 'later' ? 'bg-emerald-500/20' : 'bg-white/[0.04]'
           }`}>
             <Clock className={`w-7 h-7 ${
-              scheduleType === 'later' ? 'text-primary-600' : 'text-gray-500'
+              scheduleType === 'later' ? 'text-emerald-500' : 'text-gray-500'
             }`} />
           </div>
           <h4 className="font-semibold text-white mb-1">Schedule</h4>
@@ -68,7 +68,7 @@ const SchedulePicker: React.FC<SchedulePickerProps> = ({
 
       {/* Schedule Details */}
       {scheduleType === 'later' && (
-        <div className="bg-[#050816] rounded-xl p-6 space-y-4 animate-fade-in">
+        <div className="bg-white/[0.02] border border-white/[0.05] rounded-xl p-6 space-y-4 animate-fade-in backdrop-blur-xl">
           <h4 className="font-medium text-white">Schedule Details</h4>
           
           <div className="grid grid-cols-2 gap-4">
@@ -83,7 +83,7 @@ const SchedulePicker: React.FC<SchedulePickerProps> = ({
                   value={scheduledDate}
                   min={today}
                   onChange={(e) => onDateChange(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 bg-[#0a0e27] border border-white/[0.1] rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full pl-10 pr-4 py-2.5 bg-white/[0.02] border border-white/[0.05] rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all text-white"
                 />
               </div>
             </div>
@@ -99,7 +99,7 @@ const SchedulePicker: React.FC<SchedulePickerProps> = ({
                   value={scheduledTime}
                   min={scheduledDate === today ? minTime : undefined}
                   onChange={(e) => onTimeChange(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 bg-[#0a0e27] border border-white/[0.1] rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full pl-10 pr-4 py-2.5 bg-white/[0.02] border border-white/[0.05] rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all text-white"
                 />
               </div>
             </div>

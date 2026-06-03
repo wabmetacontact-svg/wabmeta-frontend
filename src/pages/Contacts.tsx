@@ -106,7 +106,7 @@ const WhatsAppStatusBadge: React.FC<{
 }> = ({ fetched, profileName, attempts }) => {
   if (fetched && profileName) {
     return (
-      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
         <CheckCircle className="w-3 h-3 mr-1" />
         WhatsApp Verified
       </span>
@@ -115,7 +115,7 @@ const WhatsAppStatusBadge: React.FC<{
 
   if (attempts > 0 && !fetched) {
     return (
-      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
+      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-amber-500/10 text-amber-500 border border-amber-500/20">
         <AlertTriangle className="w-3 h-3 mr-1" />
         Verification Failed
       </span>
@@ -123,7 +123,7 @@ const WhatsAppStatusBadge: React.FC<{
   }
 
   return (
-    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-[#0a0e27]/[0.04] text-gray-400">
+    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-white/[0.04] text-gray-400 border border-white/[0.05]">
       <Clock className="w-3 h-3 mr-1" />
       Pending Verification
     </span>
@@ -136,9 +136,9 @@ const WhatsAppStatusBadge: React.FC<{
 
 const ContactStatusBadge: React.FC<{ status: Contact['status'] }> = ({ status }) => {
   const styles = {
-    active: 'bg-green-100 text-green-800',
-    inactive: 'bg-red-100 text-red-800',
-    pending: 'bg-yellow-100 text-yellow-800',
+    active: 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20',
+    inactive: 'bg-red-500/10 text-red-500 border border-red-500/20',
+    pending: 'bg-yellow-500/10 text-yellow-500 border border-yellow-500/20',
   };
 
   const labels = {

@@ -17,37 +17,37 @@ const WhatsAppConnectionBadge: React.FC<ConnectionBadgeProps> = ({
     CLOUD_API: {
       label: 'Cloud API',
       icon: Cloud,
-      bgColor: 'bg-green-100 dark:bg-green-900/30',
-      textColor: 'text-green-700 dark:text-green-400',
-      borderColor: 'border-green-200 dark:border-green-800',
-      iconColor: 'text-green-600 dark:text-green-500',
+      bgColor: 'bg-emerald-500/10',
+      textColor: 'text-emerald-500',
+      borderColor: 'border-emerald-500/20',
+      iconColor: 'text-emerald-500',
       recommended: true,
     },
     WHATSAPP_BUSINESS_APP: {
       label: 'Business App',
       icon: Smartphone,
-      bgColor: 'bg-orange-100 dark:bg-orange-900/30',
-      textColor: 'text-orange-700 dark:text-orange-400',
-      borderColor: 'border-orange-200 dark:border-orange-800',
-      iconColor: 'text-orange-600 dark:text-orange-500',
+      bgColor: 'bg-orange-500/10',
+      textColor: 'text-orange-500',
+      borderColor: 'border-orange-500/20',
+      iconColor: 'text-orange-500',
       recommended: false,
     },
     BUSINESS_APP: {
       label: 'Business App',
       icon: Smartphone,
-      bgColor: 'bg-orange-100 dark:bg-orange-900/30',
-      textColor: 'text-orange-700 dark:text-orange-400',
-      borderColor: 'border-orange-200 dark:border-orange-800',
-      iconColor: 'text-orange-600 dark:text-orange-500',
+      bgColor: 'bg-orange-500/10',
+      textColor: 'text-orange-500',
+      borderColor: 'border-orange-500/20',
+      iconColor: 'text-orange-500',
       recommended: false,
     },
     ON_PREMISE: {
       label: 'On-Premise',
       icon: Server,
-      bgColor: 'bg-blue-100 dark:bg-blue-900/30',
-      textColor: 'text-blue-700 dark:text-blue-400',
-      borderColor: 'border-blue-200 dark:border-blue-800',
-      iconColor: 'text-blue-600 dark:text-blue-500',
+      bgColor: 'bg-blue-500/10',
+      textColor: 'text-blue-500',
+      borderColor: 'border-blue-500/20',
+      iconColor: 'text-blue-500',
       recommended: false,
     },
   };
@@ -68,14 +68,14 @@ const WhatsAppConnectionBadge: React.FC<ConnectionBadgeProps> = ({
         <StatusIcon 
           className={`w-3.5 h-3.5 ${
             status === 'active' 
-              ? 'text-green-600 dark:text-green-500' 
+              ? 'text-emerald-500' 
               : 'text-gray-400'
           }`} 
         />
       </div>
 
       {showRecommended && config.recommended && (
-        <span className="text-xs bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 px-2 py-0.5 rounded-full font-medium">
+        <span className="text-xs bg-yellow-500/10 text-yellow-500 border border-yellow-500/20 px-2 py-0.5 rounded-full font-medium">
           Recommended
         </span>
       )}
