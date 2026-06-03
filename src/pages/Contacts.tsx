@@ -173,7 +173,7 @@ const ContactRow: React.FC<{
     'Unknown';
 
   return (
-    <tr className="hover:bg-white/[0.02] transition-colors group/row">
+    <tr className="hover:bg-emerald-500/[0.02] hover:shadow-[inset_0_0_0_1px_rgba(16,185,129,0.4)] transition-all duration-200 group/row">
       {/* Checkbox */}
       <td className="px-4 py-3">
         <button onClick={() => onSelect(contact.id)}>
@@ -1088,31 +1088,31 @@ const Contacts: React.FC = () => {
 
           {/* Bulk Actions */}
           {selectedContacts.length > 0 && (
-            <div className="bg-primary-50 border border-primary-200 rounded-xl p-4 flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <CheckSquare className="w-5 h-5 text-primary-600" />
-                <span className="font-medium text-primary-900">
+            <div className="relative overflow-hidden rounded-2xl bg-emerald-500/10 border border-emerald-500/20 p-4 flex items-center justify-between backdrop-blur-xl">
+              <div className="flex items-center space-x-3 relative z-10">
+                <CheckSquare className="w-5 h-5 text-emerald-400" />
+                <span className="font-medium text-emerald-50">
                   {selectedContacts.length} contact(s) selected
                 </span>
               </div>
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-2 relative z-10">
                 <button
                   onClick={() => setShowAddToGroupModal(true)}
-                  className="px-3 py-1.5 bg-[#0a0e27] border border-green-500/30 text-green-500 rounded-lg hover:bg-green-500/10 text-sm font-medium transition-colors"
+                  className="px-3 py-1.5 bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 rounded-lg hover:bg-emerald-500/30 hover:text-emerald-200 text-sm font-medium transition-colors"
                 >
                   <Users className="w-4 h-4 inline mr-1" />
                   Add to Group
                 </button>
                 <button
                   onClick={handleBulkRefreshProfiles}
-                  className="px-3 py-1.5 bg-[#0a0e27] border border-primary-300 text-primary-500 rounded-lg hover:bg-primary-500/10 text-sm font-medium transition-colors"
+                  className="px-3 py-1.5 bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 rounded-lg hover:bg-emerald-500/30 hover:text-emerald-200 text-sm font-medium transition-colors"
                 >
                   <RefreshCw className="w-4 h-4 inline mr-1" />
                   Verify WhatsApp
                 </button>
                 <button
                   onClick={() => handleBulkAction('delete')}
-                  className="px-3 py-1.5 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 text-sm font-medium transition-colors"
+                  className="px-3 py-1.5 bg-red-500/10 border border-red-500/20 text-red-400 rounded-lg hover:bg-red-500/20 hover:text-red-300 text-sm font-medium transition-colors"
                 >
                   <Trash2 className="w-4 h-4 inline mr-1" />
                   Delete
