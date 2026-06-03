@@ -19,9 +19,9 @@ const PageSkeleton: React.FC = () => {
           <div
             key={i}
             className="relative h-32 rounded-2xl overflow-hidden
-              bg-white/[0.03] backdrop-blur-xl
-              border border-white/[0.06]
-              p-5"
+              bg-white/[0.02] backdrop-blur-xl
+              border border-white/[0.05]
+              p-5 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.02)]"
             style={{
               animation: `pulse 2s ease-in-out ${i * 100}ms infinite`,
             }}
@@ -45,7 +45,7 @@ const PageSkeleton: React.FC = () => {
             {/* Sliding shimmer */}
             <div className="absolute inset-0 pointer-events-none overflow-hidden">
               <div className="absolute inset-y-0 -inset-x-full
-                bg-gradient-to-r from-transparent via-white/[0.04] to-transparent
+                bg-gradient-to-r from-transparent via-emerald-500/[0.08] to-transparent
                 animate-skeleton-shimmer" />
             </div>
           </div>
@@ -57,9 +57,9 @@ const PageSkeleton: React.FC = () => {
 
         {/* Big card - left */}
         <div className="lg:col-span-2 relative h-[400px] rounded-2xl overflow-hidden
-          bg-white/[0.03] backdrop-blur-xl
-          border border-white/[0.06]
-          p-6">
+          bg-white/[0.02] backdrop-blur-xl
+          border border-white/[0.05]
+          p-6 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.02)]">
 
           <div className="absolute inset-0 pointer-events-none"
             style={{
@@ -96,16 +96,16 @@ const PageSkeleton: React.FC = () => {
           {/* Sliding shimmer */}
           <div className="absolute inset-0 pointer-events-none overflow-hidden">
             <div className="absolute inset-y-0 -inset-x-full
-              bg-gradient-to-r from-transparent via-white/[0.04] to-transparent
+              bg-gradient-to-r from-transparent via-emerald-500/[0.08] to-transparent
               animate-skeleton-shimmer" />
           </div>
         </div>
 
         {/* Right card */}
         <div className="relative h-[400px] rounded-2xl overflow-hidden
-          bg-white/[0.03] backdrop-blur-xl
-          border border-white/[0.06]
-          p-6">
+          bg-white/[0.02] backdrop-blur-xl
+          border border-white/[0.05]
+          p-6 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.02)]">
 
           <div className="absolute inset-0 pointer-events-none"
             style={{
@@ -137,7 +137,7 @@ const PageSkeleton: React.FC = () => {
           {/* Sliding shimmer */}
           <div className="absolute inset-0 pointer-events-none overflow-hidden">
             <div className="absolute inset-y-0 -inset-x-full
-              bg-gradient-to-r from-transparent via-white/[0.04] to-transparent
+              bg-gradient-to-r from-transparent via-emerald-500/[0.08] to-transparent
               animate-skeleton-shimmer" />
           </div>
         </div>
@@ -145,9 +145,9 @@ const PageSkeleton: React.FC = () => {
 
       {/* ✅ List/Table Area */}
       <div className="relative rounded-2xl overflow-hidden
-        bg-white/[0.03] backdrop-blur-xl
-        border border-white/[0.06]
-        p-6">
+        bg-white/[0.02] backdrop-blur-xl
+        border border-white/[0.05]
+        p-6 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.02)]">
 
       <div className="absolute inset-0 pointer-events-none"
         style={{
@@ -181,7 +181,7 @@ const PageSkeleton: React.FC = () => {
         {/* Sliding shimmer */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
           <div className="absolute inset-y-0 -inset-x-full
-            bg-gradient-to-r from-transparent via-white/[0.04] to-transparent
+            bg-gradient-to-r from-transparent via-emerald-500/[0.08] to-transparent
             animate-skeleton-shimmer" />
         </div>
       </div>
@@ -209,7 +209,7 @@ const SkeletonBox: React.FC<{
   style?: React.CSSProperties;
 }> = ({ className = '', style }) => (
   <div
-    className={`bg-white/[0.06] rounded-md ${className}`}
+    className={`bg-white/[0.04] rounded-md border border-white/[0.02] ${className}`}
     style={{
       animation: 'pulse 2s ease-in-out infinite',
       ...style,
