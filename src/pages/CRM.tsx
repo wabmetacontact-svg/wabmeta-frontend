@@ -98,71 +98,63 @@ const CRM: React.FC = () => {
 
             {/* Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="bg-[#0a0e27] rounded-xl p-6 border border-white/[0.1]">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-sm text-gray-400">Total Leads</p>
-                            <p className="text-3xl font-bold text-white mt-1">
-                                {stats?.totalLeads || 0}
-                            </p>
-                            <p className="text-sm text-green-600 mt-1 flex items-center">
-                                <ArrowUpRight className="w-4 h-4 mr-1" />
-                                {stats?.newLeads || 0} new this week
-                            </p>
-                        </div>
-                        <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                            <Users className="w-6 h-6 text-blue-600" />
-                        </div>
+                <div className="relative overflow-hidden rounded-2xl bg-white/[0.02] border border-white/[0.05] p-6 group/stat hover:bg-white/[0.04] transition-all">
+                    <div className="absolute top-0 right-0 p-4 opacity-[0.08] group-hover/stat:scale-110 group-hover/stat:opacity-[0.15] transition-all duration-500">
+                        <Users size={80} style={{ color: '#3B82F6' }} />
+                    </div>
+                    <div className="relative z-10 flex flex-col justify-between h-full">
+                        <p className="text-xs font-mono uppercase tracking-widest mb-1" style={{ color: '#3B82F6' }}>Total Leads</p>
+                        <p className="text-3xl font-bold text-white mt-1">
+                            {stats?.totalLeads || 0}
+                        </p>
+                        <p className="text-sm text-green-500 mt-2 flex items-center">
+                            <ArrowUpRight className="w-4 h-4 mr-1" />
+                            {stats?.newLeads || 0} new this week
+                        </p>
                     </div>
                 </div>
 
-                <div className="bg-[#0a0e27] rounded-xl p-6 border border-white/[0.1]">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-sm text-gray-400">Pipeline Value</p>
-                            <p className="text-3xl font-bold text-white mt-1">
-                                {formatCurrency(Number(stats?.totalValue) || 0)}
-                            </p>
-                            <p className="text-sm text-gray-500 mt-1">Across all stages</p>
-                        </div>
-                        <div className="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                            <DollarSign className="w-6 h-6 text-green-600" />
-                        </div>
+                <div className="relative overflow-hidden rounded-2xl bg-white/[0.02] border border-white/[0.05] p-6 group/stat hover:bg-white/[0.04] transition-all">
+                    <div className="absolute top-0 right-0 p-4 opacity-[0.08] group-hover/stat:scale-110 group-hover/stat:opacity-[0.15] transition-all duration-500">
+                        <DollarSign size={80} style={{ color: '#10B981' }} />
+                    </div>
+                    <div className="relative z-10 flex flex-col justify-between h-full">
+                        <p className="text-xs font-mono uppercase tracking-widest mb-1" style={{ color: '#10B981' }}>Pipeline Value</p>
+                        <p className="text-3xl font-bold text-white mt-1">
+                            {formatCurrency(Number(stats?.totalValue) || 0)}
+                        </p>
+                        <p className="text-sm text-gray-500 mt-2">Across all stages</p>
                     </div>
                 </div>
 
-                <div className="bg-[#0a0e27] rounded-xl p-6 border border-white/[0.1]">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-sm text-gray-400">Won Deals</p>
-                            <p className="text-3xl font-bold text-green-600 mt-1">
-                                {stats?.wonLeads || 0}
-                            </p>
-                            <p className="text-sm text-gray-500 mt-1">
-                                {formatCurrency(Number(stats?.wonValue) || 0)} value
-                            </p>
-                        </div>
-                        <div className="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                            <Target className="w-6 h-6 text-green-600" />
-                        </div>
+                <div className="relative overflow-hidden rounded-2xl bg-white/[0.02] border border-white/[0.05] p-6 group/stat hover:bg-white/[0.04] transition-all">
+                    <div className="absolute top-0 right-0 p-4 opacity-[0.08] group-hover/stat:scale-110 group-hover/stat:opacity-[0.15] transition-all duration-500">
+                        <Target size={80} style={{ color: '#10B981' }} />
+                    </div>
+                    <div className="relative z-10 flex flex-col justify-between h-full">
+                        <p className="text-xs font-mono uppercase tracking-widest mb-1" style={{ color: '#10B981' }}>Won Deals</p>
+                        <p className="text-3xl font-bold text-green-500 mt-1">
+                            {stats?.wonLeads || 0}
+                        </p>
+                        <p className="text-sm text-gray-500 mt-2">
+                            {formatCurrency(Number(stats?.wonValue) || 0)} value
+                        </p>
                     </div>
                 </div>
 
-                <div className="bg-[#0a0e27] rounded-xl p-6 border border-white/[0.1]">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-sm text-gray-400">Win Rate</p>
-                            <p className="text-3xl font-bold text-white mt-1">
-                                {stats?.winRate || 0}%
-                            </p>
-                            <p className="text-sm text-red-500 mt-1 flex items-center">
-                                <ArrowDownRight className="w-4 h-4 mr-1" />
-                                {stats?.lostLeads || 0} lost
-                            </p>
-                        </div>
-                        <div className="p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
-                            <TrendingUp className="w-6 h-6 text-purple-600" />
-                        </div>
+                <div className="relative overflow-hidden rounded-2xl bg-white/[0.02] border border-white/[0.05] p-6 group/stat hover:bg-white/[0.04] transition-all">
+                    <div className="absolute top-0 right-0 p-4 opacity-[0.08] group-hover/stat:scale-110 group-hover/stat:opacity-[0.15] transition-all duration-500">
+                        <TrendingUp size={80} style={{ color: '#8B5CF6' }} />
+                    </div>
+                    <div className="relative z-10 flex flex-col justify-between h-full">
+                        <p className="text-xs font-mono uppercase tracking-widest mb-1" style={{ color: '#8B5CF6' }}>Win Rate</p>
+                        <p className="text-3xl font-bold text-white mt-1">
+                            {stats?.winRate || 0}%
+                        </p>
+                        <p className="text-sm text-red-500 mt-2 flex items-center">
+                            <ArrowDownRight className="w-4 h-4 mr-1" />
+                            {stats?.lostLeads || 0} lost
+                        </p>
                     </div>
                 </div>
             </div>
@@ -170,19 +162,19 @@ const CRM: React.FC = () => {
             {/* Pipelines & Recent Leads */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Pipelines */}
-                <div className="lg:col-span-2 bg-[#0a0e27] rounded-xl border border-white/[0.1]">
-                    <div className="p-4 border-b border-white/[0.1] flex items-center justify-between">
+                <div className="lg:col-span-2 relative overflow-hidden rounded-2xl bg-white/[0.02] border border-white/[0.05] backdrop-blur-xl">
+                    <div className="p-4 border-b border-white/[0.05] flex items-center justify-between relative z-10">
                         <h2 className="text-lg font-semibold text-white">Pipelines</h2>
-                        <Link to="/dashboard/crm/pipelines" className="text-sm text-green-600 hover:text-green-700">
+                        <Link to="/dashboard/crm/pipelines" className="text-sm text-emerald-500 hover:text-emerald-400">
                             Manage
                         </Link>
                     </div>
-                    <div className="p-4 space-y-4">
+                    <div className="p-4 space-y-4 relative z-10">
                         {pipelines.map((pipeline) => (
                             <Link
                                 key={pipeline.id}
                                 to={`/dashboard/crm/leads?pipelineId=${pipeline.id}`}
-                                className="block p-4 bg-[#0a0e27]/[0.02] rounded-lg hover:bg-[#0a0e27]/[0.04] dark:hover:bg-gray-700 transition-colors"
+                                className="block p-4 bg-white/[0.02] border border-white/[0.05] rounded-xl hover:bg-emerald-500/[0.02] hover:shadow-[inset_0_0_0_1px_rgba(16,185,129,0.4)] transition-all duration-200"
                             >
                                 <div className="flex items-center justify-between mb-3">
                                     <h3 className="font-medium text-white">{pipeline.name}</h3>
@@ -214,19 +206,19 @@ const CRM: React.FC = () => {
                 </div>
 
                 {/* Recent Leads */}
-                <div className="bg-[#0a0e27] rounded-xl border border-white/[0.1]">
-                    <div className="p-4 border-b border-white/[0.1] flex items-center justify-between">
+                <div className="relative overflow-hidden rounded-2xl bg-white/[0.02] border border-white/[0.05] backdrop-blur-xl">
+                    <div className="p-4 border-b border-white/[0.05] flex items-center justify-between relative z-10">
                         <h2 className="text-lg font-semibold text-white">Recent Leads</h2>
-                        <Link to="/dashboard/crm/leads" className="text-sm text-green-600 hover:text-green-700">
+                        <Link to="/dashboard/crm/leads" className="text-sm text-emerald-500 hover:text-emerald-400">
                             View All
                         </Link>
                     </div>
-                    <div className="divide-y divide-gray-200 dark:divide-gray-700">
+                    <div className="divide-y divide-white/[0.02] relative z-10">
                         {recentLeads.map((lead) => (
                             <Link
                                 key={lead.id}
                                 to={`/dashboard/crm/leads/${lead.id}`}
-                                className="block p-4 hover:bg-[#0a0e27]/[0.04] transition-colors"
+                                className="block p-4 hover:bg-emerald-500/[0.02] hover:shadow-[inset_0_0_0_1px_rgba(16,185,129,0.4)] transition-all duration-200"
                             >
                                 <div className="flex items-center justify-between">
                                     <div>
