@@ -13,6 +13,8 @@ import {
   VolumeX,
   Trash2,
   UserCheck,
+  Instagram,
+  MessageSquare
 } from 'lucide-react';
 import {
   getContactName,
@@ -41,6 +43,7 @@ interface Conversation {
   isWindowOpen?: boolean;
   labels?: string[];
   isTyping?: boolean;
+  channelType?: 'WHATSAPP' | 'INSTAGRAM';
 }
 
 interface Props {
@@ -123,6 +126,21 @@ const ConversationItem: React.FC<Props> = ({
     return null;
   };
 
+  const ChannelBadge = ({ type }: { type?: 'WHATSAPP' | 'INSTAGRAM' }) => {
+    if (type === 'INSTAGRAM') {
+      return (
+        <div className="absolute -top-1 -left-1 w-5 h-5 rounded-full bg-gradient-to-tr from-[#f09433] via-[#dc2743] to-[#bc1888] flex items-center justify-center border-2 border-[#0a0e27] shadow-lg z-10">
+          <Instagram size={10} className="text-white" />
+        </div>
+      );
+    }
+    return (
+      <div className="absolute -top-1 -left-1 w-5 h-5 rounded-full bg-[#25D366] flex items-center justify-center border-2 border-[#0a0e27] shadow-lg z-10">
+        <MessageSquare size={10} className="text-white" />
+      </div>
+    );
+  };
+
   return (
     <div className={`conv-item relative ${isSelected ? 'active' : ''}`}>
       <div
@@ -158,6 +176,8 @@ const ConversationItem: React.FC<Props> = ({
               initial
             )}
           </div>
+
+          <ChannelBadge type={conv.channelType || 'WHATSAPP'} />
 
           {/* Pin badge */}
           {conv.isPinned && (

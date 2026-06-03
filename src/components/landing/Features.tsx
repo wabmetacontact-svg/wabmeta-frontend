@@ -13,7 +13,8 @@ import {
   Smartphone,
   FileText,
   ArrowUpRight,
-  Sparkles
+  Sparkles,
+  Instagram
 } from 'lucide-react';
 
 // ✅ Reusable Tilt Card Component - mouse follow karta hai
@@ -138,6 +139,17 @@ const Features: React.FC = () => {
       bgGradient: 'from-rose-500/[0.08] via-red-500/[0.04] to-transparent',
       iconBg: 'from-rose-500 to-red-600',
       mockup: 'team',
+    },
+    {
+      icon: Instagram,
+      title: 'Instagram Automation',
+      description: 'Auto-reply to DMs, comments & stories.',
+      details: 'Boost engagement without lifting a finger.',
+      accentColor: '#e1306c',
+      gridArea: 'lg:col-span-3 lg:row-span-2', // Made bigger, and change others to fit grid
+      bgGradient: 'from-purple-500/[0.08] via-pink-500/[0.04] to-transparent',
+      iconBg: 'from-[#833ab4] via-[#fd1d1d] to-[#fcb045]',
+      mockup: 'instagram',
     },
   ];
 
@@ -303,6 +315,9 @@ const Features: React.FC = () => {
                   )}
                   {feature.mockup === 'team' && (
                     <TeamMockup color={feature.accentColor} />
+                  )}
+                  {feature.mockup === 'instagram' && (
+                    <InstagramMockup color={feature.accentColor} />
                   )}
 
                   {/* Stat for messaging card */}
@@ -539,6 +554,22 @@ const TeamMockup: React.FC<{ color: string }> = ({ color }) => (
         ))}
       </div>
       <span className="text-[10px] font-mono text-gray-500 ml-1">+8 online</span>
+    </div>
+  </div>
+);
+
+const InstagramMockup: React.FC<{ color: string }> = ({ color }) => (
+  <div className="absolute bottom-6 left-6 right-6 opacity-60 group-hover:opacity-100 transition-opacity duration-500"
+    style={{ transform: 'translateZ(15px)' }}
+  >
+    <div className="flex items-center gap-2">
+      <div className="w-8 h-8 rounded-full border border-[#fd1d1d] flex items-center justify-center">
+        <Instagram className="w-4 h-4 text-[#e1306c]" />
+      </div>
+      <div className="flex flex-col gap-1">
+        <div className="h-2 w-16 bg-[#833ab4] rounded-full opacity-40"></div>
+        <div className="h-2 w-10 bg-[#fcb045] rounded-full opacity-40"></div>
+      </div>
     </div>
   </div>
 );

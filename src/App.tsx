@@ -77,6 +77,14 @@ const Privacy = lazy(() => import('./pages/Privacy'));
 const Terms = lazy(() => import('./pages/Terms'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 
+// ── Instagram Pages (lazy) ──────────────────────────────
+const InstagramLayout    = lazy(() => import('./components/instagram/InstagramLayout'));
+const InstagramDashboard = lazy(() => import('./pages/instagram/InstagramDashboard'));
+const DMAutomation       = lazy(() => import('./pages/instagram/DMAutomation'));
+const CommentAutomation  = lazy(() => import('./pages/instagram/CommentAutomation'));
+const StoryAutomation    = lazy(() => import('./pages/instagram/StoryAutomation'));
+const InstagramSettings  = lazy(() => import('./pages/instagram/InstagramSettings'));
+
 // Admin
 const AdminLogin = lazy(() => import('./pages/admin/AdminLogin'));
 const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
@@ -217,6 +225,11 @@ const PageTitleUpdater: React.FC = () => {
       '/data-deletion': 'Data Deletion | WabMeta',
       '/dashboard/help': 'Help & Support | WabMeta',
       '/404': 'Page Not Found | WabMeta',
+      '/instagram/dashboard':     'Instagram Dashboard | WabMeta',
+      '/instagram/dm-automation': 'DM Automation | WabMeta',
+      '/instagram/comments':      'Comment Automation | WabMeta',
+      '/instagram/stories':       'Story Automation | WabMeta',
+      '/instagram/settings':      'Instagram Settings | WabMeta',
     };
 
     const dynamicPatterns: Array<{ pattern: RegExp; title: string }> = [
@@ -361,6 +374,25 @@ const AppRoutes: React.FC = () => {
           <Route path="/dashboard/profile" element={<Navigate to="/dashboard/settings/profile" replace />} />
           <Route path="/dashboard/team" element={<Navigate to="/dashboard/settings/team" replace />} />
           <Route path="/dashboard/billing" element={<Navigate to="/dashboard/settings/billing" replace />} />
+        </Route>
+
+        {/* ============================== */}
+        {/* INSTAGRAM ROUTES               */}
+        {/* ============================== */}
+        <Route
+          element={
+            <ProtectedRoute>
+              <InstagramLayout />
+            </ProtectedRoute>
+          }
+        >
+          <Route path="/instagram" element={<Navigate to="/instagram/dashboard" replace />} />
+          <Route path="/instagram/dashboard"    element={<InstagramDashboard />} />
+          <Route path="/instagram/dm-automation"  element={<DMAutomation />} />
+          <Route path="/instagram/dm-automation/create" element={<DMAutomation />} />
+          <Route path="/instagram/comments"     element={<CommentAutomation />} />
+          <Route path="/instagram/stories"      element={<StoryAutomation />} />
+          <Route path="/instagram/settings"     element={<InstagramSettings />} />
         </Route>
 
         {/* ============================== */}

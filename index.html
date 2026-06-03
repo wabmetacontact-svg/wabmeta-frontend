@@ -14,5 +14,16 @@
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <script>
+      window.fbAsyncInit = function() {
+        FB.init({
+          appId      : 'YOUR_META_APP_ID',
+          cookie     : true,
+          xfbml      : true,
+          version    : 'v19.0'
+        });
+      };
+    </script>
+    <script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js"></script>
   </body>
 </html>
