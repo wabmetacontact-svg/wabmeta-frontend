@@ -366,11 +366,11 @@ const CreateCampaign: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#050816]">
-      <div className="bg-[#0a0e27] border-b border-white/[0.1] sticky top-16 z-20">
+      <div className="bg-white/[0.02] border-b border-white/[0.05] sticky top-16 z-20 backdrop-blur-xl">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-4">
-              <Link to="/dashboard/campaigns" className="p-2 hover:bg-[#0a0e27]/[0.04] dark:hover:bg-gray-700 rounded-lg">
+              <Link to="/dashboard/campaigns" className="p-2 hover:bg-white/[0.04] rounded-lg">
                 <ArrowLeft className="w-5 h-5 text-gray-400" />
               </Link>
               <div>
@@ -385,7 +385,7 @@ const CreateCampaign: React.FC = () => {
               </div>
             </div>
             {selectedTemplate && (
-              <button onClick={() => setShowPreview(true)} className="flex items-center space-x-2 px-4 py-2 text-gray-300 hover:bg-[#0a0e27]/[0.04] dark:hover:bg-gray-700 rounded-xl">
+              <button onClick={() => setShowPreview(true)} className="flex items-center space-x-2 px-4 py-2 text-gray-300 hover:bg-white/[0.04] rounded-xl">
                 <Eye className="w-5 h-5" /> <span>Preview</span>
               </button>
             )}
@@ -423,7 +423,7 @@ const CreateCampaign: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-[#0a0e27] rounded-2xl border border-white/[0.1] p-6 md:p-8 shadow-sm">
+        <div className="relative overflow-hidden bg-white/[0.02] rounded-2xl border border-white/[0.05] p-6 md:p-8 shadow-xl backdrop-blur-xl">
           {currentStep === 1 && (
             <div className="space-y-6 animate-fade-in">
               <div className="border-b border-white/[0.08] pb-4">
@@ -434,21 +434,21 @@ const CreateCampaign: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-semibold text-gray-300 mb-2">WhatsApp Account *</label>
-                  <select value={selectedAccountId} onChange={(e) => setSelectedAccountId(e.target.value)} className="w-full px-4 py-3 border border-white/[0.1] dark:border-gray-600 rounded-xl bg-[#050816] hover:bg-[#0a0e27] focus:bg-[#0a0e27] dark:hover:bg-gray-700 text-white transition-colors focus:ring-2 focus:ring-primary-500 focus:outline-none focus:border-primary-500">
+                  <select value={selectedAccountId} onChange={(e) => setSelectedAccountId(e.target.value)} className="w-full px-4 py-3 border border-white/[0.05] rounded-xl bg-white/[0.02] hover:bg-white/[0.04] focus:bg-white/[0.04] text-white transition-all focus:ring-2 focus:ring-emerald-500 focus:outline-none focus:border-emerald-500">
                     {whatsappAccounts.map((a) => (
-                      <option key={a.id} value={a.id}>{a.displayName || "WhatsApp"} - {a.phoneNumber}</option>
+                      <option key={a.id} value={a.id} className="bg-[#050816]">{a.displayName || "WhatsApp"} - {a.phoneNumber}</option>
                     ))}
                   </select>
                   <p className="text-xs text-gray-500 mt-2">The verified number used to send messages.</p>
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-gray-300 mb-2">Campaign Name *</label>
-                  <input type="text" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} className="w-full px-4 py-3 border border-white/[0.1] dark:border-gray-600 rounded-xl bg-[#050816] hover:bg-[#0a0e27] focus:bg-[#0a0e27] dark:hover:bg-gray-700 text-white transition-colors focus:ring-2 focus:ring-primary-500 focus:outline-none focus:border-primary-500" placeholder="e.g. Diwali Mega Sale" />
+                  <input type="text" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} className="w-full px-4 py-3 border border-white/[0.05] rounded-xl bg-white/[0.02] hover:bg-white/[0.04] focus:bg-white/[0.04] text-white transition-all focus:ring-2 focus:ring-emerald-500 focus:outline-none focus:border-emerald-500" placeholder="e.g. Diwali Mega Sale" />
                   <p className="text-xs text-gray-500 mt-2">A unique name to identify this campaign later.</p>
                 </div>
                 <div className="md:col-span-2">
                   <label className="block text-sm font-semibold text-gray-300 mb-2">Description (Optional)</label>
-                  <textarea value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} rows={2} className="w-full px-4 py-3 border border-white/[0.1] dark:border-gray-600 rounded-xl bg-[#050816] hover:bg-[#0a0e27] focus:bg-[#0a0e27] dark:hover:bg-gray-700 text-white transition-colors focus:ring-2 focus:ring-primary-500 focus:outline-none focus:border-primary-500 resize-none" placeholder="Brief notes about this campaign..." />
+                  <textarea value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} rows={2} className="w-full px-4 py-3 border border-white/[0.05] rounded-xl bg-white/[0.02] hover:bg-white/[0.04] focus:bg-white/[0.04] text-white transition-all focus:ring-2 focus:ring-emerald-500 focus:outline-none focus:border-emerald-500 resize-none" placeholder="Brief notes about this campaign..." />
                 </div>
               </div>
 
@@ -517,24 +517,24 @@ const CreateCampaign: React.FC = () => {
               <SchedulePicker scheduleType={formData.scheduleType} onTypeChange={(t) => setFormData({ ...formData, scheduleType: t })} scheduledDate={formData.scheduledDate || ""} scheduledTime={formData.scheduledTime || ""} onDateChange={(d) => setFormData({ ...formData, scheduledDate: d })} onTimeChange={(t) => setFormData({ ...formData, scheduledTime: t })} />
 
               {/* Campaign Summary */}
-              <div className="mt-8 p-6 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-800 rounded-2xl border border-blue-100 dark:border-gray-700 shadow-sm">
-                <h3 className="text-lg font-bold text-white mb-4">Campaign Summary</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-                  <div className="bg-[#0a0e27] dark:bg-gray-700 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-600">
+              <div className="mt-8 p-6 bg-emerald-500/10 rounded-2xl border border-emerald-500/20 shadow-sm relative overflow-hidden backdrop-blur-xl">
+                <h3 className="text-lg font-bold text-white mb-4 relative z-10">Campaign Summary</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm relative z-10">
+                  <div className="bg-white/[0.02] p-4 rounded-xl border border-white/[0.05]">
                     <span className="text-gray-400 block mb-1">Campaign Name</span>
                     <p className="font-semibold text-white truncate" title={formData.name || "Untitled Campaign"}>{formData.name || "Untitled Campaign"}</p>
                   </div>
-                  <div className="bg-[#0a0e27] dark:bg-gray-700 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-600">
+                  <div className="bg-white/[0.02] p-4 rounded-xl border border-white/[0.05]">
                     <span className="text-gray-400 block mb-1">Template</span>
                     <p className="font-semibold text-white truncate" title={selectedTemplate?.name || "Not selected"}>{selectedTemplate?.name || "Not selected"}</p>
                   </div>
-                  <div className="bg-[#0a0e27] dark:bg-gray-700 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-600">
+                  <div className="bg-white/[0.02] p-4 rounded-xl border border-white/[0.05]">
                     <span className="text-gray-400 block mb-1">Audience</span>
                     <p className="font-semibold text-white">
                       {totalRecipients.toLocaleString()} {totalRecipients === 1 ? 'recipient' : 'recipients'}
                     </p>
                   </div>
-                  <div className="bg-[#0a0e27] dark:bg-gray-700 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-600">
+                  <div className="bg-white/[0.02] p-4 rounded-xl border border-white/[0.05]">
                     <span className="text-gray-400 block mb-1">Timing</span>
                     <p className="font-semibold text-white">
                       {formData.scheduleType === "now"
@@ -549,7 +549,7 @@ const CreateCampaign: React.FC = () => {
         </div>
 
         <div className="flex items-center justify-between mt-8">
-          <button onClick={handleBack} disabled={currentStep === 1} className="flex items-center space-x-2 px-6 py-3 text-gray-300 bg-[#0a0e27] border border-white/[0.12] rounded-xl hover:bg-[#050816] disabled:opacity-50 font-medium transition-colors shadow-sm">
+          <button onClick={handleBack} disabled={currentStep === 1} className="flex items-center space-x-2 px-6 py-3 text-gray-300 bg-white/[0.02] border border-white/[0.05] rounded-xl hover:bg-white/[0.04] backdrop-blur-xl disabled:opacity-50 font-medium transition-all shadow-sm">
             <ArrowLeft className="w-5 h-5" /> <span>Back</span>
           </button>
           {currentStep < 4 ? (

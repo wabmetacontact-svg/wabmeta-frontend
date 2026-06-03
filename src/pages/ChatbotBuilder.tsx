@@ -87,7 +87,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ chatbot, onChange, onClos
   };
 
   return (
-    <div className="w-80 bg-[#0a0e27] border-l border-white/[0.1] flex flex-col h-full">
+    <div className="w-80 bg-white/[0.02] border-l border-white/[0.05] flex flex-col h-full backdrop-blur-xl">
 
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-white/[0.1]">
@@ -99,7 +99,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ chatbot, onChange, onClos
         </div>
         <button
           onClick={onClose}
-          className="p-1 hover:bg-[#0a0e27]/[0.04] dark:hover:bg-gray-700 rounded transition-colors"
+          className="p-1 hover:bg-white/[0.04] rounded transition-all"
         >
           <X className="w-5 h-5 text-gray-500" />
         </button>
@@ -117,7 +117,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ chatbot, onChange, onClos
             type="text"
             value={chatbot.name || ''}
             onChange={(e) => onChange({ name: e.target.value })}
-            className="w-full px-3 py-2 border border-white/[0.12] rounded-lg text-sm bg-[#0a0e27] dark:bg-gray-700 text-white focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            className="w-full px-3 py-2 border border-white/[0.05] rounded-lg text-sm bg-white/[0.02] text-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all hover:bg-white/[0.04]"
             placeholder="e.g., Welcome Bot"
           />
         </div>
@@ -130,7 +130,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ chatbot, onChange, onClos
           <textarea
             value={chatbot.description || ''}
             onChange={(e) => onChange({ description: e.target.value })}
-            className="w-full px-3 py-2 border border-white/[0.12] rounded-lg text-sm bg-[#0a0e27] dark:bg-gray-700 text-white resize-none h-16 focus:ring-2 focus:ring-green-500"
+            className="w-full px-3 py-2 border border-white/[0.05] rounded-lg text-sm bg-white/[0.02] text-white resize-none h-16 focus:ring-2 focus:ring-emerald-500 transition-all hover:bg-white/[0.04]"
             placeholder="Optional description..."
           />
         </div>
@@ -151,7 +151,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ chatbot, onChange, onClos
               value={newKeyword}
               onChange={(e) => setNewKeyword(e.target.value)}
               onKeyDown={handleKeyDown}
-              className="flex-1 px-3 py-2 border border-white/[0.12] rounded-lg text-sm bg-[#0a0e27] dark:bg-gray-700 text-white focus:ring-2 focus:ring-green-500"
+              className="flex-1 px-3 py-2 border border-white/[0.05] rounded-lg text-sm bg-white/[0.02] text-white focus:ring-2 focus:ring-emerald-500 transition-all hover:bg-white/[0.04]"
               placeholder="e.g., hi, hello, start"
             />
             <button
@@ -181,7 +181,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ chatbot, onChange, onClos
               ))}
             </div>
           ) : (
-            <div className="p-3 bg-[#0a0e27]/[0.02] rounded-lg text-center">
+            <div className="p-3 bg-white/[0.02] rounded-lg text-center border border-white/[0.05]">
               <p className="text-xs text-gray-400">
                 No keywords added
               </p>
@@ -215,7 +215,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ chatbot, onChange, onClos
             onClick={() => onChange({ isDefault: !chatbot.isDefault })}
             className={`flex items-center gap-3 w-full p-3 rounded-lg border-2 transition-all ${chatbot.isDefault
                 ? 'border-green-500 bg-green-50 dark:bg-green-900/20'
-                : 'border-white/[0.1] dark:border-gray-600 bg-[#0a0e27]/[0.02]'
+                : 'border-white/[0.05] bg-white/[0.02] hover:bg-white/[0.04]'
               }`}
           >
             {chatbot.isDefault ? (
@@ -250,7 +250,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ chatbot, onChange, onClos
           <textarea
             value={chatbot.welcomeMessage || ''}
             onChange={(e) => onChange({ welcomeMessage: e.target.value })}
-            className="w-full px-3 py-2 border border-white/[0.12] rounded-lg text-sm bg-[#0a0e27] dark:bg-gray-700 text-white resize-none h-20 focus:ring-2 focus:ring-green-500"
+            className="w-full px-3 py-2 border border-white/[0.05] rounded-lg text-sm bg-white/[0.02] text-white resize-none h-20 focus:ring-2 focus:ring-emerald-500 transition-all hover:bg-white/[0.04]"
             placeholder="e.g., Welcome! 👋"
           />
         </div>
@@ -266,13 +266,13 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ chatbot, onChange, onClos
           <textarea
             value={chatbot.fallbackMessage || ''}
             onChange={(e) => onChange({ fallbackMessage: e.target.value })}
-            className="w-full px-3 py-2 border border-white/[0.12] rounded-lg text-sm bg-[#0a0e27] dark:bg-gray-700 text-white resize-none h-20 focus:ring-2 focus:ring-green-500"
+            className="w-full px-3 py-2 border border-white/[0.05] rounded-lg text-sm bg-white/[0.02] text-white resize-none h-20 focus:ring-2 focus:ring-emerald-500 transition-all hover:bg-white/[0.04]"
             placeholder="e.g., Sorry, I didn't understand that. Please try again."
           />
         </div>
 
         {/* ── Trigger Summary ── */}
-        <div className="p-4 bg-[#0a0e27]/[0.02] rounded-xl border border-white/[0.1] dark:border-gray-600">
+        <div className="p-4 bg-white/[0.02] rounded-xl border border-white/[0.05]">
           <p className="text-xs font-semibold text-gray-400 dark:text-gray-300 mb-3 uppercase tracking-wide">
             Trigger Summary
           </p>
@@ -606,17 +606,17 @@ const ChatbotBuilder: React.FC = () => {
 
   // ─────────────────────────────────────────
   return (
-    <div className="h-screen flex flex-col bg-[#0a0e27]/[0.04] dark:bg-gray-900 overflow-hidden">
+    <div className="h-screen flex flex-col bg-[#050816] overflow-hidden">
 
       {/* ══ HEADER ══════════════════════════════ */}
-      <div className="flex-shrink-0 bg-[#0a0e27] border-b border-white/[0.1] px-4 py-3">
+      <div className="flex-shrink-0 bg-white/[0.02] border-b border-white/[0.05] px-4 py-3 backdrop-blur-xl relative z-10">
         <div className="flex items-center justify-between">
 
           {/* Left */}
           <div className="flex items-center gap-3">
             <button
               onClick={() => navigate('/dashboard/chatbots')}
-              className="p-2 hover:bg-[#0a0e27]/[0.04] dark:hover:bg-gray-700 rounded-lg transition-colors"
+              className="p-2 hover:bg-white/[0.04] rounded-lg transition-all"
             >
               <ArrowLeft className="w-5 h-5 text-gray-400" />
             </button>
@@ -633,7 +633,7 @@ const ChatbotBuilder: React.FC = () => {
                       ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'
                       : chatbot.status === 'PAUSED'
                         ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300'
-                        : 'bg-[#0a0e27]/[0.04] text-gray-400 dark:bg-gray-700 dark:text-gray-400'
+                        : 'bg-white/[0.02] border border-white/[0.05] text-gray-400 hover:bg-white/[0.04]'
                     }`}>
                     {chatbot.status}
                   </span>
@@ -658,7 +658,7 @@ const ChatbotBuilder: React.FC = () => {
               onClick={() => setActivePanel(activePanel === 'settings' ? null : 'settings')}
               className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors text-sm ${activePanel === 'settings'
                   ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'
-                  : 'bg-[#0a0e27]/[0.04] text-gray-400 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300'
+                  : 'bg-white/[0.02] border border-white/[0.05] text-gray-400 hover:bg-white/[0.04]'
                 }`}
             >
               <Settings className="w-4 h-4" />
@@ -751,7 +751,7 @@ const ChatbotBuilder: React.FC = () => {
 
           {/* Empty state hint */}
           {nodes.length <= 1 && (
-            <div className="absolute bottom-8 left-1/2 -translate-x-1/2 bg-[#0a0e27] border border-white/[0.1] rounded-xl px-6 py-4 shadow-lg pointer-events-none">
+            <div className="absolute bottom-8 left-1/2 -translate-x-1/2 bg-white/[0.02] border border-white/[0.05] rounded-xl px-6 py-4 shadow-xl pointer-events-none backdrop-blur-xl">
               <p className="text-sm text-gray-500 text-center">
                 👈 Drag nodes from the left sidebar onto the canvas
               </p>

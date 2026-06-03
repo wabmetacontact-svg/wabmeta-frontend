@@ -1,1 +1,0 @@
-import{j as t}from"./index-0iRj6lOu.js";const s=()=>t.jsxs("div",{className:"p-6 text-white text-center",children:[t.jsx("h2",{className:"text-2xl font-bold mb-2",children:"Story Automation"}),t.jsx("p",{className:"text-gray-400",children:"Coming soon in Phase 2"})]});export{s as default};

@@ -828,13 +828,13 @@ const CreateTemplate: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#050816]">
       {/* Header */}
-      <div className="bg-[#0a0e27] border-b border-white/[0.1] sticky top-16 z-20">
+      <div className="bg-white/[0.02] border-b border-white/[0.05] sticky top-16 z-20 backdrop-blur-xl">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-4">
               <Link
                 to="/dashboard/templates"
-                className="p-2 hover:bg-[#0a0e27]/[0.04] dark:hover:bg-gray-700 rounded-lg transition-colors"
+                className="p-2 hover:bg-white/[0.04] rounded-lg transition-all"
               >
                 <ArrowLeft className="w-5 h-5 text-gray-400" />
               </Link>
@@ -856,7 +856,7 @@ const CreateTemplate: React.FC = () => {
             <div className="flex items-center space-x-3">
               <button
                 onClick={() => setShowPreview(true)}
-                className="flex items-center space-x-2 px-4 py-2 text-gray-300 hover:bg-[#0a0e27]/[0.04] dark:hover:bg-gray-700 rounded-xl transition-colors"
+                className="flex items-center space-x-2 px-4 py-2 text-gray-300 hover:bg-white/[0.04] rounded-xl transition-all"
               >
                 <Eye className="w-5 h-5" />
                 <span className="hidden sm:inline">Preview</span>
@@ -999,7 +999,7 @@ const CreateTemplate: React.FC = () => {
           {/* Left: Form */}
           <div className="space-y-6">
             {/* Tabs */}
-            <div className="bg-[#0a0e27] rounded-2xl border border-white/[0.1] overflow-hidden">
+            <div className="relative overflow-hidden bg-white/[0.02] rounded-2xl border border-white/[0.05] backdrop-blur-xl">
               <div className="flex border-b border-white/[0.1]">
                 {[
                   { id: 'content', label: 'Content' },
@@ -1043,8 +1043,8 @@ const CreateTemplate: React.FC = () => {
                         }
                         placeholder="e.g., order_confirmation"
                         maxLength={512}
-                        className={`w-full px-4 py-2.5 border rounded-xl bg-[#0a0e27] dark:bg-gray-700 text-white focus:outline-none focus:ring-2 transition-all ${isApprovedTemplate 
-                          ? 'opacity-50 cursor-not-allowed bg-[#0a0e27]/[0.04]' 
+                        className={`w-full px-4 py-2.5 border rounded-xl bg-white/[0.02] hover:bg-white/[0.04] focus:bg-white/[0.04] text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all ${isApprovedTemplate 
+                          ? 'opacity-50 cursor-not-allowed bg-white/[0.01]' 
                           : ''} ${errors.name
                           ? 'border-red-300 dark:border-red-600 focus:ring-red-500/20'
                           : 'border-white/[0.1] dark:border-gray-600 focus:ring-primary-500/20 focus:border-primary-500'
@@ -1098,8 +1098,8 @@ const CreateTemplate: React.FC = () => {
                           }
                           placeholder="Enter header text"
                           maxLength={60}
-                          className={`w-full px-4 py-2.5 border rounded-xl bg-[#0a0e27] dark:bg-gray-700 text-white focus:outline-none focus:ring-2 transition-all ${errors.headerText
-                            ? 'border-red-300 dark:border-red-600 focus:ring-red-500/20'
+                          className={`w-full px-4 py-2.5 border rounded-xl bg-white/[0.02] hover:bg-white/[0.04] focus:bg-white/[0.04] text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all ${errors.headerText
+                            ? 'border-red-500 focus:ring-red-500/20'
                             : 'border-white/[0.1] dark:border-gray-600 focus:ring-primary-500/20 focus:border-primary-500'
                             }`}
                         />
@@ -1116,7 +1116,7 @@ const CreateTemplate: React.FC = () => {
 
                     {['image', 'video', 'document'].includes(formData.header.type) && (
                       <div className="space-y-4">
-                        <div className="bg-[#0a0e27] rounded-xl p-5 border border-dashed border-white/[0.12]">
+                        <div className="bg-white/[0.02] rounded-xl p-5 border border-dashed border-white/[0.12]">
                           <label className="block text-sm font-medium text-gray-300 mb-4">
                             Upload Media for Approval Sample
                           </label>
@@ -1136,7 +1136,7 @@ const CreateTemplate: React.FC = () => {
                             />
                             <label
                               htmlFor="header-media-upload"
-                              className="flex items-center justify-center space-x-2 w-full px-4 py-3 bg-[#0a0e27] dark:bg-gray-700 border-2 border-primary-300 dark:border-primary-700 text-primary-600 dark:text-primary-400 rounded-xl hover:bg-primary-50 dark:hover:bg-primary-900/10 cursor-pointer transition-all"
+                              className="flex items-center justify-center space-x-2 w-full px-4 py-3 bg-white/[0.02] border-2 border-emerald-500/20 text-emerald-500 rounded-xl hover:bg-emerald-500/10 cursor-pointer transition-all"
                             >
                               {mediaUploading ? (
                                 <>
@@ -1200,8 +1200,8 @@ const CreateTemplate: React.FC = () => {
                         placeholder="Enter your message here. Use {{1}}, {{2}}, etc. for variables."
                         rows={6}
                         maxLength={1024}
-                        className={`w-full px-4 py-3 border rounded-xl bg-[#0a0e27] dark:bg-gray-700 text-white focus:outline-none focus:ring-2 transition-all resize-none ${isApprovedTemplate 
-                          ? 'opacity-50 cursor-not-allowed bg-[#0a0e27]/[0.04]' 
+                        className={`w-full px-4 py-3 border rounded-xl bg-white/[0.02] hover:bg-white/[0.04] focus:bg-white/[0.04] text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all resize-none ${isApprovedTemplate 
+                          ? 'opacity-50 cursor-not-allowed bg-white/[0.01]' 
                           : ''} ${errors.body
                           ? 'border-red-300 dark:border-red-600 focus:ring-red-500/20'
                           : 'border-white/[0.1] dark:border-gray-600 focus:ring-primary-500/20 focus:border-primary-500'
@@ -1231,8 +1231,8 @@ const CreateTemplate: React.FC = () => {
                         onChange={(e) => updateFormData('footer', e.target.value)}
                         placeholder="e.g., Reply STOP to unsubscribe"
                         maxLength={60}
-                        className={`w-full px-4 py-2.5 border rounded-xl bg-[#0a0e27] dark:bg-gray-700 text-white focus:outline-none focus:ring-2 transition-all ${errors.footer
-                          ? 'border-red-300 dark:border-red-600 focus:ring-red-500/20'
+                        className={`w-full px-4 py-2.5 border rounded-xl bg-white/[0.02] hover:bg-white/[0.04] focus:bg-white/[0.04] text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all ${errors.footer
+                            ? 'border-red-500 focus:ring-red-500/20'
                           : 'border-white/[0.1] dark:border-gray-600 focus:ring-primary-500/20 focus:border-primary-500'
                           }`}
                       />
@@ -1266,8 +1266,8 @@ const CreateTemplate: React.FC = () => {
                                   }))
                                 }
                                 placeholder="Example value"
-                                className={`flex-1 px-3 py-1.5 border rounded-lg text-sm bg-[#0a0e27] dark:bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-primary-500/20 ${errors.variables
-                                  ? 'border-red-300 dark:border-red-600'
+                                className={`flex-1 px-3 py-1.5 border rounded-lg text-sm bg-white/[0.02] hover:bg-white/[0.04] focus:bg-white/[0.04] text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all ${errors.variables
+                                  ? 'border-red-500 focus:ring-red-500/20'
                                   : 'border-white/[0.1] dark:border-gray-600'
                                   }`}
                               />
@@ -1361,7 +1361,7 @@ const CreateTemplate: React.FC = () => {
                                 updated[index] = { ...updated[index], type: e.target.value as any };
                                 updateFormData('buttons', updated);
                               }}
-                              className="w-full px-3 py-2 border border-white/[0.1] dark:border-gray-600 rounded-lg text-sm bg-[#0a0e27] text-white focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+                              className="w-full px-3 py-2 border border-white/[0.05] rounded-lg text-sm bg-white/[0.02] hover:bg-white/[0.04] focus:bg-white/[0.04] text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
                             >
                               <option value="quick_reply">Quick Reply</option>
                               <option value="url">URL</option>
@@ -1383,8 +1383,8 @@ const CreateTemplate: React.FC = () => {
                               }}
                               placeholder="Button text"
                               maxLength={25}
-                              className={`w-full px-3 py-2 border rounded-lg text-sm bg-[#0a0e27] text-white focus:outline-none focus:ring-2 focus:ring-primary-500/20 ${errors[`button_${index}_text`]
-                                ? 'border-red-300 dark:border-red-600'
+                              className={`w-full px-3 py-2 border rounded-lg text-sm bg-white/[0.02] hover:bg-white/[0.04] focus:bg-white/[0.04] text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all ${errors[`button_${index}_text`]
+                                  ? 'border-red-500 focus:ring-red-500/20'
                                 : 'border-white/[0.1] dark:border-gray-600'
                                 }`}
                             />
@@ -1405,8 +1405,8 @@ const CreateTemplate: React.FC = () => {
                                 updateFormData('buttons', updated);
                               }}
                               placeholder="https://example.com"
-                              className={`w-full px-3 py-2 border rounded-lg text-sm bg-[#0a0e27] text-white focus:outline-none focus:ring-2 focus:ring-primary-500/20 ${errors[`button_${index}_url`]
-                                ? 'border-red-300 dark:border-red-600'
+                              className={`w-full px-3 py-2 border rounded-lg text-sm bg-white/[0.02] hover:bg-white/[0.04] focus:bg-white/[0.04] text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all ${errors[`button_${index}_url`]
+                                  ? 'border-red-500 focus:ring-red-500/20'
                                 : 'border-white/[0.1] dark:border-gray-600'
                                 }`}
                             />
@@ -1427,8 +1427,8 @@ const CreateTemplate: React.FC = () => {
                                 updateFormData('buttons', updated);
                               }}
                               placeholder="+1234567890"
-                              className={`w-full px-3 py-2 border rounded-lg text-sm bg-[#0a0e27] text-white focus:outline-none focus:ring-2 focus:ring-primary-500/20 ${errors[`button_${index}_phone`]
-                                ? 'border-red-300 dark:border-red-600'
+                              className={`w-full px-3 py-2 border rounded-lg text-sm bg-white/[0.02] hover:bg-white/[0.04] focus:bg-white/[0.04] text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all ${errors[`button_${index}_phone`]
+                                  ? 'border-red-500 focus:ring-red-500/20'
                                 : 'border-white/[0.1] dark:border-gray-600'
                                 }`}
                             />
@@ -1509,8 +1509,8 @@ const CreateTemplate: React.FC = () => {
                                 });
                               }
                             }}
-                            className={`w-full px-4 py-2.5 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 bg-[#0a0e27] dark:bg-gray-700 text-white ${errors.account
-                              ? 'border-red-300 dark:border-red-600'
+                            className={`w-full px-4 py-2.5 border rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 bg-white/[0.02] hover:bg-white/[0.04] text-white transition-all ${errors.account
+                                ? 'border-red-500 focus:ring-red-500/20'
                               : 'border-white/[0.1] dark:border-gray-600'
                               }`}
                           >
@@ -1603,7 +1603,7 @@ const CreateTemplate: React.FC = () => {
                       <select
                         value={formData.language}
                         onChange={(e) => updateFormData('language', e.target.value)}
-                        className="w-full px-4 py-2.5 border border-white/[0.1] dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 bg-[#0a0e27] dark:bg-gray-700 text-white"
+                        className="w-full px-4 py-2.5 border border-white/[0.05] rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 bg-white/[0.02] hover:bg-white/[0.04] focus:bg-white/[0.04] text-white transition-all"
                       >
                         {languages.map((lang) => (
                           <option key={lang.value} value={lang.value}>
@@ -1645,7 +1645,7 @@ const CreateTemplate: React.FC = () => {
             </div>
 
             {/* Quick Stats */}
-            <div className="mt-4 bg-[#0a0e27] rounded-xl border border-white/[0.1] p-4">
+            <div className="mt-4 bg-white/[0.02] rounded-xl border border-white/[0.05] p-4 backdrop-blur-xl">
               <h4 className="font-medium text-white mb-3">Template Stats</h4>
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div className="bg-[#050816] dark:bg-gray-700 rounded-lg p-2">

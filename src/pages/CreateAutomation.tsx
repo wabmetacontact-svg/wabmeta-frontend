@@ -175,7 +175,7 @@ const CreateAutomation: React.FC = () => {
         <div className="flex items-center gap-4">
           <button
             onClick={() => navigate('/dashboard/automations')}
-            className="p-2 hover:bg-[#0a0e27]/[0.06] rounded-lg text-gray-400"
+            className="p-2 hover:bg-white/[0.04] rounded-lg text-gray-400"
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
@@ -200,7 +200,7 @@ const CreateAutomation: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Settings Column */}
         <div className="lg:col-span-1 space-y-6">
-          <div className="bg-[#0a0e27] rounded-2xl border border-white/[0.1] p-6 shadow-sm">
+          <div className="relative overflow-hidden bg-white/[0.02] rounded-2xl border border-white/[0.05] p-6 shadow-xl backdrop-blur-xl">
             <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
               <Settings className="w-5 h-5 text-gray-400" />
               General Settings
@@ -214,7 +214,7 @@ const CreateAutomation: React.FC = () => {
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   placeholder="e.g., Welcome Sequence"
-                  className="w-full px-4 py-2.5 bg-[#0a0e27] border-none rounded-xl text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                  className="w-full px-4 py-2.5 bg-white/[0.02] border border-white/[0.05] rounded-xl text-white focus:ring-2 focus:ring-emerald-500 outline-none"
                 />
               </div>
 
@@ -225,11 +225,11 @@ const CreateAutomation: React.FC = () => {
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   placeholder="What does this automation do?"
                   rows={2}
-                  className="w-full px-4 py-2.5 bg-[#0a0e27] border-none rounded-xl text-white focus:ring-2 focus:ring-blue-500 outline-none resize-none"
+                  className="w-full px-4 py-2.5 bg-white/[0.02] border border-white/[0.05] rounded-xl text-white focus:ring-2 focus:ring-emerald-500 outline-none resize-none"
                 />
               </div>
 
-              <div className="flex items-center justify-between p-3 bg-[#0a0e27]/50 rounded-xl">
+              <div className="flex items-center justify-between p-3 bg-white/[0.02] rounded-xl">
                 <span className="text-sm font-semibold text-gray-300">Status</span>
                 <button
                   type="button"
@@ -238,7 +238,7 @@ const CreateAutomation: React.FC = () => {
                     formData.isActive ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-700'
                   }`}
                 >
-                  <span className={`inline-block h-4 w-4 transform rounded-full bg-[#0a0e27] transition-transform ${
+                  <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
                     formData.isActive ? 'translate-x-6' : 'translate-x-1'
                   }`} />
                 </button>
@@ -246,7 +246,7 @@ const CreateAutomation: React.FC = () => {
             </div>
           </div>
 
-          <div className="bg-[#0a0e27] rounded-2xl border border-white/[0.1] p-6 shadow-sm">
+          <div className="relative overflow-hidden bg-white/[0.02] rounded-2xl border border-white/[0.05] p-6 shadow-xl backdrop-blur-xl">
              <h3 className="text-lg font-bold text-white mb-1 flex items-center gap-2">
                 <Layers className="w-5 h-5 text-blue-500" />
                 Targeting
@@ -265,7 +265,7 @@ const CreateAutomation: React.FC = () => {
                         className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                           formData.targetGroupIds.includes(group.id)
                             ? 'bg-blue-600 text-white shadow-md'
-                            : 'bg-[#0a0e27]/[0.04] text-gray-400 hover:bg-gray-200'
+                            : 'bg-white/[0.02] border border-white/[0.05] text-gray-400 hover:bg-white/[0.04]'
                         }`}
                       >
                         {group.name}
@@ -288,7 +288,7 @@ const CreateAutomation: React.FC = () => {
                           className="sr-only"
                         />
                         <div className={`w-10 h-5 rounded-full transition-colors ${formData.excludeExisting ? 'bg-blue-500' : 'bg-gray-300 dark:bg-gray-700'}`} />
-                        <div className={`absolute top-1 left-1 w-3 h-3 rounded-full bg-[#0a0e27] transition-transform ${formData.excludeExisting ? 'translate-x-5' : ''}`} />
+                        <div className={`absolute top-1 left-1 w-3 h-3 rounded-full bg-white transition-transform ${formData.excludeExisting ? 'translate-x-5' : ''}`} />
                       </div>
                       <span className="text-sm font-medium text-gray-300 group-hover:text-white transition-colors">
                         Skip existing CRM contacts
@@ -303,7 +303,7 @@ const CreateAutomation: React.FC = () => {
         {/* Builder Column */}
         <div className="lg:col-span-2 space-y-6">
           {/* Trigger Section */}
-          <div className="bg-[#0a0e27] rounded-2xl border border-white/[0.1] overflow-hidden shadow-sm">
+          <div className="relative overflow-hidden bg-white/[0.02] rounded-2xl border border-white/[0.05] shadow-xl backdrop-blur-xl">
             <div className="p-6 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/10 dark:to-indigo-900/10 border-b border-blue-100 dark:border-blue-900/30">
               <h3 className="text-lg font-bold text-blue-900 dark:text-blue-300 flex items-center gap-2">
                 <div className="p-1.5 bg-blue-500 rounded-lg text-white">
@@ -325,10 +325,10 @@ const CreateAutomation: React.FC = () => {
                       className={`flex items-start gap-3 p-4 rounded-xl border text-left transition-all ${
                         isSelected
                           ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 shadow-sm'
-                          : 'border-white/[0.05] bg-[#050816] hover:border-blue-200 dark:hover:border-blue-900'
+                          : 'border-white/[0.05] bg-white/[0.02] hover:border-emerald-200 dark:hover:border-emerald-900'
                       }`}
                     >
-                      <div className={`p-2 rounded-lg ${isSelected ? 'bg-blue-500 text-white' : 'bg-[#0a0e27] text-gray-400'}`}>
+                      <div className={`p-2 rounded-lg ${isSelected ? 'bg-emerald-500 text-white' : 'bg-white/[0.04] text-gray-400'}`}>
                         <Icon className="w-5 h-5" />
                       </div>
                       <div>
@@ -344,7 +344,7 @@ const CreateAutomation: React.FC = () => {
 
               {/* Dynamic Trigger Config */}
               {formData.trigger === 'KEYWORD' && (
-                <div className="p-4 bg-[#0a0e27]/50 rounded-xl border border-white/[0.05] animate-in fade-in slide-in-from-top-2 duration-300">
+                <div className="p-4 bg-white/[0.02] rounded-xl border border-white/[0.05] animate-in fade-in slide-in-from-top-2 duration-300">
                   <label className="block text-sm font-bold text-gray-300 mb-2">Keyword(s)</label>
                   <input
                     type="text"
@@ -354,7 +354,7 @@ const CreateAutomation: React.FC = () => {
                       triggerConfig: { ...formData.triggerConfig, keywords: e.target.value.split(',').map(k => k.trim()) }
                     })}
                     placeholder="e.g., pricing, demo, help"
-                    className="w-full px-4 py-2.5 bg-[#0a0e27] border border-white/[0.1] rounded-xl text-white outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-2.5 bg-white/[0.02] border border-white/[0.05] rounded-xl text-white outline-none focus:ring-2 focus:ring-emerald-500"
                   />
                   <div className="mt-3 flex items-center gap-2">
                     <input
@@ -373,7 +373,7 @@ const CreateAutomation: React.FC = () => {
               )}
 
               {formData.trigger === 'SCHEDULE' && (
-                <div className="grid grid-cols-2 gap-4 p-4 bg-[#0a0e27]/50 rounded-xl border border-white/[0.05] animate-in fade-in slide-in-from-top-2 duration-300">
+                <div className="grid grid-cols-2 gap-4 p-4 bg-white/[0.02] rounded-xl border border-white/[0.05] animate-in fade-in slide-in-from-top-2 duration-300">
                   <div>
                     <label className="block text-sm font-bold text-gray-300 mb-2">Time</label>
                     <input
@@ -383,7 +383,7 @@ const CreateAutomation: React.FC = () => {
                         ...formData,
                         triggerConfig: { ...formData.triggerConfig, time: e.target.value }
                       })}
-                      className="w-full px-4 py-2.5 bg-[#0a0e27] border border-white/[0.1] rounded-xl text-white outline-none"
+                      className="w-full px-4 py-2.5 bg-white/[0.02] border border-white/[0.05] rounded-xl text-white outline-none focus:ring-2 focus:ring-emerald-500"
                     />
                   </div>
                   <div>
@@ -394,7 +394,7 @@ const CreateAutomation: React.FC = () => {
                         ...formData,
                         triggerConfig: { ...formData.triggerConfig, days: e.target.value }
                       })}
-                      className="w-full px-4 py-2.5 bg-[#0a0e27] border border-white/[0.1] rounded-xl text-white outline-none"
+                      className="w-full px-4 py-2.5 bg-white/[0.02] border border-white/[0.05] rounded-xl text-white outline-none focus:ring-2 focus:ring-emerald-500"
                     >
                       <option value="daily">Every Day</option>
                       <option value="weekdays">Weekdays (M-F)</option>
@@ -415,7 +415,7 @@ const CreateAutomation: React.FC = () => {
             
             {actions.length === 0 ? (
               <div className="p-12 border-2 border-dashed border-white/[0.1] rounded-3xl flex flex-col items-center justify-center text-center opacity-60">
-                 <div className="w-16 h-16 bg-[#050816] rounded-2xl flex items-center justify-center mb-4">
+                 <div className="w-16 h-16 bg-white/[0.04] rounded-2xl flex items-center justify-center mb-4">
                     <Plus className="w-8 h-8 text-gray-300" />
                  </div>
                  <p className="font-bold text-gray-300">Your workflow is empty</p>
@@ -440,7 +440,7 @@ const CreateAutomation: React.FC = () => {
             )}
 
             {/* Add Action Button Group */}
-            <div className="bg-[#0a0e27] rounded-2xl border border-white/[0.1] p-6">
+            <div className="relative overflow-hidden bg-white/[0.02] rounded-2xl border border-white/[0.05] p-6 backdrop-blur-xl">
               <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Available Actions</p>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                 {actionOptions.map((opt) => {
@@ -449,9 +449,9 @@ const CreateAutomation: React.FC = () => {
                     <button
                       key={opt.value}
                       onClick={() => addAction(opt.value)}
-                      className="flex flex-col items-center gap-2 p-3 rounded-2xl bg-[#0a0e27]/50 border border-white/[0.05] hover:border-blue-500 dark:hover:border-blue-500 hover:bg-[#0a0e27] dark:hover:bg-gray-800 transition-all hover:shadow-lg group"
+                      className="flex flex-col items-center gap-2 p-3 rounded-2xl bg-white/[0.02] border border-white/[0.05] hover:border-emerald-500 hover:bg-emerald-500/[0.02] transition-all hover:shadow-[inset_0_0_0_1px_rgba(16,185,129,0.4)] group"
                     >
-                      <div className="p-2 bg-[#0a0e27] rounded-xl shadow-sm group-hover:bg-blue-500 group-hover:text-white transition-colors">
+                      <div className="p-2 bg-white/[0.04] rounded-xl shadow-sm group-hover:bg-emerald-500 group-hover:text-white transition-colors">
                         <Icon className="w-5 h-5" />
                       </div>
                       <span className="text-[10px] font-bold text-gray-400 text-center tracking-tight leading-tight">
@@ -485,13 +485,13 @@ const ActionItem: React.FC<ActionItemProps> = ({ action, index, templates, onUpd
   return (
     <div className="flex gap-4 group animate-in slide-in-from-left-4 duration-500">
       <div className="flex-none">
-        <div className="w-10 h-10 rounded-full bg-[#0a0e27] border border-white/[0.1] flex items-center justify-center font-bold text-xs shadow-sm shadow-blue-500/10">
+        <div className="w-10 h-10 rounded-full bg-emerald-500 text-white flex items-center justify-center font-bold text-xs shadow-sm shadow-emerald-500/10">
           {index + 1}
         </div>
       </div>
       
-      <div className="flex-1 bg-[#0a0e27] rounded-2xl border border-white/[0.1] shadow-sm overflow-hidden border-l-4 border-l-blue-500 group-hover:shadow-md transition-shadow">
-        <div className="p-4 flex items-center justify-between bg-[#050816]/50 dark:bg-gray-800/30 border-b border-white/[0.05]">
+      <div className="flex-1 bg-white/[0.02] rounded-2xl border border-white/[0.05] shadow-sm overflow-hidden border-l-4 border-l-emerald-500 backdrop-blur-xl">
+        <div className="p-4 flex items-center justify-between bg-white/[0.02] border-b border-white/[0.05]">
           <div className="flex items-center gap-3">
             <div className="p-1.5 bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 rounded-lg">
               <Icon className="w-4 h-4" />
@@ -515,7 +515,7 @@ const ActionItem: React.FC<ActionItemProps> = ({ action, index, templates, onUpd
                 onChange={(e) => onUpdate(action.id, { ...config, text: e.target.value })}
                 rows={3}
                 placeholder="Type your message..."
-                className="w-full px-4 py-3 bg-[#0a0e27] border-none rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                className="w-full px-4 py-3 bg-white/[0.02] border border-white/[0.05] rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 outline-none text-white"
               />
             </div>
           )}
@@ -526,7 +526,7 @@ const ActionItem: React.FC<ActionItemProps> = ({ action, index, templates, onUpd
               <select
                 value={config.templateId || ''}
                 onChange={(e) => onUpdate(action.id, { ...config, templateId: e.target.value })}
-                className="w-full px-4 py-3 bg-[#0a0e27] border-none rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-3 bg-white/[0.02] border border-white/[0.05] rounded-xl text-sm outline-none focus:ring-2 focus:ring-emerald-500 text-white"
               >
                 <option value="">-- Choose Template --</option>
                 {templates.map((t) => (
@@ -544,7 +544,7 @@ const ActionItem: React.FC<ActionItemProps> = ({ action, index, templates, onUpd
                   type="number"
                   value={config.value || 0}
                   onChange={(e) => onUpdate(action.id, { ...config, value: parseInt(e.target.value) })}
-                  className="w-full px-4 py-3 bg-[#0a0e27] border-none rounded-xl text-sm outline-none"
+                  className="w-full px-4 py-3 bg-white/[0.02] border border-white/[0.05] rounded-xl text-sm outline-none focus:ring-2 focus:ring-emerald-500 text-white"
                 />
               </div>
               <div className="flex-1">
@@ -552,7 +552,7 @@ const ActionItem: React.FC<ActionItemProps> = ({ action, index, templates, onUpd
                 <select
                   value={config.unit || 'minutes'}
                   onChange={(e) => onUpdate(action.id, { ...config, unit: e.target.value })}
-                  className="w-full px-4 py-3 bg-[#0a0e27] border-none rounded-xl text-sm outline-none"
+                  className="w-full px-4 py-3 bg-white/[0.02] border border-white/[0.05] rounded-xl text-sm outline-none focus:ring-2 focus:ring-emerald-500 text-white"
                 >
                   <option value="seconds">Seconds</option>
                   <option value="minutes">Minutes</option>
@@ -571,7 +571,7 @@ const ActionItem: React.FC<ActionItemProps> = ({ action, index, templates, onUpd
                     type="text"
                     value={config.tagName || ''}
                     onChange={(e) => onUpdate(action.id, { ...config, tagName: e.target.value })}
-                    className="w-full px-4 py-3 bg-[#0a0e27] border-none rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                    className="w-full px-4 py-3 bg-white/[0.02] border border-white/[0.05] rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 outline-none text-white"
                     placeholder="e.g., hot_lead"
                   />
                   <div className="px-3 bg-blue-100 dark:bg-blue-900/30 text-blue-600 rounded-xl flex items-center">
@@ -588,7 +588,7 @@ const ActionItem: React.FC<ActionItemProps> = ({ action, index, templates, onUpd
                 type="url"
                 value={config.url || ''}
                 onChange={(e) => onUpdate(action.id, { ...config, url: e.target.value })}
-                className="w-full px-4 py-3 bg-[#0a0e27] border-none rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-3 bg-white/[0.02] border border-white/[0.05] rounded-xl text-sm outline-none focus:ring-2 focus:ring-emerald-500 text-white"
                 placeholder="https://your-api.com/webhooks"
               />
             </div>
