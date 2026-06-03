@@ -639,49 +639,7 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, setCollapsed }) => {
           collapsed={collapsed}
         />
 
-        {/* ── USER GREETING CARD ── */}
-        {!collapsed && (
-          <div
-            className="mx-3 mt-3 p-3 rounded-2xl
-              bg-white/[0.04] backdrop-blur-xl
-              border border-white/[0.08]
-              relative overflow-hidden
-              hover:bg-white/[0.06] transition-all duration-300"
-          >
-            <div
-              className="absolute inset-0 pointer-events-none"
-              style={{
-                background:
-                  "linear-gradient(135deg, rgba(255,255,255,0.04) 0%, transparent 60%)",
-              }}
-            />
-            <div className="relative flex items-center gap-3">
-              <div className="relative flex-shrink-0">
-                <div className="absolute inset-0 bg-green-500/30 rounded-xl blur-md" />
-                <div
-                  className="relative w-11 h-11 rounded-xl
-                    bg-gradient-to-br from-green-500 to-emerald-600
-                    flex items-center justify-center text-white font-bold text-sm
-                    border border-green-400/30"
-                >
-                  {initial}
-                </div>
-                <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-green-400 border-2 border-[#0a0e27]" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-1 mb-0.5">
-                  <span className="text-[10px] font-mono uppercase tracking-wider text-gray-500">
-                    {greeting}
-                  </span>
-                  <span className="text-xs">👋</span>
-                </div>
-                <p className="text-sm font-semibold text-white truncate">
-                  {firstName}
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
+
 
         {/* ── NAVIGATION ── */}
         <nav className="flex-1 overflow-y-auto py-4 px-3 scrollbar-thin">
