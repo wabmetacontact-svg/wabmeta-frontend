@@ -33,6 +33,7 @@ import { useSocket } from '../context/SocketContext';
 import toast from 'react-hot-toast';
 import { Link, useNavigate } from 'react-router-dom';
 import PageSkeleton from '../components/common/PageSkeleton';
+import { FaWhatsapp } from "react-icons/fa";
 
 // ============================================
 // HELPERS
@@ -434,7 +435,7 @@ const Dashboard: React.FC = () => {
             {/* WhatsApp Quick Stat */}
             <div className="relative overflow-hidden rounded-2xl bg-[#25D366]/[0.05] border border-[#25D366]/20 p-6 group">
               <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform">
-                <MessageSquare size={80} />
+                <FaWhatsapp size={80} />
               </div>
               <div className="relative">
                 <p className="text-xs font-mono text-[#25D366] uppercase tracking-widest mb-1">WhatsApp</p>

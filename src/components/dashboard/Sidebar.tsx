@@ -35,6 +35,7 @@ import { useApp } from "../../context/AppContext";
 import { usePlanAccess } from "../../hooks/usePlanAccess";
 import { useAuth } from "../../context/AuthContext";
 import type { User } from "../../types/auth";
+import { FaWhatsapp } from "react-icons/fa";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -306,7 +307,7 @@ const ChannelSwitcher: React.FC<ChannelSwitcherProps> = ({
     {
       id: "whatsapp",
       label: "WhatsApp",
-      icon: MessageSquare,
+      icon: FaWhatsapp,
       color: "#25d366",
       gradient: "from-[#25d366] to-[#128C7E]",
     },
