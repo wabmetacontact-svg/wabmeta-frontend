@@ -1227,39 +1227,49 @@ const Contacts: React.FC = () => {
           ) : groups.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {groups.map((group) => (
-                <div key={group.id} onClick={() => { setActiveGroup(group); setCurrentPage(1); }} className="bg-[#0a0e27] border border-white/[0.1] rounded-xl p-5 hover:border-primary-300 hover:shadow-md transition-all relative group/card cursor-pointer">
-                  <div className="w-12 h-12 bg-primary-50 rounded-xl flex items-center justify-center mb-4 text-primary-600 group-hover/card:scale-110 transition-transform">
-                    <Layers className="w-6 h-6" />
-                  </div>
-                  <h3 className="font-semibold text-white text-lg mb-1">{group.name}</h3>
-                  <div className="flex flex-col gap-1 text-gray-500 text-sm">
-                    <div className="flex items-center space-x-2">
-                      <Users className="w-4 h-4" />
-                      <span>{group.contactCount.toLocaleString()} {group.contactCount === 1 ? 'number' : 'numbers'}</span>
-                    </div>
-                    {group.createdAt && (
-                      <div className="flex items-center space-x-2">
-                        <Calendar className="w-4 h-4" />
-                        <span>{new Date(group.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
-                      </div>
-                    )}
+                <div key={group.id} onClick={() => { setActiveGroup(group); setCurrentPage(1); }} className="relative overflow-hidden rounded-2xl bg-white/[0.02] border border-white/[0.05] p-6 group/card cursor-pointer hover:bg-white/[0.04] transition-all">
+                  <div className="absolute top-0 right-0 p-4 opacity-5 group-hover/card:scale-110 group-hover/card:opacity-10 transition-all duration-500">
+                    <Layers size={100} className="text-white" />
                   </div>
                   
-                  <div className="absolute top-4 right-4 flex items-center gap-2 opacity-0 group-hover/card:opacity-100 transition-opacity">
+                  <div className="relative z-10">
+                    <p className="text-xs font-mono text-gray-400 uppercase tracking-widest mb-2">GROUP</p>
+                    <h3 className="text-2xl font-bold text-white mb-4 truncate" title={group.name}>{group.name}</h3>
+                    
+                    <div className="flex flex-col gap-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400 shrink-0">
+                          <Users className="w-4 h-4" />
+                        </div>
+                        <span className="text-white font-semibold">{group.contactCount.toLocaleString()} <span className="text-gray-400 font-normal">contacts</span></span>
+                      </div>
+                      
+                      {group.createdAt && (
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-400 shrink-0">
+                            <Calendar className="w-4 h-4" />
+                          </div>
+                          <span className="text-gray-400 text-sm">Created {new Date(group.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <div className="absolute top-4 right-4 flex items-center gap-2 opacity-0 group-hover/card:opacity-100 transition-opacity z-20">
                     <button 
                       onClick={(e) => {
                         e.stopPropagation();
                         setPasteTargetGroupId(group.id);
                         setShowBulkPaste(true);
                       }}
-                      className="p-2 text-gray-400 hover:text-green-500 hover:bg-green-500/10 rounded-lg transition-colors"
+                      className="p-2 text-emerald-400 hover:text-white hover:bg-emerald-500 rounded-lg transition-colors backdrop-blur-md bg-white/[0.05] border border-white/[0.1]"
                       title="Add Contacts to Group"
                     >
                       <UserPlus className="w-4 h-4" />
                     </button>
                     <button 
                       onClick={(e) => handleDeleteGroup(e, group.id, group.name)}
-                      className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-500/10 rounded-lg transition-colors"
+                      className="p-2 text-red-400 hover:text-white hover:bg-red-500 rounded-lg transition-colors backdrop-blur-md bg-white/[0.05] border border-white/[0.1]"
                       title="Delete Group"
                     >
                       <Trash2 className="w-4 h-4" />
