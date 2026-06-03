@@ -173,7 +173,7 @@ const ContactRow: React.FC<{
     'Unknown';
 
   return (
-    <tr className="hover:bg-[#050816] transition-colors">
+    <tr className="hover:bg-white/[0.02] transition-colors group/row">
       {/* Checkbox */}
       <td className="px-4 py-3">
         <button onClick={() => onSelect(contact.id)}>
@@ -189,7 +189,7 @@ const ContactRow: React.FC<{
       <td className="px-4 py-3">
         <div className="flex items-center space-x-3">
           {/* Avatar */}
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white font-semibold">
+          <div className="w-10 h-10 rounded-xl bg-white/[0.05] border border-white/[0.1] shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)] flex items-center justify-center text-white font-bold text-lg">
             {displayName.charAt(0).toUpperCase()}
           </div>
 
@@ -241,7 +241,7 @@ const ContactRow: React.FC<{
           {contact.tags.slice(0, 2).map((tag) => (
             <span
               key={tag}
-              className="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-primary-100 text-primary-700"
+              className="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-white/[0.05] border border-white/[0.1] text-gray-300"
             >
               <Tag className="w-3 h-3 mr-1" />
               {tag}
@@ -1047,8 +1047,8 @@ const Contacts: React.FC = () => {
             </div>
           )}
           {/* Filters */}
-          <div className="bg-[#0a0e27] rounded-xl border border-white/[0.1] p-4">
-            <div className="flex flex-col md:flex-row md:items-center gap-4">
+          <div className="relative overflow-hidden rounded-2xl bg-white/[0.02] border border-white/[0.05] p-4 backdrop-blur-xl">
+            <div className="flex flex-col md:flex-row md:items-center gap-4 relative z-10">
               {/* Search */}
               <div className="flex-1 relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -1057,7 +1057,7 @@ const Contacts: React.FC = () => {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search by name, phone, or email..."
-                  className="w-full pl-10 pr-4 py-2.5 border border-white/[0.1] rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full pl-10 pr-4 py-2.5 bg-white/[0.03] border border-white/[0.05] rounded-xl text-white placeholder:text-gray-500 focus:outline-none focus:border-white/[0.1] focus:bg-white/[0.05] transition-colors shadow-[inset_0_1px_2px_rgba(0,0,0,0.2)]"
                 />
               </div>
 
@@ -1065,7 +1065,7 @@ const Contacts: React.FC = () => {
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="px-4 py-2.5 border border-white/[0.1] rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="px-4 py-2.5 bg-white/[0.03] border border-white/[0.05] rounded-xl text-gray-300 focus:outline-none focus:border-white/[0.1] focus:bg-white/[0.05] transition-colors shadow-[inset_0_1px_2px_rgba(0,0,0,0.2)] [&>option]:bg-[#0a0e27]"
               >
                 <option value="all">All Status</option>
                 <option value="active">Active</option>
@@ -1077,7 +1077,7 @@ const Contacts: React.FC = () => {
               <select
                 value={whatsappFilter}
                 onChange={(e) => setWhatsappFilter(e.target.value)}
-                className="px-4 py-2.5 border border-white/[0.1] rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="px-4 py-2.5 bg-white/[0.03] border border-white/[0.05] rounded-xl text-gray-300 focus:outline-none focus:border-white/[0.1] focus:bg-white/[0.05] transition-colors shadow-[inset_0_1px_2px_rgba(0,0,0,0.2)] [&>option]:bg-[#0a0e27]"
               >
                 <option value="all">All WhatsApp</option>
                 <option value="verified">Verified</option>
@@ -1158,10 +1158,10 @@ const Contacts: React.FC = () => {
 
           {/* Contacts Table */}
           {contacts.length > 0 && (
-            <div className="bg-[#0a0e27] rounded-xl border border-white/[0.1] overflow-hidden">
+            <div className="relative overflow-hidden rounded-2xl bg-white/[0.02] border border-white/[0.05] backdrop-blur-xl">
               <div className="overflow-x-auto">
                 <table className="w-full">
-                  <thead className="bg-[#050816] border-b border-white/[0.1]">
+                  <thead className="bg-white/[0.02] border-b border-white/[0.05]">
                     <tr>
                       <th className="px-4 py-3 w-10">
                         <button onClick={handleSelectAll}>
@@ -1193,7 +1193,7 @@ const Contacts: React.FC = () => {
                       <th className="px-4 py-3 w-10"></th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-100">
+                  <tbody className="divide-y divide-white/[0.02]">
                     {contacts.map((contact) => (
                       <ContactRow
                         key={contact.id}
