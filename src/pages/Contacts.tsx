@@ -817,25 +817,25 @@ const Contacts: React.FC = () => {
         label: 'Total Contacts',
         value: loadingStats ? '...' : total.toLocaleString(),
         icon: Users,
-        color: 'bg-blue-100 text-blue-600',
+        color: '#3B82F6', // Blue
       },
       {
         label: 'Active',
         value: loadingStats ? '...' : active.toLocaleString(),
         icon: UserCheck,
-        color: 'bg-green-100 text-green-600',
+        color: '#10B981', // Emerald
       },
       {
         label: 'WhatsApp Verified',
         value: loadingStats ? '...' : verified.toLocaleString(),
         icon: CheckCircle,
-        color: 'bg-emerald-100 text-emerald-600',
+        color: '#25D366', // WhatsApp Green
       },
       {
         label: 'Inactive',
         value: loadingStats ? '...' : inactive.toLocaleString(),
         icon: UserX,
-        color: 'bg-red-100 text-red-600',
+        color: '#EF4444', // Red
       },
     ];
   }, [statsApi, meta.total, loadingStats]);
@@ -984,20 +984,21 @@ const Contacts: React.FC = () => {
         {stats.map((stat) => (
           <div
             key={stat.label}
-            className="bg-[#0a0e27] rounded-xl p-4 border border-white/[0.1] hover:shadow-md transition-shadow"
+            className="relative overflow-hidden rounded-2xl bg-white/[0.02] border border-white/[0.05] p-6 group/stat hover:bg-white/[0.04] transition-all"
           >
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-500">{stat.label}</p>
-                <p className="text-2xl font-bold text-white mt-1">
-                  {stat.value}
-                </p>
-              </div>
-              <div
-                className={`w-12 h-12 rounded-xl flex items-center justify-center ${stat.color}`}
+            <div className="absolute top-0 right-0 p-4 opacity-[0.08] group-hover/stat:scale-110 group-hover/stat:opacity-[0.15] transition-all duration-500">
+              <stat.icon size={80} style={{ color: stat.color }} />
+            </div>
+            <div className="relative z-10">
+              <p 
+                className="text-xs font-mono uppercase tracking-widest mb-1"
+                style={{ color: stat.color }}
               >
-                <stat.icon className="w-6 h-6" />
-              </div>
+                {stat.label}
+              </p>
+              <h3 className="text-3xl font-bold text-white">
+                {stat.value}
+              </h3>
             </div>
           </div>
         ))}
