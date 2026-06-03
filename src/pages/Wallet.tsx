@@ -595,7 +595,10 @@ const WalletOverview: React.FC<{ walletData: WalletData }> = ({
           bg: "bg-blue-50 dark:bg-blue-900/20",
         },
       ].map((item, i) => (
+        <div
+          key={i}
           className={`${item.bg.replace(/bg-.*50\s/, 'bg-white/[0.02] ')} rounded-xl p-4 border border-white/[0.05] relative overflow-hidden`}
+        >
           <div className="flex items-center gap-2 mb-1">
             <item.icon className={`w-4 h-4 ${item.color}`} />
             <span className="text-xs text-gray-400">
