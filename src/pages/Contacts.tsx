@@ -1228,7 +1228,7 @@ const Contacts: React.FC = () => {
           ) : groups.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {groups.map((group) => (
-                <div key={group.id} onClick={() => { setActiveGroup(group); setCurrentPage(1); }} className="relative overflow-hidden rounded-2xl bg-white/[0.02] border border-white/[0.05] p-6 group/card cursor-pointer hover:bg-white/[0.04] transition-all">
+                <div key={group.id} onClick={() => { setActiveGroup(group); setCurrentPage(1); }} className="relative overflow-hidden rounded-2xl bg-white/[0.02] border border-white/[0.05] p-6 group/card cursor-pointer hover:bg-white/[0.04] hover:border-emerald-500/50 hover:shadow-[0_0_20px_rgba(16,185,129,0.1)] transition-all duration-300">
                   <div className="absolute top-0 right-0 p-4 opacity-5 group-hover/card:scale-110 group-hover/card:opacity-10 transition-all duration-500">
                     <Layers size={100} className="text-white" />
                   </div>
