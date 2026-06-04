@@ -232,25 +232,29 @@ const Templates: React.FC = () => {
       label: 'Total Templates',
       value: templateList.length,
       icon: FileText,
-      color: 'bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-300'
+      color: 'bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-300',
+      hexColor: '#3B82F6'
     },
     {
       label: 'Approved',
       value: templateList.filter(t => t.status === 'approved').length,
       icon: CheckCircle,
-      color: 'bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-300'
+      color: 'bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-300',
+      hexColor: '#10B981'
     },
     {
       label: 'Pending',
       value: templateList.filter(t => t.status === 'pending').length,
       icon: Clock,
-      color: 'bg-yellow-100 text-yellow-600 dark:bg-yellow-900 dark:text-yellow-300'
+      color: 'bg-yellow-100 text-yellow-600 dark:bg-yellow-900 dark:text-yellow-300',
+      hexColor: '#F59E0B'
     },
     {
       label: 'Rejected',
       value: templateList.filter(t => t.status === 'rejected').length,
       icon: XCircle,
-      color: 'bg-red-100 text-red-600 dark:bg-red-900 dark:text-red-300'
+      color: 'bg-red-100 text-red-600 dark:bg-red-900 dark:text-red-300',
+      hexColor: '#EF4444'
     },
   ];
 
@@ -365,7 +369,7 @@ const Templates: React.FC = () => {
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map((stat) => (
-          <div key={stat.label} className="relative overflow-hidden rounded-2xl bg-white/[0.02] border border-white/[0.05] p-6 group/stat hover:bg-white/[0.04] transition-all">
+          <div key={stat.label} className="relative overflow-hidden rounded-2xl border p-6 group/stat transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg" style={{ backgroundColor: `${stat.hexColor}0A`, borderColor: `${stat.hexColor}33` }}>
             <div className="absolute top-0 right-0 p-4 opacity-[0.08] group-hover/stat:scale-110 group-hover/stat:opacity-[0.15] transition-all duration-500">
               <stat.icon size={80} className={stat.color.split(' ')[1]} />
             </div>

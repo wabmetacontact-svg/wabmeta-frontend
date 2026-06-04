@@ -150,7 +150,8 @@ const ChatbotList: React.FC = () => {
         {filteredChatbots.map((chatbot) => (
           <div
             key={chatbot.id}
-            className="relative overflow-hidden rounded-2xl bg-white/[0.02] border border-white/[0.05] p-5 hover:bg-emerald-500/[0.02] hover:shadow-[inset_0_0_0_1px_rgba(16,185,129,0.4)] transition-all duration-200 group"
+            className="relative overflow-hidden rounded-2xl border p-5 transition-all duration-200 group hover:-translate-y-0.5 hover:shadow-lg"
+            style={{ backgroundColor: '#10B9810A', borderColor: '#10B98133' }}
           >
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-center gap-3">

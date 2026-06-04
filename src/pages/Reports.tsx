@@ -669,10 +669,23 @@ const StatCard: React.FC<StatCardProps> = ({
     red: 'text-red-500',
   };
 
+  const hexColors = {
+    blue: '#3B82F6',
+    green: '#10B981',
+    purple: '#8B5CF6',
+    orange: '#F97316',
+    red: '#EF4444',
+  };
+  const hexColor = hexColors[color] || '#ffffff';
+
   return (
     <div
-      className={`relative overflow-hidden bg-white/[0.02] border border-white/[0.05] rounded-2xl group/stat hover:bg-white/[0.04] transition-all backdrop-blur-xl ${compact ? 'p-4' : 'p-6'
+      className={`relative overflow-hidden border rounded-2xl group/stat transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg backdrop-blur-xl ${compact ? 'p-4' : 'p-6'
         }`}
+      style={{
+        backgroundColor: `${hexColor}0A`,
+        borderColor: `${hexColor}33`,
+      }}
     >
       <div className="absolute top-0 right-0 p-4 opacity-[0.08] group-hover/stat:scale-110 group-hover/stat:opacity-[0.15] transition-all duration-500">
         <Icon size={compact ? 60 : 80} className={colors[color]} />

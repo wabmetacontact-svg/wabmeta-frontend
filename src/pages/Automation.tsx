@@ -101,7 +101,7 @@ const AutomationPage: React.FC = () => {
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="relative overflow-hidden rounded-2xl bg-white/[0.02] border border-white/[0.05] p-6 group/stat hover:bg-white/[0.04] transition-all">
+        <div className="relative overflow-hidden rounded-2xl border p-6 group/stat transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg" style={{ backgroundColor: '#10B9810A', borderColor: '#10B98133' }}>
           <div className="absolute top-0 right-0 p-4 opacity-[0.08] group-hover/stat:scale-110 group-hover/stat:opacity-[0.15] transition-all duration-500">
             <Zap size={80} style={{ color: '#10B981' }} />
           </div>
@@ -113,7 +113,7 @@ const AutomationPage: React.FC = () => {
           </div>
         </div>
 
-        <div className="relative overflow-hidden rounded-2xl bg-white/[0.02] border border-white/[0.05] p-6 group/stat hover:bg-white/[0.04] transition-all">
+        <div className="relative overflow-hidden rounded-2xl border p-6 group/stat transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg" style={{ backgroundColor: '#3B82F60A', borderColor: '#3B82F633' }}>
           <div className="absolute top-0 right-0 p-4 opacity-[0.08] group-hover/stat:scale-110 group-hover/stat:opacity-[0.15] transition-all duration-500">
             <Play size={80} style={{ color: '#3B82F6' }} />
           </div>
@@ -125,7 +125,7 @@ const AutomationPage: React.FC = () => {
           </div>
         </div>
 
-        <div className="relative overflow-hidden rounded-2xl bg-white/[0.02] border border-white/[0.05] p-6 group/stat hover:bg-white/[0.04] transition-all">
+        <div className="relative overflow-hidden rounded-2xl border p-6 group/stat transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg" style={{ backgroundColor: '#8B5CF60A', borderColor: '#8B5CF633' }}>
           <div className="absolute top-0 right-0 p-4 opacity-[0.08] group-hover/stat:scale-110 group-hover/stat:opacity-[0.15] transition-all duration-500">
             <MessageSquare size={80} style={{ color: '#8B5CF6' }} />
           </div>
