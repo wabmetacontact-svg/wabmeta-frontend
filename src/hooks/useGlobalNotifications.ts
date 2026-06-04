@@ -9,8 +9,8 @@ import {
   requestNotificationPermission,
 } from './useNotifications';
 import toast from 'react-hot-toast';
-import { MessageSquare } from 'lucide-react';
-import React from 'react';
+import { MessageSquare, X, VolumeX } from 'lucide-react';
+import React, { useState } from 'react';
 import api from '../services/api';
 
 // Utility to convert VAPID key
@@ -30,37 +30,67 @@ function NotificationToast({
   contactName,
   messagePreview,
   onClick,
+  onClose,
+  onMute,
 }: {
   contactName: string;
   messagePreview: string;
   onClick: () => void;
+  onClose: (e: React.MouseEvent) => void;
+  onMute: (e: React.MouseEvent) => void;
 }) {
   return React.createElement(
     'div',
-    {
-      className: 'flex items-center gap-3 cursor-pointer min-w-0',
-      onClick,
-    },
+    { className: 'flex items-center gap-3 w-full min-w-0 group' },
     React.createElement(
       'div',
       {
-        className:
-          'w-10 h-10 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0 shadow-sm',
+        className: 'flex-1 flex items-center gap-3 cursor-pointer min-w-0',
+        onClick,
       },
-      React.createElement(MessageSquare, { className: 'w-5 h-5 text-white' })
+      React.createElement(
+        'div',
+        {
+          className:
+            'w-10 h-10 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0 shadow-sm',
+        },
+        React.createElement(MessageSquare, { className: 'w-5 h-5 text-white' })
+      ),
+      React.createElement(
+        'div',
+        { className: 'flex-1 min-w-0 pr-2' },
+        React.createElement(
+          'p',
+          { className: 'font-semibold text-gray-900 dark:text-white text-sm truncate' },
+          contactName
+        ),
+        React.createElement(
+          'p',
+          { className: 'text-gray-500 dark:text-gray-400 text-xs truncate mt-0.5' },
+          messagePreview
+        )
+      )
     ),
     React.createElement(
       'div',
-      { className: 'flex-1 min-w-0' },
+      { className: 'flex flex-col gap-1 flex-shrink-0 border-l border-gray-100 dark:border-gray-700 pl-2' },
       React.createElement(
-        'p',
-        { className: 'font-semibold text-gray-900 dark:text-white text-sm truncate' },
-        contactName
+        'button',
+        {
+          onClick: onClose,
+          className: 'p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors',
+          title: 'Close',
+        },
+        React.createElement(X, { className: 'w-4 h-4' })
       ),
       React.createElement(
-        'p',
-        { className: 'text-gray-500 dark:text-gray-400 text-xs truncate mt-0.5' },
-        messagePreview
+        'button',
+        {
+          onClick: onMute,
+          className: 'p-1 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors',
+          title: 'Mute popups for 1 hour',
+        },
+        React.createElement(VolumeX, { className: 'w-4 h-4' })
       )
     )
   );
@@ -132,7 +162,7 @@ export function useGlobalNotifications() {
               className: `${
                 t.visible ? 'animate-enter' : 'animate-leave'
               } max-w-sm w-full bg-white dark:bg-gray-800 shadow-xl rounded-xl 
-              pointer-events-auto flex items-center gap-3 p-4 
+              pointer-events-auto flex items-center gap-3 p-3 
               border border-gray-100 dark:border-gray-700`,
             },
             React.createElement(NotificationToast, {
@@ -142,12 +172,23 @@ export function useGlobalNotifications() {
                 navigateToConversation(convId);
                 toast.dismiss(t.id);
               },
+              onClose: (e) => {
+                e.stopPropagation();
+                toast.dismiss(t.id);
+              },
+              onMute: (e) => {
+                e.stopPropagation();
+                const oneHourLater = Date.now() + 60 * 60 * 1000;
+                localStorage.setItem('wabmeta_muted_until', oneHourLater.toString());
+                toast.dismiss(t.id);
+                toast.success('Popups muted for 1 hour');
+              }
             })
           ),
         {
           duration: 5000,
           position: 'top-right',
-          id: `msg-${convId}`,
+          id: 'global-new-message', // Use a fixed ID so it replaces the previous toast instead of piling up
         }
       );
     },
@@ -194,8 +235,20 @@ export function useGlobalNotifications() {
         metadata: { conversationId: convId, contactName },
       });
 
-      // ✅ Only show toast/sound if NOT viewing this conv
-      if (!isViewingThisConv) {
+      // ✅ Check mute status
+      const mutedUntilStr = localStorage.getItem('wabmeta_muted_until');
+      let isMuted = false;
+      if (mutedUntilStr) {
+        const mutedUntil = parseInt(mutedUntilStr, 10);
+        if (Date.now() < mutedUntil) {
+          isMuted = true;
+        } else {
+          localStorage.removeItem('wabmeta_muted_until');
+        }
+      }
+
+      // ✅ Only show toast/sound if NOT viewing this conv AND NOT muted
+      if (!isViewingThisConv && !isMuted) {
         playNotificationSound();
         showToast(contactName, messagePreview, convId);
         showBrowserNotification({
