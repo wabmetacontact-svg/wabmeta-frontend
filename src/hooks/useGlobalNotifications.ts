@@ -12,6 +12,7 @@ import toast from 'react-hot-toast';
 import { MessageSquare, X, VolumeX } from 'lucide-react';
 import React, { useState } from 'react';
 import api from '../services/api';
+import { getAvatarColor } from '../utils/inboxHelpers';
 
 // Utility to convert VAPID key
 function urlBase64ToUint8Array(base64String: string) {
@@ -40,47 +41,48 @@ function NotificationToast({
   onMute: (hours: number) => void;
 }) {
   const [showMuteOptions, setShowMuteOptions] = useState(false);
+  const initial = contactName.charAt(0).toUpperCase();
+  const avatarColor = getAvatarColor(contactName);
 
   return React.createElement(
     'div',
-    { className: 'flex items-center gap-3 w-full min-w-0 group relative' },
+    { className: 'flex items-center gap-4 w-full min-w-0 group relative py-1' },
     React.createElement(
       'div',
       {
-        className: 'flex-1 flex items-center gap-3 cursor-pointer min-w-0',
+        className: 'flex-1 flex items-center gap-3.5 cursor-pointer min-w-0',
         onClick,
       },
       React.createElement(
         'div',
         {
-          className:
-            'w-10 h-10 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0 shadow-sm',
+          className: `w-11 h-11 bg-gradient-to-br ${avatarColor} rounded-full flex items-center justify-center flex-shrink-0 shadow-lg text-white font-bold text-lg border border-white/20`,
         },
-        React.createElement(MessageSquare, { className: 'w-5 h-5 text-white' })
+        initial
       ),
       React.createElement(
         'div',
         { className: 'flex-1 min-w-0 pr-2' },
         React.createElement(
           'p',
-          { className: 'font-semibold text-gray-900 dark:text-white text-sm truncate' },
+          { className: 'font-bold text-gray-900 dark:text-white text-[15px] truncate tracking-tight' },
           contactName
         ),
         React.createElement(
           'p',
-          { className: 'text-gray-500 dark:text-gray-400 text-xs truncate mt-0.5' },
+          { className: 'text-gray-500 dark:text-gray-400 text-[13px] truncate mt-0.5 font-medium' },
           messagePreview
         )
       )
     ),
     React.createElement(
       'div',
-      { className: 'flex flex-col gap-1 flex-shrink-0 border-l border-gray-100 dark:border-gray-700 pl-2' },
+      { className: 'flex flex-col justify-center gap-2 flex-shrink-0 border-l border-gray-100 dark:border-white/10 pl-3 h-full' },
       React.createElement(
         'button',
         {
           onClick: onClose,
-          className: 'p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors',
+          className: 'p-1.5 text-gray-400 hover:text-white hover:bg-gray-100 dark:hover:bg-white/10 rounded-lg transition-all active:scale-95',
           title: 'Close',
         },
         React.createElement(X, { className: 'w-4 h-4' })
@@ -95,7 +97,7 @@ function NotificationToast({
               e.stopPropagation();
               setShowMuteOptions(!showMuteOptions);
             },
-            className: 'p-1 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors',
+            className: 'p-1.5 text-gray-400 hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-all active:scale-95',
             title: 'Mute popups options',
           },
           React.createElement(VolumeX, { className: 'w-4 h-4' })
@@ -197,9 +199,9 @@ export function useGlobalNotifications() {
             {
               className: `${
                 t.visible ? 'animate-enter' : 'animate-leave'
-              } max-w-sm w-full bg-white dark:bg-gray-800 shadow-xl rounded-xl 
-              pointer-events-auto flex items-center gap-3 p-3 
-              border border-gray-100 dark:border-gray-700`,
+              } max-w-[360px] w-full bg-white dark:bg-[#0a0e27]/95 dark:backdrop-blur-xl shadow-2xl rounded-2xl 
+              pointer-events-auto flex items-center gap-3 p-3.5
+              border border-gray-100 dark:border-white/[0.08] ring-1 ring-black/5 dark:ring-white/5 transition-all overflow-visible`,
             },
             React.createElement(NotificationToast, {
               contactName,
