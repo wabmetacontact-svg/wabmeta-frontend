@@ -16,17 +16,17 @@ const AdminSidebar: React.FC = () => {
   const navigate = useNavigate();
 
   const navigation = [
-    { name: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
-    { name: 'WhatsApp', href: '/admin/whatsapp', icon: Phone },
-    { name: 'Users', href: '/admin/users', icon: Users },
-    { name: 'Subscriptions', href: '/admin/subscriptions', icon: CreditCard },
-    { name: 'Wallets', href: '/admin/wallets', icon: Wallet },
-    { name: 'Settings', href: '/admin/settings', icon: Settings },
+    { name: 'Dashboard', href: '/manage-wabmeta-admin/dashboard', icon: LayoutDashboard },
+    { name: 'WhatsApp', href: '/manage-wabmeta-admin/whatsapp', icon: Phone },
+    { name: 'Users', href: '/manage-wabmeta-admin/users', icon: Users },
+    { name: 'Subscriptions', href: '/manage-wabmeta-admin/subscriptions', icon: CreditCard },
+    { name: 'Wallets', href: '/manage-wabmeta-admin/wallets', icon: Wallet },
+    { name: 'Settings', href: '/manage-wabmeta-admin/settings', icon: Settings },
   ];
 
   const handleLogout = () => {
     // Clear admin session
-    navigate('/admin/login');
+    navigate('/manage-wabmeta-admin/login');
   };
 
   return (

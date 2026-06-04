@@ -341,7 +341,7 @@ const WalletRequestsWidget: React.FC = () => {
           )}
         </div>
         <Link
-          to="/admin/wallets"
+          to="/manage-wabmeta-admin/wallets"
           className="text-sm text-blue-600 hover:text-blue-700
                      font-medium flex items-center gap-1"
         >
@@ -659,7 +659,7 @@ const AdminDashboard: React.FC = () => {
           icon={Users}
           iconBg="bg-blue-100"
           iconColor="text-blue-600"
-          link="/admin/users"
+          link="/manage-wabmeta-admin/users"
         />
         <StatCard
           title="New Users Today"
@@ -676,7 +676,7 @@ const AdminDashboard: React.FC = () => {
           icon={Building2}
           iconBg="bg-purple-100"
           iconColor="text-purple-600"
-          link="/admin/subscriptions"
+          link="/manage-wabmeta-admin/subscriptions"
         />
         <StatCard
           title="Messages Sent"
@@ -793,28 +793,28 @@ const AdminDashboard: React.FC = () => {
         <h3 className="text-lg font-semibold text-white mb-4">Quick Actions</h3>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <Link
-            to="/admin/users"
+            to="/manage-wabmeta-admin/users"
             className="flex items-center space-x-3 p-4 bg-[#050816] rounded-xl hover:bg-[#0a0e27]/[0.04] transition-colors"
           >
             <Users className="w-5 h-5 text-blue-600" />
             <span className="font-medium text-gray-300">Manage Users</span>
           </Link>
           <Link
-            to="/admin/subscriptions"
+            to="/manage-wabmeta-admin/subscriptions"
             className="flex items-center space-x-3 p-4 bg-[#050816] rounded-xl hover:bg-[#0a0e27]/[0.04] transition-colors"
           >
             <Building2 className="w-5 h-5 text-purple-600" />
             <span className="font-medium text-gray-300">Organizations</span>
           </Link>
           <Link
-            to="/admin/plans"
+            to="/manage-wabmeta-admin/plans"
             className="flex items-center space-x-3 p-4 bg-[#050816] rounded-xl hover:bg-[#0a0e27]/[0.04] transition-colors"
           >
             <CreditCard className="w-5 h-5 text-green-600" />
             <span className="font-medium text-gray-300">Manage Plans</span>
           </Link>
           <Link
-            to="/admin/settings"
+            to="/manage-wabmeta-admin/settings"
             className="flex items-center space-x-3 p-4 bg-[#050816] rounded-xl hover:bg-[#0a0e27]/[0.04] transition-colors"
           >
             <Activity className="w-5 h-5 text-orange-600" />

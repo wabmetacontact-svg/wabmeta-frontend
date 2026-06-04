@@ -333,8 +333,8 @@ api.interceptors.response.use(
 
       if (isAdminRoute) {
         localStorage.removeItem(TOKEN_KEYS.ADMIN);
-        if (window.location.pathname.startsWith('/admin')) {
-          window.location.href = '/admin/login';
+        if (window.location.pathname.startsWith('/manage-wabmeta-admin')) {
+          window.location.href = '/manage-wabmeta-admin/login';
         }
         return Promise.reject(error);
       }

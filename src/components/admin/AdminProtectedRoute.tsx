@@ -54,7 +54,7 @@ const AdminProtectedRoute: React.FC = () => {
 
   // Not authenticated = redirect to login
   if (!isAuthenticated) {
-    return <Navigate to="/admin/login" state={{ from: location }} replace />;
+    return <Navigate to="/manage-wabmeta-admin/login" state={{ from: location }} replace />;
   }
 
   // Authenticated = render child routes

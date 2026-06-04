@@ -160,7 +160,7 @@ const AdminRoute: React.FC<AdminRouteProps> = ({ children }) => {
   const location = useLocation();
 
   if (!adminToken) {
-    return <Navigate to="/admin/login" state={{ from: location }} replace />;
+    return <Navigate to="/manage-wabmeta-admin/login" state={{ from: location }} replace />;
   }
 
   return <>{children}</>;
@@ -215,8 +215,8 @@ const PageTitleUpdater: React.FC = () => {
       '/dashboard/settings/team': 'Team | WabMeta',
       '/dashboard/settings/billing': 'Billing | WabMeta',
       '/dashboard/wallet': 'Wallet | WabMeta',
-      '/admin/login': 'Admin Login | WabMeta',
-      '/admin/dashboard': 'Admin Dashboard | WabMeta',
+      '/manage-wabmeta-admin/login': 'Admin Login | WabMeta',
+      '/manage-wabmeta-admin/dashboard': 'Admin Dashboard | WabMeta',
       '/privacy': 'Privacy Policy | WabMeta',
       '/terms': 'Terms of Service | WabMeta',
       '/contact': 'Contact Us | WabMeta',
@@ -409,7 +409,7 @@ const AppRoutes: React.FC = () => {
         {/* ============================== */}
         {/* ADMIN ROUTES */}
         {/* ============================== */}
-        <Route path="/admin/login" element={<AdminLogin />} />
+        <Route path="/manage-wabmeta-admin/login" element={<AdminLogin />} />
         <Route
           element={
             <AdminRoute>
@@ -417,14 +417,14 @@ const AppRoutes: React.FC = () => {
             </AdminRoute>
           }
         >
-          <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
-          <Route path="/admin/dashboard" element={<AdminDashboard />} />
-          <Route path="/admin/users" element={<UserManagement />} />
-          <Route path="/admin/subscriptions" element={<SubscriptionManagement />} />
-          <Route path="/admin/settings" element={<SystemSettings />} />
-          <Route path="/admin/whatsapp" element={<WhatsAppConnections />} />
-          <Route path="/admin/wallets" element={<WalletManagement />} />
-          <Route path="/admin/organizations/:organizationId/features" element={<OrganizationFeatures />} />
+          <Route path="/manage-wabmeta-admin" element={<Navigate to="/manage-wabmeta-admin/dashboard" replace />} />
+          <Route path="/manage-wabmeta-admin/dashboard" element={<AdminDashboard />} />
+          <Route path="/manage-wabmeta-admin/users" element={<UserManagement />} />
+          <Route path="/manage-wabmeta-admin/subscriptions" element={<SubscriptionManagement />} />
+          <Route path="/manage-wabmeta-admin/settings" element={<SystemSettings />} />
+          <Route path="/manage-wabmeta-admin/whatsapp" element={<WhatsAppConnections />} />
+          <Route path="/manage-wabmeta-admin/wallets" element={<WalletManagement />} />
+          <Route path="/manage-wabmeta-admin/organizations/:organizationId/features" element={<OrganizationFeatures />} />
         </Route>
 
         {/* ============================== */}

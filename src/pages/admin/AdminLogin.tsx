@@ -35,7 +35,7 @@ const AdminLogin: React.FC = () => {
       localStorage.setItem('wabmeta_admin_user', JSON.stringify(adminData));
 
       // Navigate to dashboard
-      navigate('/admin/dashboard');
+      navigate('/manage-wabmeta-admin/dashboard');
 
     } catch (err: any) {
       console.error('❌ Admin Login Error:', err);

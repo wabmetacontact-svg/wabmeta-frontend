@@ -374,7 +374,7 @@ const SubscriptionManagement: React.FC = () => {
                                             <Trash2 className="w-4 h-4 inline" />
                                         </button>
                                         <Link
-                                            to={`/admin/organizations/${sub.organizationId}/features`}
+                                            to={`/manage-wabmeta-admin/organizations/${sub.organizationId}/features`}
                                             className="text-gray-400 hover:text-white ml-2"
                                             title="Features & Locks"
                                         >
