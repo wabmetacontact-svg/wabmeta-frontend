@@ -984,7 +984,11 @@ const Contacts: React.FC = () => {
         {stats.map((stat) => (
           <div
             key={stat.label}
-            className="relative overflow-hidden rounded-2xl bg-white/[0.02] border border-white/[0.05] p-6 group/stat hover:bg-white/[0.04] transition-all"
+            className="relative overflow-hidden rounded-2xl border p-6 group/stat transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg"
+            style={{
+              backgroundColor: `${stat.color}0A`, // ~4% opacity
+              borderColor: `${stat.color}33`, // ~20% opacity
+            }}
           >
             <div className="absolute top-0 right-0 p-4 opacity-[0.08] group-hover/stat:scale-110 group-hover/stat:opacity-[0.15] transition-all duration-500">
               <stat.icon size={80} style={{ color: stat.color }} />
