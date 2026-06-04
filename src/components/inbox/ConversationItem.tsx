@@ -130,13 +130,13 @@ const ConversationItem: React.FC<Props> = ({
   const ChannelBadge = ({ type }: { type?: 'WHATSAPP' | 'INSTAGRAM' }) => {
     if (type === 'INSTAGRAM') {
       return (
-        <div className="absolute -top-1 -left-1 w-5 h-5 rounded-full bg-gradient-to-tr from-[#f09433] via-[#dc2743] to-[#bc1888] flex items-center justify-center border-2 border-[#0a0e27] shadow-lg z-10">
+        <div className="absolute -top-0.5 -left-0.5 w-[18px] h-[18px] rounded-full bg-gradient-to-tr from-[#f09433] via-[#dc2743] to-[#bc1888] flex items-center justify-center ring-2 ring-[#0a0e27] shadow-lg z-10">
           <Instagram size={10} className="text-white" />
         </div>
       );
     }
     return (
-      <div className="absolute -top-1 -left-1 w-5 h-5 rounded-full bg-[#25D366] flex items-center justify-center border-2 border-[#0a0e27] shadow-lg z-10">
+      <div className="absolute -top-0.5 -left-0.5 w-[18px] h-[18px] rounded-full bg-[#25D366] flex items-center justify-center ring-2 ring-[#0a0e27] shadow-lg z-10">
         <FaWhatsapp size={10} className="text-white" />
       </div>
     );
@@ -163,7 +163,7 @@ const ConversationItem: React.FC<Props> = ({
               bg-gradient-to-br ${avatarColor}
               flex items-center justify-center
               text-white font-semibold text-base
-              shadow-md ring-2 ring-white/5
+              shadow-md ring-2 ring-[#0a0e27]
               ${hasUnread ? 'ring-emerald-400/30' : ''}
             `}
           >
@@ -182,19 +182,19 @@ const ConversationItem: React.FC<Props> = ({
 
           {/* Pin badge */}
           {conv.isPinned && (
-            <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-amber-400 rounded-full flex items-center justify-center ring-2 ring-[#0a0e27]">
+            <div className="absolute bottom-0 right-0 w-[18px] h-[18px] bg-amber-400 rounded-full flex items-center justify-center ring-2 ring-[#0a0e27] z-10">
               <Pin className="w-2.5 h-2.5 text-amber-900" />
             </div>
           )}
 
           {/* Online indicator (when window is open) */}
           {!conv.isPinned && conv.isWindowOpen && (
-            <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-500 rounded-full ring-2 ring-[#0a0e27]" />
+            <div className="absolute bottom-0 right-0 w-[14px] h-[14px] bg-emerald-500 rounded-full ring-2 ring-[#0a0e27] z-10" />
           )}
 
           {/* Muted icon */}
           {conv.isMuted && (
-            <div className="absolute top-0 right-0 w-4 h-4 bg-gray-700 rounded-full flex items-center justify-center ring-2 ring-[#0a0e27]">
+            <div className="absolute top-0 right-0 w-[16px] h-[16px] bg-gray-700 rounded-full flex items-center justify-center ring-2 ring-[#0a0e27] z-10">
               <VolumeX className="w-2.5 h-2.5 text-gray-300" />
             </div>
           )}

@@ -180,7 +180,7 @@ const ChatHeader: React.FC<Props> = ({
               )}
             </div>
             {conversation.isWindowOpen && (
-              <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 rounded-full ring-2 ring-[#0a0e1c]" />
+              <div className="absolute bottom-0 right-0 w-[12px] h-[12px] bg-emerald-500 rounded-full ring-2 ring-[#0a0e1c] z-10" />
             )}
           </button>
 
