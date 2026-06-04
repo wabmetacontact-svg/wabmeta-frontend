@@ -37,11 +37,13 @@ function NotificationToast({
   messagePreview: string;
   onClick: () => void;
   onClose: (e: React.MouseEvent) => void;
-  onMute: (e: React.MouseEvent) => void;
+  onMute: (hours: number) => void;
 }) {
+  const [showMuteOptions, setShowMuteOptions] = useState(false);
+
   return React.createElement(
     'div',
-    { className: 'flex items-center gap-3 w-full min-w-0 group' },
+    { className: 'flex items-center gap-3 w-full min-w-0 group relative' },
     React.createElement(
       'div',
       {
@@ -84,13 +86,47 @@ function NotificationToast({
         React.createElement(X, { className: 'w-4 h-4' })
       ),
       React.createElement(
-        'button',
-        {
-          onClick: onMute,
-          className: 'p-1 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors',
-          title: 'Mute popups for 1 hour',
-        },
-        React.createElement(VolumeX, { className: 'w-4 h-4' })
+        'div',
+        { className: 'relative' },
+        React.createElement(
+          'button',
+          {
+            onClick: (e) => {
+              e.stopPropagation();
+              setShowMuteOptions(!showMuteOptions);
+            },
+            className: 'p-1 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors',
+            title: 'Mute popups options',
+          },
+          React.createElement(VolumeX, { className: 'w-4 h-4' })
+        ),
+        showMuteOptions &&
+          React.createElement(
+            'div',
+            {
+              className: 'absolute right-0 top-full mt-1 w-36 bg-white dark:bg-gray-800 shadow-xl rounded-lg border border-gray-100 dark:border-gray-700 py-1 z-50 text-sm overflow-hidden',
+            },
+            [
+              { label: 'For 1 Hour', value: 1 },
+              { label: 'For 8 Hours', value: 8 },
+              { label: 'For 24 Hours', value: 24 },
+              { label: 'Until I unmute', value: -1 },
+            ].map((opt) =>
+              React.createElement(
+                'button',
+                {
+                  key: opt.value,
+                  onClick: (e) => {
+                    e.stopPropagation();
+                    onMute(opt.value);
+                    setShowMuteOptions(false);
+                  },
+                  className: 'w-full text-left px-3 py-1.5 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors',
+                },
+                opt.label
+              )
+            )
+          )
       )
     )
   );
@@ -176,12 +212,16 @@ export function useGlobalNotifications() {
                 e.stopPropagation();
                 toast.dismiss(t.id);
               },
-              onMute: (e) => {
-                e.stopPropagation();
-                const oneHourLater = Date.now() + 60 * 60 * 1000;
-                localStorage.setItem('wabmeta_muted_until', oneHourLater.toString());
+              onMute: (hours) => {
+                if (hours === -1) {
+                  localStorage.setItem('wabmeta_muted_until', '-1');
+                  toast.success('Popups muted until you unmute them');
+                } else {
+                  const later = Date.now() + hours * 60 * 60 * 1000;
+                  localStorage.setItem('wabmeta_muted_until', later.toString());
+                  toast.success(`Popups muted for ${hours} hour${hours > 1 ? 's' : ''}`);
+                }
                 toast.dismiss(t.id);
-                toast.success('Popups muted for 1 hour');
               }
             })
           ),
@@ -239,11 +279,15 @@ export function useGlobalNotifications() {
       const mutedUntilStr = localStorage.getItem('wabmeta_muted_until');
       let isMuted = false;
       if (mutedUntilStr) {
-        const mutedUntil = parseInt(mutedUntilStr, 10);
-        if (Date.now() < mutedUntil) {
+        if (mutedUntilStr === '-1') {
           isMuted = true;
         } else {
-          localStorage.removeItem('wabmeta_muted_until');
+          const mutedUntil = parseInt(mutedUntilStr, 10);
+          if (Date.now() < mutedUntil) {
+            isMuted = true;
+          } else {
+            localStorage.removeItem('wabmeta_muted_until');
+          }
         }
       }
 

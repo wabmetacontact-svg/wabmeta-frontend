@@ -14,8 +14,10 @@ import {
   RefreshCw,
   Inbox,
   Filter,
+  VolumeX,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import { useNotificationsStore } from '../context/NotificationsContext';
 import type { NotificationType } from '../context/NotificationsContext';
 import { timeAgo } from '../utils/timeAgo';
@@ -73,6 +75,43 @@ const Notifications: React.FC = () => {
     if (typeFilter !== 'all' && n.type !== typeFilter) return false;
     return true;
   });
+
+  const [isMuted, setIsMuted] = React.useState(false);
+  const [mutedUntilLabel, setMutedUntilLabel] = React.useState('');
+
+  // Check mute status
+  React.useEffect(() => {
+    const checkMute = () => {
+      const mutedStr = localStorage.getItem('wabmeta_muted_until');
+      if (mutedStr) {
+        if (mutedStr === '-1') {
+          setIsMuted(true);
+          setMutedUntilLabel('until you unmute');
+        } else {
+          const until = parseInt(mutedStr, 10);
+          if (Date.now() < until) {
+            setIsMuted(true);
+            const date = new Date(until);
+            setMutedUntilLabel(`until ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`);
+          } else {
+            setIsMuted(false);
+            localStorage.removeItem('wabmeta_muted_until');
+          }
+        }
+      } else {
+        setIsMuted(false);
+      }
+    };
+    checkMute();
+    const interval = setInterval(checkMute, 60000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const handleUnmute = () => {
+    localStorage.removeItem('wabmeta_muted_until');
+    setIsMuted(false);
+    toast.success('Popups have been unmuted');
+  };
 
   const totalCount = notifications.length;
 
@@ -139,6 +178,23 @@ const Notifications: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {isMuted && (
+        <div className="flex items-center justify-between bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3">
+          <div className="flex items-center gap-3">
+            <VolumeX className="w-5 h-5 text-red-400" />
+            <span className="text-sm text-red-200">
+              Notification popups are currently muted {mutedUntilLabel}.
+            </span>
+          </div>
+          <button
+            onClick={handleUnmute}
+            className="px-3 py-1.5 bg-red-500/20 hover:bg-red-500/30 text-red-300 rounded-lg text-sm font-medium transition-colors"
+          >
+            Unmute Now
+          </button>
+        </div>
+      )}
 
       {/* Actions Bar */}
       {notifications.length > 0 && (
