@@ -954,7 +954,7 @@ const Inbox: React.FC = () => {
 
         const isCurrentConv = selectedConvRef.current?.id === convId;
 
-        if (direction === 'INBOUND' && isCurrentConv) {
+        if (isCurrentConv) {
           setMessages((prev) => {
             const isDup = prev.some(
               (m) =>
@@ -969,8 +969,11 @@ const Inbox: React.FC = () => {
               },
             ];
           });
-          inboxApi.markAsRead(convId).catch(() => {});
-          setIsContactTyping(false);
+          
+          if (direction === 'INBOUND') {
+            inboxApi.markAsRead(convId).catch(() => {});
+            setIsContactTyping(false);
+          }
         }
 
         // Always update conversation list
@@ -985,7 +988,7 @@ const Inbox: React.FC = () => {
               lastMessageAt: newMsg.createdAt || new Date().toISOString(),
               lastMessageType: newMsg.type,
               lastMessageDirection: direction,
-              unreadCount: isCurrentConv ? 0 : (updated[idx].unreadCount || 0) + 1,
+              unreadCount: (isCurrentConv || direction === 'OUTBOUND') ? 0 : (updated[idx].unreadCount || 0) + 1,
               ...(direction === 'INBOUND' ? { lastCustomerMessageAt: newMsg.createdAt || new Date().toISOString() } : {})
             };
           }
