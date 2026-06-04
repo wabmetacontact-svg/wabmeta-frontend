@@ -1014,13 +1014,20 @@ const Inbox: React.FC = () => {
         }
 
         const updated = [...prev];
-        updated[idx] = { ...updated[idx], ...updatedConv };
+        const isCurrentlyOpen = selectedConvRef.current?.id === updatedConv.id;
+        
+        updated[idx] = { 
+          ...updated[idx], 
+          ...updatedConv,
+          // Prevent backend webhook from overriding unread count if the chat is actively open
+          ...(isCurrentlyOpen ? { unreadCount: 0, isRead: true } : {})
+        };
         return sortConversations(updated);
       });
 
       if (selectedConvRef.current?.id === updatedConv.id) {
         setSelectedConversation((prev) =>
-          prev ? { ...prev, ...updatedConv } : prev
+          prev ? { ...prev, ...updatedConv, unreadCount: 0, isRead: true } : prev
         );
       }
     }, []),
