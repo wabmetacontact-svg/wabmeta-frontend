@@ -52,7 +52,6 @@ interface Props {
   onRemoveLabel: (conv: Conversation, label: string, e: React.MouseEvent) => void;
   onCreateCustomLabel: (label: string, color?: string) => void;
   onNewChat?: () => void;
-  onDeleteAll?: () => void;
   selectedConversationIds?: string[];
   onToggleSelection?: (id: string) => void;
   onSelectAll?: (ids: string[]) => void;
@@ -79,7 +78,6 @@ const ConversationList: React.FC<Props> = ({
   onRemoveLabel,
   onCreateCustomLabel,
   onNewChat,
-  onDeleteAll,
   selectedConversationIds = [],
   onToggleSelection,
   onSelectAll,
@@ -186,15 +184,6 @@ const ConversationList: React.FC<Props> = ({
               >
                 <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
               </button>
-              {onDeleteAll && (
-                <button
-                  onClick={onDeleteAll}
-                  className="p-1.5 rounded-lg hover:bg-red-500/10 text-gray-400 hover:text-red-500 transition-all ml-1"
-                  title="Delete all conversations"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              )}
             </div>
           </div>
         )}

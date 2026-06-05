@@ -732,24 +732,6 @@ const Inbox: React.FC = () => {
     }
   }, []);
 
-  const handleDeleteAll = useCallback(async () => {
-    if (
-      window.confirm(
-        'Are you sure you want to delete ALL conversations? This will permanently delete all messages and chats from the database. This action cannot be undone.'
-      )
-    ) {
-      try {
-        await inboxApi.deleteAllConversations();
-        setConversations([]);
-        setSelectedConversation(null);
-        setMessages([]);
-        toast.success('All conversations deleted successfully');
-      } catch (err) {
-        toast.error('Failed to delete conversations');
-      }
-    }
-  }, []);
-
   const handleToggleSelection = useCallback((id: string) => {
     setSelectedConversationIds((prev) =>
       prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
@@ -1304,7 +1286,6 @@ const Inbox: React.FC = () => {
           onRemoveLabel={handleRemoveLabel}
           onCreateCustomLabel={handleCreateCustomLabel}
           labels={labels}
-          onDeleteAll={handleDeleteAll}
           selectedConversationIds={selectedConversationIds}
           onToggleSelection={handleToggleSelection}
           onSelectAll={handleSelectAll}
