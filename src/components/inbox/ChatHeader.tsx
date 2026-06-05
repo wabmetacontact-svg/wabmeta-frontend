@@ -290,6 +290,7 @@ const ChatHeader: React.FC<Props> = ({
                   border border-white/[0.1]
                   rounded-xl shadow-2xl
                   animate-fade-in
+                  max-h-[calc(100vh-100px)] overflow-y-auto
                 "
               >
                 <button

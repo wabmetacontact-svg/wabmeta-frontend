@@ -143,7 +143,7 @@ const ConversationItem: React.FC<Props> = ({
   };
 
   return (
-    <div className={`relative transition-all duration-300 rounded-lg m-1 ring-1 ${isSelected ? 'ring-emerald-500 bg-[#0a0e27]/[0.06]' : 'ring-transparent'}`}>
+    <div className={`relative transition-all duration-300 rounded-lg m-1 border-2 ${isSelected ? 'border-emerald-500 bg-[#0a0e27]/[0.06]' : 'border-transparent'}`}>
       <div
         onClick={onSelect}
         className={`
