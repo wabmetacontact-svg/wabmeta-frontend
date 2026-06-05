@@ -27,7 +27,7 @@ import {
   Instagram,
   Target
 } from 'lucide-react';
-import { dashboard } from '../services/api';
+import api, { dashboard } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useSocket } from '../context/SocketContext';
 import toast from 'react-hot-toast';
@@ -173,13 +173,8 @@ const Dashboard: React.FC = () => {
 
       // Fallback unified stats since api method is missing for it right now, we can load it from our local backend endpoint
       try {
-        const orgId = localStorage.getItem('selected_organization_id');
-        const token = localStorage.getItem('accessToken');
-        const res = await fetch('http://localhost:10000/api/analytics/unified', {
-          headers: { 'X-Organization-Id': orgId || '', 'Authorization': `Bearer ${token}` }
-        });
-        const json = await res.json();
-        if (json.success) setUnifiedStats(json.data);
+        const res = await api.get('/analytics/unified');
+        if (res.data?.success) setUnifiedStats(res.data.data);
       } catch (err) {
         console.error("Unified stats error:", err);
       }
