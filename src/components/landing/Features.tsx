@@ -1,573 +1,361 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { motion, useScroll, useTransform, useInView, useSpring, useMotionValue } from 'framer-motion';
 import {
   MessageSquare,
   Users,
   Bot,
   Zap,
   BarChart3,
-  Shield,
   Send,
-  Clock,
-  Globe,
-  Layers,
-  Smartphone,
-  FileText,
   ArrowUpRight,
-  Sparkles,
   Instagram,
-  CheckCircle2,
-  TrendingUp,
+  ArrowLeft,
+  ArrowRight,
+  Sparkles,
 } from 'lucide-react';
 
-// ============================================
-// ✅ Animated Counter Component
-// ============================================
-const AnimatedCounter: React.FC<{ value: number; suffix?: string; duration?: number }> = ({
-  value,
-  suffix = '',
-  duration = 2,
-}) => {
-  const ref = useRef<HTMLSpanElement>(null);
-  const isInView = useInView(ref, { once: true, margin: '-50px' });
-  const [count, setCount] = useState(0);
+const Features: React.FC = () => {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [startX, setStartX] = useState(0);
+  const [scrollLeft, setScrollLeft] = useState(0);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(true);
 
-  useEffect(() => {
-    if (!isInView) return;
-    let start = 0;
-    const end = value;
-    const incrementTime = (duration * 1000) / end;
-    const step = Math.max(1, Math.floor(end / 100));
-    const timer = setInterval(() => {
-      start += step;
-      if (start >= end) {
-        setCount(end);
-        clearInterval(timer);
-      } else {
-        setCount(start);
-      }
-    }, incrementTime);
-    return () => clearInterval(timer);
-  }, [isInView, value, duration]);
-
-  return (
-    <span ref={ref}>
-      {count.toLocaleString()}
-      {suffix}
-    </span>
-  );
-};
-
-// ============================================
-// ✅ Premium Tilt Card with Spring Physics
-// ============================================
-interface TiltCardProps {
-  children: React.ReactNode;
-  className?: string;
-  intensity?: number;
-}
-
-const TiltCard: React.FC<TiltCardProps> = ({ children, className = '', intensity = 8 }) => {
-  const cardRef = useRef<HTMLDivElement>(null);
-  const mouseX = useMotionValue(0);
-  const mouseY = useMotionValue(0);
-
-  const rotateX = useSpring(useTransform(mouseY, [-0.5, 0.5], [intensity, -intensity]), {
-    stiffness: 150,
-    damping: 20,
-  });
-  const rotateY = useSpring(useTransform(mouseX, [-0.5, 0.5], [-intensity, intensity]), {
-    stiffness: 150,
-    damping: 20,
-  });
-
-  const [glarePos, setGlarePos] = useState({ x: 50, y: 50 });
-  const [isHovered, setIsHovered] = useState(false);
-
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!cardRef.current) return;
-    const rect = cardRef.current.getBoundingClientRect();
-    const x = (e.clientX - rect.left) / rect.width - 0.5;
-    const y = (e.clientY - rect.top) / rect.height - 0.5;
-    mouseX.set(x);
-    mouseY.set(y);
-    setGlarePos({ x: (x + 0.5) * 100, y: (y + 0.5) * 100 });
+  // Mouse drag handlers
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (!scrollRef.current) return;
+    setIsDragging(true);
+    setStartX(e.pageX - scrollRef.current.offsetLeft);
+    setScrollLeft(scrollRef.current.scrollLeft);
+    scrollRef.current.style.cursor = 'grabbing';
+    scrollRef.current.style.scrollBehavior = 'auto';
   };
 
   const handleMouseLeave = () => {
-    mouseX.set(0);
-    mouseY.set(0);
-    setIsHovered(false);
+    if (!scrollRef.current) return;
+    setIsDragging(false);
+    scrollRef.current.style.cursor = 'grab';
+    scrollRef.current.style.scrollBehavior = 'smooth';
   };
 
-  return (
-    <motion.div
-      ref={cardRef}
-      onMouseMove={handleMouseMove}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={handleMouseLeave}
-      style={{
-        rotateX,
-        rotateY,
-        transformStyle: 'preserve-3d',
-        transformPerspective: 1200,
-      }}
-      className={`relative ${className}`}
-    >
-      {/* Premium glare effect */}
-      <div
-        className="absolute inset-0 rounded-[inherit] pointer-events-none z-30 transition-opacity duration-300"
-        style={{
-          background: `radial-gradient(circle at ${glarePos.x}% ${glarePos.y}%, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0.2) 25%, transparent 60%)`,
-          opacity: isHovered ? 1 : 0,
-          mixBlendMode: 'overlay',
-        }}
-      />
-      {children}
-    </motion.div>
-  );
-};
-
-// ============================================
-// ✅ Scroll Reveal Wrapper
-// ============================================
-const ScrollReveal: React.FC<{
-  children: React.ReactNode;
-  delay?: number;
-  direction?: 'up' | 'down' | 'left' | 'right';
-  className?: string;
-}> = ({ children, delay = 0, direction = 'up', className = '' }) => {
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: '-80px' });
-
-  const directionVariants = {
-    up: { y: 40, x: 0 },
-    down: { y: -40, x: 0 },
-    left: { x: 40, y: 0 },
-    right: { x: -40, y: 0 },
+  const handleMouseUp = () => {
+    if (!scrollRef.current) return;
+    setIsDragging(false);
+    scrollRef.current.style.cursor = 'grab';
+    scrollRef.current.style.scrollBehavior = 'smooth';
   };
 
-  return (
-    <motion.div
-      ref={ref}
-      initial={{ opacity: 0, ...directionVariants[direction] }}
-      animate={isInView ? { opacity: 1, x: 0, y: 0 } : {}}
-      transition={{
-        duration: 0.7,
-        delay,
-        ease: [0.21, 0.47, 0.32, 0.98],
-      }}
-      className={className}
-    >
-      {children}
-    </motion.div>
-  );
-};
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging || !scrollRef.current) return;
+    e.preventDefault();
+    const x = e.pageX - scrollRef.current.offsetLeft;
+    const walk = (x - startX) * 2; // drag speed multiplier
+    scrollRef.current.scrollLeft = scrollLeft - walk;
+  };
 
-// ============================================
-// ✅ MAIN COMPONENT
-// ============================================
-const Features: React.FC = () => {
-  const sectionRef = useRef<HTMLElement>(null);
-  const { scrollYProgress } = useScroll({
-    target: sectionRef,
-    offset: ['start end', 'end start'],
-  });
+  // Touch handlers for mobile
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (!scrollRef.current) return;
+    setStartX(e.touches[0].pageX - scrollRef.current.offsetLeft);
+    setScrollLeft(scrollRef.current.scrollLeft);
+  };
 
-  // Parallax effects for background blobs
-  const blob1Y = useTransform(scrollYProgress, [0, 1], [0, -300]);
-  const blob2Y = useTransform(scrollYProgress, [0, 1], [0, 250]);
-  const blob3Y = useTransform(scrollYProgress, [0, 1], [0, -150]);
-  const blob4Y = useTransform(scrollYProgress, [0, 1], [0, 200]);
-  const headingY = useTransform(scrollYProgress, [0, 0.3], [50, 0]);
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!scrollRef.current) return;
+    const x = e.touches[0].pageX - scrollRef.current.offsetLeft;
+    const walk = (x - startX) * 2;
+    scrollRef.current.scrollLeft = scrollLeft - walk;
+  };
 
-  const mainFeatures = [
+  // Track scroll position for arrows & active dot
+  const handleScroll = () => {
+    if (!scrollRef.current) return;
+    const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
+    setCanScrollLeft(scrollLeft > 10);
+    setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10);
+
+    const cardWidth = 420; // approx card width
+    const newIndex = Math.round(scrollLeft / cardWidth);
+    setActiveIndex(newIndex);
+  };
+
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    el.addEventListener('scroll', handleScroll);
+    return () => el.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const scrollByAmount = (amount: number) => {
+    if (!scrollRef.current) return;
+    scrollRef.current.scrollBy({ left: amount, behavior: 'smooth' });
+  };
+
+  const features = [
     {
-      id: 'bulk-messaging',
+      id: 1,
       icon: Send,
       title: 'Bulk Messaging',
-      description: 'Send personalized messages to thousands instantly with smart rate limiting.',
-      details: 'Built for scale — handles 50,000+ messages/hour with delivery tracking.',
-      stat: 2100,
-      statSuffix: 'K+',
-      statLabel: 'sent this month',
+      tag: 'CAMPAIGNS',
+      description:
+        'Send personalized messages to thousands instantly. Smart rate limiting handles 50,000+ messages per hour.',
+      stat: '2.1M',
+      statLabel: 'Messages sent',
       growth: '+18%',
-      accentColor: '#10b981',
-      accentRgb: '16, 185, 129',
-      gridArea: 'lg:col-span-3 lg:row-span-2',
-      gradientFrom: '#10b981',
-      gradientTo: '#059669',
-      mockup: 'messaging',
+      color: '#10b981',
+      lightColor: '#d1fae5',
+      gradient: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
     },
     {
-      id: 'live-inbox',
+      id: 2,
       icon: MessageSquare,
       title: 'Live Inbox',
-      description: 'Unified chat for your whole team. Never miss a conversation.',
-      accentColor: '#3b82f6',
-      accentRgb: '59, 130, 246',
-      gridArea: 'lg:col-span-3',
-      gradientFrom: '#3b82f6',
-      gradientTo: '#06b6d4',
-      mockup: 'inbox',
+      tag: 'CONVERSATIONS',
+      description:
+        'Unified inbox for your whole team. Assign chats, add notes, use quick replies, and never miss a message.',
+      stat: '16',
+      statLabel: 'Agents online',
+      growth: 'Live',
+      color: '#3b82f6',
+      lightColor: '#dbeafe',
+      gradient: 'linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%)',
     },
     {
-      id: 'automation',
-      icon: Zap,
-      title: 'Smart Automation',
-      description: 'Workflows that work while you sleep.',
-      accentColor: '#f59e0b',
-      accentRgb: '245, 158, 11',
-      gridArea: 'lg:col-span-3',
-      gradientFrom: '#f59e0b',
-      gradientTo: '#ea580c',
-      mockup: 'automation',
-    },
-    {
-      id: 'chatbot',
+      id: 3,
       icon: Bot,
-      title: 'AI Chatbot Builder',
-      description: 'Drag, drop, deploy. Visual flow builder with AI integration.',
-      details: 'Connect with OpenAI, Gemini & custom models.',
-      accentColor: '#a855f7',
-      accentRgb: '168, 85, 247',
-      gridArea: 'lg:col-span-3 lg:row-span-2',
-      gradientFrom: '#a855f7',
-      gradientTo: '#ec4899',
-      mockup: 'bot',
+      title: 'AI Chatbot',
+      tag: 'AUTOMATION',
+      description:
+        'Visual drag-and-drop flow builder with AI integration. Connect OpenAI, Gemini, or use your custom model.',
+      stat: '24/7',
+      statLabel: 'Always on',
+      growth: 'AI',
+      color: '#a855f7',
+      lightColor: '#f3e8ff',
+      gradient: 'linear-gradient(135deg, #a855f7 0%, #ec4899 100%)',
     },
     {
-      id: 'analytics',
+      id: 4,
+      icon: Zap,
+      title: 'Smart Workflows',
+      tag: 'AUTOMATION',
+      description:
+        'Trigger-based automations that work while you sleep. If-then-else logic with 50+ pre-built templates.',
+      stat: '90%',
+      statLabel: 'Time saved',
+      growth: '+42%',
+      color: '#f59e0b',
+      lightColor: '#fef3c7',
+      gradient: 'linear-gradient(135deg, #f59e0b 0%, #ea580c 100%)',
+    },
+    {
+      id: 5,
       icon: BarChart3,
-      title: 'Real-time Analytics',
-      description: 'Numbers that matter, updated live.',
-      accentColor: '#6366f1',
-      accentRgb: '99, 102, 241',
-      gridArea: 'lg:col-span-2',
-      gradientFrom: '#6366f1',
-      gradientTo: '#8b5cf6',
-      mockup: 'analytics',
+      title: 'Analytics',
+      tag: 'INSIGHTS',
+      description:
+        'Real-time dashboards. Track delivery rates, response times, campaign performance with exportable reports.',
+      stat: '99.7%',
+      statLabel: 'Delivery rate',
+      growth: '+2.3%',
+      color: '#6366f1',
+      lightColor: '#e0e7ff',
+      gradient: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
     },
     {
-      id: 'team',
+      id: 6,
       icon: Users,
-      title: 'Team Collaboration',
-      description: 'Built for teams, not just individuals.',
-      accentColor: '#ef4444',
-      accentRgb: '239, 68, 68',
-      gridArea: 'lg:col-span-2',
-      gradientFrom: '#ef4444',
-      gradientTo: '#f43f5e',
-      mockup: 'team',
+      title: 'Team CRM',
+      tag: 'COLLABORATION',
+      description:
+        'Built-in CRM for leads, deals, and contacts. Assign roles, set permissions, and track team performance.',
+      stat: '12+',
+      statLabel: 'Team members',
+      growth: 'Pro',
+      color: '#ef4444',
+      lightColor: '#fee2e2',
+      gradient: 'linear-gradient(135deg, #ef4444 0%, #f43f5e 100%)',
     },
     {
-      id: 'instagram',
+      id: 7,
       icon: Instagram,
       title: 'Instagram DMs',
-      description: 'Auto-reply to DMs, comments & stories.',
-      accentColor: '#e1306c',
-      accentRgb: '225, 48, 108',
-      gridArea: 'lg:col-span-2',
-      gradientFrom: '#833ab4',
-      gradientTo: '#fcb045',
-      mockup: 'instagram',
+      tag: 'SOCIAL',
+      description:
+        'Auto-reply to DMs, comments, and stories. Manage Instagram and WhatsApp from one unified inbox.',
+      stat: '3.2K',
+      statLabel: 'Auto-replies/day',
+      growth: '+67%',
+      color: '#e1306c',
+      lightColor: '#fce7f3',
+      gradient: 'linear-gradient(135deg, #833ab4 0%, #fd1d1d 50%, #fcb045 100%)',
     },
-  ];
-
-  const additionalFeatures = [
-    { icon: Globe, title: 'Multi-language', desc: '100+ languages supported' },
-    { icon: Shield, title: 'Enterprise Security', desc: 'End-to-end encryption' },
-    { icon: Clock, title: '24/7 Availability', desc: 'Never miss a message' },
-    { icon: Layers, title: 'Template Manager', desc: 'Pre-approved templates' },
-    { icon: Smartphone, title: 'Mobile Ready', desc: 'Manage from anywhere' },
-    { icon: FileText, title: 'Rich Media', desc: 'Images, videos, docs' },
   ];
 
   return (
-    <section
-      ref={sectionRef}
-      id="features"
-      className="relative py-24 lg:py-32 overflow-hidden"
-    >
-      {/* ✅ COLORFUL BLURRED BACKGROUND */}
-      <div className="absolute inset-0 -z-10 bg-gradient-to-b from-slate-50 via-white to-slate-50 overflow-hidden">
-
-        {/* Animated Mesh Gradient Blobs */}
-        <motion.div
-          style={{ y: blob1Y }}
-          className="absolute -top-32 -left-32 w-[600px] h-[600px] rounded-full"
-          animate={{
-            scale: [1, 1.1, 1],
-          }}
-          transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut' }}
-        >
-          <div
-            className="w-full h-full rounded-full opacity-70"
-            style={{
-              background: 'radial-gradient(circle, rgba(16,185,129,0.5) 0%, rgba(16,185,129,0) 70%)',
-              filter: 'blur(60px)',
-            }}
-          />
-        </motion.div>
-
-        <motion.div
-          style={{ y: blob2Y }}
-          className="absolute top-1/4 -right-40 w-[700px] h-[700px] rounded-full"
-          animate={{
-            scale: [1, 1.15, 1],
-          }}
-          transition={{ duration: 12, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
-        >
-          <div
-            className="w-full h-full rounded-full opacity-60"
-            style={{
-              background: 'radial-gradient(circle, rgba(168,85,247,0.45) 0%, rgba(168,85,247,0) 70%)',
-              filter: 'blur(80px)',
-            }}
-          />
-        </motion.div>
-
-        <motion.div
-          style={{ y: blob3Y }}
-          className="absolute top-1/2 left-1/3 w-[500px] h-[500px] rounded-full"
-          animate={{
-            scale: [1, 1.2, 1],
-            x: [0, 30, 0],
-          }}
-          transition={{ duration: 14, repeat: Infinity, ease: 'easeInOut', delay: 2 }}
-        >
-          <div
-            className="w-full h-full rounded-full opacity-50"
-            style={{
-              background: 'radial-gradient(circle, rgba(59,130,246,0.4) 0%, rgba(59,130,246,0) 70%)',
-              filter: 'blur(70px)',
-            }}
-          />
-        </motion.div>
-
-        <motion.div
-          style={{ y: blob4Y }}
-          className="absolute bottom-0 right-1/4 w-[600px] h-[600px] rounded-full"
-          animate={{
-            scale: [1, 1.1, 1],
-          }}
-          transition={{ duration: 11, repeat: Infinity, ease: 'easeInOut', delay: 3 }}
-        >
-          <div
-            className="w-full h-full rounded-full opacity-55"
-            style={{
-              background: 'radial-gradient(circle, rgba(236,72,153,0.4) 0%, rgba(236,72,153,0) 70%)',
-              filter: 'blur(75px)',
-            }}
-          />
-        </motion.div>
-
-        <motion.div
-          className="absolute top-3/4 left-10 w-[400px] h-[400px] rounded-full"
-          animate={{
-            scale: [1, 1.3, 1],
-          }}
-          transition={{ duration: 9, repeat: Infinity, ease: 'easeInOut', delay: 4 }}
-        >
-          <div
-            className="w-full h-full rounded-full opacity-50"
-            style={{
-              background: 'radial-gradient(circle, rgba(245,158,11,0.4) 0%, rgba(245,158,11,0) 70%)',
-              filter: 'blur(60px)',
-            }}
-          />
-        </motion.div>
-
-        {/* Subtle grain texture overlay */}
+    <section id="features" className="relative py-24 lg:py-32 overflow-hidden">
+      {/* Soft colorful background */}
+      <div className="absolute inset-0 -z-10 bg-slate-50">
         <div
-          className="absolute inset-0 opacity-[0.4] mix-blend-overlay pointer-events-none"
+          className="absolute top-0 left-1/4 w-[600px] h-[600px] rounded-full opacity-40"
           style={{
-            backgroundImage:
-              "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.3'/%3E%3C/svg%3E\")",
+            background:
+              'radial-gradient(circle, rgba(16,185,129,0.4) 0%, transparent 70%)',
+            filter: 'blur(80px)',
           }}
         />
-
-        {/* Subtle grid pattern */}
         <div
-          className="absolute inset-0 opacity-[0.08]"
+          className="absolute bottom-0 right-1/4 w-[700px] h-[700px] rounded-full opacity-40"
           style={{
-            backgroundImage: `linear-gradient(rgba(0,0,0,0.5) 1px, transparent 1px), 
-                              linear-gradient(90deg, rgba(0,0,0,0.5) 1px, transparent 1px)`,
-            backgroundSize: '80px 80px',
-            maskImage: 'radial-gradient(ellipse 80% 60% at 50% 50%, black 30%, transparent 80%)',
-            WebkitMaskImage: 'radial-gradient(ellipse 80% 60% at 50% 50%, black 30%, transparent 80%)',
+            background:
+              'radial-gradient(circle, rgba(168,85,247,0.35) 0%, transparent 70%)',
+            filter: 'blur(90px)',
+          }}
+        />
+        <div
+          className="absolute top-1/2 left-1/2 w-[500px] h-[500px] rounded-full opacity-30"
+          style={{
+            background:
+              'radial-gradient(circle, rgba(59,130,246,0.4) 0%, transparent 70%)',
+            filter: 'blur(70px)',
+            transform: 'translate(-50%, -50%)',
           }}
         />
       </div>
 
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-
-        {/* ✅ EDITORIAL Section Header */}
-        <motion.div
-          style={{ y: headingY }}
-          className="grid grid-cols-12 gap-6 mb-16 lg:mb-20"
-        >
-          <div className="col-span-12 lg:col-span-8">
-            <ScrollReveal direction="right">
+      <div className="relative max-w-[1400px] mx-auto">
+        {/* ✅ Header — clean editorial */}
+        <div className="px-4 sm:px-6 lg:px-8 mb-12 lg:mb-16">
+          <div className="grid grid-cols-12 gap-6 items-end">
+            <div className="col-span-12 lg:col-span-7">
               <div className="flex items-center gap-3 mb-6">
-                <motion.div
-                  initial={{ width: 0 }}
-                  whileInView={{ width: 48 }}
-                  transition={{ duration: 0.8, delay: 0.2 }}
-                  viewport={{ once: true }}
-                  className="h-px bg-gradient-to-r from-green-500 to-transparent"
-                />
-                <span className="text-xs font-mono uppercase tracking-[0.25em] text-green-700 font-bold">
-                  What's inside
+                <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-gray-200 text-xs font-mono uppercase tracking-wider text-green-700 font-bold shadow-sm">
+                  <Sparkles className="w-3 h-3" />
+                  Features
                 </span>
+                <div className="h-px flex-1 bg-gradient-to-r from-gray-300 to-transparent max-w-[100px]" />
               </div>
-            </ScrollReveal>
 
-            <ScrollReveal direction="up" delay={0.1}>
-              <h2 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold leading-[1.05] tracking-tight">
-                <span className="text-gray-900">Seven tools.</span>{' '}
-                <span className="bg-gradient-to-r from-gray-400 to-gray-600 bg-clip-text text-transparent italic font-light">
-                  One platform.
-                </span>
+              <h2 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold leading-[1.05] tracking-tight text-gray-900">
+                Everything you need.
                 <br />
-                <span className="relative inline-block">
-                  <span className="bg-gradient-to-r from-green-600 via-emerald-500 to-green-600 bg-clip-text text-transparent bg-[length:200%_auto] animate-[shimmer_3s_linear_infinite]">
-                    Zero duct tape.
-                  </span>
-                  <motion.span
-                    initial={{ scaleX: 0 }}
-                    whileInView={{ scaleX: 1 }}
-                    transition={{ duration: 1, delay: 0.6, ease: 'easeOut' }}
-                    viewport={{ once: true }}
-                    className="absolute -bottom-2 left-0 right-0 h-1 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full origin-left"
-                  />
+                <span className="italic font-light text-gray-500">
+                  Nothing you don't.
                 </span>
               </h2>
-            </ScrollReveal>
-          </div>
+            </div>
 
-          <div className="col-span-12 lg:col-span-4 lg:pt-12">
-            <ScrollReveal direction="left" delay={0.3}>
-              <p className="text-base lg:text-lg text-gray-700 leading-relaxed">
-                We didn't bolt features together. Every tool talks to the others — so your{' '}
-                <span className="text-gray-900 font-semibold">data, contacts, and chats</span> move freely.
+            <div className="col-span-12 lg:col-span-5 lg:pb-3">
+              <p className="text-base lg:text-lg text-gray-700 leading-relaxed max-w-md">
+                Seven powerful tools, deeply integrated. Drag to explore each
+                one — built for teams who want to move fast.
               </p>
 
-              <div className="flex items-center gap-6 mt-6 pt-6 border-t border-gray-300/60">
-                <div>
-                  <div className="text-2xl font-bold text-gray-900">
-                    <AnimatedCounter value={50} suffix="K+" />
+              {/* Navigation arrows */}
+              <div className="flex items-center gap-3 mt-6">
+                <button
+                  onClick={() => scrollByAmount(-440)}
+                  disabled={!canScrollLeft}
+                  className={`
+                    w-12 h-12 rounded-full border bg-white
+                    flex items-center justify-center
+                    transition-all duration-300 ease-out
+                    ${canScrollLeft
+                      ? 'border-gray-300 text-gray-700 hover:border-green-500 hover:text-green-600 hover:shadow-lg hover:-translate-x-0.5 active:scale-95'
+                      : 'border-gray-200 text-gray-300 cursor-not-allowed'
+                    }
+                  `}
+                  aria-label="Previous"
+                >
+                  <ArrowLeft className="w-5 h-5" />
+                </button>
+
+                <button
+                  onClick={() => scrollByAmount(440)}
+                  disabled={!canScrollRight}
+                  className={`
+                    w-12 h-12 rounded-full border bg-white
+                    flex items-center justify-center
+                    transition-all duration-300 ease-out
+                    ${canScrollRight
+                      ? 'border-gray-300 text-gray-700 hover:border-green-500 hover:text-green-600 hover:shadow-lg hover:translate-x-0.5 active:scale-95'
+                      : 'border-gray-200 text-gray-300 cursor-not-allowed'
+                    }
+                  `}
+                  aria-label="Next"
+                >
+                  <ArrowRight className="w-5 h-5" />
+                </button>
+
+                {/* Drag hint */}
+                <div className="hidden lg:flex items-center gap-2 ml-2 text-xs text-gray-500 font-medium">
+                  <div className="flex gap-0.5">
+                    <div className="w-1 h-4 bg-gray-400 rounded-full" />
+                    <div className="w-1 h-4 bg-gray-300 rounded-full" />
                   </div>
-                  <div className="text-xs text-gray-600 mt-0.5 font-medium">Active users</div>
-                </div>
-                <div className="w-px h-10 bg-gray-300" />
-                <div>
-                  <div className="text-2xl font-bold text-gray-900">
-                    <AnimatedCounter value={99} suffix=".9%" />
-                  </div>
-                  <div className="text-xs text-gray-600 mt-0.5 font-medium">Uptime</div>
+                  Drag to explore
                 </div>
               </div>
-            </ScrollReveal>
+            </div>
           </div>
-        </motion.div>
-
-        {/* ✅ BENTO GRID */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-5 lg:gap-6 auto-rows-[220px] lg:auto-rows-[200px]">
-          {mainFeatures.map((feature, index) => (
-            <ScrollReveal
-              key={feature.id}
-              delay={index * 0.08}
-              direction="up"
-              className={feature.gridArea}
-            >
-              <TiltCard className="h-full w-full" intensity={5}>
-                <FeatureCard feature={feature} />
-              </TiltCard>
-            </ScrollReveal>
-          ))}
         </div>
 
-        {/* ✅ "And more" section */}
-        <div className="mt-24 lg:mt-32">
-          <ScrollReveal>
-            <div className="flex items-baseline justify-between mb-10 pb-4 border-b border-gray-300/60">
-              <div>
-                <span className="text-xs font-mono uppercase tracking-widest text-green-700 font-bold block mb-2">
-                  + Plus the essentials
-                </span>
-                <h3 className="text-2xl lg:text-3xl font-bold text-gray-900">
-                  Stuff you'd expect, done right.
-                </h3>
-              </div>
-              <span className="text-xs font-mono text-gray-500 hidden lg:block">07 / 13</span>
-            </div>
-          </ScrollReveal>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-2">
-            {additionalFeatures.map((feature, index) => (
-              <ScrollReveal key={feature.title} delay={index * 0.05}>
-                <motion.div
-                  whileHover={{ x: 6 }}
-                  transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-                  className="group flex items-center gap-4 py-5 border-b border-gray-300/50 hover:border-green-400/60 transition-colors duration-300 cursor-pointer"
-                >
-                  <motion.div
-                    whileHover={{ rotate: 12, scale: 1.15 }}
-                    transition={{ type: 'spring', stiffness: 400, damping: 15 }}
-                    className="w-11 h-11 rounded-xl border border-white flex items-center justify-center flex-shrink-0"
-                    style={{
-                      background:
-                        'linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(240,253,244,0.6) 100%)',
-                      backdropFilter: 'blur(10px)',
-                      WebkitBackdropFilter: 'blur(10px)',
-                      boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.9), 0 4px 12px rgba(16,185,129,0.12)',
-                    }}
-                  >
-                    <feature.icon className="w-4 h-4 text-gray-700 group-hover:text-green-600 transition-colors" />
-                  </motion.div>
-
-                  <div className="flex-1 min-w-0">
-                    <div className="text-sm font-semibold text-gray-900 group-hover:text-green-700 transition-colors duration-300">
-                      {feature.title}
-                    </div>
-                    <div className="text-xs text-gray-600 mt-0.5">{feature.desc}</div>
-                  </div>
-
-                  <span className="text-xs font-mono text-gray-500 group-hover:text-green-600 transition-colors">
-                    0{index + 8}
-                  </span>
-                </motion.div>
-              </ScrollReveal>
+        {/* ✅ Draggable Cards Container */}
+        <div
+          ref={scrollRef}
+          onMouseDown={handleMouseDown}
+          onMouseLeave={handleMouseLeave}
+          onMouseUp={handleMouseUp}
+          onMouseMove={handleMouseMove}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          className="overflow-x-auto scrollbar-hide cursor-grab select-none"
+          style={{
+            scrollbarWidth: 'none',
+            msOverflowStyle: 'none',
+            scrollBehavior: 'smooth',
+            scrollSnapType: 'x mandatory',
+          }}
+        >
+          <div className="flex gap-5 lg:gap-6 px-4 sm:px-6 lg:px-8 pb-8 pt-2">
+            {features.map((feature, index) => (
+              <FeatureCard
+                key={feature.id}
+                feature={feature}
+                index={index}
+                isDragging={isDragging}
+              />
             ))}
-          </div>
 
-          <ScrollReveal delay={0.2}>
-            <div className="mt-16 flex items-center gap-3 text-sm text-gray-700">
-              <motion.div
-                animate={{ rotate: [0, 15, -15, 0] }}
-                transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
-              >
-                <Sparkles className="w-5 h-5 text-green-500" />
-              </motion.div>
-              <span>
-                And ~30 more we didn't list.
-                <a
-                  href="/documentation"
-                  className="text-gray-900 font-semibold underline underline-offset-4 decoration-green-400 hover:text-green-700 hover:decoration-green-600 transition-colors ml-1"
-                >
-                  Browse the full docs →
-                </a>
-              </span>
-            </div>
-          </ScrollReveal>
+            {/* Spacer at end */}
+            <div className="flex-shrink-0 w-4" />
+          </div>
+        </div>
+
+        {/* ✅ Progress dots */}
+        <div className="flex items-center justify-center gap-2 mt-6">
+          {features.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => scrollRef.current?.scrollTo({ left: i * 420, behavior: 'smooth' })}
+              className={`
+                h-2 rounded-full transition-all duration-500 ease-out
+                ${i === activeIndex
+                  ? 'w-8 bg-gray-900'
+                  : 'w-2 bg-gray-300 hover:bg-gray-400'
+                }
+              `}
+              aria-label={`Go to feature ${i + 1}`}
+            />
+          ))}
         </div>
       </div>
 
+      {/* Hide scrollbar globally for this section */}
       <style>{`
-        @keyframes shimmer {
-          0% { background-position: 0% center; }
-          100% { background-position: 200% center; }
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
         }
       `}</style>
     </section>
@@ -575,531 +363,126 @@ const Features: React.FC = () => {
 };
 
 // ============================================
-// ✅ NEW PREMIUM FEATURE CARD
+// ✅ PREMIUM FEATURE CARD
 // ============================================
 interface FeatureCardProps {
   feature: any;
+  index: number;
+  isDragging: boolean;
 }
 
-const FeatureCard: React.FC<FeatureCardProps> = ({ feature }) => {
-  const cardRef = useRef<HTMLDivElement>(null);
-  const isInView = useInView(cardRef, { once: true, margin: '-50px' });
+const FeatureCard: React.FC<FeatureCardProps> = ({ feature, isDragging }) => {
+  const Icon = feature.icon;
 
   return (
     <div
-      ref={cardRef}
-      className="group relative h-full w-full rounded-3xl overflow-hidden cursor-pointer transition-all duration-500"
+      className="group relative flex-shrink-0 w-[340px] sm:w-[400px] lg:w-[420px] h-[500px]"
       style={{
-        transformStyle: 'preserve-3d',
+        scrollSnapAlign: 'start',
+        pointerEvents: isDragging ? 'none' : 'auto',
       }}
     >
-      {/* ✅ Layer 1: Gradient border ring (premium look) */}
+      {/* ✅ Card Body */}
       <div
-        className="absolute inset-0 rounded-3xl p-[1.5px] opacity-90 group-hover:opacity-100 transition-opacity duration-500"
+        className="relative h-full w-full rounded-[28px] overflow-hidden bg-white border border-gray-200/80 transition-all duration-500 ease-out group-hover:border-gray-300 group-hover:shadow-2xl group-hover:-translate-y-2"
         style={{
-          background: `linear-gradient(135deg, ${feature.gradientFrom}50 0%, rgba(255,255,255,0.6) 30%, rgba(255,255,255,0.3) 70%, ${feature.gradientTo}40 100%)`,
+          boxShadow:
+            '0 4px 20px rgba(0,0,0,0.04), 0 1px 3px rgba(0,0,0,0.05)',
         }}
       >
-        {/* ✅ Layer 2: Inner glass card */}
+        {/* ✅ Top Color Bar */}
         <div
-          className="relative h-full w-full rounded-3xl overflow-hidden"
+          className="absolute top-0 left-0 right-0 h-1.5 transition-all duration-500 ease-out group-hover:h-2"
+          style={{ background: feature.gradient }}
+        />
+
+        {/* ✅ Background tint on hover */}
+        <div
+          className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 ease-out pointer-events-none"
           style={{
-            background:
-              'linear-gradient(135deg, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0.65) 100%)',
-            backdropFilter: 'blur(24px) saturate(180%)',
-            WebkitBackdropFilter: 'blur(24px) saturate(180%)',
-          }}
-        >
-          {/* ✅ Layer 3: Top glossy reflection */}
-          <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/60 via-white/20 to-transparent pointer-events-none" />
-
-          {/* ✅ Layer 4: Bottom color tint (subtle) */}
-          <div
-            className="absolute inset-x-0 bottom-0 h-2/3 opacity-30 group-hover:opacity-60 transition-opacity duration-700 pointer-events-none"
-            style={{
-              background: `radial-gradient(ellipse at bottom, ${feature.gradientFrom}25 0%, transparent 70%)`,
-            }}
-          />
-
-          {/* ✅ Layer 5: Animated floating orb */}
-          <motion.div
-            className="absolute -top-16 -right-16 w-40 h-40 rounded-full pointer-events-none"
-            style={{
-              background: `radial-gradient(circle, ${feature.gradientFrom}50 0%, ${feature.gradientTo}20 50%, transparent 80%)`,
-              filter: 'blur(20px)',
-            }}
-            animate={{
-              scale: [1, 1.3, 1],
-              x: [0, -10, 0],
-              y: [0, 10, 0],
-              opacity: [0.4, 0.7, 0.4],
-            }}
-            transition={{
-              duration: 8,
-              repeat: Infinity,
-              ease: 'easeInOut',
-            }}
-          />
-
-          {/* ✅ Layer 6: Hover gradient sweep */}
-          <div
-            className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"
-            style={{
-              background: `linear-gradient(135deg, transparent 0%, ${feature.gradientFrom}10 50%, transparent 100%)`,
-            }}
-          />
-
-          {/* ✅ Layer 7: Top accent line */}
-          <motion.div
-            className="absolute top-0 left-0 h-[2px] rounded-full"
-            style={{
-              background: `linear-gradient(90deg, transparent, ${feature.gradientFrom}, transparent)`,
-            }}
-            initial={{ width: '0%', left: '50%' }}
-            animate={isInView ? { width: '60%', left: '20%' } : {}}
-            transition={{ duration: 1.2, delay: 0.3, ease: 'easeOut' }}
-          />
-
-          {/* ✅ Content */}
-          <div
-            className="relative h-full p-6 lg:p-7 flex flex-col z-10"
-            style={{ transform: 'translateZ(30px)' }}
-          >
-            {/* Header */}
-            <div className="flex items-start justify-between mb-4">
-              <motion.div
-                initial={{ scale: 0, rotate: -180 }}
-                animate={isInView ? { scale: 1, rotate: 0 } : {}}
-                transition={{ type: 'spring', stiffness: 200, damping: 15, delay: 0.2 }}
-                whileHover={{ scale: 1.15, rotate: -8 }}
-                className="relative w-14 h-14 rounded-2xl flex items-center justify-center"
-                style={{
-                  background: `linear-gradient(135deg, ${feature.gradientFrom}, ${feature.gradientTo})`,
-                  boxShadow: `0 12px 32px ${feature.gradientFrom}50, inset 0 1px 2px rgba(255,255,255,0.5), inset 0 -2px 2px rgba(0,0,0,0.1)`,
-                  transform: 'translateZ(50px)',
-                }}
-              >
-                {/* Glossy highlight on icon */}
-                <div className="absolute inset-x-2 top-1 h-1/3 rounded-t-xl bg-gradient-to-b from-white/40 to-transparent pointer-events-none" />
-                <feature.icon className="w-6 h-6 text-white drop-shadow-md relative z-10" />
-              </motion.div>
-
-              <motion.div
-                initial={{ opacity: 0, x: -10 }}
-                animate={isInView ? { opacity: 1, x: 0 } : {}}
-                transition={{ delay: 0.4 }}
-                className="w-9 h-9 rounded-full flex items-center justify-center border border-white/60 transition-all duration-300 group-hover:scale-110"
-                style={{
-                  background: 'rgba(255,255,255,0.6)',
-                  backdropFilter: 'blur(10px)',
-                  boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.8)',
-                }}
-              >
-                <ArrowUpRight className="w-4 h-4 text-gray-700 group-hover:text-gray-900 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all duration-300" />
-              </motion.div>
-            </div>
-
-            {/* Title + Description */}
-            <div className="flex-1">
-              <h3 className="text-xl lg:text-2xl font-bold text-gray-900 mb-2 tracking-tight group-hover:translate-x-1 transition-transform duration-500">
-                {feature.title}
-              </h3>
-              <p className="text-sm text-gray-700 leading-relaxed font-medium">
-                {feature.description}
-              </p>
-
-              {feature.details && (
-                <p className="text-sm text-gray-600 mt-3 leading-relaxed">{feature.details}</p>
-              )}
-            </div>
-
-            {/* Visual mockups */}
-            {feature.mockup === 'messaging' && <MessagingMockup color={feature.accentColor} />}
-            {feature.mockup === 'bot' && <BotMockup color={feature.accentColor} />}
-            {feature.mockup === 'inbox' && <InboxMockup color={feature.accentColor} />}
-            {feature.mockup === 'automation' && <AutomationMockup color={feature.accentColor} />}
-            {feature.mockup === 'analytics' && <AnalyticsMockup color={feature.accentColor} />}
-            {feature.mockup === 'team' && <TeamMockup color={feature.accentColor} />}
-            {feature.mockup === 'instagram' && <InstagramMockup color={feature.accentColor} />}
-
-            {/* Stat */}
-            {feature.stat && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={isInView ? { opacity: 1, y: 0 } : {}}
-                transition={{ delay: 0.5, duration: 0.6 }}
-                className="absolute bottom-6 right-6 text-right"
-                style={{ transform: 'translateZ(40px)' }}
-              >
-                <div
-                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full mb-2"
-                  style={{
-                    background: `${feature.accentColor}20`,
-                    border: `1px solid ${feature.accentColor}40`,
-                  }}
-                >
-                  <TrendingUp className="w-3 h-3" style={{ color: feature.accentColor }} />
-                  <span className="text-[10px] font-bold" style={{ color: feature.accentColor }}>
-                    {feature.growth}
-                  </span>
-                </div>
-                <div
-                  className="text-3xl lg:text-4xl font-extrabold bg-clip-text text-transparent"
-                  style={{
-                    backgroundImage: `linear-gradient(135deg, ${feature.gradientFrom}, ${feature.gradientTo})`,
-                  }}
-                >
-                  <AnimatedCounter value={feature.stat} suffix={feature.statSuffix} />
-                </div>
-                <div className="text-[10px] uppercase tracking-wider text-gray-600 font-bold mt-0.5">
-                  {feature.statLabel}
-                </div>
-              </motion.div>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* ✅ Outer glow on hover */}
-      <div
-        className="absolute -inset-1 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none -z-10 blur-2xl"
-        style={{
-          background: `linear-gradient(135deg, ${feature.gradientFrom}, ${feature.gradientTo})`,
-        }}
-      />
-    </div>
-  );
-};
-
-// ============================================
-// ✅ ANIMATED MOCKUPS
-// ============================================
-
-const MessagingMockup: React.FC<{ color: string }> = ({ color }) => {
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: '-50px' });
-
-  return (
-    <div
-      ref={ref}
-      className="absolute bottom-20 left-6 right-32 opacity-90 group-hover:opacity-100 transition-opacity duration-500"
-      style={{ transform: 'translateZ(20px)' }}
-    >
-      <div className="space-y-2.5">
-        {[100, 75, 90].map((width, i) => (
-          <motion.div
-            key={i}
-            initial={{ opacity: 0, x: -20 }}
-            animate={isInView ? { opacity: 1, x: 0 } : {}}
-            transition={{ delay: 0.3 + i * 0.15, duration: 0.5 }}
-            className="flex items-center gap-2"
-          >
-            <div
-              className="w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center text-[10px] font-bold text-white shadow-lg"
-              style={{
-                background: `linear-gradient(135deg, ${color}, ${color}cc)`,
-                boxShadow: `0 4px 12px ${color}50`,
-              }}
-            >
-              {['A', 'B', 'C'][i]}
-            </div>
-            <motion.div
-              initial={{ width: 0 }}
-              animate={isInView ? { width: `${width}%` } : {}}
-              transition={{ delay: 0.4 + i * 0.15, duration: 0.8, ease: 'easeOut' }}
-              className="h-2.5 rounded-full"
-              style={{
-                background: `linear-gradient(90deg, ${color}60, ${color}25)`,
-                boxShadow: `inset 0 1px 1px rgba(255,255,255,0.5)`,
-              }}
-            />
-            <CheckCircle2 className="w-3.5 h-3.5 flex-shrink-0" style={{ color }} />
-          </motion.div>
-        ))}
-      </div>
-    </div>
-  );
-};
-
-const InboxMockup: React.FC<{ color: string }> = ({ color }) => {
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true });
-
-  return (
-    <div
-      ref={ref}
-      className="absolute bottom-6 right-6 opacity-90 group-hover:opacity-100 transition-opacity duration-500"
-      style={{ transform: 'translateZ(15px)' }}
-    >
-      <div className="flex -space-x-2">
-        {[1, 2, 3].map((i) => (
-          <motion.div
-            key={i}
-            initial={{ scale: 0, x: 20 }}
-            animate={isInView ? { scale: 1, x: 0 } : {}}
-            transition={{ type: 'spring', stiffness: 200, delay: 0.3 + i * 0.1 }}
-            className="w-9 h-9 rounded-full border-2 border-white flex items-center justify-center text-[11px] font-bold text-white shadow-lg"
-            style={{
-              background: `linear-gradient(135deg, ${color}, ${color}aa)`,
-            }}
-          >
-            {String.fromCharCode(64 + i)}
-          </motion.div>
-        ))}
-        <motion.div
-          initial={{ scale: 0 }}
-          animate={isInView ? { scale: 1 } : {}}
-          transition={{ type: 'spring', stiffness: 200, delay: 0.6 }}
-          className="w-9 h-9 rounded-full border-2 border-white flex items-center justify-center text-[10px] font-bold text-gray-800 shadow-lg"
-          style={{
-            background: 'rgba(255,255,255,0.95)',
-            backdropFilter: 'blur(8px)',
-          }}
-        >
-          +12
-        </motion.div>
-      </div>
-      <div className="mt-3 text-right">
-        <div className="inline-flex items-center gap-1.5 text-[10px] font-bold text-green-700 px-2 py-1 rounded-full bg-green-100/70 backdrop-blur-sm">
-          <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
-          </span>
-          16 online
-        </div>
-      </div>
-    </div>
-  );
-};
-
-const BotMockup: React.FC<{ color: string }> = ({ color }) => {
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true });
-
-  const nodes = [
-    { x: 0, y: 0, label: 'Trigger' },
-    { x: 60, y: 35, label: 'AI Reply' },
-    { x: 120, y: 70, label: 'Send' },
-  ];
-
-  return (
-    <div
-      ref={ref}
-      className="absolute bottom-16 left-6 right-6 opacity-95 group-hover:opacity-100 transition-opacity duration-500"
-      style={{ transform: 'translateZ(20px)' }}
-    >
-      <div className="relative h-28">
-        {nodes.map((node, i) => (
-          <React.Fragment key={i}>
-            <motion.div
-              initial={{ scale: 0, opacity: 0 }}
-              animate={isInView ? { scale: 1, opacity: 1 } : {}}
-              transition={{ delay: 0.3 + i * 0.2, type: 'spring', stiffness: 200 }}
-              whileHover={{ scale: 1.1, y: -2 }}
-              className="absolute px-3 py-1.5 rounded-lg text-[10px] font-bold flex items-center gap-1.5 shadow-lg"
-              style={{
-                left: `${node.x}px`,
-                top: `${node.y}px`,
-                background: `linear-gradient(135deg, white, ${color}10)`,
-                border: `1.5px solid ${color}70`,
-                color: color,
-                backdropFilter: 'blur(8px)',
-                boxShadow: `0 4px 12px ${color}25`,
-              }}
-            >
-              <div className="w-1.5 h-1.5 rounded-full" style={{ background: color }} />
-              {node.label}
-            </motion.div>
-            {i < 2 && (
-              <motion.svg
-                initial={{ pathLength: 0, opacity: 0 }}
-                animate={isInView ? { pathLength: 1, opacity: 0.7 } : {}}
-                transition={{ delay: 0.5 + i * 0.2, duration: 0.6 }}
-                className="absolute"
-                style={{
-                  left: `${node.x + 70}px`,
-                  top: `${node.y + 18}px`,
-                  width: '20px',
-                  height: '25px',
-                  overflow: 'visible',
-                }}
-              >
-                <motion.path
-                  d="M0 0 Q 5 12 18 22"
-                  stroke={color}
-                  strokeWidth="2"
-                  fill="none"
-                  strokeLinecap="round"
-                  strokeDasharray="3 3"
-                />
-              </motion.svg>
-            )}
-          </React.Fragment>
-        ))}
-
-        <motion.div
-          animate={{ scale: [1, 1.5, 1], opacity: [0.6, 1, 0.6] }}
-          transition={{ duration: 2, repeat: Infinity }}
-          className="absolute w-3 h-3 rounded-full"
-          style={{
-            left: '160px',
-            top: '78px',
-            background: color,
-            boxShadow: `0 0 16px ${color}, 0 0 32px ${color}80`,
+            background: `radial-gradient(circle at 50% 0%, ${feature.lightColor} 0%, transparent 60%)`,
           }}
         />
-      </div>
-    </div>
-  );
-};
 
-const AutomationMockup: React.FC<{ color: string }> = ({ color }) => {
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true });
+        {/* ✅ Decorative corner gradient */}
+        <div
+          className="absolute -top-20 -right-20 w-60 h-60 rounded-full opacity-10 group-hover:opacity-30 transition-opacity duration-700 ease-out pointer-events-none"
+          style={{
+            background: feature.gradient,
+            filter: 'blur(40px)',
+          }}
+        />
 
-  return (
-    <div
-      ref={ref}
-      className="absolute bottom-6 left-6 right-6 opacity-90 group-hover:opacity-100 transition-opacity duration-500"
-      style={{ transform: 'translateZ(15px)' }}
-    >
-      <div className="flex items-center gap-1.5 flex-wrap">
-        {['IF', '→', 'THEN', '→', 'SEND'].map((text, i) => (
-          <motion.div
-            key={i}
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={isInView ? { opacity: 1, scale: 1 } : {}}
-            transition={{ delay: 0.3 + i * 0.1, type: 'spring', stiffness: 200 }}
-          >
-            {text === '→' ? (
-              <motion.span
-                animate={{ x: [0, 4, 0] }}
-                transition={{ duration: 1.5, repeat: Infinity, delay: i * 0.2 }}
-                className="text-sm font-bold"
-                style={{ color }}
-              >
-                →
-              </motion.span>
-            ) : (
-              <span
-                className="px-2.5 py-1.5 rounded-lg text-[10px] font-mono font-bold shadow-md"
-                style={{
-                  background: `linear-gradient(135deg, white, ${color}15)`,
-                  color: color,
-                  border: `1.5px solid ${color}60`,
-                  boxShadow: `0 2px 8px ${color}20`,
-                }}
-              >
-                {text}
-              </span>
-            )}
-          </motion.div>
-        ))}
-      </div>
-    </div>
-  );
-};
-
-const AnalyticsMockup: React.FC<{ color: string }> = ({ color }) => {
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true });
-
-  return (
-    <div
-      ref={ref}
-      className="absolute bottom-6 left-6 right-6 opacity-90 group-hover:opacity-100 transition-opacity duration-500"
-      style={{ transform: 'translateZ(15px)' }}
-    >
-      <div className="flex items-end gap-1 h-14">
-        {[40, 65, 50, 80, 95, 70, 100].map((height, i) => (
-          <motion.div
-            key={i}
-            initial={{ height: 0 }}
-            animate={isInView ? { height: `${height}%` } : {}}
-            transition={{ delay: 0.3 + i * 0.08, duration: 0.6, ease: 'easeOut' }}
-            className="flex-1 rounded-t-md"
-            style={{
-              background: `linear-gradient(to top, ${color}, ${color}50)`,
-              boxShadow: `0 -4px 16px ${color}50`,
-            }}
-          />
-        ))}
-      </div>
-    </div>
-  );
-};
-
-const TeamMockup: React.FC<{ color: string }> = ({ color }) => {
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true });
-
-  return (
-    <div
-      ref={ref}
-      className="absolute bottom-6 right-6 opacity-90 group-hover:opacity-100 transition-opacity duration-500"
-      style={{ transform: 'translateZ(15px)' }}
-    >
-      <div className="flex items-center gap-2">
-        <div className="flex -space-x-2">
-          {[1, 2, 3, 4].map((i) => (
-            <motion.div
-              key={i}
-              initial={{ scale: 0, y: 10 }}
-              animate={isInView ? { scale: 1, y: 0 } : {}}
-              transition={{ type: 'spring', stiffness: 200, delay: 0.2 + i * 0.08 }}
-              className="w-7 h-7 rounded-full border-2 border-white shadow-md flex items-center justify-center text-[10px] font-bold text-white"
+        {/* ✅ Content */}
+        <div className="relative h-full p-7 lg:p-8 flex flex-col">
+          {/* Top: Tag + Arrow */}
+          <div className="flex items-start justify-between mb-8">
+            <span
+              className="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-mono font-bold tracking-wider uppercase transition-all duration-300"
               style={{
-                background: `linear-gradient(135deg, ${color}, ${color}cc)`,
-                opacity: 1 - i * 0.08,
+                background: feature.lightColor,
+                color: feature.color,
               }}
             >
-              {String.fromCharCode(64 + i)}
-            </motion.div>
-          ))}
-        </div>
-        <span className="text-[10px] font-mono text-gray-700 ml-1 font-bold">+8</span>
-      </div>
-    </div>
-  );
-};
+              {feature.tag}
+            </span>
 
-const InstagramMockup: React.FC<{ color: string }> = () => {
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true });
+            <div
+              className="w-10 h-10 rounded-full bg-gray-50 border border-gray-200 flex items-center justify-center transition-all duration-500 ease-out group-hover:bg-gray-900 group-hover:border-gray-900 group-hover:rotate-45"
+            >
+              <ArrowUpRight className="w-4 h-4 text-gray-700 transition-colors duration-500 group-hover:text-white" />
+            </div>
+          </div>
 
-  return (
-    <div
-      ref={ref}
-      className="absolute bottom-6 left-6 right-6 opacity-95 group-hover:opacity-100 transition-opacity duration-500"
-      style={{ transform: 'translateZ(15px)' }}
-    >
-      <div className="flex items-center gap-3">
-        <motion.div
-          initial={{ scale: 0, rotate: -180 }}
-          animate={isInView ? { scale: 1, rotate: 0 } : {}}
-          transition={{ type: 'spring', stiffness: 200, delay: 0.3 }}
-          whileHover={{ scale: 1.1, rotate: 12 }}
-          className="w-10 h-10 rounded-xl flex items-center justify-center shadow-xl"
-          style={{
-            background: 'linear-gradient(135deg, #833ab4 0%, #fd1d1d 50%, #fcb045 100%)',
-            boxShadow: '0 8px 24px rgba(225, 48, 108, 0.4)',
-          }}
-        >
-          <Instagram className="w-5 h-5 text-white" />
-        </motion.div>
-        <div className="flex flex-col gap-1.5 flex-1">
-          <motion.div
-            initial={{ width: 0 }}
-            animate={isInView ? { width: '70%' } : {}}
-            transition={{ delay: 0.5, duration: 0.6 }}
-            className="h-2 bg-gradient-to-r from-[#833ab4] to-[#fd1d1d] rounded-full opacity-70"
-          />
-          <motion.div
-            initial={{ width: 0 }}
-            animate={isInView ? { width: '50%' } : {}}
-            transition={{ delay: 0.6, duration: 0.6 }}
-            className="h-2 bg-gradient-to-r from-[#fd1d1d] to-[#fcb045] rounded-full opacity-70"
-          />
+          {/* Icon */}
+          <div
+            className="w-16 h-16 rounded-2xl flex items-center justify-center mb-6 transition-all duration-500 ease-out group-hover:scale-110 group-hover:-rotate-6"
+            style={{
+              background: feature.gradient,
+              boxShadow: `0 12px 30px ${feature.color}40, inset 0 1px 2px rgba(255,255,255,0.4)`,
+            }}
+          >
+            <Icon className="w-7 h-7 text-white drop-shadow-md" />
+          </div>
+
+          {/* Title */}
+          <h3 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-3 tracking-tight transition-transform duration-500 ease-out group-hover:translate-x-1">
+            {feature.title}
+          </h3>
+
+          {/* Description */}
+          <p className="text-[15px] text-gray-600 leading-relaxed mb-auto">
+            {feature.description}
+          </p>
+
+          {/* Bottom: Stat */}
+          <div className="mt-8 pt-6 border-t border-gray-100 transition-colors duration-500 group-hover:border-gray-200">
+            <div className="flex items-end justify-between">
+              <div>
+                <div className="flex items-baseline gap-2">
+                  <span
+                    className="text-4xl lg:text-5xl font-bold bg-clip-text text-transparent tracking-tight"
+                    style={{ backgroundImage: feature.gradient }}
+                  >
+                    {feature.stat}
+                  </span>
+                </div>
+                <div className="text-xs text-gray-500 mt-1 font-medium uppercase tracking-wider">
+                  {feature.statLabel}
+                </div>
+              </div>
+
+              <div
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold transition-all duration-500 group-hover:scale-110"
+                style={{
+                  background: feature.lightColor,
+                  color: feature.color,
+                }}
+              >
+                {feature.growth}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
