@@ -1,4 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
+import { motion, useMotionValue, useTransform, MotionValue } from 'framer-motion';
 import {
   MessageSquare,
   Users,
@@ -15,12 +16,15 @@ import {
 
 const Features: React.FC = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
+  const scrollX = useMotionValue(0);
+  
   const [isDragging, setIsDragging] = useState(false);
   const [startX, setStartX] = useState(0);
   const [scrollLeft, setScrollLeft] = useState(0);
   const [activeIndex, setActiveIndex] = useState(0);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
+  const [mounted, setMounted] = useState(false);
 
   // Mouse drag handlers
   const handleMouseDown = (e: React.MouseEvent) => {
@@ -30,6 +34,7 @@ const Features: React.FC = () => {
     setScrollLeft(scrollRef.current.scrollLeft);
     scrollRef.current.style.cursor = 'grabbing';
     scrollRef.current.style.scrollBehavior = 'auto';
+    scrollRef.current.style.scrollSnapType = 'none';
   };
 
   const handleMouseLeave = () => {
@@ -37,6 +42,7 @@ const Features: React.FC = () => {
     setIsDragging(false);
     scrollRef.current.style.cursor = 'grab';
     scrollRef.current.style.scrollBehavior = 'smooth';
+    scrollRef.current.style.scrollSnapType = 'x mandatory';
   };
 
   const handleMouseUp = () => {
@@ -44,19 +50,22 @@ const Features: React.FC = () => {
     setIsDragging(false);
     scrollRef.current.style.cursor = 'grab';
     scrollRef.current.style.scrollBehavior = 'smooth';
+    scrollRef.current.style.scrollSnapType = 'x mandatory';
   };
 
   const handleMouseMove = (e: React.MouseEvent) => {
     if (!isDragging || !scrollRef.current) return;
     e.preventDefault();
     const x = e.pageX - scrollRef.current.offsetLeft;
-    const walk = (x - startX) * 2; // drag speed multiplier
+    const walk = (x - startX) * 1.5; // smoother drag factor
     scrollRef.current.scrollLeft = scrollLeft - walk;
   };
 
   // Touch handlers for mobile
   const handleTouchStart = (e: React.TouchEvent) => {
     if (!scrollRef.current) return;
+    scrollRef.current.style.scrollBehavior = 'auto';
+    scrollRef.current.style.scrollSnapType = 'none';
     setStartX(e.touches[0].pageX - scrollRef.current.offsetLeft);
     setScrollLeft(scrollRef.current.scrollLeft);
   };
@@ -64,34 +73,91 @@ const Features: React.FC = () => {
   const handleTouchMove = (e: React.TouchEvent) => {
     if (!scrollRef.current) return;
     const x = e.touches[0].pageX - scrollRef.current.offsetLeft;
-    const walk = (x - startX) * 2;
+    const walk = (x - startX) * 1.5;
     scrollRef.current.scrollLeft = scrollLeft - walk;
+  };
+
+  const handleTouchEnd = () => {
+    if (!scrollRef.current) return;
+    scrollRef.current.style.scrollBehavior = 'smooth';
+    scrollRef.current.style.scrollSnapType = 'x mandatory';
   };
 
   // Track scroll position for arrows & active dot
   const handleScroll = () => {
     if (!scrollRef.current) return;
     const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
+    
+    // Update the motion value
+    scrollX.set(scrollLeft);
+    
     setCanScrollLeft(scrollLeft > 10);
     setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10);
 
-    const cardWidth = 420; // approx card width
-    const newIndex = Math.round(scrollLeft / cardWidth);
-    setActiveIndex(newIndex);
+    // Calculate active index based on center of viewport snapping
+    const containerCenter = scrollLeft + clientWidth / 2;
+    const cards = scrollRef.current.children[0].children;
+    let closestIndex = 0;
+    let minDistance = Infinity;
+
+    for (let i = 0; i < cards.length; i++) {
+      const card = cards[i] as HTMLElement;
+      // Skip spacers if any
+      if (card.classList.contains('spacer-item')) continue;
+      const cardCenter = card.offsetLeft + card.clientWidth / 2;
+      const distance = Math.abs(containerCenter - cardCenter);
+      if (distance < minDistance) {
+        minDistance = distance;
+        closestIndex = i;
+      }
+    }
+    setActiveIndex(closestIndex);
   };
 
   useEffect(() => {
+    setMounted(true);
     const el = scrollRef.current;
     if (!el) return;
+    
+    // Initial calculation
+    handleScroll();
+    
+    const handleResize = () => {
+      handleScroll();
+    };
+
     el.addEventListener('scroll', handleScroll);
-    return () => el.removeEventListener('scroll', handleScroll);
+    window.addEventListener('resize', handleResize);
+    
+    return () => {
+      el.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('resize', handleResize);
+    };
   }, []);
 
-  const scrollByAmount = (amount: number) => {
+  const scrollToCard = (index: number) => {
     if (!scrollRef.current) return;
-    scrollRef.current.scrollBy({ left: amount, behavior: 'smooth' });
+    const cards = scrollRef.current.children[0].children;
+    const card = cards[index] as HTMLElement;
+    if (!card) return;
+    
+    const containerWidth = scrollRef.current.clientWidth;
+    const scrollPos = card.offsetLeft - (containerWidth / 2) + (card.clientWidth / 2);
+    
+    scrollRef.current.scrollTo({ left: scrollPos, behavior: 'smooth' });
   };
 
+  const scrollByCard = (direction: 'prev' | 'next') => {
+    let targetIndex = activeIndex;
+    if (direction === 'prev') {
+      targetIndex = Math.max(0, activeIndex - 1);
+    } else {
+      targetIndex = Math.min(features.length - 1, activeIndex + 1);
+    }
+    scrollToCard(targetIndex);
+  };
+
+  // Unified green brand theme values for all cards
   const features = [
     {
       id: 1,
@@ -103,9 +169,9 @@ const Features: React.FC = () => {
       stat: '2.1M',
       statLabel: 'Messages sent',
       growth: '+18%',
-      color: '#10b981',
-      lightColor: '#d1fae5',
-      gradient: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+      color: '#16a34a',
+      lightColor: '#f0fdf4',
+      gradient: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
     },
     {
       id: 2,
@@ -117,9 +183,9 @@ const Features: React.FC = () => {
       stat: '16',
       statLabel: 'Agents online',
       growth: 'Live',
-      color: '#3b82f6',
-      lightColor: '#dbeafe',
-      gradient: 'linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%)',
+      color: '#16a34a',
+      lightColor: '#f0fdf4',
+      gradient: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
     },
     {
       id: 3,
@@ -131,9 +197,9 @@ const Features: React.FC = () => {
       stat: '24/7',
       statLabel: 'Always on',
       growth: 'AI',
-      color: '#a855f7',
-      lightColor: '#f3e8ff',
-      gradient: 'linear-gradient(135deg, #a855f7 0%, #ec4899 100%)',
+      color: '#16a34a',
+      lightColor: '#f0fdf4',
+      gradient: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
     },
     {
       id: 4,
@@ -145,9 +211,9 @@ const Features: React.FC = () => {
       stat: '90%',
       statLabel: 'Time saved',
       growth: '+42%',
-      color: '#f59e0b',
-      lightColor: '#fef3c7',
-      gradient: 'linear-gradient(135deg, #f59e0b 0%, #ea580c 100%)',
+      color: '#16a34a',
+      lightColor: '#f0fdf4',
+      gradient: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
     },
     {
       id: 5,
@@ -159,9 +225,9 @@ const Features: React.FC = () => {
       stat: '99.7%',
       statLabel: 'Delivery rate',
       growth: '+2.3%',
-      color: '#6366f1',
-      lightColor: '#e0e7ff',
-      gradient: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+      color: '#16a34a',
+      lightColor: '#f0fdf4',
+      gradient: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
     },
     {
       id: 6,
@@ -173,9 +239,9 @@ const Features: React.FC = () => {
       stat: '12+',
       statLabel: 'Team members',
       growth: 'Pro',
-      color: '#ef4444',
-      lightColor: '#fee2e2',
-      gradient: 'linear-gradient(135deg, #ef4444 0%, #f43f5e 100%)',
+      color: '#16a34a',
+      lightColor: '#f0fdf4',
+      gradient: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
     },
     {
       id: 7,
@@ -187,37 +253,39 @@ const Features: React.FC = () => {
       stat: '3.2K',
       statLabel: 'Auto-replies/day',
       growth: '+67%',
-      color: '#e1306c',
-      lightColor: '#fce7f3',
-      gradient: 'linear-gradient(135deg, #833ab4 0%, #fd1d1d 50%, #fcb045 100%)',
+      color: '#16a34a',
+      lightColor: '#f0fdf4',
+      gradient: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
     },
   ];
 
   return (
     <section id="features" className="relative py-24 lg:py-32 overflow-hidden">
-      {/* Soft colorful background */}
+      {/* Cohesive soft green background blobs */}
       <div className="absolute inset-0 -z-10 bg-slate-50">
         <div
-          className="absolute top-0 left-1/4 w-[600px] h-[600px] rounded-full opacity-40"
+          className="absolute top-0 left-1/4 w-[600px] h-[600px] rounded-full opacity-40 animate-pulse"
           style={{
             background:
-              'radial-gradient(circle, rgba(16,185,129,0.4) 0%, transparent 70%)',
+              'radial-gradient(circle, rgba(22,163,74,0.2) 0%, transparent 70%)',
             filter: 'blur(80px)',
+            animationDuration: '8s',
           }}
         />
         <div
-          className="absolute bottom-0 right-1/4 w-[700px] h-[700px] rounded-full opacity-40"
+          className="absolute bottom-0 right-1/4 w-[700px] h-[700px] rounded-full opacity-40 animate-pulse"
           style={{
             background:
-              'radial-gradient(circle, rgba(168,85,247,0.35) 0%, transparent 70%)',
+              'radial-gradient(circle, rgba(34,197,94,0.15) 0%, transparent 70%)',
             filter: 'blur(90px)',
+            animationDuration: '12s',
           }}
         />
         <div
-          className="absolute top-1/2 left-1/2 w-[500px] h-[500px] rounded-full opacity-30"
+          className="absolute top-1/2 left-1/2 w-[500px] h-[500px] rounded-full opacity-20"
           style={{
             background:
-              'radial-gradient(circle, rgba(59,130,246,0.4) 0%, transparent 70%)',
+              'radial-gradient(circle, rgba(134,239,172,0.1) 0%, transparent 70%)',
             filter: 'blur(70px)',
             transform: 'translate(-50%, -50%)',
           }}
@@ -225,22 +293,22 @@ const Features: React.FC = () => {
       </div>
 
       <div className="relative max-w-[1400px] mx-auto">
-        {/* ✅ Header — clean editorial */}
+        {/* Header — clean editorial */}
         <div className="px-4 sm:px-6 lg:px-8 mb-12 lg:mb-16">
           <div className="grid grid-cols-12 gap-6 items-end">
             <div className="col-span-12 lg:col-span-7">
               <div className="flex items-center gap-3 mb-6">
-                <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-gray-200 text-xs font-mono uppercase tracking-wider text-green-700 font-bold shadow-sm">
-                  <Sparkles className="w-3 h-3" />
+                <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-green-200 text-xs font-mono uppercase tracking-wider text-green-700 font-bold shadow-sm">
+                  <Sparkles className="w-3 h-3 text-green-600 animate-spin-slow" />
                   Features
                 </span>
-                <div className="h-px flex-1 bg-gradient-to-r from-gray-300 to-transparent max-w-[100px]" />
+                <div className="h-px flex-1 bg-gradient-to-r from-green-300 to-transparent max-w-[100px]" />
               </div>
 
               <h2 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold leading-[1.05] tracking-tight text-gray-900">
                 Everything you need.
                 <br />
-                <span className="italic font-light text-gray-500">
+                <span className="italic font-light text-green-700">
                   Nothing you don't.
                 </span>
               </h2>
@@ -255,14 +323,14 @@ const Features: React.FC = () => {
               {/* Navigation arrows */}
               <div className="flex items-center gap-3 mt-6">
                 <button
-                  onClick={() => scrollByAmount(-440)}
+                  onClick={() => scrollByCard('prev')}
                   disabled={!canScrollLeft}
                   className={`
                     w-12 h-12 rounded-full border bg-white
                     flex items-center justify-center
                     transition-all duration-300 ease-out
                     ${canScrollLeft
-                      ? 'border-gray-300 text-gray-700 hover:border-green-500 hover:text-green-600 hover:shadow-lg hover:-translate-x-0.5 active:scale-95'
+                      ? 'border-green-200 text-green-700 hover:border-green-500 hover:text-green-600 hover:shadow-lg hover:-translate-x-0.5 active:scale-95'
                       : 'border-gray-200 text-gray-300 cursor-not-allowed'
                     }
                   `}
@@ -272,14 +340,14 @@ const Features: React.FC = () => {
                 </button>
 
                 <button
-                  onClick={() => scrollByAmount(440)}
+                  onClick={() => scrollByCard('next')}
                   disabled={!canScrollRight}
                   className={`
                     w-12 h-12 rounded-full border bg-white
                     flex items-center justify-center
                     transition-all duration-300 ease-out
                     ${canScrollRight
-                      ? 'border-gray-300 text-gray-700 hover:border-green-500 hover:text-green-600 hover:shadow-lg hover:translate-x-0.5 active:scale-95'
+                      ? 'border-green-200 text-green-700 hover:border-green-500 hover:text-green-600 hover:shadow-lg hover:translate-x-0.5 active:scale-95'
                       : 'border-gray-200 text-gray-300 cursor-not-allowed'
                     }
                   `}
@@ -289,10 +357,10 @@ const Features: React.FC = () => {
                 </button>
 
                 {/* Drag hint */}
-                <div className="hidden lg:flex items-center gap-2 ml-2 text-xs text-gray-500 font-medium">
+                <div className="hidden lg:flex items-center gap-2 ml-2 text-xs text-green-700 font-medium">
                   <div className="flex gap-0.5">
-                    <div className="w-1 h-4 bg-gray-400 rounded-full" />
-                    <div className="w-1 h-4 bg-gray-300 rounded-full" />
+                    <div className="w-1 h-4 bg-green-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                    <div className="w-1 h-4 bg-green-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
                   </div>
                   Drag to explore
                 </div>
@@ -301,7 +369,7 @@ const Features: React.FC = () => {
           </div>
         </div>
 
-        {/* ✅ Draggable Cards Container */}
+        {/* Draggable Cards Container with mathematically perfect padding for 3 visible cards on desktop */}
         <div
           ref={scrollRef}
           onMouseDown={handleMouseDown}
@@ -310,7 +378,8 @@ const Features: React.FC = () => {
           onMouseMove={handleMouseMove}
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
-          className="overflow-x-auto scrollbar-hide cursor-grab select-none"
+          onTouchEnd={handleTouchEnd}
+          className="overflow-x-auto scrollbar-hide cursor-grab select-none px-[7.5vw] md:px-[calc(25%+6px)] lg:px-[calc(33.333%+8px)]"
           style={{
             scrollbarWidth: 'none',
             msOverflowStyle: 'none',
@@ -318,32 +387,35 @@ const Features: React.FC = () => {
             scrollSnapType: 'x mandatory',
           }}
         >
-          <div className="flex gap-5 lg:gap-6 px-4 sm:px-6 lg:px-8 pb-8 pt-2">
+          <div className="flex gap-5 lg:gap-6 pb-12 pt-4">
             {features.map((feature, index) => (
               <FeatureCard
                 key={feature.id}
                 feature={feature}
                 index={index}
                 isDragging={isDragging}
+                isActive={index === activeIndex}
+                scrollX={scrollX}
+                scrollRef={scrollRef}
               />
             ))}
 
             {/* Spacer at end */}
-            <div className="flex-shrink-0 w-4" />
+            <div className="flex-shrink-0 w-4 spacer-item" />
           </div>
         </div>
 
-        {/* ✅ Progress dots */}
-        <div className="flex items-center justify-center gap-2 mt-6">
+        {/* Progress dots */}
+        <div className="flex items-center justify-center gap-2 mt-4">
           {features.map((_, i) => (
             <button
               key={i}
-              onClick={() => scrollRef.current?.scrollTo({ left: i * 420, behavior: 'smooth' })}
+              onClick={() => scrollToCard(i)}
               className={`
                 h-2 rounded-full transition-all duration-500 ease-out
                 ${i === activeIndex
-                  ? 'w-8 bg-gray-900'
-                  : 'w-2 bg-gray-300 hover:bg-gray-400'
+                  ? 'w-8 bg-green-600'
+                  : 'w-2 bg-green-200 hover:bg-green-300'
                 }
               `}
               aria-label={`Go to feature ${i + 1}`}
@@ -357,46 +429,139 @@ const Features: React.FC = () => {
         .scrollbar-hide::-webkit-scrollbar {
           display: none;
         }
+        .animate-spin-slow {
+          animation: spin 8s linear infinite;
+        }
+        @keyframes spin {
+          from {
+            transform: rotate(0deg);
+          }
+          to {
+            transform: rotate(360deg);
+          }
+        }
       `}</style>
     </section>
   );
 };
 
 // ============================================
-// ✅ PREMIUM FEATURE CARD
+// PREMIUM FEATURE CARD
 // ============================================
 interface FeatureCardProps {
   feature: any;
   index: number;
   isDragging: boolean;
+  isActive: boolean;
+  scrollX: MotionValue<number>;
+  scrollRef: React.RefObject<HTMLDivElement | null>;
 }
 
-const FeatureCard: React.FC<FeatureCardProps> = ({ feature, isDragging }) => {
+const FeatureCard: React.FC<FeatureCardProps> = ({
+  feature,
+  index,
+  isDragging,
+  scrollX,
+  scrollRef,
+}) => {
   const Icon = feature.icon;
+  const cardRef = useRef<HTMLDivElement>(null);
+
+  // Dynamic Scale: 1.0 (centered) -> 0.92 (off-screen/off-center)
+  const scale = useTransform(scrollX, (latest: number) => {
+    if (!cardRef.current || !scrollRef.current) {
+      return index === 0 ? 1.0 : 0.92;
+    }
+    const container = scrollRef.current;
+    const card = cardRef.current;
+    
+    const containerCenter = latest + container.clientWidth / 2;
+    const cardCenter = card.offsetLeft + card.clientWidth / 2;
+    const distance = Math.abs(containerCenter - cardCenter);
+    
+    const threshold = card.clientWidth + 24; // width + gap
+    const progress = Math.min(distance / threshold, 1);
+    return 1 - progress * 0.08;
+  });
+
+  // Dynamic Opacity: 1.0 (centered) -> 0.55 (off-screen/off-center)
+  const opacity = useTransform(scrollX, (latest: number) => {
+    if (!cardRef.current || !scrollRef.current) {
+      return index === 0 ? 1.0 : 0.55;
+    }
+    const container = scrollRef.current;
+    const card = cardRef.current;
+    
+    const containerCenter = latest + container.clientWidth / 2;
+    const cardCenter = card.offsetLeft + card.clientWidth / 2;
+    const distance = Math.abs(containerCenter - cardCenter);
+    
+    const threshold = card.clientWidth + 24;
+    const progress = Math.min(distance / threshold, 1);
+    return 1 - progress * 0.45;
+  });
+
+  // Dynamic Y translation for a beautiful curved path
+  const y = useTransform(scrollX, (latest: number) => {
+    if (!cardRef.current || !scrollRef.current) {
+      return 0;
+    }
+    const container = scrollRef.current;
+    const card = cardRef.current;
+    
+    const containerCenter = latest + container.clientWidth / 2;
+    const cardCenter = card.offsetLeft + card.clientWidth / 2;
+    const distance = Math.abs(containerCenter - cardCenter);
+    
+    const threshold = card.clientWidth + 24;
+    const progress = Math.min(distance / threshold, 1);
+    return progress * 16; // dip down by 16px when off-center
+  });
+
+  // Dynamic Rotation for subtle coverflow tilt
+  const rotate = useTransform(scrollX, (latest: number) => {
+    if (!cardRef.current || !scrollRef.current) {
+      return 0;
+    }
+    const container = scrollRef.current;
+    const card = cardRef.current;
+    
+    const containerCenter = latest + container.clientWidth / 2;
+    const cardCenter = card.offsetLeft + card.clientWidth / 2;
+    const distance = cardCenter - containerCenter; // signed distance
+    
+    const threshold = card.clientWidth + 24;
+    const progress = Math.max(-1, Math.min(distance / threshold, 1));
+    return progress * 3; // rotates -3deg to 3deg
+  });
 
   return (
-    <div
-      className="group relative flex-shrink-0 w-[340px] sm:w-[400px] lg:w-[420px] h-[500px]"
+    <motion.div
+      ref={cardRef}
+      className="group relative flex-shrink-0 w-[85vw] md:w-[calc((100%-24px)/2)] lg:w-[calc((100%-48px)/3)] h-[500px]"
       style={{
-        scrollSnapAlign: 'start',
+        scrollSnapAlign: 'center',
         pointerEvents: isDragging ? 'none' : 'auto',
+        scale,
+        opacity,
+        y,
+        rotate,
       }}
     >
-      {/* ✅ Card Body */}
+      {/* Card Body with premium light glassmorphism styling */}
       <div
-        className="relative h-full w-full rounded-[28px] overflow-hidden bg-white border border-gray-200/80 transition-all duration-500 ease-out group-hover:border-gray-300 group-hover:shadow-2xl group-hover:-translate-y-2"
+        className="relative h-full w-full rounded-[28px] overflow-hidden bg-white/70 backdrop-blur-md border border-green-100 transition-all duration-500 ease-out group-hover:border-green-300 group-hover:shadow-2xl"
         style={{
-          boxShadow:
-            '0 4px 20px rgba(0,0,0,0.04), 0 1px 3px rgba(0,0,0,0.05)',
+          boxShadow: '0 10px 30px rgba(22,163,74,0.03), 0 1px 3px rgba(22,163,74,0.02)',
         }}
       >
-        {/* ✅ Top Color Bar */}
+        {/* Top Green Bar */}
         <div
           className="absolute top-0 left-0 right-0 h-1.5 transition-all duration-500 ease-out group-hover:h-2"
           style={{ background: feature.gradient }}
         />
 
-        {/* ✅ Background tint on hover */}
+        {/* Hover Radial Light Glow */}
         <div
           className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 ease-out pointer-events-none"
           style={{
@@ -404,59 +569,61 @@ const FeatureCard: React.FC<FeatureCardProps> = ({ feature, isDragging }) => {
           }}
         />
 
-        {/* ✅ Decorative corner gradient */}
+        {/* Decorative corner blur blob */}
         <div
-          className="absolute -top-20 -right-20 w-60 h-60 rounded-full opacity-10 group-hover:opacity-30 transition-opacity duration-700 ease-out pointer-events-none"
+          className="absolute -top-20 -right-20 w-60 h-60 rounded-full opacity-10 group-hover:opacity-25 transition-opacity duration-700 ease-out pointer-events-none"
           style={{
             background: feature.gradient,
             filter: 'blur(40px)',
           }}
         />
 
-        {/* ✅ Content */}
-        <div className="relative h-full p-7 lg:p-8 flex flex-col">
-          {/* Top: Tag + Arrow */}
-          <div className="flex items-start justify-between mb-8">
-            <span
-              className="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-mono font-bold tracking-wider uppercase transition-all duration-300"
+        {/* Card Content */}
+        <div className="relative h-full p-7 lg:p-8 flex flex-col justify-between">
+          <div>
+            {/* Top section: Tag + Action Button */}
+            <div className="flex items-start justify-between mb-8">
+              <span
+                className="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-mono font-bold tracking-wider uppercase transition-all duration-300"
+                style={{
+                  background: feature.lightColor,
+                  color: feature.color,
+                }}
+              >
+                {feature.tag}
+              </span>
+
+              <div
+                className="w-10 h-10 rounded-full bg-green-50/50 border border-green-100 flex items-center justify-center transition-all duration-500 ease-out group-hover:bg-green-600 group-hover:border-green-600 group-hover:rotate-45"
+              >
+                <ArrowUpRight className="w-4 h-4 text-green-700 transition-colors duration-500 group-hover:text-white" />
+              </div>
+            </div>
+
+            {/* Icon */}
+            <div
+              className="w-16 h-16 rounded-2xl flex items-center justify-center mb-6 transition-all duration-500 ease-out group-hover:scale-110 group-hover:-rotate-6"
               style={{
-                background: feature.lightColor,
-                color: feature.color,
+                background: feature.gradient,
+                boxShadow: `0 12px 30px rgba(22, 163, 74, 0.25), inset 0 1px 2px rgba(255,255,255,0.4)`,
               }}
             >
-              {feature.tag}
-            </span>
-
-            <div
-              className="w-10 h-10 rounded-full bg-gray-50 border border-gray-200 flex items-center justify-center transition-all duration-500 ease-out group-hover:bg-gray-900 group-hover:border-gray-900 group-hover:rotate-45"
-            >
-              <ArrowUpRight className="w-4 h-4 text-gray-700 transition-colors duration-500 group-hover:text-white" />
+              <Icon className="w-7 h-7 text-white drop-shadow-sm" />
             </div>
+
+            {/* Title */}
+            <h3 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-3 tracking-tight transition-transform duration-500 ease-out group-hover:translate-x-1">
+              {feature.title}
+            </h3>
+
+            {/* Description */}
+            <p className="text-[15px] text-gray-600 leading-relaxed">
+              {feature.description}
+            </p>
           </div>
 
-          {/* Icon */}
-          <div
-            className="w-16 h-16 rounded-2xl flex items-center justify-center mb-6 transition-all duration-500 ease-out group-hover:scale-110 group-hover:-rotate-6"
-            style={{
-              background: feature.gradient,
-              boxShadow: `0 12px 30px ${feature.color}40, inset 0 1px 2px rgba(255,255,255,0.4)`,
-            }}
-          >
-            <Icon className="w-7 h-7 text-white drop-shadow-md" />
-          </div>
-
-          {/* Title */}
-          <h3 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-3 tracking-tight transition-transform duration-500 ease-out group-hover:translate-x-1">
-            {feature.title}
-          </h3>
-
-          {/* Description */}
-          <p className="text-[15px] text-gray-600 leading-relaxed mb-auto">
-            {feature.description}
-          </p>
-
-          {/* Bottom: Stat */}
-          <div className="mt-8 pt-6 border-t border-gray-100 transition-colors duration-500 group-hover:border-gray-200">
+          {/* Bottom section: Stat Metrics */}
+          <div className="mt-8 pt-6 border-t border-green-50 transition-colors duration-500 group-hover:border-green-100">
             <div className="flex items-end justify-between">
               <div>
                 <div className="flex items-baseline gap-2">
@@ -485,7 +652,7 @@ const FeatureCard: React.FC<FeatureCardProps> = ({ feature, isDragging }) => {
           </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 
