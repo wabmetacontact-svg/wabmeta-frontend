@@ -132,7 +132,7 @@ const ChatHeader: React.FC<Props> = ({
 
   return (
     <div className="
-      flex-shrink-0 relative
+      flex-shrink-0 relative z-[100]
       bg-[#0a0e1c]/80 backdrop-blur-xl
       border-b border-white/[0.06]
       px-3 sm:px-4 py-3
