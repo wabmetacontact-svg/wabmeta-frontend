@@ -44,8 +44,7 @@ const AnimatedCounter: React.FC<{ value: number; suffix?: string; duration?: num
         setCount(end);
         clearInterval(timer);
       } else {
-        start += step; // fix step addition
-        setCount(Math.min(start, end));
+        setCount(start);
       }
     }, incrementTime);
     return () => clearInterval(timer);
@@ -119,7 +118,7 @@ const TiltCard: React.FC<TiltCardProps> = ({ children, className = '', intensity
       <div
         className="absolute inset-0 rounded-[inherit] pointer-events-none z-30 transition-opacity duration-300"
         style={{
-          background: `radial-gradient(circle at ${glarePos.x}% ${glarePos.y}%, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0.15) 25%, transparent 60%)`,
+          background: `radial-gradient(circle at ${glarePos.x}% ${glarePos.y}%, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0.2) 25%, transparent 60%)`,
           opacity: isHovered ? 1 : 0,
           mixBlendMode: 'overlay',
         }}
@@ -176,8 +175,10 @@ const Features: React.FC = () => {
   });
 
   // Parallax effects for background blobs
-  const blob1Y = useTransform(scrollYProgress, [0, 1], [0, -200]);
-  const blob2Y = useTransform(scrollYProgress, [0, 1], [0, 200]);
+  const blob1Y = useTransform(scrollYProgress, [0, 1], [0, -300]);
+  const blob2Y = useTransform(scrollYProgress, [0, 1], [0, 250]);
+  const blob3Y = useTransform(scrollYProgress, [0, 1], [0, -150]);
+  const blob4Y = useTransform(scrollYProgress, [0, 1], [0, 200]);
   const headingY = useTransform(scrollYProgress, [0, 0.3], [50, 0]);
 
   const mainFeatures = [
@@ -187,14 +188,15 @@ const Features: React.FC = () => {
       title: 'Bulk Messaging',
       description: 'Send personalized messages to thousands instantly with smart rate limiting.',
       details: 'Built for scale — handles 50,000+ messages/hour with delivery tracking.',
-      stat: 2100000,
-      statSuffix: '+',
+      stat: 2100,
+      statSuffix: 'K+',
       statLabel: 'sent this month',
       growth: '+18%',
       accentColor: '#10b981',
+      accentRgb: '16, 185, 129',
       gridArea: 'lg:col-span-3 lg:row-span-2',
-      bgGradient: 'from-green-100/80 via-emerald-50/60 to-transparent',
-      iconBg: 'from-green-500 to-emerald-600',
+      gradientFrom: '#10b981',
+      gradientTo: '#059669',
       mockup: 'messaging',
     },
     {
@@ -203,9 +205,10 @@ const Features: React.FC = () => {
       title: 'Live Inbox',
       description: 'Unified chat for your whole team. Never miss a conversation.',
       accentColor: '#3b82f6',
+      accentRgb: '59, 130, 246',
       gridArea: 'lg:col-span-3',
-      bgGradient: 'from-blue-100/80 via-cyan-50/60 to-transparent',
-      iconBg: 'from-blue-500 to-cyan-600',
+      gradientFrom: '#3b82f6',
+      gradientTo: '#06b6d4',
       mockup: 'inbox',
     },
     {
@@ -214,9 +217,10 @@ const Features: React.FC = () => {
       title: 'Smart Automation',
       description: 'Workflows that work while you sleep.',
       accentColor: '#f59e0b',
+      accentRgb: '245, 158, 11',
       gridArea: 'lg:col-span-3',
-      bgGradient: 'from-amber-100/80 via-orange-50/60 to-transparent',
-      iconBg: 'from-amber-500 to-orange-600',
+      gradientFrom: '#f59e0b',
+      gradientTo: '#ea580c',
       mockup: 'automation',
     },
     {
@@ -226,9 +230,10 @@ const Features: React.FC = () => {
       description: 'Drag, drop, deploy. Visual flow builder with AI integration.',
       details: 'Connect with OpenAI, Gemini & custom models.',
       accentColor: '#a855f7',
+      accentRgb: '168, 85, 247',
       gridArea: 'lg:col-span-3 lg:row-span-2',
-      bgGradient: 'from-purple-100/80 via-pink-50/60 to-transparent',
-      iconBg: 'from-purple-500 to-pink-600',
+      gradientFrom: '#a855f7',
+      gradientTo: '#ec4899',
       mockup: 'bot',
     },
     {
@@ -237,9 +242,10 @@ const Features: React.FC = () => {
       title: 'Real-time Analytics',
       description: 'Numbers that matter, updated live.',
       accentColor: '#6366f1',
+      accentRgb: '99, 102, 241',
       gridArea: 'lg:col-span-2',
-      bgGradient: 'from-indigo-100/80 via-violet-50/60 to-transparent',
-      iconBg: 'from-indigo-500 to-violet-600',
+      gradientFrom: '#6366f1',
+      gradientTo: '#8b5cf6',
       mockup: 'analytics',
     },
     {
@@ -248,9 +254,10 @@ const Features: React.FC = () => {
       title: 'Team Collaboration',
       description: 'Built for teams, not just individuals.',
       accentColor: '#ef4444',
+      accentRgb: '239, 68, 68',
       gridArea: 'lg:col-span-2',
-      bgGradient: 'from-rose-100/80 via-red-50/60 to-transparent',
-      iconBg: 'from-rose-500 to-red-600',
+      gradientFrom: '#ef4444',
+      gradientTo: '#f43f5e',
       mockup: 'team',
     },
     {
@@ -259,9 +266,10 @@ const Features: React.FC = () => {
       title: 'Instagram DMs',
       description: 'Auto-reply to DMs, comments & stories.',
       accentColor: '#e1306c',
+      accentRgb: '225, 48, 108',
       gridArea: 'lg:col-span-2',
-      bgGradient: 'from-pink-100/80 via-purple-50/60 to-transparent',
-      iconBg: 'from-[#833ab4] via-[#fd1d1d] to-[#fcb045]',
+      gradientFrom: '#833ab4',
+      gradientTo: '#fcb045',
       mockup: 'instagram',
     },
   ];
@@ -281,33 +289,113 @@ const Features: React.FC = () => {
       id="features"
       className="relative py-24 lg:py-32 overflow-hidden"
     >
-      {/* ✅ Animated Background */}
-      <div className="absolute inset-0 -z-10 bg-gradient-to-b from-white via-green-50/30 to-white">
-        {/* Parallax blobs */}
+      {/* ✅ COLORFUL BLURRED BACKGROUND */}
+      <div className="absolute inset-0 -z-10 bg-gradient-to-b from-slate-50 via-white to-slate-50 overflow-hidden">
+
+        {/* Animated Mesh Gradient Blobs */}
         <motion.div
           style={{ y: blob1Y }}
-          className="absolute -top-40 -left-40 h-[500px] w-[500px] rounded-full"
-          aria-hidden
+          className="absolute -top-32 -left-32 w-[600px] h-[600px] rounded-full"
+          animate={{
+            scale: [1, 1.1, 1],
+          }}
+          transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut' }}
         >
-          <div className="h-full w-full bg-gradient-to-br from-green-300/30 to-emerald-300/20 rounded-full blur-3xl" />
+          <div
+            className="w-full h-full rounded-full opacity-70"
+            style={{
+              background: 'radial-gradient(circle, rgba(16,185,129,0.5) 0%, rgba(16,185,129,0) 70%)',
+              filter: 'blur(60px)',
+            }}
+          />
         </motion.div>
 
         <motion.div
           style={{ y: blob2Y }}
-          className="absolute top-1/2 -right-40 h-[600px] w-[600px] rounded-full"
-          aria-hidden
+          className="absolute top-1/4 -right-40 w-[700px] h-[700px] rounded-full"
+          animate={{
+            scale: [1, 1.15, 1],
+          }}
+          transition={{ duration: 12, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
         >
-          <div className="h-full w-full bg-gradient-to-br from-purple-300/20 to-blue-300/20 rounded-full blur-3xl" />
+          <div
+            className="w-full h-full rounded-full opacity-60"
+            style={{
+              background: 'radial-gradient(circle, rgba(168,85,247,0.45) 0%, rgba(168,85,247,0) 70%)',
+              filter: 'blur(80px)',
+            }}
+          />
         </motion.div>
 
-        {/* Grid pattern */}
+        <motion.div
+          style={{ y: blob3Y }}
+          className="absolute top-1/2 left-1/3 w-[500px] h-[500px] rounded-full"
+          animate={{
+            scale: [1, 1.2, 1],
+            x: [0, 30, 0],
+          }}
+          transition={{ duration: 14, repeat: Infinity, ease: 'easeInOut', delay: 2 }}
+        >
+          <div
+            className="w-full h-full rounded-full opacity-50"
+            style={{
+              background: 'radial-gradient(circle, rgba(59,130,246,0.4) 0%, rgba(59,130,246,0) 70%)',
+              filter: 'blur(70px)',
+            }}
+          />
+        </motion.div>
+
+        <motion.div
+          style={{ y: blob4Y }}
+          className="absolute bottom-0 right-1/4 w-[600px] h-[600px] rounded-full"
+          animate={{
+            scale: [1, 1.1, 1],
+          }}
+          transition={{ duration: 11, repeat: Infinity, ease: 'easeInOut', delay: 3 }}
+        >
+          <div
+            className="w-full h-full rounded-full opacity-55"
+            style={{
+              background: 'radial-gradient(circle, rgba(236,72,153,0.4) 0%, rgba(236,72,153,0) 70%)',
+              filter: 'blur(75px)',
+            }}
+          />
+        </motion.div>
+
+        <motion.div
+          className="absolute top-3/4 left-10 w-[400px] h-[400px] rounded-full"
+          animate={{
+            scale: [1, 1.3, 1],
+          }}
+          transition={{ duration: 9, repeat: Infinity, ease: 'easeInOut', delay: 4 }}
+        >
+          <div
+            className="w-full h-full rounded-full opacity-50"
+            style={{
+              background: 'radial-gradient(circle, rgba(245,158,11,0.4) 0%, rgba(245,158,11,0) 70%)',
+              filter: 'blur(60px)',
+            }}
+          />
+        </motion.div>
+
+        {/* Subtle grain texture overlay */}
         <div
-          className="absolute inset-0 opacity-[0.12]"
+          className="absolute inset-0 opacity-[0.4] mix-blend-overlay pointer-events-none"
           style={{
-            backgroundImage: `linear-gradient(rgba(16,185,129,0.15) 1px, transparent 1px), 
-                              linear-gradient(90deg, rgba(16,185,129,0.15) 1px, transparent 1px)`,
-            backgroundSize: '60px 60px',
+            backgroundImage:
+              "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.3'/%3E%3C/svg%3E\")",
+          }}
+        />
+
+        {/* Subtle grid pattern */}
+        <div
+          className="absolute inset-0 opacity-[0.08]"
+          style={{
+            backgroundImage: `linear-gradient(rgba(0,0,0,0.5) 1px, transparent 1px), 
+                              linear-gradient(90deg, rgba(0,0,0,0.5) 1px, transparent 1px)`,
+            backgroundSize: '80px 80px',
             maskImage: 'radial-gradient(ellipse 80% 60% at 50% 50%, black 30%, transparent 80%)',
+            WebkitMaskImage: 'radial-gradient(ellipse 80% 60% at 50% 50%, black 30%, transparent 80%)',
           }}
         />
       </div>
@@ -319,7 +407,6 @@ const Features: React.FC = () => {
           style={{ y: headingY }}
           className="grid grid-cols-12 gap-6 mb-16 lg:mb-20"
         >
-          {/* Left: label + heading */}
           <div className="col-span-12 lg:col-span-8">
             <ScrollReveal direction="right">
               <div className="flex items-center gap-3 mb-6">
@@ -330,7 +417,7 @@ const Features: React.FC = () => {
                   viewport={{ once: true }}
                   className="h-px bg-gradient-to-r from-green-500 to-transparent"
                 />
-                <span className="text-xs font-mono uppercase tracking-[0.25em] text-green-600 font-semibold">
+                <span className="text-xs font-mono uppercase tracking-[0.25em] text-green-700 font-bold">
                   What's inside
                 </span>
               </div>
@@ -359,35 +446,34 @@ const Features: React.FC = () => {
             </ScrollReveal>
           </div>
 
-          {/* Right: description */}
           <div className="col-span-12 lg:col-span-4 lg:pt-12">
             <ScrollReveal direction="left" delay={0.3}>
-              <p className="text-base lg:text-lg text-gray-600 leading-relaxed">
-                We didn't bolt features together. Every tool talks to the others — so your data, contacts, and chats move freely.
+              <p className="text-base lg:text-lg text-gray-700 leading-relaxed">
+                We didn't bolt features together. Every tool talks to the others — so your{' '}
+                <span className="text-gray-900 font-semibold">data, contacts, and chats</span> move freely.
               </p>
 
-              {/* Mini stats */}
-              <div className="flex items-center gap-6 mt-6 pt-6 border-t border-gray-200">
+              <div className="flex items-center gap-6 mt-6 pt-6 border-t border-gray-300/60">
                 <div>
                   <div className="text-2xl font-bold text-gray-900">
                     <AnimatedCounter value={50} suffix="K+" />
                   </div>
-                  <div className="text-xs text-gray-500 mt-0.5">Active users</div>
+                  <div className="text-xs text-gray-600 mt-0.5 font-medium">Active users</div>
                 </div>
-                <div className="w-px h-10 bg-gray-200" />
+                <div className="w-px h-10 bg-gray-300" />
                 <div>
                   <div className="text-2xl font-bold text-gray-900">
                     <AnimatedCounter value={99} suffix=".9%" />
                   </div>
-                  <div className="text-xs text-gray-500 mt-0.5">Uptime</div>
+                  <div className="text-xs text-gray-600 mt-0.5 font-medium">Uptime</div>
                 </div>
               </div>
             </ScrollReveal>
           </div>
         </motion.div>
 
-        {/* ✅ BENTO GRID - Premium Animated */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4 lg:gap-5 auto-rows-[220px] lg:auto-rows-[200px]">
+        {/* ✅ BENTO GRID */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-5 lg:gap-6 auto-rows-[220px] lg:auto-rows-[200px]">
           {mainFeatures.map((feature, index) => (
             <ScrollReveal
               key={feature.id}
@@ -395,7 +481,7 @@ const Features: React.FC = () => {
               direction="up"
               className={feature.gridArea}
             >
-              <TiltCard className="h-full w-full" intensity={6}>
+              <TiltCard className="h-full w-full" intensity={5}>
                 <FeatureCard feature={feature} />
               </TiltCard>
             </ScrollReveal>
@@ -405,53 +491,50 @@ const Features: React.FC = () => {
         {/* ✅ "And more" section */}
         <div className="mt-24 lg:mt-32">
           <ScrollReveal>
-            <div className="flex items-baseline justify-between mb-10 pb-4 border-b border-gray-200">
+            <div className="flex items-baseline justify-between mb-10 pb-4 border-b border-gray-300/60">
               <div>
-                <span className="text-xs font-mono uppercase tracking-widest text-green-600 font-semibold block mb-2">
+                <span className="text-xs font-mono uppercase tracking-widest text-green-700 font-bold block mb-2">
                   + Plus the essentials
                 </span>
                 <h3 className="text-2xl lg:text-3xl font-bold text-gray-900">
                   Stuff you'd expect, done right.
                 </h3>
               </div>
-              <span className="text-xs font-mono text-gray-400 hidden lg:block">
-                07 / 13
-              </span>
+              <span className="text-xs font-mono text-gray-500 hidden lg:block">07 / 13</span>
             </div>
           </ScrollReveal>
 
-          {/* Additional features list */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-2">
             {additionalFeatures.map((feature, index) => (
               <ScrollReveal key={feature.title} delay={index * 0.05}>
                 <motion.div
                   whileHover={{ x: 6 }}
                   transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-                  className="group flex items-center gap-4 py-5 border-b border-gray-200/70 hover:border-green-400/60 transition-colors duration-300 cursor-pointer"
+                  className="group flex items-center gap-4 py-5 border-b border-gray-300/50 hover:border-green-400/60 transition-colors duration-300 cursor-pointer"
                 >
                   <motion.div
                     whileHover={{ rotate: 12, scale: 1.15 }}
                     transition={{ type: 'spring', stiffness: 400, damping: 15 }}
-                    className="w-11 h-11 rounded-xl border border-white/80 flex items-center justify-center flex-shrink-0"
+                    className="w-11 h-11 rounded-xl border border-white flex items-center justify-center flex-shrink-0"
                     style={{
                       background:
-                        'linear-gradient(135deg, rgba(255,255,255,0.8) 0%, rgba(240,253,244,0.5) 100%)',
+                        'linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(240,253,244,0.6) 100%)',
                       backdropFilter: 'blur(10px)',
                       WebkitBackdropFilter: 'blur(10px)',
-                      boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.8), 0 2px 8px rgba(16,185,129,0.08)',
+                      boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.9), 0 4px 12px rgba(16,185,129,0.12)',
                     }}
                   >
-                    <feature.icon className="w-4 h-4 text-gray-600 group-hover:text-green-600 transition-colors" />
+                    <feature.icon className="w-4 h-4 text-gray-700 group-hover:text-green-600 transition-colors" />
                   </motion.div>
 
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-semibold text-gray-900 group-hover:text-green-700 transition-colors duration-300">
                       {feature.title}
                     </div>
-                    <div className="text-xs text-gray-500 mt-0.5">{feature.desc}</div>
+                    <div className="text-xs text-gray-600 mt-0.5">{feature.desc}</div>
                   </div>
 
-                  <span className="text-xs font-mono text-gray-400 group-hover:text-green-600 transition-colors">
+                  <span className="text-xs font-mono text-gray-500 group-hover:text-green-600 transition-colors">
                     0{index + 8}
                   </span>
                 </motion.div>
@@ -459,9 +542,8 @@ const Features: React.FC = () => {
             ))}
           </div>
 
-          {/* ✅ Bottom note */}
           <ScrollReveal delay={0.2}>
-            <div className="mt-16 flex items-center gap-3 text-sm text-gray-600">
+            <div className="mt-16 flex items-center gap-3 text-sm text-gray-700">
               <motion.div
                 animate={{ rotate: [0, 15, -15, 0] }}
                 transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
@@ -482,7 +564,6 @@ const Features: React.FC = () => {
         </div>
       </div>
 
-      {/* Shimmer animation keyframes */}
       <style>{`
         @keyframes shimmer {
           0% { background-position: 0% center; }
@@ -494,7 +575,7 @@ const Features: React.FC = () => {
 };
 
 // ============================================
-// ✅ FEATURE CARD COMPONENT
+// ✅ NEW PREMIUM FEATURE CARD
 // ============================================
 interface FeatureCardProps {
   feature: any;
@@ -507,129 +588,191 @@ const FeatureCard: React.FC<FeatureCardProps> = ({ feature }) => {
   return (
     <div
       ref={cardRef}
-      className="group relative h-full w-full rounded-3xl overflow-hidden border border-white/70 transition-all duration-500 cursor-pointer hover:border-white/95 hover:shadow-2xl"
+      className="group relative h-full w-full rounded-3xl overflow-hidden cursor-pointer transition-all duration-500"
       style={{
         transformStyle: 'preserve-3d',
-        background:
-          'linear-gradient(135deg, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0.4) 100%)',
-        backdropFilter: 'blur(20px) saturate(180%)',
-        WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-        boxShadow:
-          'inset 0 1px 1px rgba(255,255,255,0.8), 0 8px 32px rgba(31,38,135,0.1)',
       }}
     >
-      {/* Hover gradient bg */}
+      {/* ✅ Layer 1: Gradient border ring (premium look) */}
       <div
-        className={`absolute inset-0 bg-gradient-to-br ${feature.bgGradient} opacity-0 group-hover:opacity-100 transition-opacity duration-700`}
-      />
-
-      {/* Animated border glow on hover */}
-      <div
-        className="absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
+        className="absolute inset-0 rounded-3xl p-[1.5px] opacity-90 group-hover:opacity-100 transition-opacity duration-500"
         style={{
-          background: `radial-gradient(circle at 50% 0%, ${feature.accentColor}20 0%, transparent 60%)`,
+          background: `linear-gradient(135deg, ${feature.gradientFrom}50 0%, rgba(255,255,255,0.6) 30%, rgba(255,255,255,0.3) 70%, ${feature.gradientTo}40 100%)`,
         }}
-      />
-
-      {/* Top edge glass highlight */}
-      <div className="absolute top-0 left-[10%] right-[10%] h-px bg-gradient-to-r from-transparent via-white/90 to-transparent" />
-      <div className="absolute inset-x-0 top-0 h-1/3 bg-gradient-to-b from-white/40 to-transparent pointer-events-none rounded-t-3xl" />
-
-      {/* Floating accent orb */}
-      <motion.div
-        className="absolute -top-10 -right-10 w-32 h-32 rounded-full opacity-20 group-hover:opacity-40 transition-opacity duration-700 blur-2xl"
-        style={{ background: feature.accentColor }}
-        animate={{
-          scale: [1, 1.2, 1],
-          x: [0, 10, 0],
-          y: [0, -10, 0],
-        }}
-        transition={{
-          duration: 6,
-          repeat: Infinity,
-          ease: 'easeInOut',
-        }}
-      />
-
-      {/* Content */}
-      <div
-        className="relative h-full p-6 lg:p-7 flex flex-col z-10"
-        style={{ transform: 'translateZ(20px)' }}
       >
-        {/* Header */}
-        <div className="flex items-start justify-between mb-4">
-          <motion.div
-            initial={{ scale: 0, rotate: -180 }}
-            animate={isInView ? { scale: 1, rotate: 0 } : {}}
-            transition={{ type: 'spring', stiffness: 200, damping: 15, delay: 0.2 }}
-            whileHover={{ scale: 1.15, rotate: -8 }}
-            className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${feature.iconBg} flex items-center justify-center border border-white/40`}
+        {/* ✅ Layer 2: Inner glass card */}
+        <div
+          className="relative h-full w-full rounded-3xl overflow-hidden"
+          style={{
+            background:
+              'linear-gradient(135deg, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0.65) 100%)',
+            backdropFilter: 'blur(24px) saturate(180%)',
+            WebkitBackdropFilter: 'blur(24px) saturate(180%)',
+          }}
+        >
+          {/* ✅ Layer 3: Top glossy reflection */}
+          <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/60 via-white/20 to-transparent pointer-events-none" />
+
+          {/* ✅ Layer 4: Bottom color tint (subtle) */}
+          <div
+            className="absolute inset-x-0 bottom-0 h-2/3 opacity-30 group-hover:opacity-60 transition-opacity duration-700 pointer-events-none"
             style={{
-              boxShadow: `0 8px 24px ${feature.accentColor}50, inset 0 1px 1px rgba(255,255,255,0.4)`,
-              transform: 'translateZ(40px)',
+              background: `radial-gradient(ellipse at bottom, ${feature.gradientFrom}25 0%, transparent 70%)`,
             }}
-          >
-            <feature.icon className="w-6 h-6 text-white drop-shadow-sm" />
-          </motion.div>
+          />
 
+          {/* ✅ Layer 5: Animated floating orb */}
           <motion.div
-            initial={{ opacity: 0, x: -10 }}
-            animate={isInView ? { opacity: 1, x: 0 } : {}}
-            transition={{ delay: 0.4 }}
-          >
-            <ArrowUpRight className="w-5 h-5 text-gray-400 group-hover:text-gray-900 group-hover:translate-x-1 group-hover:-translate-y-1 transition-all duration-300" />
-          </motion.div>
-        </div>
+            className="absolute -top-16 -right-16 w-40 h-40 rounded-full pointer-events-none"
+            style={{
+              background: `radial-gradient(circle, ${feature.gradientFrom}50 0%, ${feature.gradientTo}20 50%, transparent 80%)`,
+              filter: 'blur(20px)',
+            }}
+            animate={{
+              scale: [1, 1.3, 1],
+              x: [0, -10, 0],
+              y: [0, 10, 0],
+              opacity: [0.4, 0.7, 0.4],
+            }}
+            transition={{
+              duration: 8,
+              repeat: Infinity,
+              ease: 'easeInOut',
+            }}
+          />
 
-        {/* Title + Description */}
-        <div className="flex-1">
-          <h3 className="text-xl lg:text-2xl font-bold text-gray-900 mb-2 tracking-tight group-hover:translate-x-1 transition-transform duration-500">
-            {feature.title}
-          </h3>
-          <p className="text-sm text-gray-600 leading-relaxed">{feature.description}</p>
+          {/* ✅ Layer 6: Hover gradient sweep */}
+          <div
+            className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"
+            style={{
+              background: `linear-gradient(135deg, transparent 0%, ${feature.gradientFrom}10 50%, transparent 100%)`,
+            }}
+          />
 
-          {feature.details && (
-            <p className="text-sm text-gray-500 mt-3 leading-relaxed">{feature.details}</p>
-          )}
-        </div>
-
-        {/* Visual mockups */}
-        {feature.mockup === 'messaging' && <MessagingMockup color={feature.accentColor} />}
-        {feature.mockup === 'bot' && <BotMockup color={feature.accentColor} />}
-        {feature.mockup === 'inbox' && <InboxMockup color={feature.accentColor} />}
-        {feature.mockup === 'automation' && <AutomationMockup color={feature.accentColor} />}
-        {feature.mockup === 'analytics' && <AnalyticsMockup color={feature.accentColor} />}
-        {feature.mockup === 'team' && <TeamMockup color={feature.accentColor} />}
-        {feature.mockup === 'instagram' && <InstagramMockup color={feature.accentColor} />}
-
-        {/* Stat for messaging card */}
-        {feature.stat && (
+          {/* ✅ Layer 7: Top accent line */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={isInView ? { opacity: 1, y: 0 } : {}}
-            transition={{ delay: 0.5, duration: 0.6 }}
-            className="absolute bottom-6 right-6 text-right"
+            className="absolute top-0 left-0 h-[2px] rounded-full"
+            style={{
+              background: `linear-gradient(90deg, transparent, ${feature.gradientFrom}, transparent)`,
+            }}
+            initial={{ width: '0%', left: '50%' }}
+            animate={isInView ? { width: '60%', left: '20%' } : {}}
+            transition={{ duration: 1.2, delay: 0.3, ease: 'easeOut' }}
+          />
+
+          {/* ✅ Content */}
+          <div
+            className="relative h-full p-6 lg:p-7 flex flex-col z-10"
             style={{ transform: 'translateZ(30px)' }}
           >
-            <div className="flex items-center justify-end gap-1.5 mb-1">
-              <TrendingUp className="w-3 h-3 text-green-600" />
-              <span className="text-[10px] font-bold text-green-600">{feature.growth}</span>
+            {/* Header */}
+            <div className="flex items-start justify-between mb-4">
+              <motion.div
+                initial={{ scale: 0, rotate: -180 }}
+                animate={isInView ? { scale: 1, rotate: 0 } : {}}
+                transition={{ type: 'spring', stiffness: 200, damping: 15, delay: 0.2 }}
+                whileHover={{ scale: 1.15, rotate: -8 }}
+                className="relative w-14 h-14 rounded-2xl flex items-center justify-center"
+                style={{
+                  background: `linear-gradient(135deg, ${feature.gradientFrom}, ${feature.gradientTo})`,
+                  boxShadow: `0 12px 32px ${feature.gradientFrom}50, inset 0 1px 2px rgba(255,255,255,0.5), inset 0 -2px 2px rgba(0,0,0,0.1)`,
+                  transform: 'translateZ(50px)',
+                }}
+              >
+                {/* Glossy highlight on icon */}
+                <div className="absolute inset-x-2 top-1 h-1/3 rounded-t-xl bg-gradient-to-b from-white/40 to-transparent pointer-events-none" />
+                <feature.icon className="w-6 h-6 text-white drop-shadow-md relative z-10" />
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, x: -10 }}
+                animate={isInView ? { opacity: 1, x: 0 } : {}}
+                transition={{ delay: 0.4 }}
+                className="w-9 h-9 rounded-full flex items-center justify-center border border-white/60 transition-all duration-300 group-hover:scale-110"
+                style={{
+                  background: 'rgba(255,255,255,0.6)',
+                  backdropFilter: 'blur(10px)',
+                  boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.8)',
+                }}
+              >
+                <ArrowUpRight className="w-4 h-4 text-gray-700 group-hover:text-gray-900 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all duration-300" />
+              </motion.div>
             </div>
-            <div className="text-3xl lg:text-4xl font-bold bg-gradient-to-br from-gray-900 to-gray-700 bg-clip-text text-transparent">
-              <AnimatedCounter value={feature.stat} suffix="K+" />
+
+            {/* Title + Description */}
+            <div className="flex-1">
+              <h3 className="text-xl lg:text-2xl font-bold text-gray-900 mb-2 tracking-tight group-hover:translate-x-1 transition-transform duration-500">
+                {feature.title}
+              </h3>
+              <p className="text-sm text-gray-700 leading-relaxed font-medium">
+                {feature.description}
+              </p>
+
+              {feature.details && (
+                <p className="text-sm text-gray-600 mt-3 leading-relaxed">{feature.details}</p>
+              )}
             </div>
-            <div className="text-[10px] uppercase tracking-wider text-gray-500 font-semibold mt-0.5">
-              {feature.statLabel}
-            </div>
-          </motion.div>
-        )}
+
+            {/* Visual mockups */}
+            {feature.mockup === 'messaging' && <MessagingMockup color={feature.accentColor} />}
+            {feature.mockup === 'bot' && <BotMockup color={feature.accentColor} />}
+            {feature.mockup === 'inbox' && <InboxMockup color={feature.accentColor} />}
+            {feature.mockup === 'automation' && <AutomationMockup color={feature.accentColor} />}
+            {feature.mockup === 'analytics' && <AnalyticsMockup color={feature.accentColor} />}
+            {feature.mockup === 'team' && <TeamMockup color={feature.accentColor} />}
+            {feature.mockup === 'instagram' && <InstagramMockup color={feature.accentColor} />}
+
+            {/* Stat */}
+            {feature.stat && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={isInView ? { opacity: 1, y: 0 } : {}}
+                transition={{ delay: 0.5, duration: 0.6 }}
+                className="absolute bottom-6 right-6 text-right"
+                style={{ transform: 'translateZ(40px)' }}
+              >
+                <div
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full mb-2"
+                  style={{
+                    background: `${feature.accentColor}20`,
+                    border: `1px solid ${feature.accentColor}40`,
+                  }}
+                >
+                  <TrendingUp className="w-3 h-3" style={{ color: feature.accentColor }} />
+                  <span className="text-[10px] font-bold" style={{ color: feature.accentColor }}>
+                    {feature.growth}
+                  </span>
+                </div>
+                <div
+                  className="text-3xl lg:text-4xl font-extrabold bg-clip-text text-transparent"
+                  style={{
+                    backgroundImage: `linear-gradient(135deg, ${feature.gradientFrom}, ${feature.gradientTo})`,
+                  }}
+                >
+                  <AnimatedCounter value={feature.stat} suffix={feature.statSuffix} />
+                </div>
+                <div className="text-[10px] uppercase tracking-wider text-gray-600 font-bold mt-0.5">
+                  {feature.statLabel}
+                </div>
+              </motion.div>
+            )}
+          </div>
+        </div>
       </div>
+
+      {/* ✅ Outer glow on hover */}
+      <div
+        className="absolute -inset-1 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none -z-10 blur-2xl"
+        style={{
+          background: `linear-gradient(135deg, ${feature.gradientFrom}, ${feature.gradientTo})`,
+        }}
+      />
     </div>
   );
 };
 
 // ============================================
-// ✅ ANIMATED MOCKUPS - Light Theme
+// ✅ ANIMATED MOCKUPS
 // ============================================
 
 const MessagingMockup: React.FC<{ color: string }> = ({ color }) => {
@@ -639,7 +782,7 @@ const MessagingMockup: React.FC<{ color: string }> = ({ color }) => {
   return (
     <div
       ref={ref}
-      className="absolute bottom-20 left-6 right-32 opacity-80 group-hover:opacity-100 transition-opacity duration-500"
+      className="absolute bottom-20 left-6 right-32 opacity-90 group-hover:opacity-100 transition-opacity duration-500"
       style={{ transform: 'translateZ(20px)' }}
     >
       <div className="space-y-2.5">
@@ -652,10 +795,10 @@ const MessagingMockup: React.FC<{ color: string }> = ({ color }) => {
             className="flex items-center gap-2"
           >
             <div
-              className="w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center text-[10px] font-bold text-white"
+              className="w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center text-[10px] font-bold text-white shadow-lg"
               style={{
                 background: `linear-gradient(135deg, ${color}, ${color}cc)`,
-                boxShadow: `0 2px 8px ${color}40`,
+                boxShadow: `0 4px 12px ${color}50`,
               }}
             >
               {['A', 'B', 'C'][i]}
@@ -664,12 +807,13 @@ const MessagingMockup: React.FC<{ color: string }> = ({ color }) => {
               initial={{ width: 0 }}
               animate={isInView ? { width: `${width}%` } : {}}
               transition={{ delay: 0.4 + i * 0.15, duration: 0.8, ease: 'easeOut' }}
-              className="h-2 rounded-full"
+              className="h-2.5 rounded-full"
               style={{
-                background: `linear-gradient(90deg, ${color}40, ${color}20)`,
+                background: `linear-gradient(90deg, ${color}60, ${color}25)`,
+                boxShadow: `inset 0 1px 1px rgba(255,255,255,0.5)`,
               }}
             />
-            <CheckCircle2 className="w-3 h-3 flex-shrink-0" style={{ color }} />
+            <CheckCircle2 className="w-3.5 h-3.5 flex-shrink-0" style={{ color }} />
           </motion.div>
         ))}
       </div>
@@ -684,7 +828,7 @@ const InboxMockup: React.FC<{ color: string }> = ({ color }) => {
   return (
     <div
       ref={ref}
-      className="absolute bottom-6 right-6 opacity-80 group-hover:opacity-100 transition-opacity duration-500"
+      className="absolute bottom-6 right-6 opacity-90 group-hover:opacity-100 transition-opacity duration-500"
       style={{ transform: 'translateZ(15px)' }}
     >
       <div className="flex -space-x-2">
@@ -694,7 +838,7 @@ const InboxMockup: React.FC<{ color: string }> = ({ color }) => {
             initial={{ scale: 0, x: 20 }}
             animate={isInView ? { scale: 1, x: 0 } : {}}
             transition={{ type: 'spring', stiffness: 200, delay: 0.3 + i * 0.1 }}
-            className="w-9 h-9 rounded-full border-2 border-white flex items-center justify-center text-[11px] font-bold text-white shadow-md"
+            className="w-9 h-9 rounded-full border-2 border-white flex items-center justify-center text-[11px] font-bold text-white shadow-lg"
             style={{
               background: `linear-gradient(135deg, ${color}, ${color}aa)`,
             }}
@@ -706,9 +850,9 @@ const InboxMockup: React.FC<{ color: string }> = ({ color }) => {
           initial={{ scale: 0 }}
           animate={isInView ? { scale: 1 } : {}}
           transition={{ type: 'spring', stiffness: 200, delay: 0.6 }}
-          className="w-9 h-9 rounded-full border-2 border-white flex items-center justify-center text-[10px] font-bold text-gray-700 shadow-md"
+          className="w-9 h-9 rounded-full border-2 border-white flex items-center justify-center text-[10px] font-bold text-gray-800 shadow-lg"
           style={{
-            background: 'rgba(255,255,255,0.9)',
+            background: 'rgba(255,255,255,0.95)',
             backdropFilter: 'blur(8px)',
           }}
         >
@@ -716,12 +860,12 @@ const InboxMockup: React.FC<{ color: string }> = ({ color }) => {
         </motion.div>
       </div>
       <div className="mt-3 text-right">
-        <div className="inline-flex items-center gap-1.5 text-[10px] font-semibold text-green-600">
+        <div className="inline-flex items-center gap-1.5 text-[10px] font-bold text-green-700 px-2 py-1 rounded-full bg-green-100/70 backdrop-blur-sm">
           <span className="relative flex h-2 w-2">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
             <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
           </span>
-          16 online now
+          16 online
         </div>
       </div>
     </div>
@@ -741,7 +885,7 @@ const BotMockup: React.FC<{ color: string }> = ({ color }) => {
   return (
     <div
       ref={ref}
-      className="absolute bottom-16 left-6 right-6 opacity-90 group-hover:opacity-100 transition-opacity duration-500"
+      className="absolute bottom-16 left-6 right-6 opacity-95 group-hover:opacity-100 transition-opacity duration-500"
       style={{ transform: 'translateZ(20px)' }}
     >
       <div className="relative h-28">
@@ -752,26 +896,24 @@ const BotMockup: React.FC<{ color: string }> = ({ color }) => {
               animate={isInView ? { scale: 1, opacity: 1 } : {}}
               transition={{ delay: 0.3 + i * 0.2, type: 'spring', stiffness: 200 }}
               whileHover={{ scale: 1.1, y: -2 }}
-              className="absolute px-3 py-1.5 rounded-lg text-[9px] font-bold flex items-center gap-1.5 shadow-md"
+              className="absolute px-3 py-1.5 rounded-lg text-[10px] font-bold flex items-center gap-1.5 shadow-lg"
               style={{
                 left: `${node.x}px`,
                 top: `${node.y}px`,
-                background: `linear-gradient(135deg, white, ${color}15)`,
-                border: `1.5px solid ${color}60`,
+                background: `linear-gradient(135deg, white, ${color}10)`,
+                border: `1.5px solid ${color}70`,
                 color: color,
                 backdropFilter: 'blur(8px)',
+                boxShadow: `0 4px 12px ${color}25`,
               }}
             >
-              <div
-                className="w-1.5 h-1.5 rounded-full"
-                style={{ background: color }}
-              />
+              <div className="w-1.5 h-1.5 rounded-full" style={{ background: color }} />
               {node.label}
             </motion.div>
             {i < 2 && (
               <motion.svg
                 initial={{ pathLength: 0, opacity: 0 }}
-                animate={isInView ? { pathLength: 1, opacity: 0.6 } : {}}
+                animate={isInView ? { pathLength: 1, opacity: 0.7 } : {}}
                 transition={{ delay: 0.5 + i * 0.2, duration: 0.6 }}
                 className="absolute"
                 style={{
@@ -795,7 +937,6 @@ const BotMockup: React.FC<{ color: string }> = ({ color }) => {
           </React.Fragment>
         ))}
 
-        {/* Pulse dot at end */}
         <motion.div
           animate={{ scale: [1, 1.5, 1], opacity: [0.6, 1, 0.6] }}
           transition={{ duration: 2, repeat: Infinity }}
@@ -804,7 +945,7 @@ const BotMockup: React.FC<{ color: string }> = ({ color }) => {
             left: '160px',
             top: '78px',
             background: color,
-            boxShadow: `0 0 12px ${color}`,
+            boxShadow: `0 0 16px ${color}, 0 0 32px ${color}80`,
           }}
         />
       </div>
@@ -819,7 +960,7 @@ const AutomationMockup: React.FC<{ color: string }> = ({ color }) => {
   return (
     <div
       ref={ref}
-      className="absolute bottom-6 left-6 right-6 opacity-80 group-hover:opacity-100 transition-opacity duration-500"
+      className="absolute bottom-6 left-6 right-6 opacity-90 group-hover:opacity-100 transition-opacity duration-500"
       style={{ transform: 'translateZ(15px)' }}
     >
       <div className="flex items-center gap-1.5 flex-wrap">
@@ -841,11 +982,12 @@ const AutomationMockup: React.FC<{ color: string }> = ({ color }) => {
               </motion.span>
             ) : (
               <span
-                className="px-2.5 py-1.5 rounded-lg text-[10px] font-mono font-bold shadow-sm"
+                className="px-2.5 py-1.5 rounded-lg text-[10px] font-mono font-bold shadow-md"
                 style={{
                   background: `linear-gradient(135deg, white, ${color}15)`,
                   color: color,
-                  border: `1.5px solid ${color}50`,
+                  border: `1.5px solid ${color}60`,
+                  boxShadow: `0 2px 8px ${color}20`,
                 }}
               >
                 {text}
@@ -865,7 +1007,7 @@ const AnalyticsMockup: React.FC<{ color: string }> = ({ color }) => {
   return (
     <div
       ref={ref}
-      className="absolute bottom-6 left-6 right-6 opacity-80 group-hover:opacity-100 transition-opacity duration-500"
+      className="absolute bottom-6 left-6 right-6 opacity-90 group-hover:opacity-100 transition-opacity duration-500"
       style={{ transform: 'translateZ(15px)' }}
     >
       <div className="flex items-end gap-1 h-14">
@@ -877,8 +1019,8 @@ const AnalyticsMockup: React.FC<{ color: string }> = ({ color }) => {
             transition={{ delay: 0.3 + i * 0.08, duration: 0.6, ease: 'easeOut' }}
             className="flex-1 rounded-t-md"
             style={{
-              background: `linear-gradient(to top, ${color}, ${color}40)`,
-              boxShadow: `0 -2px 12px ${color}40`,
+              background: `linear-gradient(to top, ${color}, ${color}50)`,
+              boxShadow: `0 -4px 16px ${color}50`,
             }}
           />
         ))}
@@ -894,7 +1036,7 @@ const TeamMockup: React.FC<{ color: string }> = ({ color }) => {
   return (
     <div
       ref={ref}
-      className="absolute bottom-6 right-6 opacity-80 group-hover:opacity-100 transition-opacity duration-500"
+      className="absolute bottom-6 right-6 opacity-90 group-hover:opacity-100 transition-opacity duration-500"
       style={{ transform: 'translateZ(15px)' }}
     >
       <div className="flex items-center gap-2">
@@ -908,14 +1050,14 @@ const TeamMockup: React.FC<{ color: string }> = ({ color }) => {
               className="w-7 h-7 rounded-full border-2 border-white shadow-md flex items-center justify-center text-[10px] font-bold text-white"
               style={{
                 background: `linear-gradient(135deg, ${color}, ${color}cc)`,
-                opacity: 1 - i * 0.1,
+                opacity: 1 - i * 0.08,
               }}
             >
               {String.fromCharCode(64 + i)}
             </motion.div>
           ))}
         </div>
-        <span className="text-[10px] font-mono text-gray-600 ml-1 font-semibold">+8</span>
+        <span className="text-[10px] font-mono text-gray-700 ml-1 font-bold">+8</span>
       </div>
     </div>
   );
@@ -928,7 +1070,7 @@ const InstagramMockup: React.FC<{ color: string }> = () => {
   return (
     <div
       ref={ref}
-      className="absolute bottom-6 left-6 right-6 opacity-90 group-hover:opacity-100 transition-opacity duration-500"
+      className="absolute bottom-6 left-6 right-6 opacity-95 group-hover:opacity-100 transition-opacity duration-500"
       style={{ transform: 'translateZ(15px)' }}
     >
       <div className="flex items-center gap-3">
@@ -937,9 +1079,10 @@ const InstagramMockup: React.FC<{ color: string }> = () => {
           animate={isInView ? { scale: 1, rotate: 0 } : {}}
           transition={{ type: 'spring', stiffness: 200, delay: 0.3 }}
           whileHover={{ scale: 1.1, rotate: 12 }}
-          className="w-10 h-10 rounded-xl flex items-center justify-center shadow-lg"
+          className="w-10 h-10 rounded-xl flex items-center justify-center shadow-xl"
           style={{
             background: 'linear-gradient(135deg, #833ab4 0%, #fd1d1d 50%, #fcb045 100%)',
+            boxShadow: '0 8px 24px rgba(225, 48, 108, 0.4)',
           }}
         >
           <Instagram className="w-5 h-5 text-white" />
@@ -949,13 +1092,13 @@ const InstagramMockup: React.FC<{ color: string }> = () => {
             initial={{ width: 0 }}
             animate={isInView ? { width: '70%' } : {}}
             transition={{ delay: 0.5, duration: 0.6 }}
-            className="h-2 bg-gradient-to-r from-[#833ab4] to-[#fd1d1d] rounded-full opacity-60"
+            className="h-2 bg-gradient-to-r from-[#833ab4] to-[#fd1d1d] rounded-full opacity-70"
           />
           <motion.div
             initial={{ width: 0 }}
             animate={isInView ? { width: '50%' } : {}}
             transition={{ delay: 0.6, duration: 0.6 }}
-            className="h-2 bg-gradient-to-r from-[#fd1d1d] to-[#fcb045] rounded-full opacity-60"
+            className="h-2 bg-gradient-to-r from-[#fd1d1d] to-[#fcb045] rounded-full opacity-70"
           />
         </div>
       </div>
