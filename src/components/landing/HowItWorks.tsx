@@ -27,9 +27,9 @@ const HowItWorks: React.FC = () => {
         '2-day free trial unlocked instantly',
         'Skip onboarding if you want'
       ],
-      accentColor: '#10b981',
-      gradientFrom: 'from-green-500/20',
-      gradientTo: 'to-emerald-500/5',
+      accentColor: '#16a34a',
+      gradientFrom: 'from-green-500/10',
+      gradientTo: 'to-emerald-500/2',
       iconBg: 'from-green-500 to-emerald-600',
     },
     {
@@ -44,9 +44,9 @@ const HowItWorks: React.FC = () => {
         'Auto phone number verification',
         'No webhook config needed'
       ],
-      accentColor: '#3b82f6',
-      gradientFrom: 'from-blue-500/20',
-      gradientTo: 'to-cyan-500/5',
+      accentColor: '#2563eb',
+      gradientFrom: 'from-blue-500/10',
+      gradientTo: 'to-cyan-500/2',
       iconBg: 'from-blue-500 to-cyan-600',
     },
     {
@@ -61,9 +61,9 @@ const HowItWorks: React.FC = () => {
         'Smart duplicate detection',
         'Auto-tag by source'
       ],
-      accentColor: '#a855f7',
-      gradientFrom: 'from-purple-500/20',
-      gradientTo: 'to-pink-500/5',
+      accentColor: '#9333ea',
+      gradientFrom: 'from-purple-500/10',
+      gradientTo: 'to-pink-500/2',
       iconBg: 'from-purple-500 to-pink-600',
     },
     {
@@ -78,9 +78,9 @@ const HowItWorks: React.FC = () => {
         'Variable personalization',
         'Live delivery tracking'
       ],
-      accentColor: '#f59e0b',
-      gradientFrom: 'from-amber-500/20',
-      gradientTo: 'to-orange-500/5',
+      accentColor: '#d97706',
+      gradientFrom: 'from-amber-500/10',
+      gradientTo: 'to-orange-500/2',
       iconBg: 'from-amber-500 to-orange-600',
     }
   ];
@@ -94,22 +94,22 @@ const HowItWorks: React.FC = () => {
   }, [steps.length]);
 
   return (
-    <section ref={sectionRef} className="relative py-24 lg:py-32 overflow-hidden">
+    <section ref={sectionRef} className="relative py-24 lg:py-32 overflow-hidden bg-white">
 
-      {/* ✅ Background */}
-      <div className="absolute inset-0 -z-10 bg-gradient-to-b from-[#0a0e27] via-[#0c1233] to-[#0a0e27]">
+      {/* ✅ Light Mode Background with soft radial blobs & grid lines */}
+      <div className="absolute inset-0 -z-10 bg-gradient-to-b from-white via-slate-50 to-white">
         <div className="absolute inset-0"
           style={{
             background: `
-              radial-gradient(ellipse 50% 40% at 80% 20%, rgba(59, 130, 246, 0.1) 0%, transparent 60%),
-              radial-gradient(ellipse 50% 40% at 20% 80%, rgba(168, 85, 247, 0.08) 0%, transparent 60%)
+              radial-gradient(ellipse 50% 40% at 80% 20%, rgba(34, 197, 94, 0.05) 0%, transparent 60%),
+              radial-gradient(ellipse 50% 40% at 20% 80%, rgba(59, 130, 246, 0.04) 0%, transparent 60%)
             `,
           }}
         />
-        <div className="absolute inset-0 opacity-[0.025]"
+        <div className="absolute inset-0 opacity-[0.015]"
           style={{
-            backgroundImage: `linear-gradient(rgba(255,255,255,0.3) 1px, transparent 1px), 
-                              linear-gradient(90deg, rgba(255,255,255,0.3) 1px, transparent 1px)`,
+            backgroundImage: `linear-gradient(rgba(0,0,0,0.3) 1px, transparent 1px), 
+                              linear-gradient(90deg, rgba(0,0,0,0.3) 1px, transparent 1px)`,
             backgroundSize: '60px 60px',
           }}
         />
@@ -121,23 +121,23 @@ const HowItWorks: React.FC = () => {
         <div className="grid grid-cols-12 gap-6 mb-16 lg:mb-24">
           <div className="col-span-12 lg:col-span-7">
             <div className="flex items-center gap-3 mb-6">
-              <div className="h-px w-12 bg-white/20" />
-              <span className="text-xs font-mono uppercase tracking-[0.2em] text-gray-400">
+              <div className="h-px w-12 bg-gray-200" />
+              <span className="text-xs font-mono uppercase tracking-[0.2em] text-gray-500 font-bold">
                 The setup
               </span>
             </div>
 
             <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-[1.05] tracking-tight">
-              <span className="text-white">From signup to first send</span>
+              <span className="text-gray-950">From signup to first send</span>
               <br />
-              <span className="bg-gradient-to-r from-green-400 to-emerald-300 bg-clip-text text-transparent italic">
+              <span className="bg-gradient-to-r from-green-600 to-emerald-500 bg-clip-text text-transparent italic">
                 in under 6 minutes.
               </span>
             </h2>
           </div>
 
           <div className="col-span-12 lg:col-span-5 lg:pt-16">
-            <p className="text-base lg:text-lg text-gray-400 leading-relaxed mb-4">
+            <p className="text-base lg:text-lg text-gray-600 leading-relaxed mb-4">
               We've watched 800+ businesses go through onboarding. We timed every step. We removed every friction point.
             </p>
             <div className="inline-flex items-center gap-2 text-xs font-mono text-gray-500">
@@ -163,8 +163,8 @@ const HowItWorks: React.FC = () => {
                       rounded-2xl overflow-hidden
                       transition-all duration-500 ease-out
                       ${isActive 
-                        ? 'bg-white/[0.06] backdrop-blur-xl border border-white/[0.15] scale-[1.02]' 
-                        : 'bg-white/[0.02] backdrop-blur-sm border border-white/[0.05] hover:bg-white/[0.04] hover:border-white/[0.1]'
+                        ? 'bg-white shadow-[0_10px_25px_rgba(0,0,0,0.04)] border border-gray-200/80 scale-[1.02]' 
+                        : 'bg-white/40 backdrop-blur-sm border border-gray-100 hover:bg-white/80 hover:border-gray-200/80 hover:shadow-sm'
                       }
                     `}
                   >
@@ -191,17 +191,17 @@ const HowItWorks: React.FC = () => {
                           flex items-center justify-center transition-all duration-500
                           ${isActive 
                             ? `bg-gradient-to-br ${step.iconBg} shadow-lg` 
-                            : 'bg-white/5 border border-white/10'
+                            : 'bg-gray-50 border border-gray-100'
                           }
                         `}
                         style={{
-                          boxShadow: isActive ? `0 8px 24px ${step.accentColor}40` : 'none',
+                          boxShadow: isActive ? `0 8px 24px ${step.accentColor}30` : 'none',
                         }}
                         >
                           {isActive ? (
                             <step.icon className="w-5 h-5 text-white" />
                           ) : (
-                            <span className="text-xs font-mono font-bold text-gray-500">
+                            <span className="text-xs font-mono font-bold text-gray-400">
                               {step.step}
                             </span>
                           )}
@@ -212,19 +212,19 @@ const HowItWorks: React.FC = () => {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
                           <span className={`text-xs font-mono uppercase tracking-wider transition-colors
-                            ${isActive ? 'text-gray-400' : 'text-gray-600'}
+                            ${isActive ? 'text-gray-500' : 'text-gray-400'}
                           `}>
                             Step {step.step}
                           </span>
-                          <span className="text-xs text-gray-600">·</span>
+                          <span className="text-xs text-gray-300">·</span>
                           <span className={`text-xs font-mono transition-colors
-                            ${isActive ? 'text-gray-400' : 'text-gray-600'}
+                            ${isActive ? 'text-gray-500' : 'text-gray-400'}
                           `}>
                             {step.time}
                           </span>
                         </div>
                         <h3 className={`text-base lg:text-lg font-semibold transition-colors
-                          ${isActive ? 'text-white' : 'text-gray-400 group-hover:text-gray-300'}
+                          ${isActive ? 'text-gray-950' : 'text-gray-500 group-hover:text-gray-700'}
                         `}>
                           {step.title}
                         </h3>
@@ -254,7 +254,7 @@ const HowItWorks: React.FC = () => {
               {steps.map((step, i) => (
                 <div
                   key={i}
-                  className="h-1 rounded-full flex-1 overflow-hidden bg-white/5"
+                  className="h-1 rounded-full flex-1 overflow-hidden bg-gray-100"
                 >
                   <div
                     className="h-full transition-all duration-500 ease-out"
@@ -279,9 +279,9 @@ const HowItWorks: React.FC = () => {
                   <div
                     key={step.step}
                     className="relative rounded-3xl overflow-hidden
-                      bg-white/[0.04] backdrop-blur-2xl
-                      border border-white/[0.1]
-                      shadow-[0_20px_60px_rgba(0,0,0,0.3)]
+                      bg-white/85 backdrop-blur-2xl
+                      border border-gray-200/60
+                      shadow-[0_20px_50px_rgba(0,0,0,0.06)]
                       p-8 lg:p-10
                       animate-fadeIn"
                   >
@@ -291,19 +291,19 @@ const HowItWorks: React.FC = () => {
                     {/* Shimmer */}
                     <div className="absolute inset-0 pointer-events-none"
                       style={{
-                        background: 'linear-gradient(135deg, rgba(255,255,255,0.08) 0%, transparent 50%)',
+                        background: 'linear-gradient(135deg, rgba(255,255,255,0.6) 0%, transparent 50%)',
                       }}
                     />
 
                     {/* Top edge */}
                     <div className="absolute top-0 left-[10%] right-[10%] h-px 
-                      bg-gradient-to-r from-transparent via-white/30 to-transparent" />
+                      bg-gradient-to-r from-transparent via-white/80 to-transparent" />
 
                     <div className="relative">
 
                       {/* Big step number watermark */}
                       <div className="absolute top-0 right-0 text-[8rem] lg:text-[10rem] font-bold 
-                        bg-gradient-to-br from-white/[0.06] to-transparent bg-clip-text text-transparent
+                        bg-gradient-to-br from-gray-900/[0.04] to-transparent bg-clip-text text-transparent
                         leading-none select-none pointer-events-none">
                         {step.step}
                       </div>
@@ -313,19 +313,19 @@ const HowItWorks: React.FC = () => {
                         flex items-center justify-center mb-6
                         shadow-lg`}
                         style={{
-                          boxShadow: `0 12px 32px ${step.accentColor}50`,
+                          boxShadow: `0 12px 32px ${step.accentColor}40`,
                         }}
                       >
                         <step.icon className="w-8 h-8 text-white" />
                       </div>
 
                       {/* Title */}
-                      <h3 className="text-3xl lg:text-4xl font-bold text-white mb-4 tracking-tight">
+                      <h3 className="text-3xl lg:text-4xl font-bold text-gray-950 mb-4 tracking-tight">
                         {step.title}
                       </h3>
 
                       {/* Description */}
-                      <p className="text-base lg:text-lg text-gray-300 mb-8 leading-relaxed max-w-xl">
+                      <p className="text-base lg:text-lg text-gray-600 mb-8 leading-relaxed max-w-xl">
                         {step.description}
                       </p>
 
@@ -334,28 +334,28 @@ const HowItWorks: React.FC = () => {
                         {step.details.map((detail, i) => (
                           <div
                             key={detail}
-                            className="flex items-center gap-3 text-gray-300"
+                            className="flex items-center gap-3 text-gray-700"
                             style={{
                               animation: `slideUp 0.4s ease-out ${i * 100}ms backwards`,
                             }}
                           >
                             <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0"
-                              style={{ backgroundColor: `${step.accentColor}20`, border: `1px solid ${step.accentColor}50` }}
+                              style={{ backgroundColor: `${step.accentColor}15`, border: `1px solid ${step.accentColor}30` }}
                             >
                               <Check className="w-3 h-3" style={{ color: step.accentColor }} strokeWidth={3} />
                             </div>
-                            <span className="text-sm lg:text-base">{detail}</span>
+                            <span className="text-sm lg:text-base font-medium">{detail}</span>
                           </div>
                         ))}
                       </div>
 
                       {/* Bottom meta */}
-                      <div className="mt-8 pt-6 border-t border-white/10 flex items-center justify-between">
+                      <div className="mt-8 pt-6 border-t border-gray-200/60 flex items-center justify-between">
                         <div className="flex items-center gap-2 text-xs font-mono text-gray-500">
                           <Clock className="w-3.5 h-3.5" />
                           Takes about {step.time}
                         </div>
-                        <div className="text-xs font-mono text-gray-600">
+                        <div className="text-xs font-mono text-gray-400">
                           {step.step} / 04
                         </div>
                       </div>
@@ -369,20 +369,20 @@ const HowItWorks: React.FC = () => {
 
         {/* ✅ Bottom CTA - minimal */}
         <div className="mt-20 lg:mt-24 flex flex-col items-center text-center">
-          <p className="text-sm font-mono text-gray-500 mb-6 max-w-md">
+          <p className="text-sm font-mono text-gray-600 mb-6 max-w-md">
             Watch a real founder go through this entire flow on a screen recording.
           </p>
 
           <Link
             to="/signup"
             className="group inline-flex items-center gap-3 
-              bg-gradient-to-r from-green-500 to-emerald-500
+              bg-gradient-to-r from-green-600 to-emerald-500
               text-white px-8 py-4 rounded-full text-[15px] font-semibold
-              shadow-[0_8px_32px_rgba(16,185,129,0.4)]
-              hover:shadow-[0_12px_40px_rgba(16,185,129,0.6)]
+              shadow-[0_8px_32px_rgba(16,185,129,0.3)]
+              hover:shadow-[0_12px_40px_rgba(16,185,129,0.5)]
               hover:-translate-y-0.5
               transition-all duration-500 ease-out
-              border border-green-400/40
+              border border-green-500/30
               overflow-hidden relative"
           >
             <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/25 to-transparent
