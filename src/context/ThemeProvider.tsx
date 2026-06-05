@@ -1,14 +1,26 @@
 import React, { useEffect, useMemo } from 'react';
+import { useLocation } from 'react-router-dom';
 import { ThemeContext, type ThemeContextValue } from './ThemeContext';
 
 export const ThemeProvider: React.FC<React.PropsWithChildren> = ({ children }) => {
-    // Always enforce dark mode — light mode has been removed from this app
+    const { pathname } = useLocation();
+
+    // Dynamically manage dark class based on the route
     useEffect(() => {
         const root = document.documentElement;
-        root.classList.remove('light');
-        root.classList.add('dark');
-        localStorage.setItem('wabmeta_theme_mode', 'dark');
-    }, []);
+        
+        // Marketing/public pages that should be in light theme
+        const marketingRoutes = ['/', '/contact', '/documentation', '/blog', '/privacy', '/terms', '/data-deletion'];
+        const isMarketing = marketingRoutes.includes(pathname);
+
+        if (isMarketing) {
+            root.classList.remove('dark');
+            root.classList.add('light');
+        } else {
+            root.classList.remove('light');
+            root.classList.add('dark');
+        }
+    }, [pathname]);
 
     const value = useMemo<ThemeContextValue>(() => ({
         mode: 'dark',

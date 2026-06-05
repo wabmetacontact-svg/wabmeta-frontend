@@ -12,7 +12,7 @@ import Footer from '../components/landing/Footer';
 
 const Landing: React.FC = () => {
   return (
-    <div className="bg-[#050816] min-h-screen">
+    <div className="bg-white min-h-screen">
       <Navbar />
       <Hero />
       <Features />

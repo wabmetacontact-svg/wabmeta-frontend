@@ -48,7 +48,7 @@ const Navbar: React.FC = () => {
     <>
       <div className="fixed top-0 left-0 right-0 z-50 flex justify-center px-4 pt-4">
 
-        {/* ✅ Floating Dark Glassmorphic Navbar */}
+        {/* ✅ Adaptive Floating Glassmorphic Navbar */}
         <nav
           className={`
             relative w-full max-w-5xl
@@ -56,7 +56,7 @@ const Navbar: React.FC = () => {
             rounded-full
             ${isScrolled
               ? 'bg-[#0a0e27]/40 backdrop-blur-2xl border border-white/[0.15] shadow-2xl shadow-black/40'
-              : 'bg-white/[0.04] backdrop-blur-xl border border-white/[0.1] shadow-xl shadow-black/10'
+              : 'bg-white/40 backdrop-blur-xl border border-gray-200/40 shadow-lg shadow-gray-100/10'
             }
           `}
           style={{
@@ -66,7 +66,9 @@ const Navbar: React.FC = () => {
           {/* ✅ Shimmer overlay */}
           <div className="absolute inset-0 rounded-full pointer-events-none"
             style={{
-              background: 'linear-gradient(135deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.02) 50%, rgba(255,255,255,0.06) 100%)',
+              background: isScrolled
+                ? 'linear-gradient(135deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.02) 50%, rgba(255,255,255,0.06) 100%)'
+                : 'linear-gradient(135deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.2) 100%)',
             }}
           />
 
@@ -93,16 +95,17 @@ const Navbar: React.FC = () => {
                 <button
                   key={link.name}
                   onClick={() => handleNavClick(link)}
-                  className="relative px-4 py-2 text-sm font-medium
+                  className={`relative px-4 py-2 text-sm font-medium
                     transition-all duration-500 ease-out group
-                    text-white/90 hover:text-green-400"
+                    ${isScrolled ? 'text-white/90 hover:text-green-400' : 'text-gray-800 hover:text-green-600'}`}
                   style={{ animationDelay: `${index * 100}ms` }}
                 >
                   {/* Hover bg pill */}
-                  <span className="absolute inset-0 rounded-full
+                  <span className={`absolute inset-0 rounded-full
                     scale-0 group-hover:scale-100
                     transition-transform duration-300 ease-out origin-center
-                    border bg-white/10 border-white/15" />
+                    border
+                    ${isScrolled ? 'bg-white/10 border-white/15' : 'bg-gray-155/80 border-gray-200/50'}`} />
 
                   <span className="relative z-10 transition-transform duration-300 group-hover:translate-x-0.5">
                     {link.name}
@@ -123,12 +126,14 @@ const Navbar: React.FC = () => {
               {/* Login - glass pill */}
               <Link
                 to="/login"
-                className="relative text-sm font-medium
+                className={`relative text-sm font-medium
                   px-5 py-2 rounded-full overflow-hidden group
                   border backdrop-blur-sm
                   transition-all duration-500
-                  text-white/90 border-white/15 bg-white/10 hover:bg-white/20 hover:border-green-400/50 hover:text-green-400
-                  hover:shadow-md hover:shadow-green-500/10"
+                  ${isScrolled
+                    ? 'text-white/90 border-white/15 bg-white/10 hover:bg-white/20 hover:border-green-400/50 hover:text-green-400 hover:shadow-md hover:shadow-green-500/10'
+                    : 'text-gray-700 border-gray-200 bg-gray-50/50 hover:bg-gray-100/80 hover:border-green-500/50 hover:text-green-600 hover:shadow-sm'
+                  }`}
               >
                 <span className="relative z-10">Login</span>
               </Link>
@@ -159,23 +164,26 @@ const Navbar: React.FC = () => {
             {/* ✅ Mobile Menu Button */}
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className="lg:hidden p-2.5 rounded-full
+              className={`lg:hidden p-2.5 rounded-full
                 backdrop-blur-sm transition-all duration-500
                 flex-shrink-0 border
-                bg-white/10 border-white/15 hover:bg-white/20 hover:border-green-400/50"
+                ${isScrolled
+                  ? 'bg-white/10 border-white/15 hover:bg-white/20 hover:border-green-400/50'
+                  : 'bg-gray-50 border-gray-200 hover:bg-gray-100 hover:border-green-500/50'
+                }`}
             >
               <div className="relative w-5 h-5">
                 <span className={`absolute top-1/2 left-0 w-5 h-0.5 rounded-full
                   transition-all duration-300 ease-out origin-center
-                  bg-white
+                  ${isScrolled ? 'bg-white' : 'bg-gray-700'}
                   ${isOpen ? 'rotate-45 translate-y-0' : '-translate-y-1.5'}`} />
                 <span className={`absolute top-1/2 left-0 w-5 h-0.5 rounded-full
                   transition-all duration-300 ease-out
-                  bg-white
+                  ${isScrolled ? 'bg-white' : 'bg-gray-700'}
                   ${isOpen ? 'opacity-0 translate-x-3' : 'opacity-100'}`} />
                 <span className={`absolute top-1/2 left-0 w-5 h-0.5 rounded-full
                   transition-all duration-300 ease-out origin-center
-                  bg-white
+                  ${isScrolled ? 'bg-white' : 'bg-gray-700'}
                   ${isOpen ? '-rotate-45 translate-y-0' : '-translate-y-1.5'}`} />
               </div>
             </button>
@@ -191,17 +199,23 @@ const Navbar: React.FC = () => {
         transition-all duration-500 ease-out
         ${isOpen ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 -translate-y-4 pointer-events-none'}
       `}>
-        <div className="relative w-full max-w-5xl
+        <div className={`relative w-full max-w-5xl
           rounded-3xl
           backdrop-blur-2xl
           border overflow-hidden
           shadow-2xl
-          bg-[#0a0e27]/90 border-white/15 shadow-black/40"
+          transition-all duration-500
+          ${isScrolled || isOpen
+            ? 'bg-[#0a0e27]/95 border-white/15 shadow-black/40'
+            : 'bg-white/95 border-gray-200/80 shadow-gray-200/30'
+          }`}
           style={{ WebkitBackdropFilter: 'blur(24px)' }}
         >
           <div className="absolute inset-0 rounded-3xl pointer-events-none"
             style={{
-              background: 'linear-gradient(135deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.02) 100%)',
+              background: isScrolled
+                ? 'linear-gradient(135deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.02) 100%)'
+                : 'linear-gradient(135deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0.1) 100%)',
             }}
           />
 
@@ -210,10 +224,13 @@ const Navbar: React.FC = () => {
               <button
                 key={link.name}
                 onClick={() => handleNavClick(link)}
-                className="block w-full text-left px-4 py-3
+                className={`block w-full text-left px-4 py-3
                   rounded-2xl transition-all duration-300 font-medium
                   border border-transparent hover:translate-x-1
-                  text-white/90 hover:bg-white/10 hover:text-green-400 hover:border-white/10"
+                  ${isScrolled
+                    ? 'text-white/90 hover:bg-white/10 hover:text-green-400 hover:border-white/10'
+                    : 'text-gray-700 hover:bg-gray-50 hover:text-green-600 hover:border-gray-200/50'
+                  }`}
                 style={{
                   transitionDelay: isOpen ? `${index * 40}ms` : '0ms',
                   transform: isOpen ? 'translateX(0)' : 'translateX(-10px)',
@@ -229,16 +246,19 @@ const Navbar: React.FC = () => {
             ))}
 
             {/* Divider */}
-            <div className="h-px bg-gradient-to-r from-transparent to-transparent my-2 via-white/20" />
+            <div className={`h-px my-2 ${isScrolled ? 'bg-gradient-to-r from-transparent to-transparent via-white/20' : 'bg-gradient-to-r from-transparent to-transparent via-gray-200/60'}`} />
 
             {/* Mobile Auth Buttons */}
             <div className="grid grid-cols-2 gap-2 pt-1">
               <Link
                 to="/login"
                 onClick={() => setIsOpen(false)}
-                className="text-center px-4 py-3 rounded-2xl transition-all duration-300 font-medium
+                className={`text-center px-4 py-3 rounded-2xl transition-all duration-300 font-medium
                   backdrop-blur-sm border
-                  text-white/90 bg-white/10 hover:bg-white/20 border-white/15 hover:border-green-400/50 hover:text-green-400"
+                  ${isScrolled
+                    ? 'text-white/90 bg-white/10 hover:bg-white/20 border-white/15 hover:border-green-400/50 hover:text-green-400'
+                    : 'text-gray-700 bg-gray-50 hover:bg-gray-100 border-gray-200 hover:border-green-500/50 hover:text-green-600'
+                  }`}
               >
                 Login
               </Link>
