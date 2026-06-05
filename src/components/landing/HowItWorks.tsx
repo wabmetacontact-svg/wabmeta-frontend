@@ -27,10 +27,10 @@ const HowItWorks: React.FC = () => {
         '2-day free trial unlocked instantly',
         'Skip onboarding if you want'
       ],
-      accentColor: '#16a34a',
-      gradientFrom: 'from-green-500/10',
-      gradientTo: 'to-emerald-500/2',
-      iconBg: 'from-green-500 to-emerald-600',
+      accentColor: '#2883CF',
+      gradientFrom: 'from-blue-500/10',
+      gradientTo: 'to-sky-500/2',
+      iconBg: 'from-[#2883CF] to-sky-600',
     },
     {
       step: '02',
@@ -101,7 +101,7 @@ const HowItWorks: React.FC = () => {
         <div className="absolute inset-0"
           style={{
             background: `
-              radial-gradient(ellipse 50% 40% at 80% 20%, rgba(34, 197, 94, 0.05) 0%, transparent 60%),
+              radial-gradient(ellipse 50% 40% at 80% 20%, rgba(40, 131, 207, 0.05) 0%, transparent 60%),
               radial-gradient(ellipse 50% 40% at 20% 80%, rgba(59, 130, 246, 0.04) 0%, transparent 60%)
             `,
           }}
@@ -130,7 +130,7 @@ const HowItWorks: React.FC = () => {
             <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-[1.05] tracking-tight">
               <span className="text-gray-950">From signup to first send</span>
               <br />
-              <span className="bg-gradient-to-r from-green-600 to-emerald-500 bg-clip-text text-transparent italic">
+              <span className="bg-gradient-to-r from-[#2883CF] to-sky-500 bg-clip-text text-transparent italic">
                 in under 6 minutes.
               </span>
             </h2>
@@ -376,13 +376,13 @@ const HowItWorks: React.FC = () => {
           <Link
             to="/signup"
             className="group inline-flex items-center gap-3 
-              bg-gradient-to-r from-green-600 to-emerald-500
+              bg-gradient-to-r from-[#2883CF] to-sky-500
               text-white px-8 py-4 rounded-full text-[15px] font-semibold
-              shadow-[0_8px_32px_rgba(16,185,129,0.3)]
-              hover:shadow-[0_12px_40px_rgba(16,185,129,0.5)]
+              shadow-[0_8px_32px_rgba(40,131,207,0.25)]
+              hover:shadow-[0_12px_40px_rgba(40,131,207,0.45)]
               hover:-translate-y-0.5
               transition-all duration-500 ease-out
-              border border-green-500/30
+              border border-blue-500/30
               overflow-hidden relative"
           >
             <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/25 to-transparent
