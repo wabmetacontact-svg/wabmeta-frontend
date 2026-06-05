@@ -501,40 +501,6 @@ const FeatureCard: React.FC<FeatureCardProps> = ({
     return 1 - progress * 0.45;
   });
 
-  // Dynamic Y translation for a beautiful curved path
-  const y = useTransform(scrollX, (latest: number) => {
-    if (!cardRef.current || !scrollRef.current) {
-      return 0;
-    }
-    const container = scrollRef.current;
-    const card = cardRef.current;
-    
-    const containerCenter = latest + container.clientWidth / 2;
-    const cardCenter = card.offsetLeft + card.clientWidth / 2;
-    const distance = Math.abs(containerCenter - cardCenter);
-    
-    const threshold = card.clientWidth + 24;
-    const progress = Math.min(distance / threshold, 1);
-    return progress * 16; // dip down by 16px when off-center
-  });
-
-  // Dynamic Rotation for subtle coverflow tilt
-  const rotate = useTransform(scrollX, (latest: number) => {
-    if (!cardRef.current || !scrollRef.current) {
-      return 0;
-    }
-    const container = scrollRef.current;
-    const card = cardRef.current;
-    
-    const containerCenter = latest + container.clientWidth / 2;
-    const cardCenter = card.offsetLeft + card.clientWidth / 2;
-    const distance = cardCenter - containerCenter; // signed distance
-    
-    const threshold = card.clientWidth + 24;
-    const progress = Math.max(-1, Math.min(distance / threshold, 1));
-    return progress * 3; // rotates -3deg to 3deg
-  });
-
   return (
     <motion.div
       ref={cardRef}
@@ -544,15 +510,13 @@ const FeatureCard: React.FC<FeatureCardProps> = ({
         pointerEvents: isDragging ? 'none' : 'auto',
         scale,
         opacity,
-        y,
-        rotate,
       }}
     >
-      {/* Card Body with premium light glassmorphism styling */}
+      {/* Restore original card layout, background (solid white), border (gray-200), and shadows exactly */}
       <div
-        className="relative h-full w-full rounded-[28px] overflow-hidden bg-white/70 backdrop-blur-md border border-green-100 transition-all duration-500 ease-out group-hover:border-green-300 group-hover:shadow-2xl"
+        className="relative h-full w-full rounded-[28px] overflow-hidden bg-white border border-gray-200/80 transition-all duration-500 ease-out group-hover:border-gray-300 group-hover:shadow-2xl"
         style={{
-          boxShadow: '0 10px 30px rgba(22,163,74,0.03), 0 1px 3px rgba(22,163,74,0.02)',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.04), 0 1px 3px rgba(0,0,0,0.05)',
         }}
       >
         {/* Top Green Bar */}
@@ -571,59 +535,57 @@ const FeatureCard: React.FC<FeatureCardProps> = ({
 
         {/* Decorative corner blur blob */}
         <div
-          className="absolute -top-20 -right-20 w-60 h-60 rounded-full opacity-10 group-hover:opacity-25 transition-opacity duration-700 ease-out pointer-events-none"
+          className="absolute -top-20 -right-20 w-60 h-60 rounded-full opacity-10 group-hover:opacity-30 transition-opacity duration-700 ease-out pointer-events-none"
           style={{
             background: feature.gradient,
             filter: 'blur(40px)',
           }}
         />
 
-        {/* Card Content */}
-        <div className="relative h-full p-7 lg:p-8 flex flex-col justify-between">
-          <div>
-            {/* Top section: Tag + Action Button */}
-            <div className="flex items-start justify-between mb-8">
-              <span
-                className="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-mono font-bold tracking-wider uppercase transition-all duration-300"
-                style={{
-                  background: feature.lightColor,
-                  color: feature.color,
-                }}
-              >
-                {feature.tag}
-              </span>
-
-              <div
-                className="w-10 h-10 rounded-full bg-green-50/50 border border-green-100 flex items-center justify-center transition-all duration-500 ease-out group-hover:bg-green-600 group-hover:border-green-600 group-hover:rotate-45"
-              >
-                <ArrowUpRight className="w-4 h-4 text-green-700 transition-colors duration-500 group-hover:text-white" />
-              </div>
-            </div>
-
-            {/* Icon */}
-            <div
-              className="w-16 h-16 rounded-2xl flex items-center justify-center mb-6 transition-all duration-500 ease-out group-hover:scale-110 group-hover:-rotate-6"
+        {/* Original Content Layout */}
+        <div className="relative h-full p-7 lg:p-8 flex flex-col">
+          {/* Top section: Tag + Action Button */}
+          <div className="flex items-start justify-between mb-8">
+            <span
+              className="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-mono font-bold tracking-wider uppercase transition-all duration-300"
               style={{
-                background: feature.gradient,
-                boxShadow: `0 12px 30px rgba(22, 163, 74, 0.25), inset 0 1px 2px rgba(255,255,255,0.4)`,
+                background: feature.lightColor,
+                color: feature.color,
               }}
             >
-              <Icon className="w-7 h-7 text-white drop-shadow-sm" />
+              {feature.tag}
+            </span>
+
+            <div
+              className="w-10 h-10 rounded-full bg-gray-50 border border-gray-200 flex items-center justify-center transition-all duration-500 ease-out group-hover:bg-gray-900 group-hover:border-gray-900 group-hover:rotate-45"
+            >
+              <ArrowUpRight className="w-4 h-4 text-gray-700 transition-colors duration-500 group-hover:text-white" />
             </div>
-
-            {/* Title */}
-            <h3 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-3 tracking-tight transition-transform duration-500 ease-out group-hover:translate-x-1">
-              {feature.title}
-            </h3>
-
-            {/* Description */}
-            <p className="text-[15px] text-gray-600 leading-relaxed">
-              {feature.description}
-            </p>
           </div>
 
+          {/* Icon */}
+          <div
+            className="w-16 h-16 rounded-2xl flex items-center justify-center mb-6 transition-all duration-500 ease-out group-hover:scale-110 group-hover:-rotate-6"
+            style={{
+              background: feature.gradient,
+              boxShadow: `0 12px 30px ${feature.color}40, inset 0 1px 2px rgba(255,255,255,0.4)`,
+            }}
+          >
+            <Icon className="w-7 h-7 text-white drop-shadow-md" />
+          </div>
+
+          {/* Title */}
+          <h3 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-3 tracking-tight transition-transform duration-500 ease-out group-hover:translate-x-1">
+            {feature.title}
+          </h3>
+
+          {/* Description */}
+          <p className="text-[15px] text-gray-600 leading-relaxed mb-auto">
+            {feature.description}
+          </p>
+
           {/* Bottom section: Stat Metrics */}
-          <div className="mt-8 pt-6 border-t border-green-50 transition-colors duration-500 group-hover:border-green-100">
+          <div className="mt-8 pt-6 border-t border-gray-100 transition-colors duration-500 group-hover:border-gray-200">
             <div className="flex items-end justify-between">
               <div>
                 <div className="flex items-baseline gap-2">
