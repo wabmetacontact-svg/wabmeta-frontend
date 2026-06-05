@@ -143,16 +143,13 @@ const ConversationItem: React.FC<Props> = ({
   };
 
   return (
-    <div className={`relative transition-all duration-200 rounded-lg m-1 ${isSelected ? 'ring-1 ring-emerald-500' : ''}`}>
+    <div className={`relative transition-all duration-300 rounded-lg m-1 ring-1 ${isSelected ? 'ring-emerald-500 bg-[#0a0e27]/[0.06]' : 'ring-transparent'}`}>
       <div
         onClick={onSelect}
         className={`
           group flex items-start gap-3 px-3 py-3 cursor-pointer rounded-lg
-          transition-all duration-200
-          ${isSelected
-            ? 'bg-[#0a0e27]/[0.06]'
-            : 'hover:bg-[#0a0e27]/[0.03]'
-          }
+          transition-all duration-300
+          ${!isSelected && 'hover:bg-[#0a0e27]/[0.03]'}
         `}
       >
         {/* ── Avatar ─────────────────────────────────────────────────────── */}

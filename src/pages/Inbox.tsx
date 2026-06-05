@@ -202,6 +202,12 @@ const Inbox: React.FC = () => {
   // ============================================
   // SYNC REFS
   // ============================================
+  const filterRef = useRef<FilterTab>(filter);
+
+  useEffect(() => {
+    filterRef.current = filter;
+  }, [filter]);
+
   useEffect(() => {
     selectedConvRef.current = selectedConversation;
   }, [selectedConversation]);
@@ -718,6 +724,13 @@ const Inbox: React.FC = () => {
     [fetchConversations, navigate]
   );
 
+  const handleClearChat = useCallback(async (conv: Conversation) => {
+    if (window.confirm('Are you sure you want to clear this chat? This will only remove messages locally.')) {
+      setMessages([]);
+      toast.success('Chat cleared locally');
+    }
+  }, []);
+
   const handleAddLabel = useCallback(async (conv: Conversation, label: string) => {
     try {
       await inboxApi.addLabels(conv.id, [label]);
@@ -1005,9 +1018,12 @@ const Inbox: React.FC = () => {
 
       setConversations((prev) => {
         const idx = prev.findIndex((c) => c.id === updatedConv.id);
+        const currentFilter = filterRef.current;
 
         if (idx === -1) {
           if ((updatedConv as any).contact?.id) {
+            if (currentFilter === 'archived' && !updatedConv.isArchived) return prev;
+            if (currentFilter !== 'archived' && updatedConv.isArchived) return prev;
             return sortConversations([updatedConv as any, ...prev]);
           }
           return prev;
@@ -1016,6 +1032,14 @@ const Inbox: React.FC = () => {
         const updated = [...prev];
         const isCurrentlyOpen = selectedConvRef.current?.id === updatedConv.id;
         
+        // Remove if it no longer matches the current filter
+        if (currentFilter === 'archived' && !updatedConv.isArchived) {
+          return sortConversations(updated.filter(c => c.id !== updatedConv.id));
+        }
+        if (currentFilter !== 'archived' && updatedConv.isArchived) {
+          return sortConversations(updated.filter(c => c.id !== updatedConv.id));
+        }
+
         updated[idx] = { 
           ...updated[idx], 
           ...updatedConv,
@@ -1230,6 +1254,7 @@ const Inbox: React.FC = () => {
                 const event = new MouseEvent('click') as any;
                 handleArchiveConversation(selectedConversation, event);
               }}
+              onClearChat={() => handleClearChat(selectedConversation)}
             />
 
             {/* Message Search Bar */}
