@@ -163,8 +163,8 @@ const HowItWorks: React.FC = () => {
                       rounded-2xl overflow-hidden
                       transition-all duration-500 ease-out
                       ${isActive 
-                        ? 'bg-white shadow-[0_10px_25px_rgba(0,0,0,0.04)] border border-gray-200/80 scale-[1.02]' 
-                        : 'bg-white/40 backdrop-blur-sm border border-gray-100 hover:bg-white/80 hover:border-gray-200/80 hover:shadow-sm'
+                        ? 'bg-white shadow-[0_12px_30px_rgba(0,0,0,0.06)] border border-gray-200 scale-[1.02]' 
+                        : 'bg-white border border-gray-200/60 hover:border-gray-300 hover:shadow-sm'
                       }
                     `}
                   >
@@ -279,9 +279,9 @@ const HowItWorks: React.FC = () => {
                   <div
                     key={step.step}
                     className="relative rounded-3xl overflow-hidden
-                      bg-white/85 backdrop-blur-2xl
-                      border border-gray-200/60
-                      shadow-[0_20px_50px_rgba(0,0,0,0.06)]
+                      bg-white
+                      border border-gray-200
+                      shadow-[0_20px_40px_rgba(0,0,0,0.06)]
                       p-8 lg:p-10
                       animate-fadeIn"
                   >
@@ -303,7 +303,7 @@ const HowItWorks: React.FC = () => {
 
                       {/* Big step number watermark */}
                       <div className="absolute top-0 right-0 text-[8rem] lg:text-[10rem] font-bold 
-                        bg-gradient-to-br from-gray-900/[0.04] to-transparent bg-clip-text text-transparent
+                        bg-gradient-to-br from-gray-900/[0.06] to-transparent bg-clip-text text-transparent
                         leading-none select-none pointer-events-none">
                         {step.step}
                       </div>
@@ -350,7 +350,7 @@ const HowItWorks: React.FC = () => {
                       </div>
 
                       {/* Bottom meta */}
-                      <div className="mt-8 pt-6 border-t border-gray-200/60 flex items-center justify-between">
+                      <div className="mt-8 pt-6 border-t border-gray-200 flex items-center justify-between">
                         <div className="flex items-center gap-2 text-xs font-mono text-gray-500">
                           <Clock className="w-3.5 h-3.5" />
                           Takes about {step.time}
