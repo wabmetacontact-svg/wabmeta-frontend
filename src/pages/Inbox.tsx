@@ -176,6 +176,7 @@ const Inbox: React.FC = () => {
 
   // UI State
   const [showContactInfo, setShowContactInfo] = useState(false);
+  const [selectedConversationIds, setSelectedConversationIds] = useState<string[]>([]);
   const [showTemplateModal, setShowTemplateModal] = useState(false);
   const [showCallScreen, setShowCallScreen] = useState(false);
   const [showMobileChat, setShowMobileChat] = useState(false);
@@ -731,6 +732,78 @@ const Inbox: React.FC = () => {
     }
   }, []);
 
+  const handleDeleteAll = useCallback(async () => {
+    if (
+      window.confirm(
+        'Are you sure you want to delete ALL conversations? This will permanently delete all messages and chats from the database. This action cannot be undone.'
+      )
+    ) {
+      try {
+        await inboxApi.deleteAllConversations();
+        setConversations([]);
+        setSelectedConversation(null);
+        setMessages([]);
+        toast.success('All conversations deleted successfully');
+      } catch (err) {
+        toast.error('Failed to delete conversations');
+      }
+    }
+  }, []);
+
+  const handleToggleSelection = useCallback((id: string) => {
+    setSelectedConversationIds((prev) =>
+      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
+    );
+  }, []);
+
+  const handleSelectAll = useCallback((ids: string[]) => {
+    setSelectedConversationIds(ids);
+  }, []);
+
+  const handleClearSelection = useCallback(() => {
+    setSelectedConversationIds([]);
+  }, []);
+
+  const handleBulkArchive = useCallback(async (isArchived: boolean) => {
+    if (selectedConversationIds.length === 0) return;
+    try {
+      await inboxApi.bulkUpdate({ conversationIds: selectedConversationIds, isArchived });
+      setConversations((prev) =>
+        prev.map((c) =>
+          selectedConversationIds.includes(c.id) ? { ...c, isArchived } : c
+        )
+      );
+      handleClearSelection();
+      toast.success(`Conversations ${isArchived ? 'archived' : 'unarchived'}`);
+    } catch (err) {
+      toast.error('Failed to update conversations');
+    }
+  }, [selectedConversationIds, handleClearSelection]);
+
+  const handleBulkDelete = useCallback(async () => {
+    if (selectedConversationIds.length === 0) return;
+    if (
+      window.confirm(
+        `Are you sure you want to delete ${selectedConversationIds.length} conversation(s)? This action cannot be undone.`
+      )
+    ) {
+      try {
+        await inboxApi.bulkDeleteConversations(selectedConversationIds);
+        setConversations((prev) =>
+          prev.filter((c) => !selectedConversationIds.includes(c.id))
+        );
+        if (selectedConversation?.id && selectedConversationIds.includes(selectedConversation.id)) {
+          setSelectedConversation(null);
+          setMessages([]);
+        }
+        handleClearSelection();
+        toast.success('Conversations deleted');
+      } catch (err) {
+        toast.error('Failed to delete conversations');
+      }
+    }
+  }, [selectedConversationIds, handleClearSelection, selectedConversation]);
+
   const handleAddLabel = useCallback(async (conv: Conversation, label: string) => {
     try {
       await inboxApi.addLabels(conv.id, [label]);
@@ -1231,6 +1304,13 @@ const Inbox: React.FC = () => {
           onRemoveLabel={handleRemoveLabel}
           onCreateCustomLabel={handleCreateCustomLabel}
           labels={labels}
+          onDeleteAll={handleDeleteAll}
+          selectedConversationIds={selectedConversationIds}
+          onToggleSelection={handleToggleSelection}
+          onSelectAll={handleSelectAll}
+          onClearSelection={handleClearSelection}
+          onBulkArchive={handleBulkArchive}
+          onBulkDelete={handleBulkDelete}
         />
       </div>
 

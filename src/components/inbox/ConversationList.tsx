@@ -5,9 +5,12 @@ import {
   RefreshCw,
   Filter,
   X,
-  Inbox as InboxIcon,
-  MessageSquarePlus,
-  Pin,
+  Trash2,
+  Archive,
+  ArchiveRestore,
+  CheckSquare,
+  Square,
+  Check,
 } from 'lucide-react';
 import ConversationItem from './ConversationItem';
 import type { ContactLike } from '../../utils/inboxHelpers';
@@ -49,6 +52,13 @@ interface Props {
   onRemoveLabel: (conv: Conversation, label: string, e: React.MouseEvent) => void;
   onCreateCustomLabel: (label: string, color?: string) => void;
   onNewChat?: () => void;
+  onDeleteAll?: () => void;
+  selectedConversationIds?: string[];
+  onToggleSelection?: (id: string) => void;
+  onSelectAll?: (ids: string[]) => void;
+  onClearSelection?: () => void;
+  onBulkArchive?: (isArchived: boolean) => void;
+  onBulkDelete?: () => void;
 }
 
 const ConversationList: React.FC<Props> = ({
@@ -69,8 +79,25 @@ const ConversationList: React.FC<Props> = ({
   onRemoveLabel,
   onCreateCustomLabel,
   onNewChat,
+  onDeleteAll,
+  selectedConversationIds = [],
+  onToggleSelection,
+  onSelectAll,
+  onClearSelection,
+  onBulkArchive,
+  onBulkDelete,
 }) => {
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+
+  // Check if we are in selection mode
+  const isSelectionMode = selectedConversationIds.length > 0;
+  
+  // Combine pinned and regular for select all logic
+  const allCurrentIds = useMemo(() => {
+    return conversations.map(c => c.id);
+  }, [conversations]);
+  const isAllSelected = allCurrentIds.length > 0 && selectedConversationIds.length === allCurrentIds.length;
+
 
   // ── Stats ──────────────────────────────────────────────────────────────
   const stats = useMemo(() => {
@@ -94,64 +121,122 @@ const ConversationList: React.FC<Props> = ({
   return (
     <div className="flex flex-col h-full bg-[#0a0e1c]/60 backdrop-blur-xl border-r border-white/[0.06]">
       {/* ── Header ──────────────────────────────────────────────────────── */}
-      <div className="flex-shrink-0 px-4 pt-4 pb-3 border-b border-white/[0.06]">
-        {/* Title row */}
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <h2 className="text-lg font-bold text-white tracking-tight">Inbox</h2>
-            {stats.total > 0 && (
-              <span className="text-[10px] font-mono text-gray-500 bg-[#0a0e27]/[0.04] px-2 py-0.5 rounded-md">
-                {stats.total}
-              </span>
-            )}
-          </div>
-
-          <div className="flex items-center gap-1">
-            {onNewChat && (
-              <button
-                onClick={onNewChat}
-                className="p-1.5 rounded-lg hover:bg-[#0a0e27]/[0.06] text-gray-400 hover:text-emerald-400 transition-all"
-                title="New conversation"
-              >
-                <MessageSquarePlus className="w-4 h-4" />
+      <div className={`flex-shrink-0 px-4 pt-4 pb-3 border-b border-white/[0.06] transition-colors ${isSelectionMode ? 'bg-emerald-500/10' : ''}`}>
+        {isSelectionMode ? (
+          <div className="flex items-center justify-between mb-4 h-8">
+            <div className="flex items-center gap-3">
+              <button onClick={onClearSelection} className="p-1 hover:bg-white/10 rounded-full transition-colors text-gray-400">
+                <X className="w-5 h-5" />
               </button>
-            )}
-            <button
-              onClick={onRefresh}
-              disabled={refreshing}
-              className="p-1.5 rounded-lg hover:bg-[#0a0e27]/[0.06] text-gray-400 hover:text-white transition-all"
-              title="Refresh"
-            >
-              <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
-            </button>
+              <span className="text-sm font-bold text-emerald-400">{selectedConversationIds.length} Selected</span>
+            </div>
+            <div className="flex items-center gap-1">
+              {filter === 'archived' ? (
+                <button
+                  onClick={() => onBulkArchive?.(false)}
+                  className="p-1.5 rounded-lg hover:bg-emerald-500/20 text-gray-400 hover:text-emerald-400 transition-all"
+                  title="Unarchive"
+                >
+                  <ArchiveRestore className="w-4 h-4" />
+                </button>
+              ) : (
+                <button
+                  onClick={() => onBulkArchive?.(true)}
+                  className="p-1.5 rounded-lg hover:bg-[#0a0e27]/[0.06] text-gray-400 hover:text-white transition-all"
+                  title="Archive"
+                >
+                  <Archive className="w-4 h-4" />
+                </button>
+              )}
+              <button
+                onClick={onBulkDelete}
+                className="p-1.5 rounded-lg hover:bg-red-500/10 text-gray-400 hover:text-red-500 transition-all"
+                title="Delete"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="flex items-center justify-between mb-4 h-8">
+            <div className="flex items-center gap-2">
+              <h2 className="text-lg font-bold text-white tracking-tight">Inbox</h2>
+              {stats.total > 0 && (
+                <span className="text-[10px] font-mono text-gray-500 bg-[#0a0e27]/[0.04] px-2 py-0.5 rounded-md">
+                  {stats.total}
+                </span>
+              )}
+            </div>
 
-        {/* Search */}
-        <div className="relative mb-3">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
-          <input
-            type="text"
-            placeholder="Search conversations..."
-            value={searchQuery}
-            onChange={(e) => onSearchChange(e.target.value)}
-            className="
-              w-full pl-9 pr-9 py-2.5
-              bg-[#0a0e27]/[0.04] border border-white/[0.06]
-              rounded-xl text-sm text-white
-              placeholder:text-gray-500
-              focus:outline-none focus:bg-[#0a0e27]/[0.06] focus:border-emerald-400/30
-              transition-all
-            "
-          />
-          {searchQuery && (
+            <div className="flex items-center gap-1">
+              {onNewChat && (
+                <button
+                  onClick={onNewChat}
+                  className="p-1.5 rounded-lg hover:bg-[#0a0e27]/[0.06] text-gray-400 hover:text-emerald-400 transition-all"
+                  title="New conversation"
+                >
+                  <MessageSquarePlus className="w-4 h-4" />
+                </button>
+              )}
+              <button
+                onClick={onRefresh}
+                disabled={refreshing}
+                className="p-1.5 rounded-lg hover:bg-[#0a0e27]/[0.06] text-gray-400 hover:text-white transition-all"
+                title="Refresh"
+              >
+                <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
+              </button>
+              {onDeleteAll && (
+                <button
+                  onClick={onDeleteAll}
+                  className="p-1.5 rounded-lg hover:bg-red-500/10 text-gray-400 hover:text-red-500 transition-all ml-1"
+                  title="Delete all conversations"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Search & Select All */}
+        <div className="relative mb-3 flex items-center gap-2">
+          {isSelectionMode && (
             <button
-              onClick={() => onSearchChange('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 rounded-md hover:bg-[#0a0e27]/[0.08]"
+              onClick={() => onSelectAll?.(isAllSelected ? [] : allCurrentIds)}
+              className="flex-shrink-0 p-2 rounded hover:bg-[#0a0e27]/[0.06] transition-colors"
             >
-              <X className="w-3.5 h-3.5 text-gray-400" />
+              {isAllSelected ? (
+                <CheckSquare className="w-5 h-5 text-emerald-500" />
+              ) : (
+                <Square className="w-5 h-5 text-gray-400" />
+              )}
             </button>
           )}
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+            <input
+              type="text"
+              placeholder="Search conversations..."
+              value={searchQuery}
+              onChange={(e) => onSearchChange(e.target.value)}
+              className="
+                w-full pl-9 pr-9 py-2.5
+                bg-[#0a0e27]/[0.04] border border-white/[0.06]
+                focus:bg-[#0a0e27]/[0.06] focus:border-emerald-500/50
+                text-sm text-white placeholder-gray-500
+                rounded-xl outline-none transition-all
+              "
+            />
+            {searchQuery && (
+              <button
+                onClick={() => onSearchChange('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 hover:bg-white/10 rounded-full"
+              >
+                <X className="w-3 h-3 text-gray-400" />
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Filter Tabs */}
@@ -279,6 +364,9 @@ const ConversationList: React.FC<Props> = ({
                     onCreateCustomLabel={onCreateCustomLabel}
                     allLabels={labels.map(l => ({ label: l.label, color: l.color }))}
                     searchQuery={searchQuery}
+                    isSelectionMode={isSelectionMode}
+                    isSelectedForAction={selectedConversationIds.includes(conv.id)}
+                    onToggleSelection={onToggleSelection}
                   />
                 ))}
               </div>
@@ -310,6 +398,9 @@ const ConversationList: React.FC<Props> = ({
                     onCreateCustomLabel={onCreateCustomLabel}
                     allLabels={labels.map(l => ({ label: l.label, color: l.color }))}
                     searchQuery={searchQuery}
+                    isSelectionMode={isSelectionMode}
+                    isSelectedForAction={selectedConversationIds.includes(conv.id)}
+                    onToggleSelection={onToggleSelection}
                   />
                 ))}
               </div>

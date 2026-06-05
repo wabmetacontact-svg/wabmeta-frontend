@@ -945,6 +945,9 @@ export const inbox = {
   deleteCustomLabel: (label: string) => api.delete<ApiResponse>(`/inbox/labels/${label}`),
   addLabels: (id: string, labels: string[]) => api.post<ApiResponse>(`/inbox/conversations/${id}/labels`, { labels }),
   removeLabel: (id: string, label: string) => api.delete<ApiResponse>(`/inbox/conversations/${id}/labels/${label}`),
+  deleteAllConversations: () => api.delete<ApiResponse>('/inbox/delete-all'),
+  bulkUpdate: (data: { conversationIds: string[]; [key: string]: any }) => api.post<ApiResponse>('/inbox/bulk', data),
+  bulkDeleteConversations: (conversationIds: string[]) => api.post<ApiResponse>('/inbox/bulk-delete', { conversationIds }),
 };
 
 // ─── Voice message upload ────────────────────────────────────────────────────

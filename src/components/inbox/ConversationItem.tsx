@@ -14,7 +14,9 @@ import {
   Trash2,
   UserCheck,
   Instagram,
-  MessageSquare
+  MessageSquare,
+  CheckSquare,
+  Square
 } from 'lucide-react';
 import { FaWhatsapp } from "react-icons/fa";
 import {
@@ -58,8 +60,11 @@ interface Props {
   onAddLabel: (label: string) => void;
   onRemoveLabel: (label: string, e: React.MouseEvent) => void;
   onCreateCustomLabel: (label: string, color?: string) => void;
-  allLabels: { label: string; color?: string }[];
+  allLabels?: { label: string; color?: string }[];
   searchQuery?: string;
+  isSelectionMode?: boolean;
+  isSelectedForAction?: boolean;
+  onToggleSelection?: (id: string) => void;
 }
 
 const ConversationItem: React.FC<Props> = ({
@@ -73,8 +78,11 @@ const ConversationItem: React.FC<Props> = ({
   onAddLabel,
   onRemoveLabel,
   onCreateCustomLabel,
-  allLabels,
+  allLabels = [],
   searchQuery = '',
+  isSelectionMode = false,
+  isSelectedForAction = false,
+  onToggleSelection,
 }) => {
   const [showMenu, setShowMenu] = useState(false);
   const [showLabels, setShowLabels] = useState(false);
@@ -145,7 +153,14 @@ const ConversationItem: React.FC<Props> = ({
   return (
     <div className={`relative transition-all duration-300 rounded-lg m-1 border-2 ${isSelected ? 'border-emerald-500 bg-[#0a0e27]/[0.06]' : 'border-transparent'}`}>
       <div
-        onClick={onSelect}
+        onClick={(e) => {
+          if (isSelectionMode && onToggleSelection) {
+            e.stopPropagation();
+            onToggleSelection(conv.id);
+          } else {
+            onSelect();
+          }
+        }}
         className={`
           group flex items-start gap-3 px-3 py-3 cursor-pointer rounded-lg
           transition-all duration-300
@@ -162,6 +177,8 @@ const ConversationItem: React.FC<Props> = ({
               text-white font-semibold text-base
               shadow-md ring-2 ring-[#0a0e27]
               ${hasUnread ? 'ring-emerald-400/30' : ''}
+              ${isSelectionMode || isSelectedForAction ? 'opacity-0' : 'group-hover:opacity-0'}
+              transition-opacity duration-200
             `}
           >
             {conv.contact.avatar ? (
@@ -172,6 +189,24 @@ const ConversationItem: React.FC<Props> = ({
               />
             ) : (
               initial
+            )}
+          </div>
+          
+          <div
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleSelection?.(conv.id);
+            }}
+            className={`
+              absolute inset-0 flex items-center justify-center rounded-full
+              ${isSelectionMode || isSelectedForAction ? 'opacity-100 bg-black/40' : 'opacity-0 group-hover:opacity-100 bg-black/40'}
+              transition-all duration-200 cursor-pointer
+            `}
+          >
+            {isSelectedForAction ? (
+              <CheckSquare className="w-5 h-5 text-emerald-400" />
+            ) : (
+              <Square className="w-5 h-5 text-white/70" />
             )}
           </div>
 
