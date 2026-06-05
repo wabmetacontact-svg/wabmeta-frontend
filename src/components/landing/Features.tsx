@@ -1,5 +1,4 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
 import {
   MessageSquare,
   Users,
@@ -76,24 +75,9 @@ const Features: React.FC = () => {
     setCanScrollLeft(scrollLeft > 10);
     setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10);
 
-    // Calculate active index based on center of viewport snapping
-    const containerCenter = scrollLeft + clientWidth / 2;
-    const cards = scrollRef.current.children[0].children;
-    let closestIndex = 0;
-    let minDistance = Infinity;
-
-    for (let i = 0; i < cards.length; i++) {
-      const card = cards[i] as HTMLElement;
-      // Skip spacers if any
-      if (card.classList.contains('spacer-item')) continue;
-      const cardCenter = card.offsetLeft + card.clientWidth / 2;
-      const distance = Math.abs(containerCenter - cardCenter);
-      if (distance < minDistance) {
-        minDistance = distance;
-        closestIndex = i;
-      }
-    }
-    setActiveIndex(closestIndex);
+    const cardWidth = 420; // approx card width
+    const newIndex = Math.round(scrollLeft / cardWidth);
+    setActiveIndex(newIndex);
   };
 
   useEffect(() => {
@@ -103,31 +87,12 @@ const Features: React.FC = () => {
     return () => el.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const scrollToCard = (index: number) => {
+  const scrollByAmount = (amount: number) => {
     if (!scrollRef.current) return;
-    const cards = scrollRef.current.children[0].children;
-    const card = cards[index] as HTMLElement;
-    if (!card) return;
-    
-    // To center the card, scroll position should be:
-    // card.offsetLeft - (container.clientWidth / 2) + (card.clientWidth / 2)
-    const containerWidth = scrollRef.current.clientWidth;
-    const scrollPos = card.offsetLeft - (containerWidth / 2) + (card.clientWidth / 2);
-    
-    scrollRef.current.scrollTo({ left: scrollPos, behavior: 'smooth' });
+    scrollRef.current.scrollBy({ left: amount, behavior: 'smooth' });
   };
 
-  const scrollByCard = (direction: 'prev' | 'next') => {
-    let targetIndex = activeIndex;
-    if (direction === 'prev') {
-      targetIndex = Math.max(0, activeIndex - 1);
-    } else {
-      targetIndex = Math.min(features.length - 1, activeIndex + 1);
-    }
-    scrollToCard(targetIndex);
-  };
-
-  // Unified theme values (WabMeta Green) for all cards
+  // Unified green theme colors for all cards
   const features = [
     {
       id: 1,
@@ -237,7 +202,7 @@ const Features: React.FC = () => {
           className="absolute top-0 left-1/4 w-[600px] h-[600px] rounded-full opacity-40"
           style={{
             background:
-              'radial-gradient(circle, rgba(16,185,129,0.3) 0%, transparent 70%)',
+              'radial-gradient(circle, rgba(16,185,129,0.4) 0%, transparent 70%)',
             filter: 'blur(80px)',
           }}
         />
@@ -245,15 +210,15 @@ const Features: React.FC = () => {
           className="absolute bottom-0 right-1/4 w-[700px] h-[700px] rounded-full opacity-40"
           style={{
             background:
-              'radial-gradient(circle, rgba(168,85,247,0.25) 0%, transparent 70%)',
+              'radial-gradient(circle, rgba(168,85,247,0.35) 0%, transparent 70%)',
             filter: 'blur(90px)',
           }}
         />
         <div
-          className="absolute top-1/2 left-1/2 w-[500px] h-[500px] rounded-full opacity-20"
+          className="absolute top-1/2 left-1/2 w-[500px] h-[500px] rounded-full opacity-30"
           style={{
             background:
-              'radial-gradient(circle, rgba(59,130,246,0.3) 0%, transparent 70%)',
+              'radial-gradient(circle, rgba(59,130,246,0.4) 0%, transparent 70%)',
             filter: 'blur(70px)',
             transform: 'translate(-50%, -50%)',
           }}
@@ -291,7 +256,7 @@ const Features: React.FC = () => {
               {/* Navigation arrows */}
               <div className="flex items-center gap-3 mt-6">
                 <button
-                  onClick={() => scrollByCard('prev')}
+                  onClick={() => scrollByAmount(-440)}
                   disabled={!canScrollLeft}
                   className={`
                     w-12 h-12 rounded-full border bg-white
@@ -308,7 +273,7 @@ const Features: React.FC = () => {
                 </button>
 
                 <button
-                  onClick={() => scrollByCard('next')}
+                  onClick={() => scrollByAmount(440)}
                   disabled={!canScrollRight}
                   className={`
                     w-12 h-12 rounded-full border bg-white
@@ -337,7 +302,7 @@ const Features: React.FC = () => {
           </div>
         </div>
 
-        {/* ✅ Draggable Cards Container with mathematically perfect padding for 3 visible cards on desktop */}
+        {/* ✅ Draggable Cards Container */}
         <div
           ref={scrollRef}
           onMouseDown={handleMouseDown}
@@ -346,7 +311,7 @@ const Features: React.FC = () => {
           onMouseMove={handleMouseMove}
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
-          className="overflow-x-auto scrollbar-hide cursor-grab select-none px-[7.5vw] md:px-[calc(25%+6px)] lg:px-[calc(33.333%+8px)]"
+          className="overflow-x-auto scrollbar-hide cursor-grab select-none"
           style={{
             scrollbarWidth: 'none',
             msOverflowStyle: 'none',
@@ -354,19 +319,18 @@ const Features: React.FC = () => {
             scrollSnapType: 'x mandatory',
           }}
         >
-          <div className="flex gap-5 lg:gap-6 pb-8 pt-2">
+          <div className="flex gap-5 lg:gap-6 px-4 sm:px-6 lg:px-8 pb-8 pt-2">
             {features.map((feature, index) => (
               <FeatureCard
                 key={feature.id}
                 feature={feature}
                 index={index}
                 isDragging={isDragging}
-                isActive={index === activeIndex}
               />
             ))}
 
             {/* Spacer at end */}
-            <div className="flex-shrink-0 w-4 spacer-item" />
+            <div className="flex-shrink-0 w-4" />
           </div>
         </div>
 
@@ -375,7 +339,7 @@ const Features: React.FC = () => {
           {features.map((_, i) => (
             <button
               key={i}
-              onClick={() => scrollToCard(i)}
+              onClick={() => scrollRef.current?.scrollTo({ left: i * 420, behavior: 'smooth' })}
               className={`
                 h-2 rounded-full transition-all duration-500 ease-out
                 ${i === activeIndex
@@ -406,32 +370,22 @@ interface FeatureCardProps {
   feature: any;
   index: number;
   isDragging: boolean;
-  isActive: boolean;
 }
 
-const FeatureCard: React.FC<FeatureCardProps> = ({ feature, isDragging, isActive }) => {
+const FeatureCard: React.FC<FeatureCardProps> = ({ feature, isDragging }) => {
   const Icon = feature.icon;
 
   return (
-    <motion.div
-      className="group relative flex-shrink-0 w-[85vw] md:w-[calc((100%-24px)/2)] lg:w-[calc((100%-48px)/3)] h-[500px]"
+    <div
+      className="group relative flex-shrink-0 w-[340px] sm:w-[400px] lg:w-[420px] h-[500px]"
       style={{
-        scrollSnapAlign: 'center',
+        scrollSnapAlign: 'start',
         pointerEvents: isDragging ? 'none' : 'auto',
-      }}
-      animate={{
-        scale: isActive ? 1.0 : 0.92,
-        opacity: isActive ? 1.0 : 0.55,
-      }}
-      transition={{
-        type: 'spring',
-        stiffness: 260,
-        damping: 26,
       }}
     >
       {/* ✅ Card Body */}
       <div
-        className="relative h-full w-full rounded-[28px] overflow-hidden bg-white border border-gray-200/80 transition-all duration-500 ease-out group-hover:border-gray-300 group-hover:shadow-2xl"
+        className="relative h-full w-full rounded-[28px] overflow-hidden bg-white border border-gray-200/80 transition-all duration-500 ease-out group-hover:border-gray-300 group-hover:shadow-2xl group-hover:-translate-y-2"
         style={{
           boxShadow:
             '0 4px 20px rgba(0,0,0,0.04), 0 1px 3px rgba(0,0,0,0.05)',
@@ -532,7 +486,7 @@ const FeatureCard: React.FC<FeatureCardProps> = ({ feature, isDragging, isActive
           </div>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 };
 
