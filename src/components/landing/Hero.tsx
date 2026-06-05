@@ -12,12 +12,12 @@ import heroIllustration from '../../assets/images/hero-illustration.png';
 
 const Hero = () => {
   return (
-    <section className="relative overflow-hidden bg-gradient-to-b from-white via-green-50/40 to-white pt-28 pb-20 lg:pt-36 lg:pb-28">
+    <section className="relative overflow-hidden bg-gradient-to-b from-white via-sky-50/40 to-white pt-28 pb-20 lg:pt-36 lg:pb-28">
       {/* Decorative background blobs */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute -top-24 -left-24 h-72 w-72 rounded-full bg-green-200/40 blur-3xl" />
-        <div className="absolute top-1/3 -right-24 h-96 w-96 rounded-full bg-emerald-200/40 blur-3xl" />
-        <div className="absolute bottom-0 left-1/2 h-64 w-64 -translate-x-1/2 rounded-full bg-green-100/50 blur-3xl" />
+        <div className="absolute -top-24 -left-24 h-72 w-72 rounded-full bg-[#2883CF]/10 blur-3xl" />
+        <div className="absolute top-1/3 -right-24 h-96 w-96 rounded-full bg-sky-200/30 blur-3xl" />
+        <div className="absolute bottom-0 left-1/2 h-64 w-64 -translate-x-1/2 rounded-full bg-[#2883CF]/10 blur-3xl" />
       </div>
 
       {/* Subtle grid pattern */}
@@ -25,7 +25,7 @@ const Hero = () => {
         className="pointer-events-none absolute inset-0 opacity-[0.15]"
         style={{
           backgroundImage:
-            'linear-gradient(to right, #16a34a10 1px, transparent 1px), linear-gradient(to bottom, #16a34a10 1px, transparent 1px)',
+            'linear-gradient(to right, #2883cf10 1px, transparent 1px), linear-gradient(to bottom, #2883cf10 1px, transparent 1px)',
           backgroundSize: '44px 44px',
         }}
       />
@@ -44,7 +44,7 @@ const Hero = () => {
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="inline-flex items-center gap-2 rounded-full border border-green-200 bg-white/80 px-4 py-1.5 text-sm font-medium text-green-700 shadow-sm backdrop-blur"
+              className="inline-flex items-center gap-2 rounded-full border border-sky-200 bg-white/85 px-4 py-1.5 text-sm font-medium text-[#2883CF] shadow-sm backdrop-blur"
             >
               <Sparkles className="h-4 w-4" />
               Official Meta WhatsApp Business Partner
@@ -54,10 +54,10 @@ const Hero = () => {
             <h1 className="mt-6 text-4xl font-bold leading-tight tracking-tight text-gray-900 sm:text-5xl lg:text-6xl">
               Grow Your Business with{' '}
               <span className="relative inline-block">
-                <span className="bg-gradient-to-r from-green-600 to-emerald-500 bg-clip-text text-transparent">
+                <span className="bg-gradient-to-r from-[#2883CF] to-sky-500 bg-clip-text text-transparent">
                   WhatsApp
                 </span>
-                <span className="absolute -bottom-2 left-0 h-1.5 w-full rounded-full bg-gradient-to-r from-green-500 to-emerald-400 opacity-70" />
+                <span className="absolute -bottom-2 left-0 h-1.5 w-full rounded-full bg-gradient-to-r from-[#2883CF] to-sky-400 opacity-70" />
               </span>{' '}
               Automation
             </h1>
@@ -81,7 +81,7 @@ const Hero = () => {
                   key={i}
                   className="inline-flex items-center gap-1.5 rounded-full border border-gray-200 bg-white px-3 py-1.5 text-sm text-gray-700 shadow-sm"
                 >
-                  <item.icon className="h-4 w-4 text-green-600" />
+                  <item.icon className="h-4 w-4 text-[#2883CF]" />
                   {item.label}
                 </div>
               ))}
@@ -91,7 +91,7 @@ const Hero = () => {
             <div className="mt-8 flex flex-col items-center gap-4 sm:flex-row lg:justify-start">
               <Link
                 to="/signup"
-                className="group inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-green-600 to-emerald-500 px-7 py-3.5 text-base font-semibold text-white shadow-lg shadow-green-500/30 transition-all hover:-translate-y-0.5 hover:shadow-xl hover:shadow-green-500/40 sm:w-auto"
+                className="group inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#2883CF] to-sky-500 px-7 py-3.5 text-base font-semibold text-white shadow-lg shadow-blue-500/20 transition-all hover:-translate-y-0.5 hover:shadow-xl hover:shadow-blue-500/30 sm:w-auto"
               >
                 Start Free Trial
                 <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
@@ -99,7 +99,7 @@ const Hero = () => {
 
               <Link
                 to="/login"
-                className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-7 py-3.5 text-base font-semibold text-gray-700 shadow-sm transition-all hover:border-green-300 hover:text-green-700 hover:shadow-md sm:w-auto"
+                className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-7 py-3.5 text-base font-semibold text-gray-700 shadow-sm transition-all hover:border-[#2883CF] hover:text-[#2883CF] hover:shadow-md sm:w-auto"
               >
                 <MessageCircle className="h-5 w-5" />
                 Book a Demo
@@ -109,7 +109,7 @@ const Hero = () => {
             {/* Trust line */}
             <div className="mt-8 flex flex-col items-center gap-4 sm:flex-row sm:gap-6 lg:justify-start">
               <div className="flex -space-x-2">
-                {['#16a34a', '#22c55e', '#10b981', '#059669'].map((c, i) => (
+                {['#2883CF', '#3b82f6', '#0ea5e9', '#06b6d4'].map((c, i) => (
                   <div
                     key={i}
                     className="h-9 w-9 rounded-full border-2 border-white"
@@ -145,7 +145,7 @@ const Hero = () => {
             className="relative"
           >
             {/* Glow behind illustration */}
-            <div className="absolute inset-0 -z-10 mx-auto h-[420px] w-[420px] translate-y-8 rounded-full bg-green-200/40 blur-3xl" />
+            <div className="absolute inset-0 -z-10 mx-auto h-[420px] w-[420px] translate-y-8 rounded-full bg-sky-200/20 blur-3xl" />
 
             {/* Floating card 1 — Messages sent */}
             <motion.div
@@ -154,8 +154,8 @@ const Hero = () => {
               transition={{ delay: 0.6 }}
               className="absolute left-2 top-6 z-10 hidden rounded-2xl border border-gray-100 bg-white p-3 shadow-xl sm:flex sm:items-center sm:gap-3"
             >
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-green-100">
-                <MessageCircle className="h-5 w-5 text-green-600" />
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50">
+                <MessageCircle className="h-5 w-5 text-[#2883CF]" />
               </div>
               <div>
                 <p className="text-xs text-gray-500">Messages Sent</p>
@@ -170,8 +170,8 @@ const Hero = () => {
               transition={{ delay: 0.8 }}
               className="absolute -bottom-2 right-2 z-10 hidden rounded-2xl border border-gray-100 bg-white p-3 shadow-xl sm:flex sm:items-center sm:gap-3"
             >
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100">
-                <Zap className="h-5 w-5 text-emerald-600" />
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-sky-50">
+                <Zap className="h-5 w-5 text-sky-600" />
               </div>
               <div>
                 <p className="text-xs text-gray-500">Delivery Rate</p>

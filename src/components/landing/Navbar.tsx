@@ -77,8 +77,8 @@ const Navbar: React.FC = () => {
           {/* ✅ Layer 2: Glossy top edge highlight */}
           <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/80 to-transparent rounded-full" />
 
-          {/* ✅ Layer 3: Soft green tint glow at bottom */}
-          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 h-1/2 w-3/4 bg-gradient-to-t from-green-200/20 to-transparent rounded-full blur-2xl pointer-events-none" />
+          {/* ✅ Layer 3: Soft blue tint glow at bottom */}
+          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 h-1/2 w-3/4 bg-gradient-to-t from-[#2883CF]/15 to-transparent rounded-full blur-2xl pointer-events-none" />
 
           {/* ✅ Layer 4: Inner border glow */}
           <div
@@ -93,8 +93,8 @@ const Navbar: React.FC = () => {
             {/* ✅ LOGO */}
             <Link to="/" className="flex items-center group flex-shrink-0">
               <div className="relative overflow-visible">
-                {/* Soft green halo */}
-                <div className="absolute inset-0 bg-gradient-to-br from-green-400/40 to-emerald-400/40 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 scale-150" />
+                {/* Soft blue halo */}
+                <div className="absolute inset-0 bg-gradient-to-br from-[#2883CF]/30 to-sky-400/30 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 scale-150" />
                 <img
                   src={logo}
                   alt="WabMeta"
@@ -102,7 +102,7 @@ const Navbar: React.FC = () => {
                     transition-all duration-500 ease-out
                     group-hover:scale-110 group-hover:rotate-3
                     drop-shadow-sm
-                    group-hover:drop-shadow-[0_0_15px_rgba(34,197,94,0.5)]"
+                    group-hover:drop-shadow-[0_0_15px_rgba(40,131,207,0.5)]"
                 />
               </div>
             </Link>
@@ -114,7 +114,7 @@ const Navbar: React.FC = () => {
                   key={link.name}
                   onClick={() => handleNavClick(link)}
                   className="relative px-4 py-2 text-sm font-medium
-                    text-gray-800 hover:text-green-700
+                    text-gray-800 hover:text-[#2883CF]
                     transition-all duration-500 ease-out group"
                   style={{ animationDelay: `${index * 100}ms` }}
                 >
@@ -126,10 +126,10 @@ const Navbar: React.FC = () => {
                       border border-white/60"
                     style={{
                       background:
-                        'linear-gradient(135deg, rgba(255,255,255,0.6) 0%, rgba(240,253,244,0.4) 100%)',
+                        'linear-gradient(135deg, rgba(255,255,255,0.6) 0%, rgba(240,249,255,0.4) 100%)',
                       backdropFilter: 'blur(10px)',
                       WebkitBackdropFilter: 'blur(10px)',
-                      boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.6), 0 2px 8px rgba(34,197,94,0.1)',
+                      boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.6), 0 2px 8px rgba(40,131,207,0.1)',
                     }}
                   />
 
@@ -139,7 +139,7 @@ const Navbar: React.FC = () => {
 
                   {/* Underline */}
                   <span className="absolute bottom-1 left-1/2 w-0 h-0.5
-                    bg-gradient-to-r from-green-500 to-emerald-400
+                    bg-gradient-to-r from-[#2883CF] to-sky-400
                     group-hover:w-4/5 group-hover:left-[10%]
                     transition-all duration-300 ease-out rounded-full" />
                 </button>
@@ -156,7 +156,7 @@ const Navbar: React.FC = () => {
                   px-5 py-2 rounded-full overflow-hidden group
                   border border-white/60
                   text-gray-800
-                  hover:text-green-700
+                  hover:text-[#2883CF]
                   transition-all duration-300
                   hover:-translate-y-0.5"
                 style={{
@@ -174,21 +174,21 @@ const Navbar: React.FC = () => {
                 <span className="relative z-10">Login</span>
               </Link>
 
-              {/* Get Started - Premium green glass pill */}
+              {/* Get Started - Premium blue glass pill */}
               <Link
                 to="/signup"
                 className="relative text-white px-5 py-2 rounded-full text-sm font-semibold
                   overflow-hidden group
-                  border border-green-400/50
+                  border border-[#2883CF]/50
                   transition-all duration-500 ease-out
                   hover:-translate-y-0.5 active:translate-y-0"
                 style={{
                   background:
-                    'linear-gradient(135deg, rgba(34,197,94,0.95) 0%, rgba(16,185,129,0.95) 100%)',
+                    'linear-gradient(135deg, rgba(40,131,207,0.95) 0%, rgba(56,189,248,0.95) 100%)',
                   backdropFilter: 'blur(12px)',
                   WebkitBackdropFilter: 'blur(12px)',
                   boxShadow:
-                    'inset 0 1px 1px rgba(255,255,255,0.4), 0 8px 24px rgba(34,197,94,0.35), 0 2px 4px rgba(34,197,94,0.2)',
+                    'inset 0 1px 1px rgba(255,255,255,0.4), 0 8px 24px rgba(40,131,207,0.35), 0 2px 4px rgba(40,131,207,0.2)',
                 }}
               >
                 {/* Top gloss highlight */}
@@ -212,7 +212,7 @@ const Navbar: React.FC = () => {
               onClick={() => setIsOpen(!isOpen)}
               className="lg:hidden relative p-2.5 rounded-full
                 border border-white/60
-                hover:border-green-300/60
+                hover:border-[#2883CF]/60
                 transition-all duration-300
                 flex-shrink-0 overflow-hidden"
               style={{
@@ -259,7 +259,7 @@ const Navbar: React.FC = () => {
             shadow-[0_20px_60px_-15px_rgba(31,38,135,0.25)]"
           style={{
             background:
-              'linear-gradient(135deg, rgba(255,255,255,0.5) 0%, rgba(240,253,244,0.3) 100%)',
+              'linear-gradient(135deg, rgba(255,255,255,0.5) 0%, rgba(240,249,255,0.3) 100%)',
             backdropFilter: 'blur(24px) saturate(180%)',
             WebkitBackdropFilter: 'blur(24px) saturate(180%)',
           }}
@@ -268,8 +268,8 @@ const Navbar: React.FC = () => {
           <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/80 to-transparent" />
           <div className="absolute inset-x-0 top-0 h-1/3 bg-gradient-to-b from-white/30 to-transparent pointer-events-none" />
 
-          {/* Bottom green glow */}
-          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 h-1/2 w-3/4 bg-gradient-to-t from-green-200/20 to-transparent rounded-full blur-2xl pointer-events-none" />
+          {/* Bottom blue glow */}
+          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 h-1/2 w-3/4 bg-gradient-to-t from-[#2883CF]/15 to-transparent rounded-full blur-2xl pointer-events-none" />
 
           <div className="relative p-4 space-y-1 z-10">
             {navLinks.map((link, index) => (
@@ -279,7 +279,7 @@ const Navbar: React.FC = () => {
                 className="block w-full text-left px-4 py-3
                   rounded-2xl transition-all duration-300 font-medium
                   border border-transparent
-                  text-gray-800 hover:text-green-700
+                  text-gray-800 hover:text-[#2883CF]
                   hover:border-white/60 hover:translate-x-1"
                 style={{
                   transitionDelay: isOpen ? `${index * 40}ms` : '0ms',
@@ -289,7 +289,7 @@ const Navbar: React.FC = () => {
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.background =
-                    'linear-gradient(135deg, rgba(255,255,255,0.5) 0%, rgba(240,253,244,0.3) 100%)';
+                    'linear-gradient(135deg, rgba(255,255,255,0.5) 0%, rgba(240,249,255,0.3) 100%)';
                   e.currentTarget.style.backdropFilter = 'blur(10px)';
                 }}
                 onMouseLeave={(e) => {
@@ -314,7 +314,7 @@ const Navbar: React.FC = () => {
                 onClick={() => setIsOpen(false)}
                 className="relative text-center px-4 py-3 rounded-2xl transition-all duration-300 font-semibold
                   text-gray-800 border border-white/60
-                  hover:text-green-700
+                  hover:text-[#2883CF]
                   overflow-hidden"
                 style={{
                   background:
@@ -333,17 +333,17 @@ const Navbar: React.FC = () => {
                 onClick={() => setIsOpen(false)}
                 className="relative text-center text-white px-4 py-3 rounded-2xl font-semibold
                   transition-all duration-300
-                  border border-green-400/50
+                  border border-[#2883CF]/50
                   active:scale-95
                   overflow-hidden
                   flex items-center justify-center gap-1.5"
                 style={{
                   background:
-                    'linear-gradient(135deg, rgba(34,197,94,0.95) 0%, rgba(16,185,129,0.95) 100%)',
+                    'linear-gradient(135deg, rgba(40,131,207,0.95) 0%, rgba(56,189,248,0.95) 100%)',
                   backdropFilter: 'blur(12px)',
                   WebkitBackdropFilter: 'blur(12px)',
                   boxShadow:
-                    'inset 0 1px 1px rgba(255,255,255,0.4), 0 8px 24px rgba(34,197,94,0.35)',
+                    'inset 0 1px 1px rgba(255,255,255,0.4), 0 8px 24px rgba(40,131,207,0.35)',
                 }}
               >
                 <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/30 to-transparent rounded-t-2xl pointer-events-none" />

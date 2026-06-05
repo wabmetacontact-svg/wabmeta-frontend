@@ -93,7 +93,7 @@ const Features: React.FC = () => {
     scrollRef.current.scrollBy({ left: amount, behavior: 'smooth' });
   };
 
-  // Unified green theme colors for all cards
+  // Unified blue theme colors for all cards (using #2883CF)
   const features = [
     {
       id: 1,
@@ -104,9 +104,9 @@ const Features: React.FC = () => {
       stat: '2.1M',
       statLabel: 'Messages sent',
       growth: '+18%',
-      color: '#16a34a',
-      lightColor: '#f0fdf4',
-      gradient: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
+      color: '#2883CF',
+      lightColor: '#f0f9ff',
+      gradient: 'linear-gradient(135deg, #38bdf8 0%, #2883CF 100%)',
     },
     {
       id: 2,
@@ -117,9 +117,9 @@ const Features: React.FC = () => {
       stat: '16',
       statLabel: 'Agents online',
       growth: 'Live',
-      color: '#16a34a',
-      lightColor: '#f0fdf4',
-      gradient: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
+      color: '#2883CF',
+      lightColor: '#f0f9ff',
+      gradient: 'linear-gradient(135deg, #38bdf8 0%, #2883CF 100%)',
     },
     {
       id: 3,
@@ -130,9 +130,9 @@ const Features: React.FC = () => {
       stat: '24/7',
       statLabel: 'Always on',
       growth: 'AI',
-      color: '#16a34a',
-      lightColor: '#f0fdf4',
-      gradient: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
+      color: '#2883CF',
+      lightColor: '#f0f9ff',
+      gradient: 'linear-gradient(135deg, #38bdf8 0%, #2883CF 100%)',
     },
     {
       id: 4,
@@ -143,9 +143,9 @@ const Features: React.FC = () => {
       stat: '90%',
       statLabel: 'Time saved',
       growth: '+42%',
-      color: '#16a34a',
-      lightColor: '#f0fdf4',
-      gradient: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
+      color: '#2883CF',
+      lightColor: '#f0f9ff',
+      gradient: 'linear-gradient(135deg, #38bdf8 0%, #2883CF 100%)',
     },
     {
       id: 5,
@@ -156,9 +156,9 @@ const Features: React.FC = () => {
       stat: '99.7%',
       statLabel: 'Delivery rate',
       growth: '+2.3%',
-      color: '#16a34a',
-      lightColor: '#f0fdf4',
-      gradient: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
+      color: '#2883CF',
+      lightColor: '#f0f9ff',
+      gradient: 'linear-gradient(135deg, #38bdf8 0%, #2883CF 100%)',
     },
     {
       id: 6,
@@ -169,9 +169,9 @@ const Features: React.FC = () => {
       stat: '12+',
       statLabel: 'Team members',
       growth: 'Pro',
-      color: '#16a34a',
-      lightColor: '#f0fdf4',
-      gradient: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
+      color: '#2883CF',
+      lightColor: '#f0f9ff',
+      gradient: 'linear-gradient(135deg, #38bdf8 0%, #2883CF 100%)',
     },
     {
       id: 7,
@@ -182,9 +182,9 @@ const Features: React.FC = () => {
       stat: '3.2K',
       statLabel: 'Auto-replies/day',
       growth: '+67%',
-      color: '#16a34a',
-      lightColor: '#f0fdf4',
-      gradient: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
+      color: '#2883CF',
+      lightColor: '#f0f9ff',
+      gradient: 'linear-gradient(135deg, #38bdf8 0%, #2883CF 100%)',
     },
   ];
 
@@ -201,26 +201,26 @@ const Features: React.FC = () => {
       {/* Soft background */}
       <div className="absolute inset-0 -z-10 bg-slate-50">
         <div
-          className="absolute top-0 left-0 w-[600px] h-[600px] rounded-full opacity-40"
+          className="absolute top-0 left-0 w-[600px] h-[600px] rounded-full opacity-35"
           style={{
             background:
-              'radial-gradient(circle, rgba(34,197,94,0.2) 0%, transparent 70%)',
+              'radial-gradient(circle, rgba(40,131,207,0.2) 0%, transparent 70%)',
             filter: 'blur(80px)',
           }}
         />
         <div
-          className="absolute bottom-0 right-0 w-[700px] h-[700px] rounded-full opacity-40"
+          className="absolute bottom-0 right-0 w-[700px] h-[700px] rounded-full opacity-35"
           style={{
             background:
-              'radial-gradient(circle, rgba(16,185,129,0.2) 0%, transparent 70%)',
+              'radial-gradient(circle, rgba(56,189,248,0.15) 0%, transparent 70%)',
             filter: 'blur(90px)',
           }}
         />
         <div
-          className="absolute top-1/2 left-1/3 w-[400px] h-[400px] rounded-full opacity-25"
+          className="absolute top-1/2 left-1/3 w-[400px] h-[400px] rounded-full opacity-20"
           style={{
             background:
-              'radial-gradient(circle, rgba(134,239,172,0.15) 0%, transparent 70%)',
+              'radial-gradient(circle, rgba(14,165,233,0.1) 0%, transparent 70%)',
             filter: 'blur(70px)',
             transform: 'translateY(-50%)',
           }}
@@ -241,7 +241,7 @@ const Features: React.FC = () => {
                 className="absolute inset-0 -z-10 rounded-full opacity-30"
                 style={{
                   background:
-                    'radial-gradient(circle, rgba(34,197,94,0.25) 0%, transparent 60%)',
+                    'radial-gradient(circle, rgba(40,131,207,0.25) 0%, transparent 60%)',
                   filter: 'blur(60px)',
                 }}
               />
@@ -258,7 +258,7 @@ const Features: React.FC = () => {
                 className="absolute top-6 -right-2 lg:right-4 bg-white rounded-2xl shadow-xl p-3 pr-4 flex items-center gap-3 transition-all duration-500 ease-out hover:-translate-y-1 hover:shadow-2xl border border-gray-100"
                 style={{ transform: 'rotate(-3deg)' }}
               >
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center flex-shrink-0">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#2883CF] to-sky-500 flex items-center justify-center flex-shrink-0">
                   <CheckCircle2 className="w-5 h-5 text-white" />
                 </div>
                 <div>
@@ -273,7 +273,7 @@ const Features: React.FC = () => {
                 style={{ transform: 'rotate(2deg)' }}
               >
                 <div className="flex items-center gap-2 mb-3 pb-2 border-b border-gray-100">
-                  <Settings2 className="w-3.5 h-3.5 text-green-600" />
+                  <Settings2 className="w-3.5 h-3.5 text-[#2883CF]" />
                   <span className="text-[11px] font-bold text-gray-900 uppercase tracking-wider">
                     Quick Setup
                   </span>
@@ -286,7 +286,7 @@ const Features: React.FC = () => {
                       </span>
                       <div
                         className={`w-7 h-4 rounded-full relative transition-colors duration-300 ${
-                          toggle.enabled ? 'bg-green-500' : 'bg-gray-200'
+                          toggle.enabled ? 'bg-[#2883CF]' : 'bg-gray-200'
                         }`}
                       >
                         <div
@@ -302,7 +302,7 @@ const Features: React.FC = () => {
 
               {/* ✅ Floating Badge - "100+ options" */}
               <div
-                className="absolute top-1/2 -right-4 lg:right-0 bg-gradient-to-br from-green-500 to-emerald-600 text-white rounded-full px-4 py-2 shadow-lg transition-all duration-500 ease-out hover:scale-110 hover:rotate-3"
+                className="absolute top-1/2 -right-4 lg:right-0 bg-gradient-to-br from-[#2883CF] to-sky-600 text-white rounded-full px-4 py-2 shadow-lg transition-all duration-500 ease-out hover:scale-110 hover:rotate-3"
                 style={{ transform: 'rotate(-8deg) translateY(-50%)' }}
               >
                 <div className="flex items-center gap-1.5">
@@ -316,17 +316,17 @@ const Features: React.FC = () => {
           {/* RIGHT: Heading + Description */}
           <div className="lg:col-span-7 order-1 lg:order-2">
             <div className="flex items-center gap-3 mb-6">
-              <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white border border-green-200 text-xs font-mono uppercase tracking-wider text-green-700 font-bold shadow-sm">
+              <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white border border-sky-200 text-xs font-mono uppercase tracking-wider text-sky-750 font-bold shadow-sm" style={{ color: '#2883CF' }}>
                 <Settings2 className="w-3.5 h-3.5" />
                 Built your way
               </span>
-              <div className="h-px flex-1 bg-gradient-to-r from-green-300 to-transparent max-w-[100px]" />
+              <div className="h-px flex-1 bg-gradient-to-r from-sky-300 to-transparent max-w-[100px]" />
             </div>
 
             <h2 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold leading-[1.05] tracking-tight text-gray-900 mb-6">
               Configure once,
               <br />
-              <span className="bg-gradient-to-r from-green-600 via-green-500 to-emerald-500 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-[#2883CF] via-sky-500 to-sky-400 bg-clip-text text-transparent">
                 run forever.
               </span>
             </h2>
@@ -385,7 +385,7 @@ const Features: React.FC = () => {
                 flex items-center justify-center
                 transition-all duration-300 ease-out
                 ${canScrollLeft
-                  ? 'border-gray-300 text-gray-700 hover:border-green-500 hover:text-green-600 hover:shadow-lg hover:-translate-x-0.5 active:scale-95'
+                  ? 'border-gray-300 text-gray-700 hover:border-[#2883CF] hover:text-[#2883CF] hover:shadow-lg hover:-translate-x-0.5 active:scale-95'
                   : 'border-gray-200 text-gray-300 cursor-not-allowed'
                 }
               `}
@@ -402,7 +402,7 @@ const Features: React.FC = () => {
                 flex items-center justify-center
                 transition-all duration-300 ease-out
                 ${canScrollRight
-                  ? 'border-gray-300 text-gray-700 hover:border-green-500 hover:text-green-600 hover:shadow-lg hover:translate-x-0.5 active:scale-95'
+                  ? 'border-gray-300 text-gray-700 hover:border-[#2883CF] hover:text-[#2883CF] hover:shadow-lg hover:translate-x-0.5 active:scale-95'
                   : 'border-gray-200 text-gray-300 cursor-not-allowed'
                 }
               `}
@@ -456,8 +456,8 @@ const Features: React.FC = () => {
               className={`
                 h-2 rounded-full transition-all duration-500 ease-out
                 ${i === activeIndex
-                  ? 'w-8 bg-green-600'
-                  : 'w-2 bg-green-200 hover:bg-green-300'
+                  ? 'w-8 bg-[#2883CF]'
+                  : 'w-2 bg-sky-200 hover:bg-sky-300'
                 }
               `}
               aria-label={`Go to feature ${i + 1}`}
@@ -548,7 +548,7 @@ const FeatureCard: React.FC<FeatureCardProps> = ({ feature, isDragging }) => {
             className="w-16 h-16 rounded-2xl flex items-center justify-center mb-6 transition-all duration-500 ease-out group-hover:scale-110 group-hover:-rotate-6"
             style={{
               background: feature.gradient,
-              boxShadow: `0 12px 30px ${feature.color}40, inset 0 1px 2px rgba(255,255,255,0.4)`,
+              boxShadow: `0 12px 30px rgba(40,131,207,0.25), inset 0 1px 2px rgba(255,255,255,0.4)`,
             }}
           >
             <Icon className="w-7 h-7 text-white drop-shadow-md" />
