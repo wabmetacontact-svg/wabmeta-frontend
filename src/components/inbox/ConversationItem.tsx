@@ -143,11 +143,11 @@ const ConversationItem: React.FC<Props> = ({
   };
 
   return (
-    <div className={`conv-item relative ${isSelected ? 'active' : ''}`}>
+    <div className={`relative transition-all duration-200 rounded-lg m-1 ${isSelected ? 'ring-1 ring-emerald-500' : ''}`}>
       <div
         onClick={onSelect}
         className={`
-          group flex items-start gap-3 px-3 py-3 cursor-pointer
+          group flex items-start gap-3 px-3 py-3 cursor-pointer rounded-lg
           transition-all duration-200
           ${isSelected
             ? 'bg-[#0a0e27]/[0.06]'

@@ -1036,6 +1036,15 @@ const Inbox: React.FC = () => {
     useCallback((statusUpdate: MessageStatusUpdate) => {
       if (!statusUpdate?.status) return;
 
+      const newStatus = statusUpdate.status.toUpperCase() as Message['status'];
+      const rank: Record<string, number> = {
+        PENDING: 0,
+        SENT: 1,
+        DELIVERED: 2,
+        READ: 3,
+        FAILED: -1,
+      };
+
       setMessages((prev) =>
         prev.map((m) => {
           const isMatch =
@@ -1050,14 +1059,6 @@ const Inbox: React.FC = () => {
 
           if (!isMatch) return m;
 
-          const newStatus = statusUpdate.status.toUpperCase() as Message['status'];
-          const rank: Record<string, number> = {
-            PENDING: 0,
-            SENT: 1,
-            DELIVERED: 2,
-            READ: 3,
-            FAILED: -1,
-          };
           const curRank = rank[m.status || 'PENDING'] ?? 0;
           const newRank = rank[newStatus || 'PENDING'] ?? 0;
 
@@ -1070,6 +1071,22 @@ const Inbox: React.FC = () => {
           };
         })
       );
+
+      // Update conversation's last message status for the sidebar
+      if (statusUpdate.conversationId) {
+        setConversations((prev) =>
+          prev.map((c) => {
+            if (c.id === statusUpdate.conversationId) {
+              const curRank = rank[c.lastMessageStatus || 'PENDING'] ?? 0;
+              const newRank = rank[newStatus || 'PENDING'] ?? 0;
+              if (newRank >= curRank || newStatus === 'FAILED') {
+                return { ...c, lastMessageStatus: newStatus };
+              }
+            }
+            return c;
+          })
+        );
+      }
     }, [])
   );
 

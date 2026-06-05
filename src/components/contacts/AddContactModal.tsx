@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { X, User, Phone, Mail, Plus, Save, Loader2, AlertCircle, CheckCircle, Tag } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { validatePhoneInput } from '../../utils/csvContacts';
 
 // ============================================
@@ -226,12 +227,14 @@ const AddContactModal: React.FC<AddContactModalProps> = ({
 
       await onSave(payload);
 
+      toast.success(editContact ? 'Contact updated successfully!' : 'Contact saved successfully!');
+
       // Close modal after successful save
       onClose();
     } catch (error: any) {
       console.error('❌ Error saving contact:', error);
-      console.error('❌ Full error:', error.response?.data);
-      // Error will be handled by parent component
+      console.error('❌ Full error:', error?.response?.data);
+      toast.error(error.message || 'Failed to save contact');
     } finally {
       setLoading(false);
       setFetchingProfile(false);
