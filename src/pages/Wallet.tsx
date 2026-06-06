@@ -50,7 +50,11 @@ interface WalletData {
   flagged: boolean;
   flagReason?: string;
   hasPendingRequest: boolean;
-  pendingRequest: { id: const WalletSkeleton: React.FC = () => (
+  pendingRequest: { id: string; amount: number; requestedAt: string } | null;
+}
+
+// ─── Skeleton ───────────────────────────────────────────────────────────────────
+const WalletSkeleton: React.FC = () => (
   <div className="w-full mx-auto p-6 space-y-6 animate-pulse">
     <div className="flex items-center justify-between">
       <div>
