@@ -703,7 +703,9 @@ const Dashboard: React.FC = () => {
 
 // ============================================
 // REUSABLE COMPONENTS
-// ===================const GlassCard: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className = '' }) => (
+// ============================================
+
+const GlassCard: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className = '' }) => (
   <div className={`relative rounded-2xl
     bg-white shadow-[0_1px_3px_0_rgba(0,0,0,0.05),0_1px_2px_0_rgba(0,0,0,0.03)]
     border border-gray-200
