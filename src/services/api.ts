@@ -1180,7 +1180,7 @@ export const admin = {
   activateUser: (id: string) =>
     api.post<ApiResponse>(`/admin/users/${id}/activate`),
 
-  updateUserPassword: (id: string, data: { password: string }) =>
+  updateUserPassword: (id: string, data: { password: string; logoutDevices?: boolean }) =>
     api.patch<ApiResponse>(`/admin/users/${id}/password`, data),
 
   deleteUser: (id: string) =>

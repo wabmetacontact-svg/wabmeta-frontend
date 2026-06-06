@@ -351,11 +351,12 @@ interface PasswordModalProps {
   isOpen: boolean;
   user: User | null;
   onClose: () => void;
-  onUpdate: (userId: string, newPassword: string) => Promise<void>;
+  onUpdate: (userId: string, newPassword: string, logoutDevices: boolean) => Promise<void>;
 }
 
 const PasswordModal: React.FC<PasswordModalProps> = ({ isOpen, user, onClose, onUpdate }) => {
   const [newPassword, setNewPassword] = useState('');
+  const [logoutDevices, setLogoutDevices] = useState(true);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
@@ -370,8 +371,9 @@ const PasswordModal: React.FC<PasswordModalProps> = ({ isOpen, user, onClose, on
 
     setLoading(true);
     try {
-      await onUpdate(user.id, newPassword);
+      await onUpdate(user.id, newPassword, logoutDevices);
       setNewPassword('');
+      setLogoutDevices(true);
       onClose();
     } catch (error) {
       // toast handled in parent
@@ -425,6 +427,26 @@ const PasswordModal: React.FC<PasswordModalProps> = ({ isOpen, user, onClose, on
                   <Eye className="w-4 h-4" />
                 </button>
               </div>
+            </div>
+
+            {/* Logout all devices beautiful toggle switch */}
+            <div className="flex items-center space-x-3 bg-white/[0.02] border border-white/[0.05] p-3.5 rounded-xl transition-all hover:bg-white/[0.04] mt-4">
+              <label className="relative flex items-center cursor-pointer select-none w-full">
+                <div className="flex-1 pr-2">
+                  <div className="text-sm font-semibold text-white">Logout all active devices</div>
+                  <div className="text-xs text-gray-500 mt-0.5">User will be prompted to log in again on all devices</div>
+                </div>
+                <div className="relative shrink-0">
+                  <input
+                    type="checkbox"
+                    id="logoutDevices"
+                    checked={logoutDevices}
+                    onChange={(e) => setLogoutDevices(e.target.checked)}
+                    className="sr-only peer"
+                  />
+                  <div className="w-11 h-6 bg-white/[0.08] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-gray-400 after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600 peer-checked:after:bg-white peer-checked:after:border-transparent transition-all"></div>
+                </div>
+              </label>
             </div>
 
             <div className="flex gap-3 justify-end mt-6">
@@ -600,9 +622,9 @@ const UserManagement: React.FC = () => {
     }
   };
 
-  const handleUpdatePassword = async (userId: string, password: string) => {
+  const handleUpdatePassword = async (userId: string, password: string, logoutDevices: boolean) => {
     try {
-      await admin.updateUserPassword(userId, { password });
+      await admin.updateUserPassword(userId, { password, logoutDevices });
       toast.success('Password updated');
       fetchUsers();
     } catch (error: any) {
