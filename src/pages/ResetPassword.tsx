@@ -1,16 +1,98 @@
 // src/pages/ResetPassword.tsx
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
-import { Lock, ArrowRight, CheckCircle2, AlertCircle, ArrowLeft, XCircle } from 'lucide-react';
+import { Lock, ArrowRight, CheckCircle2, AlertCircle, ArrowLeft, XCircle, Check } from 'lucide-react';
 import AuthLayout from '../components/auth/AuthLayout';
 import Input from '../components/common/Input';
 import Button from '../components/common/Button';
-import PasswordStrengthMeter from '../components/auth/PasswordStrengthMeter';
 import { auth } from '../services/api';
 
 // ✅ Must match backend validation
 const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#]).{8,}$/;
+
+// ─── Password Strength (inline) ──────────────────────────────────────────────
+
+interface StrengthResult {
+  score: number;       // 0-5
+  label: string;
+  color: string;       // tailwind bg class
+  textColor: string;   // tailwind text class
+}
+
+const PWD_RULES = [
+  { label: 'At least 8 characters',        test: (p: string) => p.length >= 8 },
+  { label: 'One uppercase letter (A–Z)',    test: (p: string) => /[A-Z]/.test(p) },
+  { label: 'One lowercase letter (a–z)',    test: (p: string) => /[a-z]/.test(p) },
+  { label: 'One number (0–9)',              test: (p: string) => /\d/.test(p) },
+  { label: 'One special char (@$!%*?&#)',   test: (p: string) => /[@$!%*?&#]/.test(p) },
+];
+
+const getStrength = (score: number): StrengthResult => {
+  if (score === 0) return { score, label: '',           color: 'bg-gray-200', textColor: 'text-gray-400' };
+  if (score === 1) return { score, label: 'Very weak',  color: 'bg-red-500',  textColor: 'text-red-500' };
+  if (score === 2) return { score, label: 'Weak',       color: 'bg-orange-500', textColor: 'text-orange-500' };
+  if (score === 3) return { score, label: 'Fair',       color: 'bg-yellow-500', textColor: 'text-yellow-600' };
+  if (score === 4) return { score, label: 'Good',       color: 'bg-lime-500', textColor: 'text-lime-600' };
+  return             { score, label: 'Strong',          color: 'bg-green-500', textColor: 'text-green-600' };
+};
+
+const PasswordStrength: React.FC<{ password: string }> = ({ password }) => {
+  const rules = useMemo(() =>
+    PWD_RULES.map(r => ({ ...r, met: r.test(password) })),
+    [password],
+  );
+  const strength = getStrength(rules.filter(r => r.met).length);
+
+  if (!password) return null;
+
+  return (
+    <div className="mt-3 space-y-3">
+      {/* Bar */}
+      <div>
+        <div className="flex justify-between mb-1.5">
+          <span className="text-xs text-gray-500">Strength</span>
+          {strength.label && (
+            <span className={`text-xs font-semibold ${strength.textColor}`}>
+              {strength.label}
+            </span>
+          )}
+        </div>
+        <div className="flex gap-1">
+          {[1,2,3,4,5].map(n => (
+            <div
+              key={n}
+              className={`h-1.5 flex-1 rounded-full transition-all duration-300
+                ${n <= strength.score ? strength.color : 'bg-gray-200'}`}
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* Rules */}
+      <ul className="space-y-1">
+        {rules.map(r => (
+          <li
+            key={r.label}
+            className={`flex items-center gap-2 text-xs transition-colors duration-200
+              ${r.met ? 'text-green-600' : 'text-gray-400'}`}
+          >
+            <div className={`w-3.5 h-3.5 rounded-full flex items-center justify-center flex-shrink-0
+              ${r.met ? 'bg-green-100' : 'bg-gray-100'}`}>
+              {r.met
+                ? <Check className="w-2.5 h-2.5" />
+                : <span className="w-1 h-1 rounded-full bg-gray-400" />
+              }
+            </div>
+            {r.label}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+};
+
+// ─── Reset Password Page ──────────────────────────────────────────────────────
 
 const ResetPassword: React.FC = () => {
   const navigate = useNavigate();
@@ -194,7 +276,7 @@ const ResetPassword: React.FC = () => {
             error={errors.password}
             autoFocus
           />
-          <PasswordStrengthMeter password={password} />
+          <PasswordStrength password={password} />
         </div>
 
         <Input
