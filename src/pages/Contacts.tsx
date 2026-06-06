@@ -1273,7 +1273,7 @@ const Contacts: React.FC = () => {
                     </button>
                     <button 
                       onClick={(e) => handleDeleteGroup(e, group.id, group.name)}
-                      className="p-2 text-red-655 hover:text-white hover:bg-red-600 rounded-lg transition-colors bg-red-50 border border-red-200"
+                      className="p-2 text-red-600 hover:text-white hover:bg-red-600 rounded-lg transition-colors bg-red-50 border border-red-200"
                       title="Delete Group"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -1285,7 +1285,7 @@ const Contacts: React.FC = () => {
           ) : (
             <div className="bg-white rounded-xl border border-gray-200 p-12 text-center shadow-sm">
               <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-gray-100">
-                <Layers className="w-8 h-8 text-gray-450" />
+                <Layers className="w-8 h-8 text-gray-400" />
               </div>
               <h3 className="text-lg font-semibold text-gray-900">No Groups Found</h3>
               <p className="text-gray-600 mt-2 mb-6 max-w-sm mx-auto">Groups you create during CSV imports will automatically appear here.</p>

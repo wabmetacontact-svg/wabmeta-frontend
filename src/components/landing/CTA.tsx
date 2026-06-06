@@ -213,7 +213,7 @@ const CTA: React.FC = () => {
                       <div className="text-xl lg:text-2xl font-bold text-gray-950">
                         {item.stat}
                       </div>
-                      <div className="text-xs text-gray-450 uppercase tracking-wider font-bold mt-1">
+                      <div className="text-xs text-gray-500 uppercase tracking-wider font-bold mt-1">
                         {item.label}
                       </div>
                     </div>
@@ -305,7 +305,7 @@ const CTA: React.FC = () => {
                       </div>
                       <div>
                         <div className="text-[9px] font-semibold text-gray-950">New sale!</div>
-                        <div className="text-[8px] text-gray-550 font-medium">₹1,299 · 2s ago</div>
+                        <div className="text-[8px] text-gray-500 font-medium">₹1,299 · 2s ago</div>
                       </div>
                     </div>
                   </div>

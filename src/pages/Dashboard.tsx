@@ -536,7 +536,7 @@ const Dashboard: React.FC = () => {
                 <div className="flex flex-col items-center justify-center py-10 text-center">
                   <div className="w-14 h-14 rounded-2xl bg-gray-50 border border-gray-200
                     flex items-center justify-center mb-3">
-                    <BarChart3 className="w-6 h-6 text-gray-400" />
+                    <BarChart3 className="w-6 h-6 text-gray-500" />
                   </div>
                   <p className="text-sm text-gray-600">No delivery data</p>
                   <p className="text-xs text-gray-500 mt-1">Send messages to see stats</p>
@@ -613,7 +613,7 @@ const Dashboard: React.FC = () => {
               <div className="text-center py-10">
                 <div className="w-14 h-14 rounded-2xl bg-gray-50 border border-gray-200
                   flex items-center justify-center mx-auto mb-3">
-                  <Zap className="w-6 h-6 text-gray-400" />
+                  <Zap className="w-6 h-6 text-gray-500" />
                 </div>
                 <p className="text-sm text-gray-600">No campaigns yet</p>
                 <Link to="/dashboard/campaigns/create"
@@ -689,9 +689,9 @@ const Dashboard: React.FC = () => {
               </div>
             ) : (
               <div className="text-center py-6">
-                <Inbox className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                <Inbox className="w-8 h-8 text-gray-500 mx-auto mb-2" />
                 <p className="text-xs text-gray-500">No activity yet</p>
-                <p className="text-[10px] text-gray-400 mt-1">Your actions will show up here</p>
+                <p className="text-[10px] text-gray-500 mt-1">Your actions will show up here</p>
               </div>
             )}
           </GlassCard>
@@ -756,7 +756,7 @@ const StatCard: React.FC<{
           {change !== undefined && change !== 0 && (
             <div className={`flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[10px] font-mono font-bold
               ${change >= 0
-                ? 'bg-green-50 border border-green-200'
+                ? 'bg-green-50 text-green-700 border border-green-200'
                 : 'bg-red-50 text-red-700 border border-red-200'
               }
             `}>
@@ -920,7 +920,7 @@ const EmptyChart: React.FC<{
   <div className="flex flex-col items-center justify-center py-16 text-center">
     <div className="w-16 h-16 rounded-2xl bg-gray-50 border border-gray-200
       flex items-center justify-center mb-4 shadow-sm">
-      <Icon className="w-7 h-7 text-gray-400" />
+      <Icon className="w-7 h-7 text-gray-500" />
     </div>
     <p className="text-sm font-medium text-gray-900 mb-1">{title}</p>
     <p className="text-xs text-gray-500 mb-4">{subtitle}</p>
