@@ -23,77 +23,55 @@ const Button: React.FC<ButtonProps> = ({
   className = '',
   ...props
 }) => {
-  const baseStyles = `
-    relative inline-flex items-center justify-center gap-2 
-    font-semibold rounded-xl 
-    transition-all duration-300 ease-out
-    overflow-hidden group
-    disabled:opacity-50 disabled:cursor-not-allowed
-    disabled:hover:translate-y-0
-    ${fullWidth ? 'w-full' : ''}
-  `;
+  const base =
+    'inline-flex items-center justify-center gap-2 font-semibold rounded-xl ' +
+    'transition-all duration-200 ease-out select-none ' +
+    'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 ' +
+    'focus-visible:ring-offset-white dark:focus-visible:ring-offset-slate-950 ' +
+    'disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 ' +
+    (fullWidth ? 'w-full ' : '');
 
-  const sizeStyles = {
+  const sizes = {
     sm: 'px-4 py-2 text-sm',
-    md: 'px-6 py-3.5 text-sm',
-    lg: 'px-8 py-4 text-base',
+    md: 'px-5 py-2.5 text-sm',
+    lg: 'px-7 py-3.5 text-base',
   };
 
-  const variantStyles = {
-    primary: `
-      bg-gradient-to-r from-green-500 to-emerald-500
-      text-white border border-green-400/40
-      shadow-[0_8px_24px_rgba(16,185,129,0.35)]
-      hover:shadow-[0_12px_32px_rgba(16,185,129,0.5)]
-      hover:-translate-y-0.5
-    `,
-    secondary: `
-      bg-white/[0.06] backdrop-blur-xl
-      text-white border border-white/[0.12]
-      hover:bg-white/[0.1] hover:border-white/[0.2]
-    `,
-    ghost: `
-      text-gray-300 hover:text-white
-      hover:bg-white/[0.05]
-      border border-transparent
-    `,
-    danger: `
-      bg-gradient-to-r from-red-500 to-rose-500
-      text-white border border-red-400/40
-      shadow-[0_8px_24px_rgba(239,68,68,0.35)]
-      hover:shadow-[0_12px_32px_rgba(239,68,68,0.5)]
-      hover:-translate-y-0.5
-    `,
+  const variants = {
+    primary:
+      'bg-primary-500 text-white shadow-sm ' +
+      'hover:bg-primary-600 hover:-translate-y-0.5 hover:shadow-md active:translate-y-0',
+    secondary:
+      'bg-white text-gray-800 border border-gray-200 hover:bg-gray-50 hover:border-gray-300 ' +
+      'dark:bg-slate-800 dark:text-slate-100 dark:border-slate-700 dark:hover:bg-slate-700',
+    ghost:
+      'bg-transparent text-gray-600 hover:bg-gray-100 hover:text-gray-900 ' +
+      'dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white',
+    danger:
+      'bg-red-500 text-white shadow-sm ' +
+      'hover:bg-red-600 hover:-translate-y-0.5 hover:shadow-md active:translate-y-0',
   };
 
   const isDisabled = disabled || loading;
 
   return (
     <button
-      className={`${baseStyles} ${sizeStyles[size]} ${variantStyles[variant]} ${className}`}
+      className={`${base} ${sizes[size]} ${variants[variant]} ${className}`}
       disabled={isDisabled}
       {...props}
     >
-      {/* Shine effect for primary */}
-      {variant === 'primary' && !isDisabled && (
-        <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/25 to-transparent
-          -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+      {loading ? (
+        <>
+          <Loader2 className="w-4 h-4 animate-spin" />
+          <span>Please wait...</span>
+        </>
+      ) : (
+        <>
+          {icon && iconPosition === 'left' && icon}
+          {children}
+          {icon && iconPosition === 'right' && icon}
+        </>
       )}
-
-      <span className="relative z-10 inline-flex items-center gap-2">
-        {loading ? (
-          <>
-            <Loader2 className="w-4 h-4 animate-spin" />
-            <span>Please wait...</span>
-          </>
-        ) : (
-          <>
-            {icon && iconPosition === 'left' && icon}
-            {children}
-            {icon && iconPosition === 'right' && icon}
-          </>
-        )}
-      </span>
     </button>
   );
 };
