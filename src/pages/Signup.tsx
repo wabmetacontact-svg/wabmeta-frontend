@@ -165,38 +165,26 @@ const Signup: React.FC = () => {
         : "Just a strong password and you're in"
       }
     >
-      {/* ✅ PROGRESS BAR - Editorial */}
       <div className="mb-7">
         <div className="flex items-center gap-1.5 mb-3">
           {[1, 2, 3].map((s) => (
             <div key={s} className="flex-1">
-              <div className="h-1 rounded-full overflow-hidden bg-white/[0.06]">
+              <div className="h-1 rounded-full overflow-hidden bg-secondary-100">
                 <div
-                  className="h-full transition-all duration-500 ease-out"
-                  style={{
-                    width: s <= step ? '100%' : '0%',
-                    background: s < step 
-                      ? 'linear-gradient(to right, #10b981, #059669)' 
-                      : s === step 
-                        ? 'linear-gradient(to right, #10b981, #34d399)' 
-                        : 'transparent',
-                    boxShadow: s === step ? '0 0 12px rgba(16, 185, 129, 0.5)' : 'none',
-                  }}
+                  className="h-full transition-all duration-500 ease-out bg-gradient-to-r from-primary-500 to-primary-600"
+                  style={{ width: s <= step ? '100%' : '0%' }}
                 />
               </div>
             </div>
           ))}
         </div>
-
-        <div className="flex justify-between text-xs font-mono">
+        <div className="flex justify-between text-xs">
           {STEP_LABELS.map((label, i) => (
             <div key={label} className="flex items-center gap-1.5">
-              <span className={`transition-colors duration-300
-                ${i + 1 < step ? 'text-green-400' 
-                  : i + 1 === step ? 'text-white' 
-                  : 'text-gray-600'
-                }`}
-              >
+              <span className={`transition-colors duration-300 font-medium
+                ${i + 1 < step ? 'text-primary-600'
+                  : i + 1 === step ? 'text-secondary-900'
+                  : 'text-secondary-400'}`}>
                 {i + 1 < step && <Check className="inline w-3 h-3 mr-1" />}
                 {String(i + 1).padStart(2, '0')} · {label}
               </span>
@@ -205,13 +193,10 @@ const Signup: React.FC = () => {
         </div>
       </div>
 
-      {/* Error banner */}
       {apiError && (
         <div className="mb-5 p-4 rounded-xl flex items-start gap-3
-          bg-red-500/10 backdrop-blur-xl
-          border border-red-400/30
-          text-red-300 animate-fadeIn">
-          <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5 text-red-400" />
+          bg-error/5 border border-error/20 text-error animate-fadeIn">
+          <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
           <p className="text-sm font-medium">{apiError}</p>
         </div>
       )}
@@ -252,17 +237,15 @@ const Signup: React.FC = () => {
               required
             />
 
-            {/* Phone with +91 prefix - glass styled */}
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                WhatsApp Number <span className="text-red-400">*</span>
+              <label className="block text-sm font-medium text-secondary-700 mb-1.5">
+                WhatsApp Number <span className="text-error">*</span>
               </label>
               <div className="flex">
-                <div className="flex items-center px-4 py-3.5 min-w-[90px] justify-center
-                  bg-white/[0.06] backdrop-blur-xl
-                  border border-r-0 border-white/[0.08] rounded-l-xl">
-                  <span className="text-white font-semibold text-sm flex items-center gap-1.5">
-                    🇮🇳 <span className="font-mono">+91</span>
+                <div className="flex items-center px-4 min-w-[90px] justify-center
+                  bg-secondary-50 border border-r-0 border-secondary-200 rounded-l-xl">
+                  <span className="text-secondary-700 font-semibold text-sm flex items-center gap-1.5">
+                    🇮🇳 <span>+91</span>
                   </span>
                 </div>
                 <input
@@ -274,27 +257,22 @@ const Signup: React.FC = () => {
                     update('phone', v);
                   }}
                   maxLength={10}
-                  className={`flex-1 px-4 py-3.5
-                    bg-white/[0.04] backdrop-blur-xl
-                    text-white placeholder:text-gray-500
-                    border rounded-r-xl
-                    transition-all duration-300
-                    focus:outline-none focus:bg-white/[0.06]
+                  className={`flex-1 h-11 px-4 bg-white text-secondary-900 placeholder:text-secondary-400
+                    border rounded-r-xl outline-none transition-colors duration-150
                     ${errors.phone
-                      ? 'border-red-400/40 focus:border-red-400/60'
-                      : 'border-white/[0.08] focus:border-green-400/40 hover:border-white/[0.15]'
+                      ? 'border-error focus:border-error focus:ring-2 focus:ring-error/20'
+                      : 'border-secondary-200 hover:border-secondary-300 focus:border-primary-600 focus:ring-2 focus:ring-primary-600/15'
                     }`}
                 />
               </div>
-              {errors.phone && (
-                <p className="mt-2 text-xs text-red-400 flex items-center gap-1.5">
-                  <span className="w-1 h-1 rounded-full bg-red-400" />
+              {errors.phone ? (
+                <p className="mt-1.5 text-sm text-error flex items-center gap-1.5">
+                  <span className="w-1 h-1 rounded-full bg-error" />
                   {errors.phone}
                 </p>
-              )}
-              {!errors.phone && (
-                <p className="mt-2 text-xs text-gray-500 flex items-center gap-1.5">
-                  <Sparkles className="w-3 h-3 text-green-400" />
+              ) : (
+                <p className="mt-1.5 text-sm text-secondary-500 flex items-center gap-1.5">
+                  <Sparkles className="w-3 h-3 text-primary-600" />
                   You'll get a welcome message on this WhatsApp number
                 </p>
               )}
@@ -310,9 +288,9 @@ const Signup: React.FC = () => {
               Continue
             </Button>
 
-            <p className="text-center text-sm text-gray-400">
+            <p className="text-center text-sm text-secondary-500">
               Already have an account?{' '}
-              <Link to="/login" className="font-semibold text-green-400 hover:text-green-300 transition-colors">
+              <Link to="/login" className="font-semibold text-primary-600 hover:text-primary-700 transition-colors">
                 Sign in →
               </Link>
             </p>
@@ -394,11 +372,11 @@ const Signup: React.FC = () => {
               label={
                 <span>
                   I agree to the{' '}
-                  <Link to="/terms" className="text-green-400 hover:text-green-300 underline underline-offset-2" target="_blank">
+                  <Link to="/terms" className="text-primary-600 hover:text-primary-700 underline underline-offset-2" target="_blank">
                     Terms
                   </Link>
                   {' '}and{' '}
-                  <Link to="/privacy" className="text-green-400 hover:text-green-300 underline underline-offset-2" target="_blank">
+                  <Link to="/privacy" className="text-primary-600 hover:text-primary-700 underline underline-offset-2" target="_blank">
                     Privacy Policy
                   </Link>
                 </span>
@@ -426,9 +404,9 @@ const Signup: React.FC = () => {
               </Button>
             </div>
 
-            <p className="text-center text-sm text-gray-400">
+            <p className="text-center text-sm text-secondary-500">
               Already have an account?{' '}
-              <Link to="/login" className="font-semibold text-green-400 hover:text-green-300 transition-colors">
+              <Link to="/login" className="font-semibold text-primary-600 hover:text-primary-700 transition-colors">
                 Sign in →
               </Link>
             </p>

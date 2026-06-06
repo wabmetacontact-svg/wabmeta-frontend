@@ -112,13 +112,11 @@ const Login: React.FC = () => {
       title="Welcome back"
       subtitle="Sign in to your WabMeta dashboard"
     >
-      {/* ✅ API Error - glass styled */}
+      {/* API Error - light */}
       {apiError && (
         <div className="mb-6 p-4 rounded-xl flex items-start gap-3
-          bg-red-500/10 backdrop-blur-xl
-          border border-red-400/30
-          text-red-300 animate-fadeIn">
-          <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5 text-red-400" />
+          bg-error/5 border border-error/20 text-error animate-fadeIn">
+          <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
           <p className="text-sm font-medium">{apiError}</p>
         </div>
       )}
@@ -158,7 +156,7 @@ const Login: React.FC = () => {
           />
           <Link
             to="/forgot-password"
-            className="text-sm font-medium text-green-400 hover:text-green-300 transition-colors"
+            className="text-sm font-medium text-primary-600 hover:text-primary-700 transition-colors"
           >
             Forgot password?
           </Link>
@@ -178,10 +176,10 @@ const Login: React.FC = () => {
         {/* Divider */}
         <div className="relative py-2">
           <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-white/[0.08]" />
+            <div className="w-full border-t border-secondary-200" />
           </div>
           <div className="relative flex justify-center text-xs">
-            <span className="px-3 bg-[#0a0e27]/50 backdrop-blur-sm text-gray-500 font-mono uppercase tracking-wider">
+            <span className="px-3 bg-white text-secondary-400 uppercase tracking-wider">
               Or
             </span>
           </div>
@@ -189,11 +187,11 @@ const Login: React.FC = () => {
 
         <SocialLoginButtons loading={isLoading} />
 
-        <p className="text-center text-sm text-gray-400 pt-2">
+        <p className="text-center text-sm text-secondary-500 pt-2">
           New to WabMeta?{" "}
           <Link
             to="/signup"
-            className="font-semibold text-green-400 hover:text-green-300 transition-colors"
+            className="font-semibold text-primary-600 hover:text-primary-700 transition-colors"
           >
             Create free account →
           </Link>
