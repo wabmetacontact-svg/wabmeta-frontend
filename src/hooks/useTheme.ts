@@ -1,8 +1,3 @@
-import { useContext } from 'react';
-import { ThemeContext } from '../context/ThemeContext';
+// src/hooks/useTheme.ts
 
-export const useTheme = () => {
-  const ctx = useContext(ThemeContext);
-  if (!ctx) throw new Error('useTheme must be used within ThemeProvider');
-  return ctx;
-};
+export { useTheme } from '../context/ThemeContext';

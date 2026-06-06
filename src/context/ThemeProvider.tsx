@@ -1,54 +1,33 @@
-import React, { useEffect, useMemo, useState, useCallback } from 'react';
-import { ThemeContext, type ThemeContextValue, type ThemeMode, type ThemeResolved } from './ThemeContext';
-
-const STORAGE_KEY = 'wabmeta_theme';
-
-const getSystemTheme = (): ThemeResolved => {
-  if (typeof window === 'undefined') return 'light';
-  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-};
-
-const getInitialMode = (): ThemeMode => {
-  if (typeof window === 'undefined') return 'light';
-  const stored = localStorage.getItem(STORAGE_KEY) as ThemeMode | null;
-  if (stored === 'light' || stored === 'dark' || stored === 'system') return stored;
-  return 'light';
-};
+import React, { useEffect, useMemo } from 'react';
+import { useLocation } from 'react-router-dom';
+import { ThemeContext, type ThemeContextValue } from './ThemeContext';
 
 export const ThemeProvider: React.FC<React.PropsWithChildren> = ({ children }) => {
-  const [mode, setModeState] = useState<ThemeMode>(() => getInitialMode());
-  const [systemTheme, setSystemTheme] = useState<ThemeResolved>(() => getSystemTheme());
+    const { pathname } = useLocation();
 
-  const resolved: ThemeResolved = mode === 'system' ? systemTheme : mode;
+    // Dynamically manage dark class based on the route
+    useEffect(() => {
+        const root = document.documentElement;
+        
+        // Marketing/public pages that should be in light theme
+        const marketingRoutes = ['/', '/contact', '/documentation', '/blog', '/privacy', '/terms', '/data-deletion'];
+        const isMarketing = marketingRoutes.includes(pathname);
 
-  useEffect(() => {
-    const root = document.documentElement;
-    root.classList.remove('light', 'dark');
-    root.classList.add(resolved);
-  }, [resolved]);
+        if (isMarketing) {
+            root.classList.remove('dark');
+            root.classList.add('light');
+        } else {
+            root.classList.remove('light');
+            root.classList.add('dark');
+        }
+    }, [pathname]);
 
-  useEffect(() => {
-    const mq = window.matchMedia('(prefers-color-scheme: dark)');
-    const handler = (e: MediaQueryListEvent) => setSystemTheme(e.matches ? 'dark' : 'light');
-    mq.addEventListener('change', handler);
-    return () => mq.removeEventListener('change', handler);
-  }, []);
+    const value = useMemo<ThemeContextValue>(() => ({
+        mode: 'dark',
+        resolved: 'dark',
+        setMode: () => {},   // no-op — kept for API compatibility
+        toggle: () => {},    // no-op — kept for API compatibility
+    }), []);
 
-  const setMode = useCallback((m: ThemeMode) => {
-    setModeState(m);
-    localStorage.setItem(STORAGE_KEY, m);
-  }, []);
-
-  const toggle = useCallback(() => {
-    setMode(resolved === 'dark' ? 'light' : 'dark');
-  }, [resolved, setMode]);
-
-  const value = useMemo<ThemeContextValue>(() => ({
-    mode,
-    resolved,
-    setMode,
-    toggle,
-  }), [mode, resolved, setMode, toggle]);
-
-  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
+    return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 };
