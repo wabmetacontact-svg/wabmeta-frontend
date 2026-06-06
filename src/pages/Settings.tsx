@@ -89,11 +89,11 @@ const Settings: React.FC = () => {
     <div className="max-w-7xl mx-auto px-4 py-6">
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-white flex items-center">
-          <SettingsIcon className="w-8 h-8 mr-3 text-gray-400" />
+        <h1 className="text-3xl font-bold text-gray-900 flex items-center">
+          <SettingsIcon className="w-8 h-8 mr-3 text-gray-500" />
           Settings
         </h1>
-        <p className="mt-1 text-gray-400">
+        <p className="mt-1 text-gray-650">
           Manage your account and application settings
         </p>
       </div>
@@ -101,21 +101,21 @@ const Settings: React.FC = () => {
       <div className="flex flex-col lg:flex-row gap-6">
         {/* Sidebar Tabs */}
         <div className="lg:w-64 flex-shrink-0">
-          <div className="relative overflow-hidden bg-white/[0.02] rounded-2xl border border-white/[0.05] sticky top-6 backdrop-blur-xl">
+          <div className="relative overflow-hidden bg-white rounded-2xl border border-gray-200 sticky top-6 shadow-sm">
             <nav className="flex flex-col">
               {tabs.map((tab) => (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id as SettingsTab)}
                   className={`flex items-center px-4 py-3 text-left transition-all border-l-4 ${activeTab === tab.id
-                      ? 'bg-emerald-500/10 border-emerald-500 text-emerald-500'
-                      : 'border-transparent text-gray-400 hover:bg-white/[0.04]'
+                      ? 'bg-emerald-50 border-emerald-500 text-emerald-600'
+                      : 'border-transparent text-gray-600 hover:bg-gray-50'
                     }`}
                 >
-                  <tab.icon className={`w-5 h-5 mr-3 ${activeTab === tab.id ? 'text-emerald-500' : ''
+                  <tab.icon className={`w-5 h-5 mr-3 ${activeTab === tab.id ? 'text-emerald-600' : 'text-gray-500'
                     }`} />
                   <div>
-                    <p className={`font-medium ${activeTab === tab.id ? 'text-emerald-500' : ''
+                    <p className={`font-medium ${activeTab === tab.id ? 'text-emerald-600 font-semibold' : 'text-gray-750'
                       }`}>
                       {tab.name}
                     </p>
@@ -128,28 +128,28 @@ const Settings: React.FC = () => {
             </nav>
 
             {/* Quick Links */}
-            <div className="border-t border-white/[0.05] p-4 relative z-10">
+            <div className="border-t border-gray-200 p-4 relative z-10 bg-gray-50/50">
               <p className="text-xs text-gray-500 uppercase tracking-wider mb-3">
                 Quick Links
               </p>
               <div className="space-y-2">
                 <Link
                   to="/dashboard/settings/profile"
-                  className="flex items-center text-sm text-gray-400 hover:text-emerald-500"
+                  className="flex items-center text-sm text-gray-600 hover:text-emerald-600"
                 >
                   <User className="w-4 h-4 mr-2" />
                   My Profile
                 </Link>
                 <Link
                   to="/dashboard/settings/team"
-                  className="flex items-center text-sm text-gray-400 hover:text-emerald-500"
+                  className="flex items-center text-sm text-gray-600 hover:text-emerald-600"
                 >
                   <Globe className="w-4 h-4 mr-2" />
                   Team Members
                 </Link>
                 <Link
                   to="/dashboard/settings/billing"
-                  className="flex items-center text-sm text-gray-400 hover:text-emerald-500"
+                  className="flex items-center text-sm text-gray-600 hover:text-emerald-600"
                 >
                   <CreditCard className="w-4 h-4 mr-2" />
                   Billing & Plans
@@ -161,7 +161,7 @@ const Settings: React.FC = () => {
 
         {/* Main Content */}
         <div className="flex-1 min-w-0">
-          <div className="relative overflow-hidden bg-white/[0.02] rounded-2xl border border-white/[0.05] p-6 backdrop-blur-xl">
+          <div className="relative overflow-hidden bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
             <div className="relative z-10">
               {renderTabContent()}
             </div>

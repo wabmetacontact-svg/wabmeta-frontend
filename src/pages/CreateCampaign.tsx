@@ -358,34 +358,34 @@ const CreateCampaign: React.FC = () => {
 
   if (loadingAccounts || loadingData) {
     return (
-      <div className="flex items-center justify-center h-screen bg-[#050816]">
+      <div className="flex items-center justify-center h-screen bg-gray-50">
         <Loader2 className="w-10 h-10 text-primary-500 animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#050816]">
-      <div className="bg-white/[0.02] border-b border-white/[0.05] sticky top-16 z-20 backdrop-blur-xl">
+    <div className="min-h-screen bg-gray-50">
+      <div className="bg-white border-b border-gray-200 sticky top-16 z-20 shadow-sm">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-4">
-              <Link to="/dashboard/campaigns" className="p-2 hover:bg-white/[0.04] rounded-lg">
-                <ArrowLeft className="w-5 h-5 text-gray-400" />
+              <Link to="/dashboard/campaigns" className="p-2 hover:bg-gray-100 rounded-lg">
+                <ArrowLeft className="w-5 h-5 text-gray-500" />
               </Link>
               <div>
-                <h1 className="text-xl font-bold text-white">Create Campaign</h1>
-                <div className="flex items-center gap-2 text-sm text-gray-400">
+                <h1 className="text-xl font-bold text-gray-900">Create Campaign</h1>
+                <div className="flex items-center gap-2 text-sm text-gray-500">
                   <span>Step {currentStep} of 4</span>
                   <span>•</span>
-                  <span className="flex items-center text-green-600 dark:text-green-400">
+                  <span className="flex items-center text-green-600">
                     <Wifi className="w-3 h-3 mr-1" /> Connected
                   </span>
                 </div>
               </div>
             </div>
             {selectedTemplate && (
-              <button onClick={() => setShowPreview(true)} className="flex items-center space-x-2 px-4 py-2 text-gray-300 hover:bg-white/[0.04] rounded-xl">
+              <button onClick={() => setShowPreview(true)} className="flex items-center space-x-2 px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-xl">
                 <Eye className="w-5 h-5" /> <span>Preview</span>
               </button>
             )}
@@ -415,7 +415,7 @@ const CreateCampaign: React.FC = () => {
                     }`}>
                     {step.number < currentStep ? <Check className="w-5 h-5" /> : <step.icon className="w-5 h-5" />}
                   </div>
-                  <span className={`ml-3 font-medium hidden sm:inline ${step.number <= currentStep ? "text-white" : "text-gray-500"}`}>{step.title}</span>
+                  <span className={`ml-3 font-medium hidden sm:inline ${step.number <= currentStep ? "text-gray-900" : "text-gray-500"}`}>{step.title}</span>
                 </div>
                 {index < steps.length - 1 && <div className={`flex-1 h-1 mx-4 rounded ${step.number < currentStep ? "bg-primary-500" : "bg-gray-200"}`} />}
               </React.Fragment>
@@ -423,39 +423,39 @@ const CreateCampaign: React.FC = () => {
           </div>
         </div>
 
-        <div className="relative overflow-hidden bg-white/[0.02] rounded-2xl border border-white/[0.05] p-6 md:p-8 shadow-xl backdrop-blur-xl">
+        <div className="relative overflow-hidden bg-white rounded-2xl border border-gray-200 p-6 md:p-8 shadow-sm">
           {currentStep === 1 && (
             <div className="space-y-6 animate-fade-in">
-              <div className="border-b border-white/[0.08] pb-4">
-                <h2 className="text-xl font-bold text-white mb-1">Campaign Details</h2>
-                <p className="text-gray-400">Set up the foundational details for your campaign.</p>
+              <div className="border-b border-gray-200 pb-4">
+                <h2 className="text-xl font-bold text-gray-900 mb-1">Campaign Details</h2>
+                <p className="text-gray-500">Set up the foundational details for your campaign.</p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-300 mb-2">WhatsApp Account *</label>
-                  <select value={selectedAccountId} onChange={(e) => setSelectedAccountId(e.target.value)} className="w-full px-4 py-3 border border-white/[0.05] rounded-xl bg-white/[0.02] hover:bg-white/[0.04] focus:bg-white/[0.04] text-white transition-all focus:ring-2 focus:ring-emerald-500 focus:outline-none focus:border-emerald-500">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">WhatsApp Account *</label>
+                  <select value={selectedAccountId} onChange={(e) => setSelectedAccountId(e.target.value)} className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white hover:bg-gray-50 text-gray-900 transition-all focus:ring-2 focus:ring-emerald-500 focus:outline-none focus:border-emerald-500">
                     {whatsappAccounts.map((a) => (
-                      <option key={a.id} value={a.id} className="bg-[#050816]">{a.displayName || "WhatsApp"} - {a.phoneNumber}</option>
+                      <option key={a.id} value={a.id}>{a.displayName || "WhatsApp"} - {a.phoneNumber}</option>
                     ))}
                   </select>
                   <p className="text-xs text-gray-500 mt-2">The verified number used to send messages.</p>
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-300 mb-2">Campaign Name *</label>
-                  <input type="text" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} className="w-full px-4 py-3 border border-white/[0.05] rounded-xl bg-white/[0.02] hover:bg-white/[0.04] focus:bg-white/[0.04] text-white transition-all focus:ring-2 focus:ring-emerald-500 focus:outline-none focus:border-emerald-500" placeholder="e.g. Diwali Mega Sale" />
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Campaign Name *</label>
+                  <input type="text" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white hover:bg-gray-50 text-gray-900 transition-all focus:ring-2 focus:ring-emerald-500 focus:outline-none focus:border-emerald-500" placeholder="e.g. Diwali Mega Sale" />
                   <p className="text-xs text-gray-500 mt-2">A unique name to identify this campaign later.</p>
                 </div>
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-semibold text-gray-300 mb-2">Description (Optional)</label>
-                  <textarea value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} rows={2} className="w-full px-4 py-3 border border-white/[0.05] rounded-xl bg-white/[0.02] hover:bg-white/[0.04] focus:bg-white/[0.04] text-white transition-all focus:ring-2 focus:ring-emerald-500 focus:outline-none focus:border-emerald-500 resize-none" placeholder="Brief notes about this campaign..." />
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Description (Optional)</label>
+                  <textarea value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} rows={2} className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white hover:bg-gray-50 text-gray-900 transition-all focus:ring-2 focus:ring-emerald-500 focus:outline-none focus:border-emerald-500 resize-none" placeholder="Brief notes about this campaign..." />
                 </div>
               </div>
 
-              <div className="pt-4 border-t border-white/[0.08]">
+              <div className="pt-4 border-t border-gray-200">
                 <div className="flex items-center justify-between mb-4">
                   <div>
-                    <label className="block text-sm font-semibold text-gray-300">Message Template *</label>
+                    <label className="block text-sm font-semibold text-gray-700">Message Template *</label>
                     <p className="text-xs text-gray-500">Select an approved WhatsApp template</p>
                   </div>
                 </div>
@@ -466,9 +466,9 @@ const CreateCampaign: React.FC = () => {
 
           {currentStep === 2 && (
             <div className="space-y-6 animate-fade-in">
-              <div className="border-b border-white/[0.08] pb-4">
-                <h2 className="text-xl font-bold text-white mb-1">Select Audience</h2>
-                <p className="text-gray-400">Choose who should receive this campaign</p>
+              <div className="border-b border-gray-200 pb-4">
+                <h2 className="text-xl font-bold text-gray-900 mb-1">Select Audience</h2>
+                <p className="text-gray-500">Choose who should receive this campaign</p>
               </div>
               <AudienceSelector
                 audienceType={formData.audienceType}
@@ -490,19 +490,19 @@ const CreateCampaign: React.FC = () => {
 
           {currentStep === 3 && (
             <div className="space-y-6 animate-fade-in">
-              <div className="border-b border-white/[0.08] pb-4">
-                <h2 className="text-xl font-bold text-white mb-1">Map Variables</h2>
-                <p className="text-gray-400">Personalize your template by mapping variables</p>
+              <div className="border-b border-gray-200 pb-4">
+                <h2 className="text-xl font-bold text-gray-900 mb-1">Map Variables</h2>
+                <p className="text-gray-500">Personalize your template by mapping variables</p>
               </div>
               {selectedTemplate?.variables?.length ? (
                 <VariableMapper variables={selectedTemplate.variables} mapping={formData.variableMapping} onMappingChange={(m) => setFormData({ ...formData, variableMapping: m })} />
               ) : (
-                <div className="text-center py-10 bg-green-50 dark:bg-green-900/20 rounded-2xl border border-green-200 dark:border-green-800">
-                  <div className="w-16 h-16 bg-green-100 dark:bg-green-900/40 rounded-full flex items-center justify-center mx-auto mb-3">
-                    <Check className="w-8 h-8 text-green-600 dark:text-green-400" />
+                <div className="text-center py-10 bg-green-50 rounded-2xl border border-green-200">
+                  <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <Check className="w-8 h-8 text-green-600" />
                   </div>
-                  <p className="text-lg text-green-700 dark:text-green-300 font-bold">No Variables Required</p>
-                  <p className="text-green-600 dark:text-green-400 mt-1 max-w-sm mx-auto">This template is static and does not require any dynamic fields to be filled.</p>
+                  <p className="text-lg text-green-700 font-bold">No Variables Required</p>
+                  <p className="text-green-600 mt-1 max-w-sm mx-auto">This template is static and does not require any dynamic fields to be filled.</p>
                 </div>
               )}
             </div>
@@ -510,33 +510,33 @@ const CreateCampaign: React.FC = () => {
 
           {currentStep === 4 && (
             <div className="space-y-6 animate-fade-in">
-              <div className="border-b border-white/[0.08] pb-4">
-                <h2 className="text-xl font-bold text-white mb-1">Schedule Campaign</h2>
-                <p className="text-gray-400">Choose when to launch your campaign</p>
+              <div className="border-b border-gray-200 pb-4">
+                <h2 className="text-xl font-bold text-gray-900 mb-1">Schedule Campaign</h2>
+                <p className="text-gray-500">Choose when to launch your campaign</p>
               </div>
               <SchedulePicker scheduleType={formData.scheduleType} onTypeChange={(t) => setFormData({ ...formData, scheduleType: t })} scheduledDate={formData.scheduledDate || ""} scheduledTime={formData.scheduledTime || ""} onDateChange={(d) => setFormData({ ...formData, scheduledDate: d })} onTimeChange={(t) => setFormData({ ...formData, scheduledTime: t })} />
 
               {/* Campaign Summary */}
-              <div className="mt-8 p-6 bg-emerald-500/10 rounded-2xl border border-emerald-500/20 shadow-sm relative overflow-hidden backdrop-blur-xl">
-                <h3 className="text-lg font-bold text-white mb-4 relative z-10">Campaign Summary</h3>
+              <div className="mt-8 p-6 bg-green-50 rounded-2xl border border-green-200 shadow-sm relative overflow-hidden">
+                <h3 className="text-lg font-bold text-gray-900 mb-4 relative z-10">Campaign Summary</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm relative z-10">
-                  <div className="bg-white/[0.02] p-4 rounded-xl border border-white/[0.05]">
-                    <span className="text-gray-400 block mb-1">Campaign Name</span>
-                    <p className="font-semibold text-white truncate" title={formData.name || "Untitled Campaign"}>{formData.name || "Untitled Campaign"}</p>
+                  <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+                    <span className="text-gray-500 block mb-1">Campaign Name</span>
+                    <p className="font-semibold text-gray-900 truncate" title={formData.name || "Untitled Campaign"}>{formData.name || "Untitled Campaign"}</p>
                   </div>
-                  <div className="bg-white/[0.02] p-4 rounded-xl border border-white/[0.05]">
-                    <span className="text-gray-400 block mb-1">Template</span>
-                    <p className="font-semibold text-white truncate" title={selectedTemplate?.name || "Not selected"}>{selectedTemplate?.name || "Not selected"}</p>
+                  <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+                    <span className="text-gray-500 block mb-1">Template</span>
+                    <p className="font-semibold text-gray-900 truncate" title={selectedTemplate?.name || "Not selected"}>{selectedTemplate?.name || "Not selected"}</p>
                   </div>
-                  <div className="bg-white/[0.02] p-4 rounded-xl border border-white/[0.05]">
-                    <span className="text-gray-400 block mb-1">Audience</span>
-                    <p className="font-semibold text-white">
+                  <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+                    <span className="text-gray-500 block mb-1">Audience</span>
+                    <p className="font-semibold text-gray-900">
                       {totalRecipients.toLocaleString()} {totalRecipients === 1 ? 'recipient' : 'recipients'}
                     </p>
                   </div>
-                  <div className="bg-white/[0.02] p-4 rounded-xl border border-white/[0.05]">
-                    <span className="text-gray-400 block mb-1">Timing</span>
-                    <p className="font-semibold text-white">
+                  <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+                    <span className="text-gray-500 block mb-1">Timing</span>
+                    <p className="font-semibold text-gray-900">
                       {formData.scheduleType === "now"
                         ? "Send immediately"
                         : `${formData.scheduledDate} at ${formData.scheduledTime}`}
@@ -549,7 +549,7 @@ const CreateCampaign: React.FC = () => {
         </div>
 
         <div className="flex items-center justify-between mt-8">
-          <button onClick={handleBack} disabled={currentStep === 1} className="flex items-center space-x-2 px-6 py-3 text-gray-300 bg-white/[0.02] border border-white/[0.05] rounded-xl hover:bg-white/[0.04] backdrop-blur-xl disabled:opacity-50 font-medium transition-all shadow-sm">
+          <button onClick={handleBack} disabled={currentStep === 1} className="flex items-center space-x-2 px-6 py-3 text-gray-600 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 disabled:opacity-50 font-medium transition-all shadow-sm">
             <ArrowLeft className="w-5 h-5" /> <span>Back</span>
           </button>
           {currentStep < 4 ? (

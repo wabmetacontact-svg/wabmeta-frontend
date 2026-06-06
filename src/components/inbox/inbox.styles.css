@@ -1,5 +1,5 @@
 /* src/components/inbox/inbox.styles.css */
-/* Custom animations and styles for chat UI */
+/* Custom animations and styles for chat UI - Light Mode Redesign */
 
 /* ─── Scrollbar ─────────────────────────────────────────────────────────── */
 .inbox-scroll::-webkit-scrollbar {
@@ -9,12 +9,12 @@
   background: transparent;
 }
 .inbox-scroll::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(0, 0, 0, 0.1);
   border-radius: 10px;
   transition: background 0.2s;
 }
 .inbox-scroll::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(0, 0, 0, 0.2);
 }
 
 /* ─── Slide in from right ────────────────────────────────────────────────── */
@@ -116,14 +116,14 @@
 
 /* ─── Backdrop blur for modals ───────────────────────────────────────────── */
 .glass-backdrop {
-  background: rgba(5, 8, 22, 0.7);
+  background: rgba(255, 255, 255, 0.6);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
 }
 
 /* ─── Message bubble shadow ──────────────────────────────────────────────── */
 .bubble-shadow {
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.04);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(0, 0, 0, 0.04);
 }
 
 /* ─── Pulse for new message badge ────────────────────────────────────────── */
@@ -212,17 +212,17 @@
 
 /* ─── Chat background pattern ────────────────────────────────────────────── */
 .chat-bg {
-  background-color: #0a0e1c;
+  background-color: #f3f4f6;
   background-image:
-    radial-gradient(ellipse 80% 60% at 50% 0%, rgba(16, 185, 129, 0.04) 0%, transparent 60%),
-    radial-gradient(circle at 20% 80%, rgba(59, 130, 246, 0.03) 0%, transparent 50%),
-    radial-gradient(circle at 80% 20%, rgba(139, 92, 246, 0.03) 0%, transparent 50%);
+    radial-gradient(ellipse 80% 60% at 50% 0%, rgba(37, 211, 102, 0.05) 0%, transparent 60%),
+    radial-gradient(circle at 20% 80%, rgba(59, 130, 246, 0.02) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(139, 92, 246, 0.02) 0%, transparent 50%);
 }
 
 /* ─── Selection styling ──────────────────────────────────────────────────── */
 .chat-area ::selection {
-  background: rgba(34, 197, 94, 0.3);
-  color: white;
+  background: rgba(34, 197, 94, 0.2);
+  color: #111827;
 }
 
 /* ─── Hide scrollbar on certain elements ─────────────────────────────────── */

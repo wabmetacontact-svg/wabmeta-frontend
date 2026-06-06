@@ -338,23 +338,23 @@ const CampaignDetails: React.FC = () => {
         <div className="flex items-center gap-4">
           <button
             onClick={() => navigate('/dashboard/campaigns')}
-            className="p-2 hover:bg-[#0a0e27]/[0.06] rounded-lg text-gray-400"
+            className="p-2 hover:bg-gray-100 rounded-lg text-gray-500"
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
 
           <div className="flex flex-col">
-            <h1 className="text-2xl font-bold text-white tracking-tight">
+            <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
               {campaign?.name}
             </h1>
             <div className="flex items-center gap-3 mt-1">
               {/* Campaign Status Badge */}
               <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-widest uppercase ${
-                campaign?.status === 'COMPLETED' ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30' :
-                campaign?.status === 'RUNNING' ? 'bg-green-100 text-green-700 dark:bg-green-900/30' :
-                campaign?.status === 'PAUSED' ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30' :
-                campaign?.status === 'FAILED' ? 'bg-red-100 text-red-700 dark:bg-red-900/30' :
-                'bg-[#0a0e27]/[0.04] text-gray-300 dark:bg-gray-800'
+                campaign?.status === 'COMPLETED' ? 'bg-purple-100 text-purple-700' :
+                campaign?.status === 'RUNNING' ? 'bg-green-100 text-green-700' :
+                campaign?.status === 'PAUSED' ? 'bg-yellow-100 text-yellow-700' :
+                campaign?.status === 'FAILED' ? 'bg-red-100 text-red-700' :
+                'bg-gray-100 text-gray-600'
               }`}>
                 {campaign?.status}
               </span>
@@ -385,7 +385,7 @@ const CampaignDetails: React.FC = () => {
         <div className="flex items-center gap-3">
           <button
             onClick={handleExport}
-            className="flex items-center gap-2 px-4 py-2 bg-[#0a0e27] border border-white/[0.1] text-gray-300 rounded-lg hover:bg-[#0a0e27]/[0.04] transition-colors shadow-sm text-sm"
+            className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors shadow-sm text-sm"
           >
             <Download className="w-4 h-4" />
             Export
@@ -394,7 +394,7 @@ const CampaignDetails: React.FC = () => {
           <button
             onClick={refresh}
             disabled={refreshing}
-            className="flex items-center gap-2 px-4 py-2 bg-[#0a0e27] border border-white/[0.1] text-gray-300 rounded-lg hover:bg-[#0a0e27]/[0.04] transition-colors shadow-sm text-sm"
+            className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors shadow-sm text-sm"
           >
             <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
             Refresh
@@ -414,12 +414,12 @@ const CampaignDetails: React.FC = () => {
 
       {/* ✅ FIXED: Progress Bar - capped at 100% */}
       {campaign?.status === 'RUNNING' && displayStats && (
-        <div className="bg-[#0a0e27] rounded-xl border border-white/[0.1] p-4 shadow-sm">
+        <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-gray-300">
+            <span className="text-sm font-medium text-gray-700">
               Campaign Progress
             </span>
-            <span className="text-sm text-gray-400">
+            <span className="text-sm text-gray-500">
               {/* ✅ FIX: Never show more than total */}
               {Math.min(
                 displayStats.sent + displayStats.failed,
@@ -613,8 +613,8 @@ const CampaignDetails: React.FC = () => {
       {/* FAILURE ANALYSIS */}
       {/* ============================== */}
       {displayStats && displayStats.failureReasons && displayStats.failureReasons.length > 0 && (
-        <div className="bg-[#0a0e27] rounded-xl border border-white/[0.1] p-6 shadow-sm">
-          <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-2 mb-4">
+        <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+          <h3 className="text-[10px] font-black text-gray-500 uppercase tracking-widest flex items-center gap-2 mb-4">
             <AlertTriangle className="w-4 h-4 text-red-500" />
             Failure Analysis
           </h3>
@@ -622,10 +622,10 @@ const CampaignDetails: React.FC = () => {
             {displayStats.failureReasons.map((fr, i) => (
               <div
                 key={i}
-                className="flex items-start justify-between bg-red-50/50 dark:bg-red-900/10 rounded-xl p-4 border border-red-100/30 dark:border-red-900/20"
+                className="flex items-start justify-between bg-red-50 rounded-xl p-4 border border-red-100"
               >
                 <div className="flex-1 mr-4">
-                  <p className="text-sm font-semibold text-gray-300">
+                  <p className="text-sm font-semibold text-gray-700">
                     {fr.reason}
                   </p>
                   
@@ -640,7 +640,7 @@ const CampaignDetails: React.FC = () => {
                     </Link>
                   )}
                 </div>
-                <span className="text-sm font-black text-red-600 dark:text-red-500 bg-[#0a0e27] px-3 py-1 rounded-full shadow-sm whitespace-nowrap">
+                <span className="text-sm font-black text-red-600 bg-red-50 border border-red-200 px-3 py-1 rounded-full shadow-sm whitespace-nowrap">
                   {fr.count} contacts
                 </span>
               </div>
@@ -652,7 +652,7 @@ const CampaignDetails: React.FC = () => {
       {/* ============================== */}
       {/* SEARCH & FILTERS */}
       {/* ============================== */}
-      <div className="relative overflow-hidden rounded-2xl bg-white/[0.02] border border-white/[0.05] p-4 backdrop-blur-xl">
+      <div className="relative overflow-hidden rounded-2xl bg-white border border-gray-200 p-4 shadow-sm">
         <div className="flex flex-col sm:flex-row gap-4 relative z-10">
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -662,14 +662,14 @@ const CampaignDetails: React.FC = () => {
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-              className="w-full pl-10 pr-4 py-2.5 bg-white/[0.03] border border-white/[0.05] rounded-xl text-white placeholder:text-gray-500 focus:outline-none focus:border-white/[0.1] focus:bg-white/[0.05] transition-colors shadow-[inset_0_1px_2px_rgba(0,0,0,0.2)]"
+              className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500 transition-colors"
             />
           </div>
 
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
-            className="px-4 py-2.5 bg-white/[0.03] border border-white/[0.05] rounded-xl text-gray-300 focus:outline-none focus:border-white/[0.1] focus:bg-white/[0.05] transition-colors shadow-[inset_0_1px_2px_rgba(0,0,0,0.2)] [&>option]:bg-[#0a0e27]"
+            className="px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-gray-700 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500 transition-colors"
           >
             <option value="all">All Status</option>
             <option value="PENDING">Pending</option>
@@ -694,9 +694,9 @@ const CampaignDetails: React.FC = () => {
       <div className="flex items-center justify-between px-1">
         <div className="flex items-center gap-2">
           <Users className="w-5 h-5 text-gray-500" />
-          <h2 className="text-lg font-bold text-white">
+          <h2 className="text-lg font-bold text-gray-900">
             Recipient Contacts
-            <span className="text-gray-400 text-sm font-medium ml-2">
+            <span className="text-gray-500 text-sm font-medium ml-2">
               ({meta.total.toLocaleString()} total)
             </span>
           </h2>
@@ -709,10 +709,10 @@ const CampaignDetails: React.FC = () => {
         )}
       </div>
 
-      <div className="relative overflow-hidden rounded-2xl bg-white/[0.02] border border-white/[0.05] backdrop-blur-xl">
+      <div className="relative overflow-hidden rounded-2xl bg-white border border-gray-200 shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-left">
-            <thead className="bg-white/[0.02] border-b border-white/[0.05]">
+            <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
                 <th className="px-4 py-4 w-10">
                   <input
@@ -723,24 +723,24 @@ const CampaignDetails: React.FC = () => {
                         e.target.checked ? contacts.map((c) => c.contactId) : []
                       )
                     }
-                    className="rounded border-white/[0.12] text-green-600 focus:ring-green-500"
+                    className="rounded border-gray-300 text-green-600 focus:ring-green-500"
                   />
                 </th>
-                <th className="px-4 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                <th className="px-4 py-4 text-[10px] font-black text-gray-500 uppercase tracking-widest">
                   Contact
                 </th>
-                <th className="px-4 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                <th className="px-4 py-4 text-[10px] font-black text-gray-500 uppercase tracking-widest">
                   Status
                 </th>
-                <th className="px-4 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                <th className="px-4 py-4 text-[10px] font-black text-gray-500 uppercase tracking-widest">
                   Delivery Details
                 </th>
-                <th className="px-4 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">
+                <th className="px-4 py-4 text-[10px] font-black text-gray-500 uppercase tracking-widest text-right">
                   Error / Info
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/[0.02]">
+            <tbody className="divide-y divide-gray-100">
               {contacts.map((contact) => {
                 const config = statusConfig[contact.status] || statusConfig.PENDING;
                 const Icon = config.icon;
@@ -764,17 +764,17 @@ const CampaignDetails: React.FC = () => {
                               : [...prev, contact.contactId]
                           );
                         }}
-                        className="rounded border-white/[0.12] text-green-600 focus:ring-green-500"
+                        className="rounded border-gray-300 text-green-600 focus:ring-green-500"
                       />
                     </td>
 
                     {/* Contact name & phone */}
                     <td className="px-4 py-4">
-                      <p className="font-bold text-white dark:text-gray-100">
+                      <p className="font-bold text-gray-900">
                         {displayName}
                       </p>
                       {displayName !== displayPhone && (
-                        <p className="text-xs text-gray-400 font-mono tracking-tighter">
+                        <p className="text-xs text-gray-500 font-mono tracking-tighter">
                           {displayPhone}
                         </p>
                       )}
@@ -859,22 +859,22 @@ const CampaignDetails: React.FC = () => {
 
         {/* Pagination */}
         {meta.totalPages > 1 && (
-          <div className="px-4 py-3 border-t border-white/[0.1] flex items-center justify-between">
-            <span className="text-sm text-gray-400">
+          <div className="px-4 py-3 border-t border-gray-200 flex items-center justify-between">
+            <span className="text-sm text-gray-500">
               Page {meta.page} of {meta.totalPages} ({meta.total.toLocaleString()} total)
             </span>
             <div className="flex gap-2">
               <button
                 onClick={() => loadContacts(meta.page - 1)}
                 disabled={meta.page === 1}
-                className="px-3 py-1.5 bg-[#0a0e27]/[0.04] dark:bg-gray-700 text-gray-300 rounded-lg disabled:opacity-50 text-sm hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                className="px-3 py-1.5 bg-white border border-gray-200 text-gray-700 rounded-lg disabled:opacity-50 text-sm hover:bg-gray-50 transition-colors"
               >
                 Previous
               </button>
               <button
                 onClick={() => loadContacts(meta.page + 1)}
                 disabled={meta.page >= meta.totalPages}
-                className="px-3 py-1.5 bg-[#0a0e27]/[0.04] dark:bg-gray-700 text-gray-300 rounded-lg disabled:opacity-50 text-sm hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                className="px-3 py-1.5 bg-white border border-gray-200 text-gray-700 rounded-lg disabled:opacity-50 text-sm hover:bg-gray-50 transition-colors"
               >
                 Next
               </button>
@@ -904,18 +904,18 @@ const StatCard: React.FC<{
   return (
   <div
     onClick={onClick}
-    className={`relative overflow-hidden rounded-2xl bg-white/[0.02] border p-6 transition-all duration-300 group/stat ${
+    className={`relative overflow-hidden rounded-2xl bg-white border p-6 transition-all duration-300 group/stat shadow-sm ${
       active
-        ? 'border-emerald-500/50 shadow-[0_0_15px_rgba(16,185,129,0.15)] bg-white/[0.04]'
-        : 'border-white/[0.05] hover:bg-white/[0.04] hover:border-white/[0.1]'
+        ? 'border-emerald-500 shadow-md shadow-emerald-500/10'
+        : 'border-gray-200 hover:bg-gray-50 hover:border-gray-300'
     } ${onClick ? 'cursor-pointer' : ''}`}
   >
-    <div className="absolute top-0 right-0 p-4 opacity-[0.05] group-hover/stat:scale-110 group-hover/stat:opacity-[0.12] transition-all duration-500">
+    <div className="absolute top-0 right-0 p-4 opacity-[0.05] group-hover/stat:scale-110 group-hover/stat:opacity-[0.10] transition-all duration-500">
       <Icon size={80} className={colorClass} />
     </div>
     <div className="relative z-10">
       <p className={`text-xs font-mono uppercase tracking-widest mb-1 ${colorClass}`}>{label}</p>
-      <p className={`text-3xl font-bold text-white ${
+      <p className={`text-3xl font-bold text-gray-900 ${
         pulse ? 'animate-pulse' : ''
       }`}>
         {value.toLocaleString()}

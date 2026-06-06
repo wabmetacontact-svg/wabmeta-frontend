@@ -413,24 +413,24 @@ const Billing: React.FC = () => {
   if (error) {
     return (
       <div className="max-w-2xl mx-auto mt-12 p-6">
-        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-6">
-          <div className="flex items-start">
-            <AlertCircle className="w-6 h-6 text-red-600 dark:text-red-400 mt-0.5 mr-4 flex-shrink-0" />
-            <div className="flex-1">
-              <h3 className="font-semibold text-red-900 dark:text-red-200">
-                Error Loading Billing
-              </h3>
-              <p className="text-red-700 dark:text-red-300 text-sm mt-1">{error}</p>
-              <button
-                onClick={() => fetchBillingData()}
-                className="mt-4 px-4 py-2 bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 rounded-lg hover:bg-red-200 dark:hover:bg-red-900/60 text-sm font-medium inline-flex items-center"
-              >
-                <RefreshCw className="w-4 h-4 mr-2" />
-                Retry
-              </button>
-            </div>
+      <div className="bg-red-50 border border-red-200 rounded-xl p-6">
+        <div className="flex items-start">
+          <AlertCircle className="w-6 h-6 text-red-600 mt-0.5 mr-4 flex-shrink-0" />
+          <div className="flex-1">
+            <h3 className="font-semibold text-red-900">
+              Error Loading Billing
+            </h3>
+            <p className="text-red-700 text-sm mt-1">{error}</p>
+            <button
+              onClick={() => fetchBillingData()}
+              className="mt-4 px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 text-sm font-medium inline-flex items-center"
+            >
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Retry
+            </button>
           </div>
         </div>
+      </div>
       </div>
     );
   }
@@ -444,16 +444,16 @@ const Billing: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-white">
+          <h1 className="text-3xl font-bold text-gray-900">
             Billing & Plans
           </h1>
-          <p className="mt-2 text-gray-400">
+          <p className="mt-2 text-gray-600">
             Manage your subscription and billing information
           </p>
         </div>
         <div className="flex items-center gap-2">
           {!razorpayReady && (
-            <div className="px-3 py-1.5 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 rounded-lg text-xs font-medium flex items-center">
+            <div className="px-3 py-1.5 bg-yellow-50 border border-yellow-200 text-yellow-700 rounded-lg text-xs font-medium flex items-center">
               <Loader2 className="w-3 h-3 mr-1.5 animate-spin" />
               Loading Payment Gateway...
             </div>
@@ -461,7 +461,7 @@ const Billing: React.FC = () => {
           <button
             onClick={() => fetchBillingData(true)}
             disabled={refreshing}
-            className="p-2 text-gray-500 hover:text-gray-300 dark:hover:text-gray-200 hover:bg-[#0a0e27]/[0.06] rounded-lg transition-colors"
+            className="p-2 text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
             title="Refresh"
           >
             <RefreshCw className={`w-5 h-5 ${refreshing ? 'animate-spin' : ''}`} />
@@ -470,33 +470,33 @@ const Billing: React.FC = () => {
       </div>
 
       {subscription && (
-        <div className="relative overflow-hidden bg-white/[0.02] rounded-2xl shadow-xl border border-white/[0.05] p-6 mb-8 backdrop-blur-xl">
+        <div className="relative overflow-hidden bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-8">
           <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 relative z-10">
             <div>
-              <h2 className="text-lg font-semibold text-white mb-1">
+              <h2 className="text-lg font-semibold text-gray-900 mb-1">
                 Current Plan
               </h2>
               <div className="flex flex-wrap items-center gap-3 mt-2">
-                <span className="text-2xl font-bold text-white">
+                <span className="text-2xl font-bold text-gray-900">
                   {subscription.plan?.name || 'Free'}
                 </span>
                 <span
                   className={`px-2.5 py-1 rounded-full text-xs font-medium ${subscription.status === 'active' || subscription.status === 'ACTIVE'
-                    ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                    ? 'bg-green-50 text-green-700 border border-green-200'
                     : subscription.status === 'cancelled' || subscription.status === 'CANCELLED'
-                      ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
-                      : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
+                      ? 'bg-red-50 text-red-700 border border-red-200'
+                      : 'bg-yellow-50 text-yellow-700 border border-yellow-200'
                     }`}
                 >
                   {subscription.status.toLowerCase()}
                 </span>
                 {subscription.billingCycle?.toLowerCase() !== 'manual' && (
-                  <span className="text-gray-400 capitalize">
+                  <span className="text-gray-500 capitalize">
                     {subscription.billingCycle}
                   </span>
                 )}
               </div>
-              <p className="text-sm text-gray-400 mt-3 flex items-center">
+              <p className="text-sm text-gray-600 mt-3 flex items-center">
                 <Calendar className="w-4 h-4 mr-2" />
                 {subscription.status === 'active' || subscription.status === 'ACTIVE'
                   ? 'Next billing date: '
@@ -517,7 +517,7 @@ const Billing: React.FC = () => {
                     pricingSection.scrollIntoView({ behavior: 'smooth' });
                   }
                 }}
-                className="px-4 py-2 text-sm font-medium text-green-600 hover:bg-green-50 dark:text-green-400 dark:hover:bg-green-900/20 rounded-lg transition-colors border border-green-200 dark:border-green-800"
+                className="px-4 py-2 text-sm font-medium text-green-600 hover:bg-green-50 rounded-lg transition-colors border border-green-200"
               >
                 Upgrade Plan
               </button>
@@ -572,12 +572,12 @@ const Billing: React.FC = () => {
 
       {/* Billing Cycle Toggle */}
       <div className="flex justify-center mb-8">
-        <div className="bg-white/[0.02] border border-white/[0.05] rounded-xl p-1.5 inline-flex backdrop-blur-xl">
+        <div className="bg-gray-100 border border-gray-200 rounded-xl p-1.5 inline-flex shadow-sm">
           <button
             onClick={() => setBillingCycle('monthly')}
             className={`px-6 py-2.5 rounded-lg font-medium transition-all ${billingCycle === 'monthly'
               ? 'bg-emerald-600 text-white shadow-sm'
-              : 'text-gray-400 hover:text-white'
+              : 'text-gray-500 hover:text-gray-900'
               }`}
           >
             Monthly
@@ -586,11 +586,11 @@ const Billing: React.FC = () => {
             onClick={() => setBillingCycle('yearly')}
             className={`px-6 py-2.5 rounded-lg font-medium transition-all flex items-center ${billingCycle === 'yearly'
               ? 'bg-emerald-600 text-white shadow-sm'
-              : 'text-gray-400 hover:text-white'
+              : 'text-gray-500 hover:text-gray-900'
               }`}
           >
             Yearly
-            <span className="ml-2 text-xs bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 px-2 py-0.5 rounded-full font-semibold">
+            <span className="ml-2 text-xs bg-green-50 text-green-700 border border-green-200 px-2 py-0.5 rounded-full font-semibold">
               Save 20%
             </span>
           </button>
@@ -599,7 +599,7 @@ const Billing: React.FC = () => {
 
       {/* Security Badge */}
       <div className="flex justify-center mb-6">
-        <div className="flex items-center gap-2 text-sm text-gray-400">
+        <div className="flex items-center gap-2 text-sm text-gray-500">
           <Shield className="w-4 h-4" />
           <span>Secure payment powered by Razorpay</span>
         </div>
@@ -608,90 +608,90 @@ const Billing: React.FC = () => {
       {/* Pricing Comparison Table - NEW PREMIUM UI */}
       <div className="mb-16">
         <div className="text-center mb-10">
-          <h2 className="text-2xl font-bold text-white mb-2">Compare Plans</h2>
-          <p className="text-gray-400">Choose the best plan that fits your business needs</p>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Compare Plans</h2>
+          <p className="text-gray-600">Choose the best plan that fits your business needs</p>
         </div>
 
-        <div className="overflow-x-auto rounded-2xl border border-white/[0.05] shadow-2xl bg-white/[0.02] backdrop-blur-xl">
+        <div className="overflow-x-auto rounded-2xl border border-gray-200 shadow-sm bg-white">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-[#050816]/50">
-                <th className="p-5 text-sm font-semibold text-white border-b border-white/[0.1]">Features</th>
-                <th className="p-5 text-sm font-semibold text-white border-b border-white/[0.1] text-center">Free Demo</th>
-                <th className="p-5 text-sm font-semibold text-white border-b border-white/[0.1] text-center">Monthly</th>
-                <th className="p-5 text-sm font-semibold text-white border-b border-white/[0.1] text-center">3-Month</th>
-                <th className="p-5 text-sm font-semibold text-green-600 dark:text-green-400 border-b border-green-200 dark:border-green-800 text-center bg-green-50/50 dark:bg-green-900/10">
-                  6-Month ⭐<br /><span className="text-[10px] uppercase tracking-wider">Recommended</span>
+              <tr className="bg-gray-50">
+                <th className="p-5 text-sm font-semibold text-gray-900 border-b border-gray-200">Features</th>
+                <th className="p-5 text-sm font-semibold text-gray-900 border-b border-gray-200 text-center">Free Demo</th>
+                <th className="p-5 text-sm font-semibold text-gray-900 border-b border-gray-200 text-center">Monthly</th>
+                <th className="p-5 text-sm font-semibold text-gray-900 border-b border-gray-200 text-center">3-Month</th>
+                <th className="p-5 text-sm font-semibold text-green-700 border-b border-green-200 text-center bg-green-50/50">
+                  6-Month ⭐<br /><span className="text-[10px] uppercase tracking-wider font-bold">Recommended</span>
                 </th>
-                <th className="p-5 text-sm font-semibold text-blue-600 dark:text-blue-400 border-b border-white/[0.1] text-center">1-Year ⭐</th>
+                <th className="p-5 text-sm font-semibold text-blue-700 border-b border-gray-200 text-center bg-blue-50/20">1-Year ⭐</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100 dark:divide-gray-700/50">
+            <tbody className="divide-y divide-gray-200">
               <tr>
-                <td className="p-5 text-sm font-medium text-gray-300">Price</td>
-                <td className="p-5 text-sm text-center text-gray-400">Free</td>
-                <td className="p-5 text-sm text-center text-gray-400">₹899</td>
-                <td className="p-5 text-sm text-center text-gray-400">₹2,500</td>
-                <td className="p-5 text-sm text-center font-bold text-white bg-green-50/50 dark:bg-green-900/10">₹5,000</td>
-                <td className="p-5 text-sm text-center font-bold text-white">₹8,999</td>
+                <td className="p-5 text-sm font-medium text-gray-700">Price</td>
+                <td className="p-5 text-sm text-center text-gray-600">Free</td>
+                <td className="p-5 text-sm text-center text-gray-600">₹899</td>
+                <td className="p-5 text-sm text-center text-gray-600">₹2,500</td>
+                <td className="p-5 text-sm text-center font-bold text-green-700 bg-green-50/50">₹5,000</td>
+                <td className="p-5 text-sm text-center font-bold text-blue-700 bg-blue-50/20">₹8,999</td>
               </tr>
               <tr>
-                <td className="p-5 text-sm font-medium text-gray-300">Validity</td>
-                <td className="p-5 text-sm text-center text-gray-400">2 Days</td>
-                <td className="p-5 text-sm text-center text-gray-400">1 Month</td>
-                <td className="p-5 text-sm text-center text-gray-400">3 Months</td>
-                <td className="p-5 text-sm text-center text-gray-400 bg-green-50/50 dark:bg-green-900/10">6 Months</td>
-                <td className="p-5 text-sm text-center text-gray-400">12 Months</td>
+                <td className="p-5 text-sm font-medium text-gray-700">Validity</td>
+                <td className="p-5 text-sm text-center text-gray-600">2 Days</td>
+                <td className="p-5 text-sm text-center text-gray-600">1 Month</td>
+                <td className="p-5 text-sm text-center text-gray-600">3 Months</td>
+                <td className="p-5 text-sm text-center text-gray-600 bg-green-50/50">6 Months</td>
+                <td className="p-5 text-sm text-center text-gray-600 bg-blue-50/20">12 Months</td>
               </tr>
               <tr>
-                <td className="p-5 text-sm font-medium text-gray-300">Messages</td>
-                <td className="p-5 text-sm text-center text-gray-400">100</td>
-                <td className="p-5 text-sm text-center text-gray-400">Unlimited*</td>
-                <td className="p-5 text-sm text-center text-gray-400">Unlimited*</td>
-                <td className="p-5 text-sm text-center text-gray-400 bg-green-50/50 dark:bg-green-900/10">Unlimited*</td>
-                <td className="p-5 text-sm text-center text-gray-400">Unlimited*</td>
+                <td className="p-5 text-sm font-medium text-gray-700">Messages</td>
+                <td className="p-5 text-sm text-center text-gray-600">100</td>
+                <td className="p-5 text-sm text-center text-gray-600">Unlimited*</td>
+                <td className="p-5 text-sm text-center text-gray-600">Unlimited*</td>
+                <td className="p-5 text-sm text-center text-gray-600 bg-green-50/50">Unlimited*</td>
+                <td className="p-5 text-sm text-center text-gray-600 bg-blue-50/20">Unlimited*</td>
               </tr>
               <tr>
-                <td className="p-5 text-sm font-medium text-gray-300">Campaigns</td>
-                <td className="p-5 text-sm text-center text-gray-400">Limited</td>
-                <td className="p-5 text-sm text-center text-gray-400">Unlimited</td>
-                <td className="p-5 text-sm text-center text-gray-400">Unlimited</td>
-                <td className="p-5 text-sm text-center text-gray-400 bg-green-50/50 dark:bg-green-900/10">Unlimited</td>
-                <td className="p-5 text-sm text-center text-gray-400">Unlimited</td>
+                <td className="p-5 text-sm font-medium text-gray-700">Campaigns</td>
+                <td className="p-5 text-sm text-center text-gray-600">Limited</td>
+                <td className="p-5 text-sm text-center text-gray-600">Unlimited</td>
+                <td className="p-5 text-sm text-center text-gray-600">Unlimited</td>
+                <td className="p-5 text-sm text-center text-gray-600 bg-green-50/50">Unlimited</td>
+                <td className="p-5 text-sm text-center text-gray-600 bg-blue-50/20">Unlimited</td>
               </tr>
               <tr>
-                <td className="p-5 text-sm font-medium text-gray-300">Contacts</td>
-                <td className="p-5 text-sm text-center text-gray-400">Limited</td>
-                <td className="p-5 text-sm text-center text-gray-400">Unlimited</td>
-                <td className="p-5 text-sm text-center text-gray-400">Unlimited</td>
-                <td className="p-5 text-sm text-center text-gray-400 bg-green-50/50 dark:bg-green-900/10">Unlimited</td>
-                <td className="p-5 text-sm text-center text-gray-400">Unlimited</td>
+                <td className="p-5 text-sm font-medium text-gray-700">Contacts</td>
+                <td className="p-5 text-sm text-center text-gray-600">Limited</td>
+                <td className="p-5 text-sm text-center text-gray-600">Unlimited</td>
+                <td className="p-5 text-sm text-center text-gray-600">Unlimited</td>
+                <td className="p-5 text-sm text-center text-gray-600 bg-green-50/50">Unlimited</td>
+                <td className="p-5 text-sm text-center text-gray-600 bg-blue-50/20">Unlimited</td>
               </tr>
               <tr>
-                <td className="p-5 text-sm font-bold text-gray-200">Mobile + API Same Number</td>
-                <td className="p-5 text-center text-red-500">❌</td>
-                <td className="p-5 text-center text-red-500">❌</td>
-                <td className="p-5 text-center text-red-500">❌</td>
-                <td className="p-5 text-center text-green-500 font-bold bg-green-50/50 dark:bg-green-900/10">✅ (Active)</td>
-                <td className="p-5 text-center text-green-500 font-bold">✅ (Active)</td>
+                <td className="p-5 text-sm font-bold text-gray-700">Mobile + API Same Number</td>
+                <td className="p-5 text-center text-red-600">❌</td>
+                <td className="p-5 text-center text-red-600">❌</td>
+                <td className="p-5 text-center text-red-600">❌</td>
+                <td className="p-5 text-center text-green-700 font-bold bg-green-50/50">✅ (Active)</td>
+                <td className="p-5 text-center text-green-700 font-bold bg-blue-50/20">✅ (Active)</td>
               </tr>
               <tr>
-                <td className="p-5 text-sm font-medium text-gray-300">Number Safety</td>
-                <td className="p-5 text-sm text-center text-gray-400">Basic</td>
-                <td className="p-5 text-sm text-center text-gray-400">Standard</td>
-                <td className="p-5 text-sm text-center text-gray-400">Good</td>
-                <td className="p-5 text-sm text-center font-bold text-green-600 dark:text-green-400 bg-green-50/50 dark:bg-green-900/10">High (Active)</td>
-                <td className="p-5 text-sm text-center font-bold text-blue-600 dark:text-blue-400">Maximum</td>
+                <td className="p-5 text-sm font-medium text-gray-700">Number Safety</td>
+                <td className="p-5 text-sm text-center text-gray-600">Basic</td>
+                <td className="p-5 text-sm text-center text-gray-600">Standard</td>
+                <td className="p-5 text-sm text-center text-gray-600">Good</td>
+                <td className="p-5 text-sm text-center font-bold text-green-700 bg-green-50/50">High (Active)</td>
+                <td className="p-5 text-sm text-center font-bold text-blue-700 bg-blue-50/20">Maximum</td>
               </tr>
             </tbody>
           </table>
         </div>
-        <p className="mt-4 text-[10px] text-gray-400 text-center italic">*Unlimited messages are subject to Meta's fair usage policy and conversation-based pricing.</p>
+        <p className="mt-4 text-[10px] text-gray-500 text-center italic">*Unlimited messages are subject to Meta's fair usage policy and conversation-based pricing.</p>
       </div>
 
       {/* Pricing Cards */}
       <div id="pricing-plans" className="text-center mb-10">
-        <h2 className="text-3xl font-extrabold text-white mb-2">Select Your Tier</h2>
+        <h2 className="text-3xl font-extrabold text-gray-900 mb-2">Select Your Tier</h2>
         <div className="h-1.5 w-20 bg-green-500 mx-auto rounded-full"></div>
       </div>
 
@@ -709,17 +709,17 @@ const Billing: React.FC = () => {
           ))}
         </div>
       ) : (
-        <div className="text-center py-20 mb-12 bg-white/[0.02] backdrop-blur-xl rounded-3xl border-2 border-dashed border-white/[0.05] shadow-sm">
+        <div className="text-center py-20 mb-12 bg-white rounded-3xl border border-gray-200 shadow-sm">
           <Loader2 className="w-10 h-10 animate-spin text-green-600 mx-auto mb-4" />
-          <p className="text-gray-400 font-medium text-lg">
+          <p className="text-gray-600 font-medium text-lg">
             Synchronizing with server...
           </p>
         </div>
       )}
 
       {/* Invoices / Billing History */}
-      <div className="relative overflow-hidden bg-white/[0.02] rounded-2xl shadow-xl border border-white/[0.05] p-6 backdrop-blur-xl">
-        <h2 className="text-lg font-semibold text-white mb-4 relative z-10">
+      <div className="relative overflow-hidden bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+        <h2 className="text-lg font-semibold text-gray-900 mb-4 relative z-10">
           Billing History
         </h2>
         {invoices.length > 0 ? (
@@ -727,22 +727,22 @@ const Billing: React.FC = () => {
             {invoices.map((invoice) => (
               <div
                 key={invoice.id}
-                className="flex items-center justify-between p-4 hover:bg-emerald-500/[0.02] hover:shadow-[inset_0_0_0_1px_rgba(16,185,129,0.4)] rounded-xl transition-all group"
+                className="flex items-center justify-between p-4 hover:bg-gray-50 rounded-xl transition-all group border border-transparent hover:border-gray-100"
               >
                 <div className="flex items-center gap-4">
-                  <div className="p-2 bg-white/[0.04] rounded-lg">
-                    <CreditCard className="w-5 h-5 text-gray-400" />
+                  <div className="p-2 bg-gray-100 rounded-lg">
+                    <CreditCard className="w-5 h-5 text-gray-500" />
                   </div>
                   <div>
-                    <p className="font-medium text-white capitalize">
+                    <p className="font-medium text-gray-900 capitalize">
                       {invoice.description || 'Payment'}
                     </p>
                     <div className="flex items-center gap-2 mt-0.5">
-                      <p className="text-sm font-semibold text-gray-300">
+                      <p className="text-sm font-semibold text-gray-700">
                         ₹{((invoice.amount ?? 0) / 100).toFixed(2)}
                       </p>
-                      <span className="text-gray-300 dark:text-gray-400 text-xs">•</span>
-                      <p className="text-sm text-gray-400">
+                      <span className="text-gray-400 text-xs">•</span>
+                      <p className="text-sm text-gray-500">
                         {new Date(invoice.date).toLocaleDateString('en-IN', {
                           year: 'numeric',
                           month: 'short',
@@ -755,10 +755,10 @@ const Billing: React.FC = () => {
                 <div className="flex items-center gap-3">
                   <span
                     className={`px-2.5 py-1 rounded-full text-xs font-medium ${invoice.status === 'paid'
-                      ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                      ? 'bg-green-50 text-green-700 border border-green-200'
                       : invoice.status === 'pending'
-                        ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
-                        : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                        ? 'bg-yellow-50 text-yellow-700 border border-yellow-200'
+                        : 'bg-red-50 text-red-700 border border-red-200'
                       }`}
                   >
                     {invoice.status}
@@ -768,7 +768,7 @@ const Billing: React.FC = () => {
                       href={invoice.downloadUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="p-2 text-gray-500 hover:text-gray-300 dark:hover:text-gray-200 hover:bg-[#0a0e27]/[0.04] dark:hover:bg-gray-700 rounded-lg transition-colors"
+                      className="p-2 text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
                       title="Download Invoice"
                     >
                       <Download className="w-4 h-4" />
@@ -780,8 +780,8 @@ const Billing: React.FC = () => {
           </div>
         ) : (
           <div className="text-center py-12">
-            <CreditCard className="w-12 h-12 text-gray-300 dark:text-gray-400 mx-auto mb-3" />
-            <p className="text-gray-400">No billing history available</p>
+            <CreditCard className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+            <p className="text-gray-500 font-medium">No billing history available</p>
           </div>
         )}
       </div>
@@ -811,10 +811,10 @@ const UsageCard: React.FC<UsageCardProps> = ({
   color,
 }) => {
   const colorClasses = {
-    blue: 'text-blue-600 bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400',
-    green: 'text-green-600 bg-green-100 dark:bg-green-900/30 dark:text-green-400',
-    purple: 'text-purple-600 bg-purple-100 dark:bg-purple-900/30 dark:text-purple-400',
-    orange: 'text-orange-600 bg-orange-100 dark:bg-orange-900/30 dark:text-orange-400',
+    blue: 'text-blue-700 bg-blue-50 border border-blue-100',
+    green: 'text-green-700 bg-green-50 border border-green-100',
+    purple: 'text-purple-700 bg-purple-50 border border-purple-100',
+    orange: 'text-orange-700 bg-orange-50 border border-orange-100',
   };
 
   const progressColor = {
@@ -829,27 +829,27 @@ const UsageCard: React.FC<UsageCardProps> = ({
   const isCritical = safePercentage >= 95;
 
   return (
-    <div className="relative overflow-hidden bg-white/[0.02] border border-white/[0.05] rounded-2xl p-5 hover:bg-emerald-500/[0.02] hover:shadow-[inset_0_0_0_1px_rgba(16,185,129,0.4)] transition-all duration-200 group/stat backdrop-blur-xl">
+    <div className="relative overflow-hidden bg-white border border-gray-200 rounded-2xl p-5 hover:bg-gray-50 shadow-sm transition-all duration-200 group/stat">
       <div className="flex items-center justify-between mb-4 relative z-10">
-        <div className={`p-2.5 rounded-lg ${colorClasses[color]}`}>
+        <div className={`p-2 rounded-lg ${colorClasses[color]}`}>
           <Icon className="w-5 h-5" />
         </div>
         <span
           className={`text-sm font-medium ${isCritical
-            ? 'text-red-600 dark:text-red-400'
+            ? 'text-red-600'
             : isWarning
-              ? 'text-yellow-600 dark:text-yellow-400'
-              : 'text-gray-400'
+              ? 'text-yellow-600'
+              : 'text-gray-500'
             }`}
         >
           {safePercentage.toFixed(0)}%
         </span>
       </div>
-      <h3 className="font-medium text-white mb-1">{title}</h3>
-      <p className="text-sm text-gray-400 mb-3">
+      <h3 className="font-medium text-gray-900 mb-1">{title}</h3>
+      <p className="text-sm text-gray-500 mb-3">
         {safeFormatNumber(used)} / {limit === -1 ? 'Unlimited' : safeFormatNumber(limit)}
       </p>
-      <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 overflow-hidden">
+      <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
         <div
           className={`h-2 rounded-full transition-all duration-500 ${isCritical
             ? 'bg-red-500'
@@ -887,11 +887,11 @@ const PricingCard: React.FC<PricingCardProps> = ({
 
   return (
     <div
-      className={`relative overflow-hidden bg-white/[0.02] rounded-2xl p-6 transition-all backdrop-blur-xl border-2 ${plan.popular
-        ? 'border-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.3)]'
+      className={`relative overflow-hidden bg-white rounded-2xl p-6 transition-all border-2 ${plan.popular
+        ? 'border-emerald-500 shadow-lg shadow-emerald-500/10'
         : isCurrentPlan
-          ? 'border-blue-500'
-          : 'border-white/[0.05] hover:border-white/[0.1] hover:bg-white/[0.04]'
+          ? 'border-blue-500 shadow-md shadow-blue-500/10'
+          : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
         }`}
     >
       {/* Badges */}
@@ -906,7 +906,7 @@ const PricingCard: React.FC<PricingCardProps> = ({
 
       {isCurrentPlan && !plan.popular && (
         <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-          <span className="bg-blue-500 text-white text-xs font-bold px-3 py-1 rounded-full flex items-center shadow-lg">
+          <span className="bg-blue-50 text-blue-700 border border-blue-200 text-xs font-bold px-3 py-1 rounded-full flex items-center shadow-sm">
             <Check className="w-3 h-3 mr-1" />
             CURRENT PLAN
           </span>
@@ -914,17 +914,17 @@ const PricingCard: React.FC<PricingCardProps> = ({
       )}
 
       {/* Plan Header */}
-      <div className="text-center mb-8 pt-4 pb-4 border-b border-white/[0.08]/50">
-        <h3 className="text-xl font-bold text-white mb-3 uppercase tracking-wider">
+      <div className="text-center mb-8 pt-4 pb-4 border-b border-gray-200">
+        <h3 className="text-xl font-bold text-gray-900 mb-3 uppercase tracking-wider">
           {plan.name || 'Plan'}
         </h3>
         <div className="flex items-baseline justify-center gap-1">
-          <span className="text-sm font-bold text-gray-400">₹</span>
-          <span className="text-4xl font-black text-white">
+          <span className="text-sm font-bold text-gray-500">₹</span>
+          <span className="text-4xl font-black text-gray-900">
             {price.toLocaleString('en-IN')}
           </span>
         </div>
-        <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 mt-2">
+        <p className="text-xs font-semibold text-gray-500 mt-2">
           {plan.type === 'FREE_DEMO' || plan.slug === 'free' || plan.slug === 'free-demo' ? 'TOTAL' : plan.slug.includes('3') ? 'PER 3 MONTHS' : plan.slug.includes('6') ? 'PER 6 MONTHS' : plan.slug.includes('year') ? 'PER YEAR' : 'PER MONTH'}
         </p>
       </div>
@@ -933,26 +933,26 @@ const PricingCard: React.FC<PricingCardProps> = ({
       <div className="px-2">
         <ul className="space-y-5 mb-10">
           <li className="flex items-center text-sm">
-            <div className="w-5 h-5 rounded-full bg-green-100 dark:bg-green-900/40 flex items-center justify-center mr-3 flex-shrink-0">
-              <Check className="w-3 h-3 text-green-600 dark:text-green-400" />
+            <div className="w-5 h-5 rounded-full bg-green-50 border border-green-200 flex items-center justify-center mr-3 flex-shrink-0">
+              <Check className="w-3 h-3 text-green-700" />
             </div>
-            <span className="text-gray-300">
+            <span className="text-gray-700">
               {plan.type === 'FREE_DEMO' || plan.slug === 'free' || plan.slug === 'free-demo' ? '2 Days' : plan.slug.includes('3') ? '3 Months' : plan.slug.includes('6') ? '6 Months' : plan.slug.includes('year') ? '12 Months' : '1 Month'} Validity
             </span>
           </li>
           <li className="flex items-center text-sm">
-            <div className="w-5 h-5 rounded-full bg-green-100 dark:bg-green-900/40 flex items-center justify-center mr-3 flex-shrink-0">
-              <Check className="w-3 h-3 text-green-600 dark:text-green-400" />
+            <div className="w-5 h-5 rounded-full bg-green-50 border border-green-200 flex items-center justify-center mr-3 flex-shrink-0">
+              <Check className="w-3 h-3 text-green-700" />
             </div>
-            <span className="text-gray-300 font-bold">
+            <span className="text-gray-700 font-bold">
               {plan.maxMessagesPerMonth === -1 ? 'Unlimited*' : `${safeFormatNumber(plan.maxMessagesPerMonth)}`} Messages
             </span>
           </li>
           <li className="flex items-center text-sm">
-            <div className="w-5 h-5 rounded-full bg-green-100 dark:bg-green-900/40 flex items-center justify-center mr-3 flex-shrink-0">
-              <Check className="w-3 h-3 text-green-600 dark:text-green-400" />
+            <div className="w-5 h-5 rounded-full bg-green-50 border border-green-200 flex items-center justify-center mr-3 flex-shrink-0">
+              <Check className="w-3 h-3 text-green-700" />
             </div>
-            <span className="text-gray-300">Unlimited Campaigns</span>
+            <span className="text-gray-700">Unlimited Campaigns</span>
           </li>
           <li className="flex items-center text-sm">
             {plan.slug.includes('6') || plan.slug.includes('year') ? (
@@ -960,19 +960,19 @@ const PricingCard: React.FC<PricingCardProps> = ({
                 <Check className="w-3 h-3 text-white" />
               </div>
             ) : (
-              <div className="w-5 h-5 rounded-full bg-[#0a0e27]/[0.04] dark:bg-gray-700 flex items-center justify-center mr-3 flex-shrink-0">
-                <X className="w-3 h-3 text-gray-400 dark:text-gray-500" />
+              <div className="w-5 h-5 rounded-full bg-gray-100 flex items-center justify-center mr-3 flex-shrink-0">
+                <X className="w-3 h-3 text-gray-400" />
               </div>
             )}
-            <span className={`${plan.slug.includes('6') || plan.slug.includes('year') ? 'text-green-600 dark:text-green-400 font-black' : 'text-gray-400 dark:text-gray-500'} text-xs`}>
+            <span className={`${plan.slug.includes('6') || plan.slug.includes('year') ? 'text-green-700 font-black' : 'text-gray-400'} text-xs`}>
               MOBILE + API ACTIVE
             </span>
           </li>
           <li className="flex items-center text-sm">
-            <div className="w-5 h-5 rounded-full bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center mr-3 flex-shrink-0">
-              <Shield className="w-3 h-3 text-blue-600 dark:text-blue-400" />
+            <div className="w-5 h-5 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center mr-3 flex-shrink-0">
+              <Shield className="w-3 h-3 text-blue-700" />
             </div>
-            <span className="text-gray-400 text-xs font-medium uppercase tracking-tighter">
+            <span className="text-gray-500 text-xs font-medium uppercase tracking-tighter">
               {plan.type === 'FREE_DEMO' || plan.slug === 'free' || plan.slug === 'free-demo' ? 'Basic' : plan.slug.includes('3') ? 'Good' : plan.slug.includes('6') ? 'High' : plan.slug.includes('year') ? 'Maximum' : 'Standard'} Safety
             </span>
           </li>
@@ -984,12 +984,12 @@ const PricingCard: React.FC<PricingCardProps> = ({
         onClick={onSelect}
         disabled={disabled || isCurrentPlan}
         className={`w-full py-3 px-4 rounded-lg font-semibold transition-all ${isCurrentPlan
-          ? 'bg-[#0a0e27]/[0.04] text-gray-400 cursor-not-allowed dark:bg-gray-700 dark:text-gray-500'
+          ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
           : disabled
-            ? 'bg-gray-200 text-gray-400 cursor-not-allowed dark:bg-gray-700 dark:text-gray-500'
+            ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
             : plan.popular
               ? 'bg-green-600 text-white hover:bg-green-700 shadow-lg shadow-green-600/25 hover:shadow-green-600/40'
-              : 'bg-gray-900 text-white hover:bg-gray-800 dark:bg-gray-600 dark:hover:bg-[#050816]0'
+              : 'bg-gray-900 text-white hover:bg-gray-800'
           }`}
       >
         {isCurrentPlan ? (

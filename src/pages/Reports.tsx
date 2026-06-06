@@ -151,11 +151,11 @@ const Reports: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-white flex items-center">
+          <h1 className="text-3xl font-bold text-gray-900 flex items-center">
             <BarChart3 className="w-8 h-8 mr-3 text-green-600" />
             Reports & Analytics
           </h1>
-          <p className="mt-1 text-gray-400">
+          <p className="mt-1 text-gray-600">
             Track your WhatsApp business performance
           </p>
         </div>
@@ -165,7 +165,7 @@ const Reports: React.FC = () => {
           <select
             value={dateRange}
             onChange={(e) => setDateRange(e.target.value as any)}
-            className="px-4 py-2 border border-white/[0.12] rounded-lg bg-[#0a0e27] text-white focus:ring-2 focus:ring-green-500"
+            className="px-4 py-2 border border-gray-200 rounded-lg bg-white text-gray-900 focus:ring-2 focus:ring-green-500 shadow-sm"
           >
             <option value="7">Last 7 days</option>
             <option value="14">Last 14 days</option>
@@ -177,7 +177,7 @@ const Reports: React.FC = () => {
           <button
             onClick={() => fetchAllData(true)}
             disabled={refreshing}
-            className="p-2 text-gray-500 hover:text-gray-300 dark:hover:text-gray-200 hover:bg-[#0a0e27]/[0.06] rounded-lg"
+            className="p-2 text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
           >
             <RefreshCw className={`w-5 h-5 ${refreshing ? 'animate-spin' : ''}`} />
           </button>
@@ -185,7 +185,7 @@ const Reports: React.FC = () => {
           {/* Export Button */}
           <button
             onClick={() => handleExport(activeTab)}
-            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center"
+            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center transition-colors shadow-sm"
           >
             <Download className="w-4 h-4 mr-2" />
             Export
@@ -194,7 +194,7 @@ const Reports: React.FC = () => {
       </div>
 
       {/* Tabs */}
-      <div className="flex space-x-1 bg-white/[0.02] border border-white/[0.05] p-1 rounded-xl mb-6 w-fit backdrop-blur-xl">
+      <div className="flex space-x-1 bg-gray-100 border border-gray-200 p-1 rounded-xl mb-6 w-fit shadow-sm">
         {[
           { id: 'overview', label: 'Overview', icon: BarChart3 },
           { id: 'messages', label: 'Messages', icon: MessageSquare },
@@ -206,7 +206,7 @@ const Reports: React.FC = () => {
             onClick={() => setActiveTab(tab.id as any)}
             className={`flex items-center px-4 py-2 rounded-lg font-medium transition-all ${activeTab === tab.id
                 ? 'bg-emerald-600 text-white shadow-sm'
-                : 'text-gray-400 hover:text-white'
+                : 'text-gray-600 hover:text-gray-900'
               }`}
           >
             <tab.icon className="w-4 h-4 mr-2" />
@@ -252,8 +252,8 @@ const Reports: React.FC = () => {
           {/* Charts Row */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Message Trends */}
-            <div className="relative overflow-hidden bg-white/[0.02] border border-white/[0.05] rounded-2xl p-6 backdrop-blur-xl">
-              <h3 className="text-lg font-semibold text-white mb-4">
+            <div className="relative overflow-hidden bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">
                 Message Trends
               </h3>
               {messageData?.chartData && messageData.chartData.length > 0 ? (
@@ -274,8 +274,8 @@ const Reports: React.FC = () => {
             </div>
 
             {/* Contact Growth */}
-            <div className="relative overflow-hidden bg-white/[0.02] border border-white/[0.05] rounded-2xl p-6 backdrop-blur-xl">
-              <h3 className="text-lg font-semibold text-white mb-4">
+            <div className="relative overflow-hidden bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">
                 Contact Growth
               </h3>
               {contactData?.chartData && contactData.chartData.length > 0 ? (
@@ -370,8 +370,8 @@ const Reports: React.FC = () => {
           </div>
 
           {/* Message Chart */}
-          <div className="bg-[#0a0e27] rounded-xl p-6 border border-white/[0.1]">
-            <h3 className="text-lg font-semibold text-white mb-4">
+          <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
               Daily Message Volume
             </h3>
             {messageData.chartData && messageData.chartData.length > 0 ? (
@@ -389,25 +389,25 @@ const Reports: React.FC = () => {
 
           {/* Message Type Breakdown */}
           {messageData.typeBreakdown && messageData.typeBreakdown.length > 0 && (
-            <div className="relative overflow-hidden bg-white/[0.02] border border-white/[0.05] rounded-2xl p-6 backdrop-blur-xl">
-              <h3 className="text-lg font-semibold text-white mb-4">
+            <div className="relative overflow-hidden bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">
                 Message Types
               </h3>
               <div className="space-y-3">
                 {messageData.typeBreakdown.map((item: any) => (
                   <div key={item.type} className="flex items-center">
-                    <span className="w-24 text-sm text-gray-400 capitalize">
+                    <span className="w-24 text-sm text-gray-500 capitalize">
                       {item.type.toLowerCase()}
                     </span>
                     <div className="flex-1 mx-4">
-                      <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                      <div className="w-full bg-gray-200 rounded-full h-2">
                         <div
-                          className="bg-green-600 h-2 rounded-full"
+                           className="bg-green-600 h-2 rounded-full"
                           style={{ width: `${item.percentage}%` }}
                         />
                       </div>
                     </div>
-                    <span className="text-sm font-medium text-white w-16 text-right">
+                    <span className="text-sm font-medium text-gray-900 w-16 text-right">
                       {item.count}
                     </span>
                   </div>
@@ -454,42 +454,42 @@ const Reports: React.FC = () => {
           </div>
 
           {/* Recent Campaigns Table */}
-          <div className="relative overflow-hidden bg-white/[0.02] border border-white/[0.05] rounded-2xl backdrop-blur-xl">
-            <div className="p-6 border-b border-white/[0.05]">
-              <h3 className="text-lg font-semibold text-white">
+          <div className="relative overflow-hidden bg-white border border-gray-200 rounded-2xl shadow-sm">
+            <div className="p-6 border-b border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-900">
                 Recent Campaigns
               </h3>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-white/[0.02] border-b border-white/[0.05]">
+                <thead className="bg-gray-50 border-b border-gray-200">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                       Campaign
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                       Status
                     </th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-400 uppercase">
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">
                       Sent
                     </th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-400 uppercase">
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">
                       Delivered
                     </th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-400 uppercase">
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">
                       Read
                     </th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-400 uppercase">
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">
                       Delivery %
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-white/[0.02]">
+                <tbody className="divide-y divide-gray-100">
                   {campaignData.campaigns?.length > 0 ? (
                     campaignData.campaigns.map((campaign: any) => (
-                      <tr key={campaign.id} className="hover:bg-emerald-500/[0.02] hover:shadow-[inset_0_0_0_1px_rgba(16,185,129,0.4)] transition-all duration-200 group/row">
+                      <tr key={campaign.id} className="hover:bg-gray-50 transition-all duration-200 group/row">
                         <td className="px-6 py-4">
-                          <div className="text-sm font-medium text-white">
+                          <div className="text-sm font-medium text-gray-900">
                             {campaign.name}
                           </div>
                           <div className="text-xs text-gray-500">
@@ -499,33 +499,33 @@ const Reports: React.FC = () => {
                         <td className="px-6 py-4">
                           <span
                             className={`px-2 py-1 text-xs font-medium rounded-full ${campaign.status === 'COMPLETED'
-                                ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
+                                ? 'bg-green-50 text-green-700 border border-green-200'
                                 : campaign.status === 'RUNNING'
-                                  ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400'
+                                  ? 'bg-blue-50 text-blue-700 border border-blue-200'
                                   : campaign.status === 'FAILED'
-                                    ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
-                                    : 'bg-[#0a0e27]/[0.04] text-white dark:bg-gray-700 dark:text-gray-400'
+                                    ? 'bg-red-50 text-red-700 border border-red-200'
+                                    : 'bg-gray-100 text-gray-700 border border-gray-200'
                               }`}
                           >
                             {campaign.status}
                           </span>
                         </td>
-                        <td className="px-6 py-4 text-right text-sm text-white">
+                        <td className="px-6 py-4 text-right text-sm text-gray-900">
                           {campaign.sentCount.toLocaleString()}
                         </td>
-                        <td className="px-6 py-4 text-right text-sm text-white">
+                        <td className="px-6 py-4 text-right text-sm text-gray-900">
                           {campaign.deliveredCount.toLocaleString()}
                         </td>
-                        <td className="px-6 py-4 text-right text-sm text-white">
+                        <td className="px-6 py-4 text-right text-sm text-gray-900">
                           {campaign.readCount.toLocaleString()}
                         </td>
                         <td className="px-6 py-4 text-right">
                           <span
                             className={`text-sm font-medium ${campaign.deliveryRate >= 90
-                                ? 'text-green-600'
+                                ? 'text-green-700'
                                 : campaign.deliveryRate >= 70
-                                  ? 'text-yellow-600'
-                                  : 'text-red-600'
+                                  ? 'text-yellow-700'
+                                  : 'text-red-700'
                               }`}
                           >
                             {campaign.deliveryRate}%
@@ -573,8 +573,8 @@ const Reports: React.FC = () => {
           </div>
 
           {/* Contact Growth Chart */}
-          <div className="bg-[#0a0e27] rounded-xl p-6 border border-white/[0.1]">
-            <h3 className="text-lg font-semibold text-white mb-4">
+          <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
               Contact Growth
             </h3>
             {contactData.chartData && contactData.chartData.length > 0 ? (
@@ -594,17 +594,17 @@ const Reports: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Source Breakdown */}
             {contactData.sourceBreakdown && contactData.sourceBreakdown.length > 0 && (
-              <div className="relative overflow-hidden bg-white/[0.02] border border-white/[0.05] rounded-2xl p-6 backdrop-blur-xl">
-                <h3 className="text-lg font-semibold text-white mb-4">
+              <div className="relative overflow-hidden bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">
                   Contact Sources
                 </h3>
                 <div className="space-y-3">
                   {contactData.sourceBreakdown.map((item: any) => (
                     <div key={item.source} className="flex items-center justify-between">
-                      <span className="text-sm text-gray-400">
+                      <span className="text-sm text-gray-500">
                         {item.source}
                       </span>
-                      <span className="text-sm font-medium text-white">
+                      <span className="text-sm font-medium text-gray-900">
                         {item.count} ({item.percentage}%)
                       </span>
                     </div>
@@ -615,15 +615,15 @@ const Reports: React.FC = () => {
 
             {/* Top Tags */}
             {contactData.topTags && contactData.topTags.length > 0 && (
-              <div className="relative overflow-hidden bg-white/[0.02] border border-white/[0.05] rounded-2xl p-6 backdrop-blur-xl">
-                <h3 className="text-lg font-semibold text-white mb-4">
+              <div className="relative overflow-hidden bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">
                   Top Tags
                 </h3>
                 <div className="flex flex-wrap gap-2">
                   {contactData.topTags.map((item: any) => (
                     <span
                       key={item.tag}
-                      className="px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400 rounded-full text-sm"
+                      className="px-3 py-1 bg-green-50 text-green-700 border border-green-200 rounded-full text-sm"
                     >
                       {item.tag} ({item.count})
                     </span>
@@ -680,7 +680,7 @@ const StatCard: React.FC<StatCardProps> = ({
 
   return (
     <div
-      className={`relative overflow-hidden border rounded-2xl group/stat transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg backdrop-blur-xl ${compact ? 'p-4' : 'p-6'
+      className={`relative overflow-hidden border rounded-2xl group/stat transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg ${compact ? 'p-4' : 'p-6'
         }`}
       style={{
         backgroundColor: `${hexColor}0A`,
@@ -695,7 +695,7 @@ const StatCard: React.FC<StatCardProps> = ({
           <p className={`text-xs font-mono uppercase tracking-widest ${colors[color]}`}>{title}</p>
           {change !== undefined && (
             <div
-              className={`flex items-center text-sm ${change >= 0 ? 'text-emerald-500' : 'text-red-500'
+              className={`flex items-center text-sm ${change >= 0 ? 'text-emerald-600' : 'text-red-600'
                 }`}
             >
               {change >= 0 ? (
@@ -709,7 +709,7 @@ const StatCard: React.FC<StatCardProps> = ({
         </div>
         <div>
           <p
-            className={`font-bold text-white mt-1 ${compact ? 'text-2xl' : 'text-3xl'
+            className={`font-bold text-gray-900 mt-1 ${compact ? 'text-2xl' : 'text-3xl'
               }`}
           >
             {typeof value === 'number' ? value.toLocaleString() : value}
@@ -751,11 +751,11 @@ const QuickStat: React.FC<QuickStatProps> = ({
   };
 
   return (
-    <div className="relative overflow-hidden bg-white/[0.02] border border-white/[0.05] rounded-2xl p-4 flex items-center backdrop-blur-xl">
+    <div className="relative overflow-hidden bg-white border border-gray-200 rounded-2xl p-4 flex items-center shadow-sm">
       <Icon className={`w-8 h-8 ${colors[color]} mr-3`} />
       <div>
-        <p className="text-xl font-bold text-white">{value}</p>
-        <p className="text-xs text-gray-400">
+        <p className="text-xl font-bold text-gray-900">{value}</p>
+        <p className="text-xs text-gray-500">
           {label}
           {subLabel && <span className="ml-1 opacity-70">{subLabel}</span>}
         </p>
