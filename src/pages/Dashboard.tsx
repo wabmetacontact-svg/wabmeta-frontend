@@ -1,39 +1,18 @@
-// src/pages/Dashboard.tsx
 import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import {
-  Users,
-  MessageSquare,
-  Send,
-  CheckCircle,
-  XCircle,
-  TrendingUp,
-  TrendingDown,
-  Zap,
-  RefreshCw,
-  ArrowUpRight,
-  Mail,
-  FileText,
-  BarChart3,
-  ChevronDown,
-  Bot,
-  Workflow,
-  PlusCircle,
-  Radio,
-  UserPlus,
-  BrainCircuit,
-  Sparkles,
-  Inbox,
-  Phone,
-  Instagram,
-  Target
+  Users, MessageSquare, Send, CheckCircle, XCircle,
+  TrendingUp, TrendingDown, Zap, RefreshCw, ArrowUpRight,
+  Mail, FileText, Bot, Workflow, Radio, UserPlus,
+  Sparkles, Inbox, Phone, Instagram, Target, Play, Pause,
+  MoreHorizontal, ArrowRight, BarChart3,
 } from 'lucide-react';
+import { FaWhatsapp } from 'react-icons/fa';
+import toast from 'react-hot-toast';
 import api, { dashboard } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useSocket } from '../context/SocketContext';
-import toast from 'react-hot-toast';
-import { Link, useNavigate } from 'react-router-dom';
 import PageSkeleton from '../components/common/PageSkeleton';
-import { FaWhatsapp } from "react-icons/fa";
 
 // ============================================
 // HELPERS
@@ -54,67 +33,14 @@ const formatNum = (n: number): string => {
 };
 
 const formatRelativeTime = (dateStr: string) => {
-  const now = new Date();
-  const date = new Date(dateStr);
-  const diffMs = now.getTime() - date.getTime();
+  const diffMs = Date.now() - new Date(dateStr).getTime();
   const diffMins = Math.floor(diffMs / 60000);
   const diffHours = Math.floor(diffMins / 60);
   const diffDays = Math.floor(diffHours / 24);
-
   if (diffMins < 1) return 'Just now';
   if (diffMins < 60) return `${diffMins}m ago`;
   if (diffHours < 24) return `${diffHours}h ago`;
   return `${diffDays}d ago`;
-};
-
-// ============================================
-// SPARKLINE COMPONENT
-// ============================================
-
-const Sparkline: React.FC<{ data: number[]; color: string }> = ({ data, color }) => {
-  if (!data || data.length < 2) {
-    return (
-      <div className="h-11 flex items-center justify-center">
-        <div className="w-full h-px bg-[#0a0e27]/[0.05]" />
-      </div>
-    );
-  }
-
-  const width = 140;
-  const height = 45;
-  const max = Math.max(...data);
-  const min = Math.min(...data);
-  const range = max - min || 1;
-
-  const points = data.map((val, idx) => {
-    const x = (idx / (data.length - 1)) * width;
-    const y = height - ((val - min) / range) * (height - 8) - 4;
-    return { x, y };
-  });
-
-  let path = `M ${points[0].x} ${points[0].y}`;
-  for (let i = 0; i < points.length - 1; i++) {
-    const p0 = points[i];
-    const p1 = points[i + 1];
-    const cpX = p0.x + (p1.x - p0.x) / 2;
-    path += ` C ${cpX} ${p0.y}, ${cpX} ${p1.y}, ${p1.x} ${p1.y}`;
-  }
-
-  const fillPath = `${path} L ${width} ${height} L 0 ${height} Z`;
-  const gradId = `sparkline-${color.replace('#', '')}`;
-
-  return (
-    <svg className="w-full h-11 overflow-visible" viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="none">
-      <defs>
-        <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={color} stopOpacity="0.3" />
-          <stop offset="100%" stopColor={color} stopOpacity="0" />
-        </linearGradient>
-      </defs>
-      <path d={fillPath} fill={`url(#${gradId})`} />
-      <path d={path} fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
 };
 
 // ============================================
@@ -133,19 +59,14 @@ const Dashboard: React.FC = () => {
   const [stats, setStats] = useState<any>(null);
   const [widgets, setWidgets] = useState<any>(null);
   const [activity, setActivity] = useState<any[]>([]);
-  const [unifiedStats, setUnifiedStats] = useState<any>(null);
 
-  // Real-time greeting
   const [greeting, setGreeting] = useState(getGreeting());
   useEffect(() => {
-    const timer = setInterval(() => {
-      setGreeting(getGreeting());
-    }, 60000);
+    const timer = setInterval(() => setGreeting(getGreeting()), 60000);
     return () => clearInterval(timer);
   }, []);
 
-  // ✅ FIXED: Properly handle axios response structure
-  const fetchDashboardData = async (showSkeleton = true) => {
+  const fetchData = async (showSkeleton = true) => {
     if (showSkeleton) setLoading(true);
     try {
       const [statsRes, widgetsRes, activityRes] = await Promise.all([
@@ -154,68 +75,43 @@ const Dashboard: React.FC = () => {
         dashboard.getActivity(10),
       ]);
 
-      // ✅ FIXED: axios wraps response — access .data.data
-      if (statsRes?.data?.success && statsRes?.data?.data) {
-        setStats(statsRes.data.data);
-        console.log('✅ Stats loaded:', statsRes.data.data);
-      } else {
-        console.warn('⚠️ Stats response invalid:', statsRes);
-      }
-
-      if (widgetsRes?.data?.success && widgetsRes?.data?.data) {
-        setWidgets(widgetsRes.data.data);
-        console.log('✅ Widgets loaded:', widgetsRes.data.data);
-      }
-
-      if (activityRes?.data?.success && Array.isArray(activityRes?.data?.data)) {
+      if (statsRes?.data?.success) setStats(statsRes.data.data);
+      if (widgetsRes?.data?.success) setWidgets(widgetsRes.data.data);
+      if (activityRes?.data?.success && Array.isArray(activityRes.data.data)) {
         setActivity(activityRes.data.data);
       }
-
-      // Fallback unified stats since api method is missing for it right now, we can load it from our local backend endpoint
-      try {
-        const res = await api.get('/analytics/unified');
-        if (res.data?.success) setUnifiedStats(res.data.data);
-      } catch (err) {
-        console.error("Unified stats error:", err);
-      }
-    } catch (error) {
-      console.error('❌ Dashboard fetch error:', error);
-      toast.error('Failed to load dashboard data');
+    } catch (err) {
+      console.error('Dashboard error:', err);
+      toast.error('Failed to load dashboard');
     } finally {
       if (showSkeleton) setLoading(false);
     }
   };
 
-  useEffect(() => {
-    fetchDashboardData(true);
-  }, [dateRange]);
+  useEffect(() => { fetchData(true); }, [dateRange]);
 
   useEffect(() => {
     if (!socket) return;
-    const handleUpdate = () => fetchDashboardData(false);
-
-    socket.on('message:new', handleUpdate);
-    socket.on('message:status', handleUpdate);
-    socket.on('campaign:update', handleUpdate);
-    socket.on('campaign:progress', handleUpdate);
-    socket.on('campaign:completed', handleUpdate);
-
+    const handler = () => fetchData(false);
+    socket.on('message:new', handler);
+    socket.on('message:status', handler);
+    socket.on('campaign:update', handler);
+    socket.on('campaign:progress', handler);
+    socket.on('campaign:completed', handler);
     return () => {
-      socket.off('message:new', handleUpdate);
-      socket.off('message:status', handleUpdate);
-      socket.off('campaign:update', handleUpdate);
-      socket.off('campaign:progress', handleUpdate);
-      socket.off('campaign:completed', handleUpdate);
+      socket.off('message:new', handler);
+      socket.off('message:status', handler);
+      socket.off('campaign:update', handler);
+      socket.off('campaign:progress', handler);
+      socket.off('campaign:completed', handler);
     };
   }, [socket]);
 
   const handleRefresh = async () => {
     setRefreshing(true);
     try {
-      await fetchDashboardData(false);
-      toast.success('Dashboard refreshed');
-    } catch {
-      toast.error('Refresh failed');
+      await fetchData(false);
+      toast.success('Refreshed');
     } finally {
       setRefreshing(false);
     }
@@ -223,46 +119,22 @@ const Dashboard: React.FC = () => {
 
   if (loading) return <PageSkeleton />;
 
-  // ✅ Pull REAL data from API response (with safe defaults of 0)
-  const contactsTotal = stats?.contacts?.total ?? 0;
-  const contactsGrowth = stats?.contacts?.growth ?? 0;
-  const contactsThisMonth = stats?.contacts?.thisMonth ?? 0;
-
-  const messagesSent = stats?.messages?.sent ?? 0;
-  const messagesGrowth = stats?.messages?.growth ?? 0;
-  const messagesToday = stats?.messages?.today ?? 0;
-
-  const deliveryRate = stats?.delivery?.deliveryRate ?? 0;
-  const readRate = stats?.delivery?.readRate ?? 0;
-  const totalDelivered = stats?.delivery?.delivered ?? 0;
-  const totalFailed = stats?.delivery?.failed ?? 0;
-
-  const activeCampaigns = stats?.campaigns?.active ?? 0;
-  const completedCampaigns = stats?.campaigns?.completed ?? 0;
-  const campaignsThisMonth = stats?.campaigns?.thisMonth ?? 0;
-
+  // Real data
+  const contactsTotal       = stats?.contacts?.total ?? 0;
+  const contactsGrowth      = stats?.contacts?.growth ?? 0;
+  const messagesSent        = stats?.messages?.sent ?? 0;
+  const messagesGrowth      = stats?.messages?.growth ?? 0;
+  const deliveryRate        = stats?.delivery?.deliveryRate ?? 0;
+  const readRate            = stats?.delivery?.readRate ?? 0;
+  const totalDelivered      = stats?.delivery?.delivered ?? 0;
+  const totalRead           = stats?.delivery?.read ?? 0;
+  const totalFailed         = stats?.delivery?.failed ?? 0;
+  const activeCampaigns     = stats?.campaigns?.active ?? 0;
+  const completedCampaigns  = stats?.campaigns?.completed ?? 0;
   const conversationsUnread = stats?.conversations?.unread ?? 0;
   const conversationsActive = stats?.conversations?.active ?? 0;
-  const templatesApproved = stats?.templates?.approved ?? 0;
-  const whatsappConnected = stats?.whatsapp?.connected ?? 0;
-
-  // Sparkline data from widgets
-  const getContactsHistory = (): number[] => {
-    if (!widgets?.contactsGrowth?.length) return [];
-    let current = Math.max(0, contactsTotal - widgets.contactsGrowth.reduce((a: number, b: any) => a + (b.count || 0), 0));
-    return widgets.contactsGrowth.map((d: any) => { current += (d.count || 0); return current; });
-  };
-
-  const getMessagesHistory = (): number[] => {
-    if (!widgets?.messagesOverview?.length) return [];
-    let current = Math.max(0, messagesSent - widgets.messagesOverview.reduce((a: number, b: any) => a + (b.sent || 0), 0));
-    return widgets.messagesOverview.map((d: any) => { current += (d.sent || 0); return current; });
-  };
-
-  const getDeliveryHistory = (): number[] => {
-    if (!widgets?.messagesOverview?.length) return [];
-    return widgets.messagesOverview.map((d: any) => d.sent > 0 ? Math.round((d.delivered / d.sent) * 100) : 0);
-  };
+  const templatesApproved   = stats?.templates?.approved ?? 0;
+  const whatsappConnected   = stats?.whatsapp?.connected ?? 0;
 
   const chartData = widgets?.messagesOverview?.map((item: any) => ({
     label: new Date(item.date).toLocaleDateString('en-US', { weekday: 'short' }),
@@ -272,48 +144,50 @@ const Dashboard: React.FC = () => {
     failed: item.failed || 0,
   })) || [];
 
+  const recentCampaigns = widgets?.recentCampaigns || [];
   const hasAnyData = contactsTotal > 0 || messagesSent > 0 || activeCampaigns > 0;
   const hasChartData = chartData.length > 0 && chartData.some((d: any) => d.sent > 0);
-  const recentCampaigns = widgets?.recentCampaigns || [];
   const userName = user?.firstName || 'there';
+  const initial = (userName.charAt(0) || 'U').toUpperCase();
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto pb-10">
+    <div className="space-y-5 max-w-[1400px] mx-auto pb-6 animate-fadeIn">
 
-      {/* ✅ HEADER */}
+      {/* ═══════════════ HEADER ═══════════════ */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2 mb-2">
-            <Sparkles className="w-4 h-4 text-green-400" />
-            <span className="text-xs font-mono uppercase tracking-[0.15em] text-gray-400">
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full
+            bg-white dark:bg-[#1A2331] border border-cream-300 dark:border-[#2A3441] mb-2">
+            <Sparkles className="w-3 h-3 text-ocean-500" />
+            <span className="text-[10px] font-medium text-ink-700 dark:text-cream-100 uppercase tracking-wider">
               {greeting}
             </span>
           </div>
-          <h1 className="text-3xl lg:text-4xl font-bold text-white tracking-tight">
-            Welcome back, {userName} 👋
+          <h1 className="text-3xl lg:text-4xl font-bold text-ink-900 dark:text-cream-100 tracking-tight">
+            Welcome in, <span className="font-serif italic font-light">{userName}</span>
           </h1>
-          <p className="mt-2 text-sm text-gray-400">
+          <p className="mt-1 text-sm text-ink-500">
             {hasAnyData
-              ? `Here's what's happening with your WhatsApp business today`
-              : `Let's get your WhatsApp business set up. It takes ~6 minutes.`
-            }
+              ? `Here's what's happening with your business today`
+              : `Let's get your WhatsApp business set up`}
           </p>
         </div>
 
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1 p-1 rounded-xl bg-[#0a0e27]/[0.04] backdrop-blur-xl border border-white/[0.08]">
-            {[7, 14, 30].map((days) => (
+          <div className="flex items-center gap-0.5 p-1 rounded-full
+            bg-white dark:bg-[#1A2331]
+            border border-cream-300 dark:border-[#2A3441]">
+            {[7, 14, 30].map((d) => (
               <button
-                key={days}
-                onClick={() => setDateRange(days as 7 | 14 | 30)}
-                className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all duration-300
-                  ${dateRange === days
-                    ? 'bg-green-500/20 text-green-300 border border-green-400/30'
-                    : 'text-gray-400 hover:text-white border border-transparent'
-                  }
-                `}
+                key={d}
+                onClick={() => setDateRange(d as 7 | 14 | 30)}
+                className={`px-3 py-1.5 text-xs font-semibold rounded-full transition-all
+                  ${dateRange === d
+                    ? 'bg-ink-900 dark:bg-mint-500 text-white dark:text-ink-900'
+                    : 'text-ink-500 hover:text-ink-900 dark:hover:text-cream-100'
+                  }`}
               >
-                {days}d
+                {d}d
               </button>
             ))}
           </div>
@@ -321,254 +195,278 @@ const Dashboard: React.FC = () => {
           <button
             onClick={handleRefresh}
             disabled={refreshing}
-            className="p-2.5 rounded-xl bg-[#0a0e27]/[0.04] backdrop-blur-xl border border-white/[0.08]
-              hover:bg-[#0a0e27]/[0.08] hover:border-white/[0.15]
-              text-gray-400 hover:text-white transition-all duration-300 disabled:opacity-50"
+            className="w-10 h-10 rounded-full flex items-center justify-center
+              bg-white dark:bg-[#1A2331]
+              border border-cream-300 dark:border-[#2A3441]
+              text-ink-700 dark:text-cream-100
+              hover:bg-cream-100 dark:hover:bg-[#131922]
+              transition-all disabled:opacity-50"
           >
             <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
           </button>
         </div>
       </div>
 
-      {/* ✅ NEW USER ONBOARDING CARD (only if no data) */}
-      {!hasAnyData && (
-        <div className="relative rounded-2xl overflow-hidden
-          bg-[#0a0e27]/[0.04] backdrop-blur-2xl
-          border border-white/[0.1]
-          p-6 lg:p-8">
-
-          <div className="absolute inset-0"
-            style={{
-              background: 'radial-gradient(ellipse 60% 50% at 20% 50%, rgba(16, 185, 129, 0.15) 0%, transparent 60%)',
-            }}
-          />
-
-          <div className="relative grid grid-cols-1 lg:grid-cols-3 gap-6 items-center">
-            <div className="lg:col-span-2">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full
-                bg-green-500/10 border border-green-400/20 mb-3">
-                <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
-                <span className="text-xs font-mono uppercase tracking-wider text-green-300">
-                  Quick setup
-                </span>
-              </div>
-
-              <h2 className="text-2xl lg:text-3xl font-bold text-white mb-2">
-                You're all set up. <span className="italic font-light text-gray-400">Almost.</span>
-              </h2>
-              <p className="text-sm text-gray-400 mb-5 max-w-lg">
-                Connect WhatsApp, import contacts, and send your first message. Most users finish in under 10 minutes.
-              </p>
-
-              <div className="flex flex-wrap gap-2">
-                <button
-                  onClick={() => navigate('/dashboard/settings?tab=whatsapp')}
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full
-                    bg-gradient-to-r from-green-500 to-emerald-500 text-white text-sm font-semibold
-                    shadow-[0_8px_24px_rgba(16,185,129,0.35)]
-                    hover:shadow-[0_12px_32px_rgba(16,185,129,0.5)]
-                    hover:-translate-y-0.5 transition-all duration-500"
-                >
-                  <Phone className="w-4 h-4" />
-                  Connect WhatsApp
-                  <ArrowUpRight className="w-3.5 h-3.5" />
-                </button>
-                <button
-                  onClick={() => navigate('/dashboard/contacts/import')}
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full
-                    bg-[#0a0e27]/[0.06] border border-white/[0.12]
-                    hover:bg-[#0a0e27]/[0.1] hover:border-white/[0.2]
-                    text-gray-300 hover:text-white text-sm font-medium transition-all duration-300"
-                >
-                  <UserPlus className="w-4 h-4" />
-                  Import contacts
-                </button>
-              </div>
+      {/* ═══════════════ PROGRESS BAR ROW (Crextio style) ═══════════════ */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+        {/* Left: Progress segments */}
+        <div className="lg:col-span-7">
+          <div className="card-surface p-4">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3">
+              <ProgressLabel label="Delivered" value={`${deliveryRate}%`}  color="#1A2E4A" />
+              <ProgressLabel label="Read"      value={`${readRate}%`}      color="#2DD4BF" highlight />
+              <ProgressLabel label="Failed"    value={`${messagesSent > 0 ? Math.round((totalFailed / messagesSent) * 100) : 0}%`} color="#E8E2D5" muted />
+              <ProgressLabel label="Active"    value={`${activeCampaigns}`} color="#FAF7F0" muted />
             </div>
-
-            <div className="space-y-2">
-              {[
-                { step: '01', label: 'Connect WhatsApp', done: whatsappConnected > 0 },
-                { step: '02', label: 'Import contacts', done: contactsTotal > 0 },
-                { step: '03', label: 'Create template', done: templatesApproved > 0 },
-                { step: '04', label: 'Send first campaign', done: activeCampaigns > 0 || completedCampaigns > 0 },
-              ].map((item) => (
-                <div key={item.step}
-                  className={`flex items-center gap-3 p-2.5 rounded-xl border transition-all
-                    ${item.done
-                      ? 'bg-green-500/10 border-green-400/20'
-                      : 'bg-[#0a0e27]/[0.03] border-white/[0.06]'
-                    }
-                  `}
-                >
-                  <div className={`w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-mono font-bold
-                    ${item.done
-                      ? 'bg-green-500/20 text-green-300 border border-green-400/30'
-                      : 'bg-[#0a0e27]/[0.05] text-gray-500 border border-white/[0.08]'
-                    }
-                  `}>
-                    {item.done ? <CheckCircle className="w-3.5 h-3.5" /> : item.step}
-                  </div>
-                  <span className={`text-xs font-medium ${item.done ? 'text-white' : 'text-gray-400'}`}>
-                    {item.label}
-                  </span>
-                </div>
-              ))}
+            <div className="flex gap-1 h-2 rounded-full overflow-hidden bg-cream-200 dark:bg-[#131922]">
+              <div className="bg-ink-900 dark:bg-ink-50" style={{ width: `${deliveryRate * 0.5}%` }} />
+              <div className="bg-mint-500" style={{ width: `${readRate * 0.4}%` }} />
+              <div className="bg-cream-300 dark:bg-[#2A3441]" style={{ width: '30%', backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 4px, rgba(0,0,0,0.06) 4px, rgba(0,0,0,0.06) 8px)' }} />
             </div>
           </div>
         </div>
-      )}
 
-      {/* ✅ MAIN GRID */}
-      <div className="grid grid-cols-1 xl:grid-cols-4 gap-6 items-start">
-
-        {/* LEFT: 3/4 width */}
-        <div className="xl:col-span-3 space-y-6">
-
-          {/* UNIFIED OVERVIEW ROW */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-            {/* WhatsApp Quick Stat */}
-            <div className="relative overflow-hidden rounded-2xl bg-[#25D366]/[0.05] border border-[#25D366]/20 p-6 group">
-              <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform">
-                <FaWhatsapp size={80} />
-              </div>
-              <div className="relative">
-                <p className="text-xs font-mono text-[#25D366] uppercase tracking-widest mb-1">WhatsApp</p>
-                <h3 className="text-3xl font-bold text-white">{formatNum(unifiedStats?.overview?.waVolume || messagesSent)}</h3>
-                <p className="text-xs text-gray-500 mt-2">Messages sent this month</p>
-                <div className="mt-4 flex items-center gap-2">
-                  <span className="text-[10px] bg-[#25D366]/20 text-[#25D366] px-2 py-0.5 rounded-full font-bold">{unifiedStats?.performance?.waDeliveryRate || deliveryRate}% Delivery</span>
-                </div>
-              </div>
+        {/* Right: Mini stats (like Employee/Hirings/Projects) */}
+        <div className="lg:col-span-5">
+          <div className="card-surface p-4">
+            <div className="grid grid-cols-3 gap-2">
+              <MiniStat icon={Users} value={formatNum(contactsTotal)} label="Contacts" />
+              <MiniStat icon={Send} value={formatNum(messagesSent)} label="Messages" />
+              <MiniStat icon={Zap} value={`${activeCampaigns + completedCampaigns}`} label="Campaigns" />
             </div>
+          </div>
+        </div>
+      </div>
 
-            {/* Instagram Quick Stat */}
-            <div className="relative overflow-hidden rounded-2xl bg-[#e1306c]/[0.05] border border-[#e1306c]/20 p-6 group">
-              <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform">
-                <Instagram size={80} />
-              </div>
-              <div className="relative">
-                <p className="text-xs font-mono text-[#e1306c] uppercase tracking-widest mb-1">Instagram</p>
-                <h3 className="text-3xl font-bold text-white">{formatNum(unifiedStats?.overview?.igVolume || 0)}</h3>
-                <p className="text-xs text-gray-500 mt-2">Automated interactions</p>
-                <div className="mt-4 flex items-center gap-2">
-                  <span className="text-[10px] bg-[#e1306c]/20 text-[#e1306c] px-2 py-0.5 rounded-full font-bold">Live Data</span>
-                </div>
-              </div>
-            </div>
+      {/* ═══════════════ MAIN BENTO GRID ═══════════════ */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
 
-            {/* Combined Efficiency */}
-            <div className="relative overflow-hidden rounded-2xl bg-indigo-500/[0.05] border border-indigo-500/20 p-6 group">
-              <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform">
-                <Target size={80} />
-              </div>
-              <div className="relative">
-                <p className="text-xs font-mono text-indigo-400 uppercase tracking-widest mb-1">Efficiency</p>
-                <h3 className="text-3xl font-bold text-white">84%</h3>
-                <p className="text-xs text-gray-500 mt-2">AI Response Accuracy</p>
-                <div className="mt-4 flex items-center gap-2">
-                  <Zap size={12} className="text-indigo-400" />
-                  <span className="text-[10px] text-indigo-400 font-bold">Saving hours/week</span>
-                </div>
-              </div>
+        {/* CARD 1: User profile (Crextio "Lora" style) */}
+        <div className="lg:col-span-3 relative overflow-hidden rounded-3xl
+          bg-gradient-to-br from-ocean-100 to-cream-200
+          dark:from-[#1A2331] dark:to-[#0F1419]
+          border border-cream-300 dark:border-[#2A3441]
+          aspect-square min-h-[280px] group">
+
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="w-32 h-32 rounded-full
+              bg-gradient-to-br from-ocean-500 to-ocean-900
+              flex items-center justify-center text-white text-5xl font-bold
+              shadow-glow group-hover:scale-110 transition-transform duration-700">
+              {initial}
             </div>
           </div>
 
-          {/* CHARTS ROW */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-
-            {/* Messages Overview Chart */}
-            <GlassCard className="lg:col-span-8">
-              <div className="flex items-center justify-between mb-5">
-                <div className="flex items-center gap-2">
-                  <div className="w-9 h-9 rounded-xl bg-green-500/15 border border-green-400/20 flex items-center justify-center">
-                    <MessageSquare className="w-4 h-4 text-green-400" />
-                  </div>
-                  <h3 className="text-base font-semibold text-white">Messages Overview</h3>
-                </div>
-                <div className="hidden sm:flex items-center gap-3 text-[10px] font-medium text-gray-500">
-                  {[
-                    { color: '#10b981', label: 'Sent' },
-                    { color: '#3b82f6', label: 'Delivered' },
-                    { color: '#a855f7', label: 'Read' },
-                    { color: '#ef4444', label: 'Failed' },
-                  ].map((l) => (
-                    <div key={l.label} className="flex items-center gap-1">
-                      <div className="w-2 h-2 rounded-full" style={{ backgroundColor: l.color }} />
-                      <span>{l.label}</span>
-                    </div>
-                  ))}
-                </div>
+          <div className="absolute bottom-0 left-0 right-0 p-4
+            bg-gradient-to-t from-white/95 via-white/70 to-transparent
+            dark:from-[#1A2331]/95 dark:via-[#1A2331]/70">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-bold text-ink-900 dark:text-cream-100">{userName}</p>
+                <p className="text-[10px] text-ink-500 font-mono uppercase tracking-wider">
+                  {user?.role || 'Owner'}
+                </p>
               </div>
-
-              {hasChartData ? (
-                <div className="h-80 w-full mt-6">
-                  {/* Channel Comparison Chart */}
-                  <MessagesChart data={chartData} />
-                </div>
-              ) : (
-                <EmptyChart
-                  icon={MessageSquare}
-                  title="No messages yet"
-                  subtitle="Send your first message to see the chart"
-                  actionText="Send first message"
-                  actionHref="/dashboard/campaigns/create"
-                />
-              )}
-            </GlassCard>
-
-            {/* Delivery Performance Donut */}
-            <GlassCard className="lg:col-span-4">
-              <div className="flex items-center gap-2 mb-5">
-                <div className="w-9 h-9 rounded-xl bg-purple-500/15 border border-purple-400/20 flex items-center justify-center">
-                  <BarChart3 className="w-4 h-4 text-purple-400" />
-                </div>
-                <h3 className="text-base font-semibold text-white">Delivery</h3>
+              <div className="px-2.5 py-1 rounded-full bg-white dark:bg-[#0F1419]
+                border border-cream-300 dark:border-[#2A3441]
+                text-[10px] font-bold text-ink-900 dark:text-cream-100">
+                Pro
               </div>
+            </div>
+          </div>
+        </div>
 
-              {messagesSent > 0 ? (
-                <DonutChart
-                  delivered={totalDelivered}
-                  read={stats?.delivery?.read ?? 0}
-                  failed={totalFailed}
-                  total={messagesSent}
-                />
-              ) : (
-                <div className="flex flex-col items-center justify-center py-10 text-center">
-                  <div className="w-14 h-14 rounded-2xl bg-[#0a0e27]/[0.04] border border-white/[0.08]
-                    flex items-center justify-center mb-3">
-                    <BarChart3 className="w-6 h-6 text-gray-500" />
-                  </div>
-                  <p className="text-sm text-gray-400">No delivery data</p>
-                  <p className="text-xs text-gray-500 mt-1">Send messages to see stats</p>
-                </div>
-              )}
-
-              <div className="grid grid-cols-2 gap-2 mt-4 pt-4 border-t border-white/[0.06]">
-                <div className="p-2.5 rounded-xl bg-green-500/[0.06] border border-green-400/15">
-                  <div className="flex items-center gap-1.5">
-                    <CheckCircle className="w-3 h-3 text-green-400" />
-                    <span className="text-[10px] text-gray-400 uppercase tracking-wider">Delivered</span>
-                  </div>
-                  <p className="text-sm font-bold text-green-400 mt-1">{formatNum(totalDelivered)}</p>
-                </div>
-                <div className="p-2.5 rounded-xl bg-red-500/[0.06] border border-red-400/15">
-                  <div className="flex items-center gap-1.5">
-                    <XCircle className="w-3 h-3 text-red-400" />
-                    <span className="text-[10px] text-gray-400 uppercase tracking-wider">Failed</span>
-                  </div>
-                  <p className="text-sm font-bold text-red-400 mt-1">{formatNum(totalFailed)}</p>
-                </div>
-              </div>
-            </GlassCard>
+        {/* CARD 2: Progress (messages this week) */}
+        <div className="lg:col-span-3 card-surface p-5 aspect-square min-h-[280px] flex flex-col">
+          <div className="flex items-start justify-between mb-3">
+            <h3 className="text-base font-semibold text-ink-900 dark:text-cream-100">Progress</h3>
+            <button className="w-8 h-8 rounded-full bg-cream-100 dark:bg-[#131922]
+              flex items-center justify-center
+              hover:bg-cream-200 dark:hover:bg-[#0F1419] transition-colors">
+              <ArrowUpRight className="w-3.5 h-3.5 text-ink-700 dark:text-cream-100" />
+            </button>
           </div>
 
-          {/* RECENT CAMPAIGNS */}
-          <GlassCard>
+          <div className="flex items-baseline gap-2 mb-1">
+            <span className="text-3xl font-bold text-ink-900 dark:text-cream-100 font-serif">
+              {formatNum(messagesSent)}
+            </span>
+            <span className="text-xs text-ink-500">sent</span>
+          </div>
+          <p className="text-[10px] text-ink-500 mb-4">
+            {messagesGrowth >= 0 ? '↑' : '↓'} {Math.abs(messagesGrowth)}% this week
+          </p>
+
+          {/* Bar chart */}
+          <div className="flex-1 flex items-end justify-between gap-1 pt-2">
+            {chartData.length > 0 ? chartData.slice(-7).map((d: any, i: number) => {
+              const max = Math.max(...chartData.map((x: any) => x.sent), 1);
+              const h = (d.sent / max) * 100;
+              const isMax = d.sent === max && d.sent > 0;
+              return (
+                <div key={i} className="flex-1 flex flex-col items-center gap-1">
+                  <div className="w-full relative">
+                    {isMax && (
+                      <div className="absolute -top-6 left-1/2 -translate-x-1/2
+                        text-[9px] font-bold text-ink-900 dark:text-cream-100
+                        bg-mint-500 px-1.5 py-0.5 rounded">
+                        {d.sent}
+                      </div>
+                    )}
+                    <div
+                      className={`w-full rounded-full transition-all
+                        ${isMax ? 'bg-mint-500' : 'bg-ink-900 dark:bg-cream-100'}
+                      `}
+                      style={{ height: `${Math.max(h, 4)}px`, minHeight: '4px' }}
+                    />
+                  </div>
+                  <span className="text-[9px] text-ink-400 font-mono uppercase">
+                    {d.label?.[0]}
+                  </span>
+                </div>
+              );
+            }) : (
+              <div className="w-full flex items-center justify-center text-xs text-ink-400">
+                No data yet
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* CARD 3: Delivery Tracker (donut) */}
+        <div className="lg:col-span-3 card-surface p-5 aspect-square min-h-[280px] flex flex-col">
+          <div className="flex items-start justify-between mb-3">
+            <h3 className="text-base font-semibold text-ink-900 dark:text-cream-100">Delivery</h3>
+            <button className="w-8 h-8 rounded-full bg-cream-100 dark:bg-[#131922]
+              flex items-center justify-center
+              hover:bg-cream-200 dark:hover:bg-[#0F1419] transition-colors">
+              <ArrowUpRight className="w-3.5 h-3.5 text-ink-700 dark:text-cream-100" />
+            </button>
+          </div>
+
+          {messagesSent > 0 ? (
+            <div className="flex-1 flex flex-col items-center justify-center">
+              <DonutChart delivered={totalDelivered} read={totalRead} failed={totalFailed} total={messagesSent} />
+              <div className="flex items-center gap-3 mt-3 text-[10px]">
+                <Legend color="#1A2E4A" label="Delivered" />
+                <Legend color="#2DD4BF" label="Read" />
+                <Legend color="#EF4444" label="Failed" />
+              </div>
+            </div>
+          ) : (
+            <div className="flex-1 flex flex-col items-center justify-center text-center">
+              <BarChart3 className="w-10 h-10 text-ink-400 mb-2" />
+              <p className="text-xs text-ink-500">No data yet</p>
+            </div>
+          )}
+        </div>
+
+        {/* CARD 4: Onboarding tasks (dark accent card) */}
+        <div className="lg:col-span-3 rounded-3xl card-dark p-5 aspect-square min-h-[280px] flex flex-col">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-base font-semibold text-cream-100">Setup Tasks</h3>
+            <div className="text-xs font-mono text-cream-100/60">
+              {[whatsappConnected, contactsTotal, templatesApproved, activeCampaigns].filter(x => x > 0).length}/4
+            </div>
+          </div>
+
+          <div className="space-y-2 flex-1">
+            {[
+              { label: 'Connect WhatsApp', done: whatsappConnected > 0, href: '/dashboard/settings?tab=whatsapp', icon: Phone },
+              { label: 'Import Contacts',  done: contactsTotal > 0,    href: '/dashboard/contacts/import',         icon: UserPlus },
+              { label: 'Create Template',  done: templatesApproved > 0, href: '/dashboard/templates/create',       icon: FileText },
+              { label: 'Send Campaign',    done: activeCampaigns + completedCampaigns > 0, href: '/dashboard/campaigns/create', icon: Send },
+            ].map((task) => (
+              <Link
+                key={task.label}
+                to={task.href}
+                className={`flex items-center gap-2.5 px-3 py-2 rounded-xl
+                  transition-all hover:translate-x-0.5
+                  ${task.done
+                    ? 'bg-mint-500/10 border border-mint-500/30'
+                    : 'bg-white/5 border border-white/10 hover:bg-white/10'
+                  }
+                `}
+              >
+                <div className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0
+                  ${task.done ? 'bg-mint-500' : 'bg-white/10'}
+                `}>
+                  {task.done
+                    ? <CheckCircle className="w-3.5 h-3.5 text-ink-900" />
+                    : <task.icon className="w-3.5 h-3.5 text-cream-100" />
+                  }
+                </div>
+                <span className={`text-xs flex-1 ${task.done ? 'text-cream-100' : 'text-cream-100/70'}`}>
+                  {task.label}
+                </span>
+                {!task.done && <ArrowRight className="w-3 h-3 text-cream-100/40" />}
+              </Link>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* ═══════════════ ROW 2: MAIN CONTENT ═══════════════ */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+
+        {/* LEFT: Quick info card (Pension/Devices style) */}
+        <div className="lg:col-span-4 space-y-4">
+
+          {/* Channel performance */}
+          <div className="card-surface p-5">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-base font-semibold text-white">Recent Campaigns</h3>
-              <Link to="/dashboard/campaigns"
-                className="text-xs text-green-400 hover:text-green-300 flex items-center gap-1 group"
+              <h3 className="text-sm font-semibold text-ink-900 dark:text-cream-100">Channels</h3>
+              <MoreHorizontal className="w-4 h-4 text-ink-400" />
+            </div>
+
+            <div className="space-y-3">
+              <ChannelRow
+                icon={FaWhatsapp}
+                color="#25D366"
+                label="WhatsApp"
+                value={formatNum(messagesSent)}
+                subtitle={`${deliveryRate}% delivery`}
+              />
+              <ChannelRow
+                icon={Instagram}
+                color="#E1306C"
+                label="Instagram"
+                value="0"
+                subtitle="Coming soon"
+              />
+            </div>
+          </div>
+
+          {/* Quick stats list */}
+          <div className="card-surface p-5">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-semibold text-ink-900 dark:text-cream-100">At a glance</h3>
+              <MoreHorizontal className="w-4 h-4 text-ink-400" />
+            </div>
+
+            <div className="space-y-1.5">
+              <QuickRow icon={Mail}        label="Unread chats"      value={conversationsUnread} href="/dashboard/inbox" />
+              <QuickRow icon={MessageSquare} label="Active chats"    value={conversationsActive} href="/dashboard/inbox" />
+              <QuickRow icon={FileText}    label="Templates"         value={templatesApproved}   href="/dashboard/templates" />
+              <QuickRow icon={Phone}       label="WhatsApp accounts" value={whatsappConnected}   href="/dashboard/settings" />
+              <QuickRow icon={Users}       label="Total contacts"    value={contactsTotal}       href="/dashboard/contacts" />
+            </div>
+          </div>
+        </div>
+
+        {/* CENTER: Calendar / Timeline (recent campaigns timeline) */}
+        <div className="lg:col-span-5">
+          <div className="card-surface p-5 h-full">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h3 className="text-base font-semibold text-ink-900 dark:text-cream-100">Recent Campaigns</h3>
+                <p className="text-[10px] text-ink-500 mt-0.5 font-mono uppercase tracking-wider">
+                  Last {dateRange} days
+                </p>
+              </div>
+              <Link
+                to="/dashboard/campaigns"
+                className="text-xs font-medium text-ocean-500 hover:text-ocean-600 flex items-center gap-1 group"
               >
                 View all
                 <ArrowUpRight className="w-3 h-3 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
@@ -576,225 +474,173 @@ const Dashboard: React.FC = () => {
             </div>
 
             {recentCampaigns.length > 0 ? (
-              <div className="overflow-x-auto -mx-2">
-                <table className="w-full">
-                  <thead>
-                    <tr className="text-left text-[10px] font-mono uppercase tracking-wider text-gray-500 border-b border-white/[0.06]">
-                      <th className="pb-3 px-2 font-medium">Campaign</th>
-                      <th className="pb-3 px-2 font-medium">Status</th>
-                      <th className="pb-3 px-2 font-medium text-right">Sent</th>
-                      <th className="pb-3 px-2 font-medium text-right">Delivery</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-white/[0.04]">
-                    {recentCampaigns.map((campaign: any) => (
-                      <tr key={campaign.id} className="hover:bg-[#0a0e27]/[0.03] transition-colors">
-                        <td className="py-3 px-2">
-                          <Link to={`/dashboard/campaigns/${campaign.id}`}
-                            className="text-sm font-medium text-white hover:text-green-400 transition-colors"
-                          >
-                            {campaign.name}
-                          </Link>
-                        </td>
-                        <td className="py-3 px-2">
-                          <StatusBadge status={campaign.status} />
-                        </td>
-                        <td className="py-3 px-2 text-right text-xs text-gray-400 font-mono">
-                          {campaign.sentCount || 0}/{campaign.totalContacts || 0}
-                        </td>
-                        <td className="py-3 px-2 text-right">
-                          <DeliveryRateBadge rate={campaign.deliveryRate || 0} />
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            ) : (
-              <div className="text-center py-10">
-                <div className="w-14 h-14 rounded-2xl bg-[#0a0e27]/[0.04] border border-white/[0.08]
-                  flex items-center justify-center mx-auto mb-3">
-                  <Zap className="w-6 h-6 text-gray-500" />
-                </div>
-                <p className="text-sm text-gray-400">No campaigns yet</p>
-                <Link to="/dashboard/campaigns/create"
-                  className="mt-3 inline-block text-xs text-green-400 hover:text-green-300 font-medium"
-                >
-                  Create your first campaign →
-                </Link>
-              </div>
-            )}
-          </GlassCard>
-        </div>
+              <div className="space-y-2">
+                {recentCampaigns.slice(0, 5).map((c: any) => (
+                  <Link
+                    key={c.id}
+                    to={`/dashboard/campaigns/${c.id}`}
+                    className="flex items-center gap-3 p-3 rounded-2xl
+                      bg-cream-50 dark:bg-[#131922]
+                      border border-cream-200 dark:border-[#2A3441]
+                      hover:bg-cream-100 dark:hover:bg-[#0F1419]
+                      hover:-translate-y-0.5 hover:shadow-soft
+                      transition-all duration-300 group"
+                  >
+                    <div className="w-10 h-10 rounded-xl bg-white dark:bg-[#1A2331]
+                      border border-cream-300 dark:border-[#2A3441]
+                      flex items-center justify-center flex-shrink-0">
+                      <Send className="w-4 h-4 text-ocean-500" />
+                    </div>
 
-        {/* RIGHT SIDEBAR: 1/4 width */}
-        <div className="xl:col-span-1 space-y-6">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-ink-900 dark:text-cream-100 truncate">
+                        {c.name}
+                      </p>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <StatusBadge status={c.status} />
+                        <span className="text-[10px] text-ink-500 font-mono">
+                          {c.sentCount || 0}/{c.totalContacts || 0}
+                        </span>
+                      </div>
+                    </div>
 
-          {/* QUICK STATS */}
-          <GlassCard>
-            <h3 className="text-sm font-semibold text-white mb-4">At a glance</h3>
-            <div className="space-y-2">
-              <QuickStatItem label="Unread chats" value={conversationsUnread} icon={Mail} color="#f59e0b" href="/dashboard/inbox" />
-              <QuickStatItem label="Active chats" value={conversationsActive} icon={MessageSquare} color="#3b82f6" href="/dashboard/inbox" />
-              <QuickStatItem label="Templates" value={templatesApproved} icon={FileText} color="#10b981" href="/dashboard/templates" />
-              <QuickStatItem label="WhatsApp accounts" value={whatsappConnected} icon={Phone} color="#a855f7" href="/dashboard/settings" />
-            </div>
-          </GlassCard>
-
-          {/* QUICK ACTIONS */}
-          <GlassCard>
-            <h3 className="text-sm font-semibold text-white mb-4">Quick actions</h3>
-            <div className="grid grid-cols-3 gap-2">
-              {[
-                { icon: Send, label: 'Campaign', color: '#10b981', href: '/dashboard/campaigns/create' },
-                { icon: Radio, label: 'Broadcast', color: '#a855f7', href: '/dashboard/campaigns/create' },
-                { icon: UserPlus, label: 'Contacts', color: '#10b981', href: '/dashboard/contacts/import' },
-                { icon: FileText, label: 'Template', color: '#f59e0b', href: '/dashboard/templates/create' },
-                { icon: Bot, label: 'Chatbot', color: '#3b82f6', href: '/dashboard/chatbots' },
-                { icon: Workflow, label: 'Automation', color: '#3b82f6', href: '/dashboard/automations' },
-              ].map((action) => (
-                <button
-                  key={action.label}
-                  onClick={() => navigate(action.href)}
-                  className="flex flex-col items-center justify-center gap-1.5 p-3 rounded-xl
-                    bg-[#0a0e27]/[0.03] border border-white/[0.06]
-                    hover:bg-[#0a0e27]/[0.06] hover:border-white/[0.12]
-                    transition-all duration-300 group"
-                >
-                  <action.icon className="w-4 h-4 group-hover:scale-110 transition-transform" 
-                    style={{ color: action.color }} 
-                  />
-                  <span className="text-[10px] font-medium text-gray-300 group-hover:text-white">{action.label}</span>
-                </button>
-              ))}
-            </div>
-          </GlassCard>
-
-          {/* RECENT ACTIVITY */}
-          <GlassCard>
-            <h3 className="text-sm font-semibold text-white mb-4">Recent activity</h3>
-            
-            {activity.length > 0 ? (
-              <div className="space-y-3 relative pl-3.5 before:absolute before:left-1 before:top-2 before:bottom-2 before:w-0.5 before:bg-[#0a0e27]/[0.05]">
-                {activity.slice(0, 5).map((act) => (
-                  <div key={act.id} className="relative">
-                    <span className="absolute -left-5 top-1.5 w-3 h-3 rounded-full bg-green-400 border-2 border-[#0a0e27]" />
-                    <p className="text-xs font-medium text-white">
-                      {act.action?.replace(/_/g, ' ').toLowerCase() || 'Activity'}
-                    </p>
-                    <p className="text-[10px] text-gray-500 mt-0.5 font-mono">
-                      {formatRelativeTime(act.createdAt)}
-                    </p>
-                  </div>
+                    <div className="text-right flex-shrink-0">
+                      <p className={`text-sm font-bold
+                        ${(c.deliveryRate || 0) >= 90 ? 'text-mint-600 dark:text-mint-400'
+                          : (c.deliveryRate || 0) >= 70 ? 'text-amber-500'
+                          : 'text-red-500'
+                        }`}>
+                        {c.deliveryRate || 0}%
+                      </p>
+                      <p className="text-[10px] text-ink-500 font-mono">delivery</p>
+                    </div>
+                  </Link>
                 ))}
               </div>
             ) : (
-              <div className="text-center py-6">
-                <Inbox className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                <p className="text-xs text-gray-400">No activity yet</p>
-                <p className="text-[10px] text-gray-500 mt-1">Your actions will show up here</p>
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <div className="w-14 h-14 rounded-2xl bg-cream-100 dark:bg-[#131922] flex items-center justify-center mb-3">
+                  <Zap className="w-6 h-6 text-ink-400" />
+                </div>
+                <p className="text-sm font-medium text-ink-900 dark:text-cream-100 mb-1">No campaigns yet</p>
+                <p className="text-xs text-ink-500 mb-4">Create your first campaign to see it here</p>
+                <button
+                  onClick={() => navigate('/dashboard/campaigns/create')}
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-full
+                    bg-ink-900 dark:bg-mint-500 text-white dark:text-ink-900 text-xs font-semibold
+                    hover:scale-105 transition-transform"
+                >
+                  Create campaign
+                  <ArrowUpRight className="w-3 h-3" />
+                </button>
               </div>
             )}
-          </GlassCard>
+          </div>
+        </div>
+
+        {/* RIGHT: Dark task card (Onboarding Task style) */}
+        <div className="lg:col-span-3">
+          <div className="rounded-3xl card-dark p-5 h-full flex flex-col">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-base font-semibold text-cream-100">Quick Actions</h3>
+            </div>
+
+            <div className="space-y-2 flex-1">
+              {[
+                { icon: Send,     label: 'New Campaign',  href: '/dashboard/campaigns/create' },
+                { icon: UserPlus, label: 'Add Contacts',  href: '/dashboard/contacts/import' },
+                { icon: FileText, label: 'New Template',  href: '/dashboard/templates/create' },
+                { icon: Bot,      label: 'New Chatbot',   href: '/dashboard/chatbots' },
+                { icon: Workflow, label: 'New Automation', href: '/dashboard/automations' },
+                { icon: Radio,    label: 'Broadcast',     href: '/dashboard/campaigns/create' },
+              ].map((a) => (
+                <Link
+                  key={a.label}
+                  to={a.href}
+                  className="flex items-center gap-3 p-2.5 rounded-xl
+                    bg-white/5 hover:bg-white/10
+                    border border-white/10 hover:border-mint-500/30
+                    transition-all hover:translate-x-0.5 group"
+                >
+                  <div className="w-8 h-8 rounded-lg bg-white/10
+                    flex items-center justify-center
+                    group-hover:bg-mint-500/20 transition-colors">
+                    <a.icon className="w-3.5 h-3.5 text-cream-100 group-hover:text-mint-300" />
+                  </div>
+                  <span className="text-xs text-cream-100/90 group-hover:text-cream-100 flex-1">
+                    {a.label}
+                  </span>
+                  <ArrowRight className="w-3.5 h-3.5 text-cream-100/30 group-hover:text-mint-300 group-hover:translate-x-0.5 transition-all" />
+                </Link>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
-    </div>
-  );
-};
 
-// ============================================
-// REUSABLE COMPONENTS
-// ============================================
+      {/* ═══════════════ ROW 3: CHART (large) + ACTIVITY ═══════════════ */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
 
-const GlassCard: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className = '' }) => (
-  <div className={`relative rounded-2xl
-    bg-[#0a0e27]/[0.04] backdrop-blur-2xl
-    border border-white/[0.08]
-    p-6
-    ${className}
-  `}>
-    <div className="absolute inset-0 rounded-2xl pointer-events-none"
-      style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.04) 0%, transparent 50%)' }}
-    />
-    <div className="relative">{children}</div>
-  </div>
-);
+        {/* Messages chart */}
+        <div className="lg:col-span-8 card-surface p-5">
+          <div className="flex items-center justify-between mb-5">
+            <div>
+              <h3 className="text-base font-semibold text-ink-900 dark:text-cream-100">Messages Overview</h3>
+              <p className="text-[10px] text-ink-500 mt-0.5 font-mono uppercase tracking-wider">
+                {dateRange} day trend
+              </p>
+            </div>
 
-const StatCard: React.FC<{
-  title: string;
-  value: string | number;
-  change?: number;
-  subtitle?: string;
-  icon: React.ElementType;
-  accentColor: string;
-  sparkline?: number[];
-  showAsPercentage?: boolean;
-  emptyAction?: { text: string; href: string };
-}> = ({ title, value, change, subtitle, icon: Icon, accentColor, sparkline = [], emptyAction }) => {
-  const numValue = typeof value === 'number' ? value : parseFloat(String(value)) || 0;
-  const isEmpty = numValue === 0;
-
-  return (
-    <div className="group relative rounded-2xl overflow-hidden
-      bg-[#0a0e27]/[0.04] backdrop-blur-2xl
-      border border-white/[0.08]
-      hover:border-white/[0.15]
-      hover:-translate-y-0.5
-      p-5
-      transition-all duration-500">
-
-      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-        style={{ background: `radial-gradient(ellipse 80% 60% at 0% 0%, ${accentColor}15 0%, transparent 60%)` }}
-      />
-
-      <div className="relative">
-        <div className="flex items-center justify-between mb-4">
-          <div className="w-10 h-10 rounded-xl flex items-center justify-center"
-            style={{
-              background: `linear-gradient(135deg, ${accentColor}30, ${accentColor}15)`,
-              border: `1px solid ${accentColor}40`,
-              boxShadow: `0 4px 16px ${accentColor}25`,
-            }}
-          >
-            <Icon className="w-4.5 h-4.5" style={{ color: accentColor }} />
+            <div className="hidden sm:flex items-center gap-3">
+              <Legend color="#1A2E4A" label="Sent" />
+              <Legend color="#5B8DEF" label="Delivered" />
+              <Legend color="#2DD4BF" label="Read" />
+              <Legend color="#EF4444" label="Failed" />
+            </div>
           </div>
 
-          {change !== undefined && change !== 0 && (
-            <div className={`flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[10px] font-mono font-bold
-              ${change >= 0
-                ? 'bg-green-500/15 text-green-300 border border-green-400/20'
-                : 'bg-red-500/15 text-red-300 border border-red-400/20'
-              }
-            `}>
-              {change >= 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
-              {Math.abs(change)}%
+          {hasChartData ? (
+            <MessagesChart data={chartData} />
+          ) : (
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <div className="w-14 h-14 rounded-2xl bg-cream-100 dark:bg-[#131922] flex items-center justify-center mb-3">
+                <MessageSquare className="w-6 h-6 text-ink-400" />
+              </div>
+              <p className="text-sm font-medium text-ink-900 dark:text-cream-100 mb-1">No messages yet</p>
+              <p className="text-xs text-ink-500">Send your first message to see the chart</p>
             </div>
           )}
         </div>
 
-        <p className="text-xs text-gray-400">{title}</p>
-        <p className="text-2xl lg:text-3xl font-bold text-white mt-1 tracking-tight">
-          {typeof value === 'number' ? value.toLocaleString() : value}
-        </p>
+        {/* Activity */}
+        <div className="lg:col-span-4 card-surface p-5">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-base font-semibold text-ink-900 dark:text-cream-100">Activity</h3>
+            <MoreHorizontal className="w-4 h-4 text-ink-400" />
+          </div>
 
-        {subtitle && (
-          <p className="text-[10px] text-gray-500 mt-1.5 font-mono">{subtitle}</p>
-        )}
-
-        <div className="mt-3 h-11">
-          {!isEmpty && sparkline.length > 1 ? (
-            <Sparkline data={sparkline} color={accentColor} />
-          ) : emptyAction ? (
-            <Link to={emptyAction.href}
-              className="inline-flex items-center gap-1 text-[10px] font-medium mt-2
-                hover:underline"
-              style={{ color: accentColor }}
-            >
-              {emptyAction.text}
-              <ArrowUpRight className="w-2.5 h-2.5" />
-            </Link>
+          {activity.length > 0 ? (
+            <div className="space-y-3 relative pl-4
+              before:absolute before:left-1.5 before:top-2 before:bottom-2
+              before:w-px before:bg-cream-300 dark:before:bg-[#2A3441]">
+              {activity.slice(0, 6).map((a) => (
+                <div key={a.id} className="relative">
+                  <span className="absolute -left-[18px] top-1 w-3 h-3 rounded-full
+                    bg-mint-500 ring-4 ring-white dark:ring-[#1A2331]" />
+                  <p className="text-xs font-medium text-ink-900 dark:text-cream-100 capitalize">
+                    {a.action?.replace(/_/g, ' ').toLowerCase() || 'Activity'}
+                  </p>
+                  <p className="text-[10px] text-ink-500 mt-0.5 font-mono">
+                    {formatRelativeTime(a.createdAt)}
+                  </p>
+                </div>
+              ))}
+            </div>
           ) : (
-            <div className="h-px bg-[#0a0e27]/[0.04] mt-5" />
+            <div className="text-center py-6">
+              <Inbox className="w-8 h-8 text-ink-400 mx-auto mb-2" />
+              <p className="text-xs text-ink-500">No activity yet</p>
+            </div>
           )}
         </div>
       </div>
@@ -802,49 +648,187 @@ const StatCard: React.FC<{
   );
 };
 
+// ============================================
+// SUB-COMPONENTS
+// ============================================
+
+const ProgressLabel: React.FC<{ label: string; value: string; color: string; highlight?: boolean; muted?: boolean }> = ({ label, value, highlight, muted }) => (
+  <div>
+    <p className="text-[10px] text-ink-500 font-mono uppercase tracking-wider mb-1">{label}</p>
+    <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-bold
+      ${highlight
+        ? 'bg-mint-500 text-ink-900'
+        : muted
+        ? 'bg-cream-200 dark:bg-[#131922] text-ink-500'
+        : 'bg-ink-900 dark:bg-cream-100 text-cream-100 dark:text-ink-900'
+      }`}>
+      {value}
+    </span>
+  </div>
+);
+
+const MiniStat: React.FC<{ icon: React.ElementType; value: string; label: string }> = ({ icon: Icon, value, label }) => (
+  <div className="text-center">
+    <div className="w-9 h-9 mx-auto rounded-xl bg-cream-100 dark:bg-[#131922]
+      border border-cream-300 dark:border-[#2A3441]
+      flex items-center justify-center mb-1.5">
+      <Icon className="w-4 h-4 text-ink-700 dark:text-cream-100" />
+    </div>
+    <p className="text-xl font-bold text-ink-900 dark:text-cream-100 font-serif">{value}</p>
+    <p className="text-[10px] text-ink-500 uppercase tracking-wider">{label}</p>
+  </div>
+);
+
+const Legend: React.FC<{ color: string; label: string }> = ({ color, label }) => (
+  <div className="flex items-center gap-1.5">
+    <div className="w-2 h-2 rounded-full" style={{ background: color }} />
+    <span className="text-[10px] text-ink-500 font-medium">{label}</span>
+  </div>
+);
+
+const ChannelRow: React.FC<{ icon: React.ElementType; color: string; label: string; value: string; subtitle: string }> = ({ icon: Icon, color, label, value, subtitle }) => (
+  <div className="flex items-center gap-3 p-2 rounded-xl
+    hover:bg-cream-100 dark:hover:bg-[#131922] transition-colors">
+    <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+      style={{ background: `${color}15`, border: `1px solid ${color}30` }}>
+      <Icon className="w-4 h-4" style={{ color }} />
+    </div>
+    <div className="flex-1 min-w-0">
+      <p className="text-xs font-semibold text-ink-900 dark:text-cream-100">{label}</p>
+      <p className="text-[10px] text-ink-500">{subtitle}</p>
+    </div>
+    <p className="text-sm font-bold text-ink-900 dark:text-cream-100 font-serif">{value}</p>
+  </div>
+);
+
+const QuickRow: React.FC<{ icon: React.ElementType; label: string; value: number; href: string }> = ({ icon: Icon, label, value, href }) => (
+  <Link
+    to={href}
+    className="flex items-center justify-between p-2 rounded-xl
+      hover:bg-cream-100 dark:hover:bg-[#131922] transition-colors group"
+  >
+    <div className="flex items-center gap-2.5">
+      <div className="w-7 h-7 rounded-lg bg-cream-100 dark:bg-[#131922]
+        border border-cream-300 dark:border-[#2A3441]
+        flex items-center justify-center
+        group-hover:border-ocean-500 transition-colors">
+        <Icon className="w-3.5 h-3.5 text-ink-700 dark:text-cream-100" />
+      </div>
+      <span className="text-xs text-ink-700 dark:text-cream-100">{label}</span>
+    </div>
+    <span className="text-sm font-bold text-ink-900 dark:text-cream-100 font-mono">
+      {value.toLocaleString()}
+    </span>
+  </Link>
+);
+
+const StatusBadge: React.FC<{ status: string }> = ({ status }) => {
+  const styles: Record<string, string> = {
+    COMPLETED: 'bg-mint-500/15 text-mint-700 dark:text-mint-300 border-mint-500/30',
+    RUNNING:   'bg-ocean-500/15 text-ocean-700 dark:text-ocean-300 border-ocean-500/30',
+    FAILED:    'bg-red-500/15 text-red-600 dark:text-red-300 border-red-500/30',
+    PAUSED:    'bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30',
+    DRAFT:     'bg-cream-200 dark:bg-[#131922] text-ink-500 border-cream-300 dark:border-[#2A3441]',
+    SCHEDULED: 'bg-ocean-500/15 text-ocean-700 dark:text-ocean-300 border-ocean-500/30',
+  };
+  return (
+    <span className={`px-2 py-0.5 text-[9px] font-bold rounded-full border
+      ${styles[status] || 'bg-cream-200 dark:bg-[#131922] text-ink-500 border-cream-300 dark:border-[#2A3441]'}
+    `}>
+      {status}
+    </span>
+  );
+};
+
+// Donut Chart
+const DonutChart: React.FC<{ delivered: number; read: number; failed: number; total: number }> = ({
+  delivered, read, failed, total
+}) => {
+  const segments = [
+    { value: delivered, color: '#1A2E4A' },
+    { value: read,      color: '#2DD4BF' },
+    { value: failed,    color: '#EF4444' },
+  ];
+  const sum = segments.reduce((a, s) => a + s.value, 0);
+  if (sum === 0) return null;
+
+  const radius = 36;
+  const circumference = 2 * Math.PI * radius;
+  let currentOffset = 0;
+
+  return (
+    <div className="relative w-32 h-32">
+      <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
+        <circle cx="50" cy="50" r={radius} fill="transparent"
+          stroke="#E8E2D5" strokeWidth="10" className="dark:stroke-[#2A3441]" />
+        {segments.map((s, i) => {
+          const pct = (s.value / sum) * 100;
+          const strokeLen = (pct / 100) * circumference;
+          const offset = -((currentOffset / 100) * circumference);
+          currentOffset += pct;
+          return (
+            <circle key={i}
+              cx="50" cy="50" r={radius} fill="transparent"
+              stroke={s.color} strokeWidth="10"
+              strokeDasharray={`${strokeLen} ${circumference}`}
+              strokeDashoffset={offset}
+              strokeLinecap="round"
+            />
+          );
+        })}
+      </svg>
+      <div className="absolute inset-0 flex flex-col items-center justify-center">
+        <span className="text-[9px] text-ink-500 uppercase tracking-wider font-mono">Total</span>
+        <span className="text-xl font-bold text-ink-900 dark:text-cream-100 font-serif">{formatNum(total)}</span>
+      </div>
+    </div>
+  );
+};
+
+// Messages Chart
 const MessagesChart: React.FC<{ data: any[] }> = ({ data }) => {
   const maxVal = Math.max(...data.flatMap((d) => [d.sent, d.delivered, d.read, d.failed]), 1);
 
   return (
-    <div className="relative w-full overflow-x-auto select-none pt-2">
-      <svg className="w-full min-w-[420px] h-48 overflow-visible" viewBox="0 0 500 180" preserveAspectRatio="none">
-        {[0, 45, 90, 135].map((y) => (
-          <line key={y} x1="35" y1={y + 10} x2="495" y2={y + 10}
-            stroke="rgba(255,255,255,0.04)" strokeWidth="1" strokeDasharray="4 4" />
+    <div className="w-full overflow-x-auto pt-4">
+      <svg className="w-full min-w-[420px] h-56" viewBox="0 0 500 200" preserveAspectRatio="none">
+        {[0, 50, 100, 150].map((y) => (
+          <line key={y} x1="20" y1={y + 10} x2="495" y2={y + 10}
+            stroke="currentColor" strokeOpacity="0.06" strokeWidth="1" strokeDasharray="4 4"
+            className="text-ink-900 dark:text-cream-100" />
         ))}
 
         {data.map((item, idx) => {
           const N = data.length;
-          const chartWidth = 440;
+          const chartWidth = 460;
           const step = chartWidth / N;
-          const startX = 40 + idx * step;
-          const barWidth = Math.max(1.5, Math.min(6, step / 6));
-          const gap = barWidth * 0.25;
-          const heightRatio = maxVal > 0 ? 145 / maxVal : 0;
+          const startX = 25 + idx * step;
+          const barWidth = Math.max(2, Math.min(8, step / 6));
+          const gap = barWidth * 0.3;
+          const heightRatio = maxVal > 0 ? 160 / maxVal : 0;
 
           return (
             <g key={idx}>
               {[
-                { val: item.sent, color: '#10b981', offset: 0 },
-                { val: item.delivered, color: '#3b82f6', offset: 1 },
-                { val: item.read, color: '#a855f7', offset: 2 },
-                { val: item.failed, color: '#ef4444', offset: 3 },
+                { val: item.sent,      color: '#1A2E4A', offset: 0 },
+                { val: item.delivered, color: '#5B8DEF', offset: 1 },
+                { val: item.read,      color: '#2DD4BF', offset: 2 },
+                { val: item.failed,    color: '#EF4444', offset: 3 },
               ].map((bar) => (
                 <rect
                   key={bar.offset}
                   x={startX + (barWidth + gap) * bar.offset}
-                  y={160 - bar.val * heightRatio}
+                  y={175 - bar.val * heightRatio}
                   width={barWidth}
-                  height={bar.val * heightRatio}
+                  height={Math.max(bar.val * heightRatio, 2)}
                   fill={bar.color}
-                  rx={barWidth / 4}
-                  style={{ filter: `drop-shadow(0 0 4px ${bar.color}40)` }}
-                  className="hover:opacity-80 cursor-pointer transition-opacity"
+                  rx={barWidth / 2}
+                  className="transition-opacity hover:opacity-80 cursor-pointer"
                 />
               ))}
               {(N <= 10 || idx % Math.ceil(N / 7) === 0) && (
-                <text x={startX + (barWidth + gap) * 1.5} y="176"
-                  className="text-[9px] font-mono fill-gray-500"
+                <text x={startX + (barWidth + gap) * 1.5} y="195"
+                  className="text-[9px] font-mono fill-current text-ink-500"
                   textAnchor="middle"
                 >
                   {item.label}
@@ -857,141 +841,5 @@ const MessagesChart: React.FC<{ data: any[] }> = ({ data }) => {
     </div>
   );
 };
-
-const DonutChart: React.FC<{ delivered: number; read: number; failed: number; total: number }> = ({
-  delivered, read, failed, total
-}) => {
-  const segments = [
-    { name: 'Delivered', value: delivered, color: '#10b981' },
-    { name: 'Read', value: read, color: '#3b82f6' },
-    { name: 'Failed', value: failed, color: '#ef4444' },
-  ];
-
-  const sum = segments.reduce((a, s) => a + s.value, 0);
-  if (sum === 0) return null;
-
-  const radius = 35;
-  const circumference = 2 * Math.PI * radius;
-  let currentOffset = 0;
-
-  return (
-    <div className="flex items-center gap-4 justify-center py-2">
-      <div className="relative w-28 h-28">
-        <svg className="w-full h-full" viewBox="0 0 100 100">
-          <circle cx="50" cy="50" r={radius} fill="transparent"
-            stroke="rgba(255,255,255,0.05)" strokeWidth="9" />
-          {segments.map((s) => {
-            const pct = (s.value / sum) * 100;
-            const strokeLen = (pct / 100) * circumference;
-            const offset = circumference - (currentOffset / 100) * circumference;
-            currentOffset += pct;
-            return (
-              <circle key={s.name}
-                cx="50" cy="50" r={radius} fill="transparent"
-                stroke={s.color} strokeWidth="9"
-                strokeDasharray={`${strokeLen} ${circumference}`}
-                strokeDashoffset={offset}
-                transform="rotate(-90 50 50)"
-                style={{ filter: `drop-shadow(0 0 4px ${s.color}40)` }}
-              />
-            );
-          })}
-        </svg>
-        <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-[9px] text-gray-500 uppercase tracking-wider">Total</span>
-          <span className="text-base font-bold text-white">{formatNum(total)}</span>
-        </div>
-      </div>
-
-      <div className="space-y-1.5">
-        {segments.map((s) => (
-          <div key={s.name} className="flex items-center gap-2 text-xs">
-            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: s.color }} />
-            <span className="text-gray-400">{s.name}</span>
-            <span className="text-white font-semibold ml-auto">{Math.round((s.value / sum) * 100)}%</span>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-};
-
-const EmptyChart: React.FC<{
-  icon: React.ElementType;
-  title: string;
-  subtitle: string;
-  actionText: string;
-  actionHref: string;
-}> = ({ icon: Icon, title, subtitle, actionText, actionHref }) => (
-  <div className="flex flex-col items-center justify-center py-16 text-center">
-    <div className="w-16 h-16 rounded-2xl bg-[#0a0e27]/[0.04] border border-white/[0.08]
-      flex items-center justify-center mb-4">
-      <Icon className="w-7 h-7 text-gray-500" />
-    </div>
-    <p className="text-sm font-medium text-white mb-1">{title}</p>
-    <p className="text-xs text-gray-500 mb-4">{subtitle}</p>
-    <Link to={actionHref}
-      className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full
-        bg-green-500/10 border border-green-400/20
-        text-green-300 text-xs font-medium
-        hover:bg-green-500/20 hover:border-green-400/30
-        transition-all duration-300"
-    >
-      {actionText}
-      <ArrowUpRight className="w-3 h-3" />
-    </Link>
-  </div>
-);
-
-const QuickStatItem: React.FC<{
-  label: string;
-  value: number;
-  icon: React.ElementType;
-  color: string;
-  href: string;
-}> = ({ label, value, icon: Icon, color, href }) => (
-  <Link to={href}
-    className="flex items-center justify-between p-2.5 rounded-xl
-      hover:bg-[#0a0e27]/[0.04] border border-transparent hover:border-white/[0.06]
-      transition-all duration-300 group"
-  >
-    <div className="flex items-center gap-2.5">
-      <div className="w-7 h-7 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform"
-        style={{ background: `${color}15`, border: `1px solid ${color}30` }}
-      >
-        <Icon className="w-3.5 h-3.5" style={{ color }} />
-      </div>
-      <span className="text-xs text-gray-300 group-hover:text-white">{label}</span>
-    </div>
-    <span className="text-sm font-bold text-white">{value}</span>
-  </Link>
-);
-
-const StatusBadge: React.FC<{ status: string }> = ({ status }) => {
-  const styles: Record<string, string> = {
-    COMPLETED: 'bg-green-500/15 text-green-300 border border-green-400/20',
-    RUNNING: 'bg-blue-500/15 text-blue-300 border border-blue-400/20',
-    FAILED: 'bg-red-500/15 text-red-300 border border-red-400/20',
-    PAUSED: 'bg-yellow-500/15 text-yellow-300 border border-yellow-400/20',
-  };
-  return (
-    <span className={`px-2 py-1 text-[10px] font-mono font-semibold rounded-full
-      ${styles[status] || 'bg-[#0a0e27]/[0.06] text-gray-400 border border-white/[0.1]'}
-    `}>
-      {status}
-    </span>
-  );
-};
-
-const DeliveryRateBadge: React.FC<{ rate: number }> = ({ rate }) => (
-  <span className={`text-sm font-bold
-    ${rate >= 90 ? 'text-green-400'
-      : rate >= 70 ? 'text-yellow-400'
-      : 'text-red-400'
-    }
-  `}>
-    {rate}%
-  </span>
-);
 
 export default Dashboard;
