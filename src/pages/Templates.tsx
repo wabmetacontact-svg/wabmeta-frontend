@@ -232,28 +232,28 @@ const Templates: React.FC = () => {
       label: 'Total Templates',
       value: templateList.length,
       icon: FileText,
-      color: 'bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-300',
+      color: 'bg-blue-50 text-blue-600',
       hexColor: '#3B82F6'
     },
     {
       label: 'Approved',
       value: templateList.filter(t => t.status === 'approved').length,
       icon: CheckCircle,
-      color: 'bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-300',
+      color: 'bg-green-50 text-green-600',
       hexColor: '#10B981'
     },
     {
       label: 'Pending',
       value: templateList.filter(t => t.status === 'pending').length,
       icon: Clock,
-      color: 'bg-yellow-100 text-yellow-600 dark:bg-yellow-900 dark:text-yellow-300',
+      color: 'bg-yellow-50 text-yellow-600',
       hexColor: '#F59E0B'
     },
     {
       label: 'Rejected',
       value: templateList.filter(t => t.status === 'rejected').length,
       icon: XCircle,
-      color: 'bg-red-100 text-red-600 dark:bg-red-900 dark:text-red-300',
+      color: 'bg-red-50 text-red-600',
       hexColor: '#EF4444'
     },
   ];
@@ -263,17 +263,17 @@ const Templates: React.FC = () => {
     const badges: Record<string, { icon: any; class: string; label: string }> = {
       approved: {
         icon: CheckCircle,
-        class: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+        class: 'bg-green-50 text-green-700 border-green-200',
         label: 'Approved',
       },
       rejected: {
         icon: XCircle,
-        class: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
+        class: 'bg-red-50 text-red-700 border-red-200',
         label: 'Rejected',
       },
       pending: {
         icon: Clock,
-        class: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
+        class: 'bg-yellow-50 text-yellow-700 border-yellow-200',
         label: 'Pending',
       },
     };
@@ -282,7 +282,7 @@ const Templates: React.FC = () => {
     const Icon = badge.icon;
 
     return (
-      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${badge.class}`}>
+      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${badge.class}`}>
         <Icon className="w-3 h-3 mr-1" />
         {badge.label}
       </span>
@@ -292,13 +292,13 @@ const Templates: React.FC = () => {
   // Get category badge
   const getCategoryBadge = (category: string) => {
     const colors: Record<string, string> = {
-      marketing: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
-      utility: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
-      authentication: 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200',
+      marketing: 'bg-purple-50 text-purple-700 border-purple-200',
+      utility: 'bg-blue-50 text-blue-700 border-blue-200',
+      authentication: 'bg-orange-50 text-orange-700 border-orange-200',
     };
 
     return (
-      <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${colors[category.toLowerCase()] || 'bg-[#0a0e27]/[0.04] text-white dark:bg-gray-800 dark:text-gray-200'
+      <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium border ${colors[category.toLowerCase()] || 'bg-gray-50 text-gray-700 border-gray-200'
         }`}>
         {category.toUpperCase()}
       </span>
@@ -324,8 +324,8 @@ const Templates: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white">Message Templates</h1>
-          <p className="text-gray-400 mt-1">
+          <h1 className="text-2xl font-bold text-gray-900">Message Templates</h1>
+          <p className="text-gray-500 mt-1">
             Create and manage your WhatsApp message templates
           </p>
         </div>
@@ -333,7 +333,7 @@ const Templates: React.FC = () => {
           <button
             onClick={handleSyncTemplates}
             disabled={syncing || loading}
-            className="inline-flex items-center px-4 py-2 border border-white/[0.12] rounded-lg text-gray-300 hover:bg-[#0a0e27]/[0.04] disabled:opacity-50 transition-colors"
+            className="inline-flex items-center px-4 py-2 border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 disabled:opacity-50 transition-colors"
             title="Sync templates from Meta"
           >
             <RefreshCw className={`w-5 h-5 mr-2 ${syncing || loading ? 'animate-spin' : ''}`} />
@@ -369,20 +369,20 @@ const Templates: React.FC = () => {
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map((stat) => (
-          <div key={stat.label} className="relative overflow-hidden rounded-2xl border p-6 group/stat transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg" style={{ backgroundColor: `${stat.hexColor}0A`, borderColor: `${stat.hexColor}33` }}>
+          <div key={stat.label} className="relative overflow-hidden rounded-2xl border p-6 group/stat transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md" style={{ backgroundColor: `${stat.hexColor}0A`, borderColor: `${stat.hexColor}20` }}>
             <div className="absolute top-0 right-0 p-4 opacity-[0.08] group-hover/stat:scale-110 group-hover/stat:opacity-[0.15] transition-all duration-500">
               <stat.icon size={80} className={stat.color.split(' ')[1]} />
             </div>
             <div className="relative z-10 flex flex-col justify-between h-full">
               <p className={`text-xs font-mono uppercase tracking-widest mb-1 ${stat.color.split(' ')[1]}`}>{stat.label}</p>
-              <p className="text-3xl font-bold text-white mt-1">{stat.value}</p>
+              <p className="text-3xl font-bold text-gray-900 mt-1">{stat.value}</p>
             </div>
           </div>
         ))}
       </div>
 
       {/* Search & Filters */}
-      <div className="relative overflow-hidden rounded-2xl bg-white/[0.02] border border-white/[0.05] p-4 backdrop-blur-xl">
+      <div className="relative overflow-hidden rounded-2xl bg-white border border-gray-200 p-4 shadow-sm">
         <div className="flex flex-col sm:flex-row gap-4 relative z-10">
           {/* Search */}
           <div className="flex-1 relative">
@@ -392,7 +392,7 @@ const Templates: React.FC = () => {
               placeholder="Search templates..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 bg-white/[0.03] border border-white/[0.05] rounded-xl text-white placeholder:text-gray-500 focus:outline-none focus:border-white/[0.1] focus:bg-white/[0.05] transition-colors shadow-[inset_0_1px_2px_rgba(0,0,0,0.2)]"
+              className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-green-500 focus:bg-white transition-colors shadow-sm"
             />
           </div>
 
@@ -400,14 +400,14 @@ const Templates: React.FC = () => {
           <button
             onClick={() => setShowFilters(!showFilters)}
             className={`inline-flex items-center px-4 py-2 border rounded-lg transition-colors ${showFilters
-              ? 'bg-[#0a0e27]/[0.04] dark:bg-gray-700 border-white/[0.12]'
-              : 'border-white/[0.12] hover:bg-[#0a0e27]/[0.04]'
+              ? 'bg-gray-100 text-gray-900 border-gray-300 font-medium'
+              : 'border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-gray-900'
               }`}
           >
             <Filter className="w-5 h-5 mr-2" />
             Filters
             {(statusFilter || categoryFilter) && (
-              <span className="ml-2 w-5 h-5 bg-green-600 text-white text-xs rounded-full flex items-center justify-center">
+              <span className="ml-2 w-5 h-5 bg-green-600 text-white text-xs rounded-full flex items-center justify-center font-bold">
                 {[statusFilter, categoryFilter].filter(Boolean).length}
               </span>
             )}
@@ -417,18 +417,18 @@ const Templates: React.FC = () => {
           <div className="flex items-center space-x-2">
             <button
               onClick={() => setViewMode('grid')}
-              className={`p-2 rounded-lg transition-colors ${viewMode === 'grid'
-                ? 'bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-400'
-                : 'bg-[#0a0e27]/[0.04] text-gray-400 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-gray-600'
+              className={`p-2 rounded-lg border transition-colors ${viewMode === 'grid'
+                ? 'bg-green-50 text-green-600 border-green-200'
+                : 'bg-white text-gray-400 hover:text-gray-600 border-gray-200 hover:bg-gray-50'
                 }`}
             >
               <LayoutGrid className="w-5 h-5" />
             </button>
             <button
               onClick={() => setViewMode('list')}
-              className={`p-2 rounded-lg transition-colors ${viewMode === 'list'
-                ? 'bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-400'
-                : 'bg-[#0a0e27]/[0.04] text-gray-400 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-gray-600'
+              className={`p-2 rounded-lg border transition-colors ${viewMode === 'list'
+                ? 'bg-green-50 text-green-600 border-green-200'
+                : 'bg-white text-gray-400 hover:text-gray-600 border-gray-200 hover:bg-gray-50'
                 }`}
             >
               <List className="w-5 h-5" />
@@ -438,13 +438,13 @@ const Templates: React.FC = () => {
 
         {/* Expanded Filters */}
         {showFilters && (
-          <div className="mt-4 pt-4 border-t border-white/[0.1] flex flex-wrap gap-4">
+          <div className="mt-4 pt-4 border-t border-gray-200 flex flex-wrap gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">Status</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="px-3 py-2 border border-white/[0.12] rounded-lg bg-[#0a0e27] dark:bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-green-500"
+                className="px-3 py-2 border border-gray-200 rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500"
               >
                 <option value="">All Status</option>
                 <option value="APPROVED">Approved</option>
@@ -454,11 +454,11 @@ const Templates: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">Category</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
               <select
                 value={categoryFilter}
                 onChange={(e) => setCategoryFilter(e.target.value)}
-                className="px-3 py-2 border border-white/[0.12] rounded-lg bg-[#0a0e27] dark:bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-green-500"
+                className="px-3 py-2 border border-gray-200 rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500"
               >
                 <option value="">All Categories</option>
                 <option value="MARKETING">Marketing</option>
@@ -473,7 +473,7 @@ const Templates: React.FC = () => {
                   setStatusFilter('');
                   setCategoryFilter('');
                 }}
-                className="self-end px-3 py-2 text-sm text-gray-400 hover:text-white dark:hover:text-white"
+                className="self-end px-3 py-2 text-sm text-gray-500 hover:text-gray-900 font-medium"
               >
                 Clear all
               </button>
@@ -483,19 +483,19 @@ const Templates: React.FC = () => {
       </div>
 
       {/* ── Tab Switcher ── */}
-      <div className="flex items-center gap-1 bg-[#0a0e27] border border-white/[0.1] rounded-xl p-1 w-fit">
+      <div className="flex items-center gap-1 bg-gray-100 border border-gray-200 rounded-xl p-1 w-fit">
         <button
           onClick={() => setTemplateTab('text')}
           className={`flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-medium transition-all ${templateTab === 'text'
               ? 'bg-green-600 text-white shadow-sm'
-              : 'text-gray-400 hover:text-white dark:hover:text-white'
+              : 'text-gray-600 hover:text-gray-900'
             }`}
         >
           <Type className="w-4 h-4" />
           Text Templates
           <span className={`ml-1 px-1.5 py-0.5 rounded-full text-xs font-semibold ${templateTab === 'text'
-              ? 'bg-[#0a0e27]/20 text-white'
-              : 'bg-[#0a0e27]/[0.04] dark:bg-gray-700 text-gray-400'
+              ? 'bg-green-700 text-white'
+              : 'bg-gray-200 text-gray-600'
             }`}>
             {textTemplates.length}
           </span>
@@ -504,14 +504,14 @@ const Templates: React.FC = () => {
           onClick={() => setTemplateTab('media')}
           className={`flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-medium transition-all ${templateTab === 'media'
               ? 'bg-green-600 text-white shadow-sm'
-              : 'text-gray-400 hover:text-white dark:hover:text-white'
+              : 'text-gray-600 hover:text-gray-900'
             }`}
         >
           <Image className="w-4 h-4" />
           Media Templates
           <span className={`ml-1 px-1.5 py-0.5 rounded-full text-xs font-semibold ${templateTab === 'media'
-              ? 'bg-[#0a0e27]/20 text-white'
-              : 'bg-[#0a0e27]/[0.04] dark:bg-gray-700 text-gray-400'
+              ? 'bg-green-700 text-white'
+              : 'bg-gray-200 text-gray-600'
             }`}>
             {mediaTemplates.length}
           </span>
@@ -523,20 +523,20 @@ const Templates: React.FC = () => {
         <div className="flex items-center justify-center py-12">
           <div className="text-center">
             <Loader2 className="w-10 h-10 text-green-600 animate-spin mx-auto mb-4" />
-            <p className="text-gray-400">Loading templates...</p>
+            <p className="text-gray-500">Loading templates...</p>
           </div>
         </div>
       ) : activeTemplates.length === 0 ? (
-        <div className="text-center py-16 bg-[#0a0e27] rounded-2xl border border-white/[0.1]">
-          <div className="w-20 h-20 bg-[#0a0e27]/[0.04] dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+        <div className="text-center py-16 bg-white rounded-2xl border border-gray-200 shadow-sm">
+          <div className="w-20 h-20 bg-gray-50 border border-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
             {templateTab === 'media'
               ? <Image className="w-10 h-10 text-gray-400" />
               : <FileText className="w-10 h-10 text-gray-400" />}
           </div>
-          <h3 className="text-lg font-semibold text-white mb-2">
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">
             No {templateTab === 'media' ? 'media' : 'text'} templates found
           </h3>
-          <p className="text-gray-400 mb-6 max-w-md mx-auto">
+          <p className="text-gray-500 mb-6 max-w-md mx-auto">
             {searchQuery || statusFilter || categoryFilter
               ? 'Try adjusting your filters or search query'
               : templateTab === 'media'
@@ -566,56 +566,56 @@ const Templates: React.FC = () => {
           ))}
         </div>
       ) : (
-        <div className="relative overflow-hidden rounded-2xl bg-white/[0.02] border border-white/[0.05] backdrop-blur-xl">
+        <div className="relative overflow-hidden rounded-2xl bg-white border border-gray-200 shadow-sm">
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-white/[0.02] border-b border-white/[0.05]">
+              <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Template</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Category</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Status</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Language</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Created</th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider">Actions</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Template</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Language</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/[0.02]">
+              <tbody className="divide-y divide-gray-100 bg-white">
                 {activeTemplates.map((template) => (
-                  <tr key={template.id} className="hover:bg-emerald-500/[0.02] hover:shadow-[inset_0_0_0_1px_rgba(16,185,129,0.4)] transition-all duration-200 group/row">
+                  <tr key={template.id} className="hover:bg-gray-50 transition-all duration-200 group/row">
                     <td className="px-6 py-4">
                       <div className="flex items-start">
-                        <div className="w-10 h-10 bg-[#0a0e27]/[0.04] dark:bg-gray-700 rounded-lg flex items-center justify-center mr-3">
+                        <div className="w-10 h-10 bg-gray-50 border border-gray-200/50 rounded-lg flex items-center justify-center mr-3">
                           {getHeaderIcon(template.header.type)}
                         </div>
                         <div>
-                          <p className="font-medium text-white">{template.name}</p>
-                          <p className="text-sm text-gray-400 line-clamp-1 max-w-xs">{template.body}</p>
+                          <p className="font-medium text-gray-900">{template.name}</p>
+                          <p className="text-sm text-gray-500 line-clamp-1 max-w-xs">{template.body}</p>
                           {template.status === 'rejected' && template.rejectionReason && (
-                            <p className="text-xs text-red-600 dark:text-red-400 mt-1">Reason: {template.rejectionReason}</p>
+                            <p className="text-xs text-red-600 mt-1">Reason: {template.rejectionReason}</p>
                           )}
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4">{getCategoryBadge(template.category)}</td>
                     <td className="px-6 py-4">{getStatusBadge(template.status)}</td>
-                    <td className="px-6 py-4"><span className="text-gray-400">{template.language}</span></td>
+                    <td className="px-6 py-4"><span className="text-gray-600">{template.language}</span></td>
                     <td className="px-6 py-4">
-                      <span className="text-gray-400 text-sm">
+                      <span className="text-gray-550 text-sm">
                         {new Date(template.createdAt).toLocaleDateString()}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-2">
-                        <button onClick={() => setPreviewTemplate(template)} className="p-2 text-gray-400 hover:text-gray-400 dark:hover:text-gray-300 hover:bg-[#0a0e27]/[0.04] dark:hover:bg-gray-700 rounded-lg transition-colors" title="Preview">
+                        <button onClick={() => setPreviewTemplate(template)} className="p-2 text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors" title="Preview">
                           <Eye className="w-4 h-4" />
                         </button>
-                        <button onClick={() => navigate(`/dashboard/templates/edit/${template.id}`)} className="p-2 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors" title="Edit">
+                        <button onClick={() => navigate(`/dashboard/templates/edit/${template.id}`)} className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Edit">
                           <Edit className="w-4 h-4" />
                         </button>
-                        <button onClick={() => handleDuplicateTemplate(template)} className="p-2 text-gray-400 hover:text-green-600 dark:hover:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-colors" title="Duplicate">
+                        <button onClick={() => handleDuplicateTemplate(template)} className="p-2 text-gray-500 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors" title="Duplicate">
                           <Copy className="w-4 h-4" />
                         </button>
-                        <button onClick={() => { setSelectedTemplate(template); setShowDeleteModal(true); }} className="p-2 text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors" title="Delete">
+                        <button onClick={() => { setSelectedTemplate(template); setShowDeleteModal(true); }} className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Delete">
                           <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
@@ -649,14 +649,14 @@ const Templates: React.FC = () => {
       {/* Delete Confirmation Modal */}
       {showDeleteModal && selectedTemplate && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-[#0a0e27] rounded-xl max-w-md w-full p-6">
-            <div className="w-12 h-12 bg-red-100 dark:bg-red-900 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Trash2 className="w-6 h-6 text-red-600 dark:text-red-400" />
+          <div className="bg-white border border-gray-200 shadow-xl rounded-xl max-w-md w-full p-6">
+            <div className="w-12 h-12 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-red-100">
+              <Trash2 className="w-6 h-6 text-red-600" />
             </div>
-            <h3 className="text-lg font-bold text-center text-white mb-2">
+            <h3 className="text-lg font-bold text-center text-gray-900 mb-2">
               Delete Template
             </h3>
-            <p className="text-center text-gray-400 mb-6">
+            <p className="text-center text-gray-600 mb-6">
               Are you sure you want to delete "{selectedTemplate.name}"? This action cannot be undone.
             </p>
             <div className="flex gap-3">
@@ -665,7 +665,7 @@ const Templates: React.FC = () => {
                   setShowDeleteModal(false);
                   setSelectedTemplate(null);
                 }}
-                className="flex-1 px-4 py-2 border border-white/[0.12] rounded-lg text-gray-300 hover:bg-[#0a0e27]/[0.04] transition-colors"
+                className="flex-1 px-4 py-2 border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
               >
                 Cancel
               </button>

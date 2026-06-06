@@ -1239,14 +1239,14 @@ const Inbox: React.FC = () => {
   if (error && conversations.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-full chat-bg px-6">
-        <div className="w-16 h-16 rounded-full bg-red-500/15 border border-red-500/30 flex items-center justify-center mb-4">
-          <AlertCircle className="w-8 h-8 text-red-400" />
+        <div className="w-16 h-16 rounded-full bg-red-50 border border-red-200 flex items-center justify-center mb-4">
+          <AlertCircle className="w-8 h-8 text-red-500" />
         </div>
-        <h3 className="text-lg font-semibold text-white mb-2">Failed to Load Inbox</h3>
-        <p className="text-gray-400 mb-6 text-center max-w-md text-sm">{error}</p>
+        <h3 className="text-lg font-semibold text-gray-900 mb-2">Failed to Load Inbox</h3>
+        <p className="text-gray-600 mb-6 text-center max-w-md text-sm">{error}</p>
         <button
           onClick={() => fetchConversations()}
-          className="flex items-center gap-2 px-5 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl text-sm font-medium transition-colors"
+          className="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-medium transition-colors"
         >
           <RefreshCw className="w-4 h-4" /> Try Again
         </button>
@@ -1480,18 +1480,17 @@ const EmptyState: React.FC<{ onOpenQuickReplies: () => void }> = ({
       <div className="text-center max-w-md">
         <div className="
           w-24 h-24 mx-auto mb-6
-          bg-gradient-to-br from-emerald-500/20 to-emerald-600/10
-          border border-emerald-500/20
+          bg-emerald-50 border border-emerald-200
           rounded-3xl flex items-center justify-center
-          shadow-2xl shadow-emerald-500/10
+          shadow-lg shadow-emerald-500/5
         ">
-          <MessageSquare className="w-12 h-12 text-emerald-400" />
+          <MessageSquare className="w-12 h-12 text-emerald-600" />
         </div>
 
-        <h3 className="text-xl font-bold text-white mb-2">
+        <h3 className="text-xl font-bold text-gray-900 mb-2">
           Welcome to your Inbox
         </h3>
-        <p className="text-sm text-gray-400 mb-6">
+        <p className="text-sm text-gray-600 mb-6">
           Select a conversation from the left to start chatting, or use keyboard
           shortcuts to navigate faster.
         </p>
@@ -1508,8 +1507,8 @@ const EmptyState: React.FC<{ onOpenQuickReplies: () => void }> = ({
               key={i}
               className="
                 flex items-center gap-2 p-2.5
-                bg-[#0a0e27]/[0.03] border border-white/[0.06]
-                rounded-lg
+                bg-white border border-gray-200/50
+                rounded-lg shadow-sm
               "
             >
               <div className="flex items-center gap-0.5">
@@ -1518,15 +1517,15 @@ const EmptyState: React.FC<{ onOpenQuickReplies: () => void }> = ({
                     {ki > 0 && <span className="text-gray-400 text-[10px]">+</span>}
                     <kbd className="
                       px-1.5 py-0.5
-                      bg-[#0a0e27]/[0.06] border border-white/[0.08]
-                      rounded text-[10px] font-mono text-gray-300
+                      bg-gray-100 border border-gray-200
+                      rounded text-[10px] font-mono text-gray-600
                     ">
                       {k}
                     </kbd>
                   </React.Fragment>
                 ))}
               </div>
-              <span className="text-[11px] text-gray-400 truncate">{tip.label}</span>
+              <span className="text-[11px] text-gray-500 truncate">{tip.label}</span>
             </div>
           ))}
         </div>
@@ -1535,11 +1534,11 @@ const EmptyState: React.FC<{ onOpenQuickReplies: () => void }> = ({
           onClick={onOpenQuickReplies}
           className="
             inline-flex items-center gap-2 px-4 py-2
-            bg-[#0a0e27]/[0.04] hover:bg-[#0a0e27]/[0.08]
-            border border-white/[0.08]
+            bg-white hover:bg-gray-50
+            border border-gray-200
             rounded-xl
-            text-sm text-gray-300 hover:text-white
-            transition-all
+            text-sm text-gray-700 hover:text-gray-950
+            transition-all shadow-sm
           "
         >
           Manage Quick Replies
