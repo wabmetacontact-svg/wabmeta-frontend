@@ -54,18 +54,18 @@ const AdminLogin: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#0f172a] flex items-center justify-center p-4">
-      <div className="w-full max-w-md bg-[#0a0e27] rounded-2xl shadow-2xl overflow-hidden relative">
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+      <div className="w-full max-w-md bg-white border border-slate-100 rounded-2xl shadow-xl overflow-hidden relative">
         {/* Top Accent */}
         <div className="h-2 bg-linear-to-r from-red-500 to-orange-500"></div>
 
         <div className="p-8">
           <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-[#0a0e27]/[0.04] rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <ShieldCheck className="w-8 h-8 text-white" />
+            <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-slate-100">
+              <ShieldCheck className="w-8 h-8 text-slate-800" />
             </div>
-            <h2 className="text-2xl font-bold text-white">Admin Portal</h2>
-            <p className="text-gray-500 text-sm mt-1">WabMeta Super Admin Access</p>
+            <h2 className="text-2xl font-bold text-slate-900">Admin Portal</h2>
+            <p className="text-slate-500 text-sm mt-1">WabMeta Super Admin Access</p>
           </div>
 
           {error && (
@@ -77,36 +77,36 @@ const AdminLogin: React.FC = () => {
 
           <form onSubmit={handleLogin} className="space-y-5">
             <div>
-              <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
+              <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">
                 Admin Email
               </label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   autoComplete="email"
-                  className="w-full pl-10 pr-4 py-3 bg-[#050816] border border-white/[0.1] rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-900 transition-all"
+                  className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 text-slate-900 placeholder-slate-400 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-900 transition-all"
                   placeholder="admin@wabmeta.com"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
+              <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">
                 Password
               </label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                 <input
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   autoComplete="current-password"
-                  className="w-full pl-10 pr-4 py-3 bg-[#050816] border border-white/[0.1] rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-900 transition-all"
+                  className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 text-slate-900 placeholder-slate-400 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-900 transition-all"
                   placeholder="••••••••"
                 />
               </div>
@@ -132,8 +132,8 @@ const AdminLogin: React.FC = () => {
           </form>
         </div>
         
-        <div className="bg-[#050816] p-4 text-center border-t border-gray-100">
-          <p className="text-xs text-gray-400">
+        <div className="bg-slate-50 p-4 text-center border-t border-slate-100">
+          <p className="text-xs text-slate-400">
             Protected Area • Unauthorized access prohibited
           </p>
         </div>

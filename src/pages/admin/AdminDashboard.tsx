@@ -91,12 +91,12 @@ const StatCard: React.FC<StatCardProps> = ({
   return (
     <CardWrapper
       {...wrapperProps as any}
-      className={`bg-[#0a0e27] rounded-2xl border border-white/[0.1] p-6 ${link ? 'hover:shadow-lg hover:border-white/[0.12] transition-all cursor-pointer' : ''}`}
+      className={`bg-white rounded-2xl border border-slate-100 p-6 shadow-sm ${link ? 'hover:shadow-md hover:border-slate-200 transition-all cursor-pointer' : ''}`}
     >
       <div className="flex items-start justify-between">
         <div>
-          <p className="text-sm text-gray-500 font-medium">{title}</p>
-          <p className="text-3xl font-bold text-white mt-2">
+          <p className="text-sm text-slate-500 font-medium">{title}</p>
+          <p className="text-3xl font-bold text-slate-900 mt-2">
             {/* ✅ FIXED: Safe toLocaleString */}
             {typeof value === 'number' ? value.toLocaleString() : value}
           </p>
@@ -136,8 +136,8 @@ const UserStatusBreakdown: React.FC<StatusBreakdownProps> = ({ stats }) => {
   const total = stats.total || 0;
 
   return (
-    <div className="bg-[#0a0e27] rounded-2xl border border-white/[0.1] p-6">
-      <h3 className="text-lg font-semibold text-white mb-4">User Status Breakdown</h3>
+    <div className="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm">
+      <h3 className="text-lg font-semibold text-slate-900 mb-4">User Status Breakdown</h3>
       <div className="space-y-4">
         {statuses.map((status) => (
           <div key={status.label} className="flex items-center justify-between">
@@ -145,14 +145,14 @@ const UserStatusBreakdown: React.FC<StatusBreakdownProps> = ({ stats }) => {
               <div className={`p-2 rounded-lg ${status.bg}`}>
                 <status.icon className={`w-4 h-4 ${status.color}`} />
               </div>
-              <span className="text-gray-300 font-medium">{status.label}</span>
+              <span className="text-slate-700 font-medium">{status.label}</span>
             </div>
             <div className="flex items-center space-x-3">
               {/* ✅ FIXED: Safe toLocaleString */}
-              <span className="text-2xl font-bold text-white">
+              <span className="text-2xl font-bold text-slate-900">
                 {(status.value || 0).toLocaleString()}
               </span>
-              <span className="text-sm text-gray-400">
+              <span className="text-sm text-slate-500">
                 ({total > 0 ? Math.round((status.value / total) * 100) : 0}%)
               </span>
             </div>
@@ -161,7 +161,7 @@ const UserStatusBreakdown: React.FC<StatusBreakdownProps> = ({ stats }) => {
       </div>
 
       {/* Progress Bar */}
-      <div className="mt-6 h-3 bg-[#0a0e27]/[0.04] rounded-full overflow-hidden flex">
+      <div className="mt-6 h-3 bg-slate-100 rounded-full overflow-hidden flex">
         <div
           className="bg-green-500 transition-all"
           style={{ width: `${total > 0 ? ((stats.active || 0) / total) * 100 : 0}%` }}
@@ -189,7 +189,7 @@ interface PlanDistributionProps {
 
 const PlanDistribution: React.FC<PlanDistributionProps> = ({ byPlan, total }) => {
   const planConfig: Record<string, { color: string; bg: string }> = {
-    FREE: { color: 'text-gray-400', bg: 'bg-[#050816]0' },
+    FREE: { color: 'text-slate-500', bg: 'bg-slate-300' },
     STARTER: { color: 'text-blue-600', bg: 'bg-blue-500' },
     PRO: { color: 'text-purple-600', bg: 'bg-purple-500' },
     ENTERPRISE: { color: 'text-orange-600', bg: 'bg-orange-500' },
@@ -200,15 +200,15 @@ const PlanDistribution: React.FC<PlanDistributionProps> = ({ byPlan, total }) =>
     type,
     count: count || 0,
     percentage: total > 0 ? Math.round(((count || 0) / total) * 100) : 0,
-    ...planConfig[type] || { color: 'text-gray-400', bg: 'bg-[#050816]0' }
+    ...planConfig[type] || { color: 'text-slate-500', bg: 'bg-slate-300' }
   }));
 
   // ✅ FIXED: Show message if no data
   if (plans.length === 0) {
     return (
-      <div className="bg-[#0a0e27] rounded-2xl border border-white/[0.1] p-6">
-        <h3 className="text-lg font-semibold text-white mb-4">Organizations by Plan</h3>
-        <div className="text-center py-8 text-gray-500">
+      <div className="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm">
+        <h3 className="text-lg font-semibold text-slate-900 mb-4">Organizations by Plan</h3>
+        <div className="text-center py-8 text-slate-500">
           <Building2 className="w-12 h-12 mx-auto mb-2 text-gray-300" />
           <p>No organizations yet</p>
         </div>
@@ -217,19 +217,19 @@ const PlanDistribution: React.FC<PlanDistributionProps> = ({ byPlan, total }) =>
   }
 
   return (
-    <div className="bg-[#0a0e27] rounded-2xl border border-white/[0.1] p-6">
-      <h3 className="text-lg font-semibold text-white mb-4">Organizations by Plan</h3>
+    <div className="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm">
+      <h3 className="text-lg font-semibold text-slate-900 mb-4">Organizations by Plan</h3>
       <div className="space-y-4">
         {plans.map((plan) => (
           <div key={plan.type}>
             <div className="flex items-center justify-between mb-2">
               <span className={`font-medium ${plan.color}`}>{plan.type}</span>
               {/* ✅ FIXED: Safe toLocaleString */}
-              <span className="text-white font-bold">
+              <span className="text-slate-900 font-bold">
                 {(plan.count || 0).toLocaleString()}
               </span>
             </div>
-            <div className="h-2 bg-[#0a0e27]/[0.04] rounded-full overflow-hidden">
+            <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
               <div
                 className={`h-full ${plan.bg} transition-all`}
                 style={{ width: `${plan.percentage}%` }}
@@ -259,17 +259,17 @@ const QuickStats: React.FC<QuickStatsProps> = ({ whatsapp, messages }) => {
   ];
 
   return (
-    <div className="bg-[#0a0e27] rounded-2xl border border-white/[0.1] p-6">
-      <h3 className="text-lg font-semibold text-white mb-4">Platform Overview</h3>
+    <div className="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm">
+      <h3 className="text-lg font-semibold text-slate-900 mb-4">Platform Overview</h3>
       <div className="grid grid-cols-2 gap-4">
         {stats.map((stat) => (
-          <div key={stat.label} className="bg-[#050816] rounded-xl p-4">
+          <div key={stat.label} className="bg-slate-50 border border-slate-100/50 rounded-xl p-4">
             <div className="flex items-center space-x-2 mb-2">
-              <stat.icon className="w-4 h-4 text-gray-400" />
-              <span className="text-xs text-gray-500 font-medium">{stat.label}</span>
+              <stat.icon className="w-4 h-4 text-slate-400" />
+              <span className="text-xs text-slate-500 font-medium">{stat.label}</span>
             </div>
             {/* ✅ FIXED: Safe toLocaleString */}
-            <p className="text-2xl font-bold text-white">
+            <p className="text-2xl font-bold text-slate-900">
               {(stat.value || 0).toLocaleString()}
             </p>
           </div>
@@ -321,14 +321,14 @@ const WalletRequestsWidget: React.FC = () => {
   };
 
   return (
-    <div className="bg-[#0a0e27] rounded-2xl border border-white/[0.1] p-6">
+    <div className="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <div className="p-2 bg-green-100 rounded-lg">
             <Wallet className="w-4 h-4 text-green-600" />
           </div>
-          <h3 className="text-lg font-semibold text-white">
+          <h3 className="text-lg font-semibold text-slate-900">
             Wallet Access Requests
           </h3>
           {requests.length > 0 && (
@@ -356,7 +356,7 @@ const WalletRequestsWidget: React.FC = () => {
           {[1, 2].map(i => (
             <div
               key={i}
-              className="h-20 bg-[#0a0e27]/[0.04] rounded-xl animate-pulse"
+              className="h-20 bg-slate-50 rounded-xl animate-pulse border border-slate-100"
             />
           ))}
         </div>
@@ -368,10 +368,10 @@ const WalletRequestsWidget: React.FC = () => {
           >
             <CheckCircle className="w-6 h-6 text-green-500" />
           </div>
-          <p className="text-gray-500 text-sm font-medium">
+          <p className="text-slate-500 text-sm font-medium">
             No pending requests
           </p>
-          <p className="text-gray-400 text-xs mt-1">
+          <p className="text-slate-400 text-xs mt-1">
             All wallet requests have been reviewed
           </p>
         </div>
@@ -380,14 +380,14 @@ const WalletRequestsWidget: React.FC = () => {
           {requests.map(request => (
             <div
               key={request.id}
-              className="border border-white/[0.1] rounded-xl p-4
-                           hover:border-white/[0.12] transition-all"
+              className="border border-slate-100 rounded-xl p-4 bg-slate-50/30
+                           hover:border-slate-200 hover:bg-slate-50 transition-all"
             >
               {/* User & Org Info */}
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <p className="font-semibold text-white text-sm">
+                    <p className="font-semibold text-slate-900 text-sm">
                       {request.organization?.name || 'Unknown Org'}
                     </p>
                     {/* Plan Badge */}
@@ -420,21 +420,21 @@ const WalletRequestsWidget: React.FC = () => {
                     )}
                   </div>
 
-                  <p className="text-xs text-gray-500 mt-0.5">
+                  <p className="text-xs text-slate-500 mt-0.5">
                     {request.user?.email || ''}
                   </p>
 
                   {/* Reason */}
                   <p
-                    className="text-xs text-gray-400 mt-2 bg-[#050816]
+                    className="text-xs text-slate-600 mt-2 bg-slate-100
                                   rounded-lg p-2 line-clamp-2"
                   >
                     "{request.reason}"
                   </p>
 
                   {/* Time */}
-                  <p className="text-xs text-gray-400 mt-1.5">
-                    <Clock className="w-3 h-3 inline mr-1" />
+                  <p className="text-xs text-slate-500 mt-1.5">
+                    <Clock className="w-3 h-3 inline mr-1 text-slate-400" />
                     {new Date(request.requestedAt).toLocaleDateString('en-IN', {
                       day: 'numeric',
                       month: 'short',
@@ -538,8 +538,8 @@ const AdminDashboard: React.FC = () => {
       <div className="flex items-center justify-center h-96">
         <div className="text-center max-w-md">
           <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-white mb-2">Failed to Load Dashboard</h3>
-          <p className="text-gray-500 mb-4">{error}</p>
+          <h3 className="text-lg font-semibold text-slate-900 mb-2">Failed to Load Dashboard</h3>
+          <p className="text-slate-500 mb-4">{error}</p>
           <button
             onClick={fetchStats}
             className="px-4 py-2 bg-primary-500 text-white rounded-xl hover:bg-primary-600 transition-colors"
@@ -634,15 +634,15 @@ const AdminDashboard: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white">
+          <h1 className="text-2xl font-bold text-slate-900">
             Welcome back, {adminUser?.name || 'Admin'}! 👋
           </h1>
-          <p className="text-gray-500">Here's what's happening with your platform today.</p>
+          <p className="text-slate-500">Here's what's happening with your platform today.</p>
         </div>
         <button
           onClick={fetchStats}
           disabled={loading}
-          className="flex items-center space-x-2 px-4 py-2 bg-[#0a0e27] border border-white/[0.1] rounded-xl text-gray-300 hover:bg-[#050816] transition-colors disabled:opacity-50"
+          className="flex items-center space-x-2 px-4 py-2 bg-white border border-slate-200 rounded-xl text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors disabled:opacity-50 shadow-sm"
         >
           <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
           <span>Refresh</span>
@@ -719,12 +719,12 @@ const AdminDashboard: React.FC = () => {
         
         {/* ✅ ADD THIS - Wallet Stats Card */}
         {safeStats.wallet && (
-          <div className="bg-[#0a0e27] rounded-2xl border border-white/[0.1] p-6">
+          <div className="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm">
             <div className="flex items-center gap-2 mb-4">
               <div className="p-2 bg-green-100 rounded-lg">
                 <Wallet className="w-4 h-4 text-green-600" />
               </div>
-              <h3 className="text-lg font-semibold text-white">
+              <h3 className="text-lg font-semibold text-slate-900">
                 Wallet Overview
               </h3>
             </div>
@@ -754,71 +754,71 @@ const AdminDashboard: React.FC = () => {
 
       {/* Revenue Card */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-gradient-to-r from-green-700 to-green-800 rounded-2xl p-6 text-white">
+        <div className="bg-gradient-to-r from-emerald-500 to-teal-600 rounded-2xl p-6 text-white shadow-md">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-green-200 text-sm font-medium">Total Revenue (All Time)</p>
+              <p className="text-emerald-100 text-sm font-medium">Total Revenue (All Time)</p>
               <p className="text-4xl font-bold mt-2">
                 {formatINR(safeStats.revenue.totalRevenue / 100)}
               </p>
-              <p className="text-green-200 text-sm mt-2">
+              <p className="text-emerald-100 text-sm mt-2">
                 Today: {formatINR(safeStats.revenue.todayRevenue / 100)}
               </p>
             </div>
             <div className="hidden md:block">
-              <CreditCard className="w-16 h-16 text-green-600" />
+              <CreditCard className="w-16 h-16 text-white/20" />
             </div>
           </div>
         </div>
-        <div className="bg-gradient-to-r from-gray-900 to-gray-800 rounded-2xl p-6 text-white">
+        <div className="bg-gradient-to-r from-slate-800 to-slate-950 rounded-2xl p-6 text-white shadow-md">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-gray-400 text-sm font-medium">Annual Recurring Revenue (ARR)</p>
+              <p className="text-slate-300 text-sm font-medium">Annual Recurring Revenue (ARR)</p>
               <p className="text-4xl font-bold mt-2">
                 {formatINR(safeStats.revenue.arr || 0)}
               </p>
-              <p className="text-gray-400 text-sm mt-2">
+              <p className="text-slate-300 text-sm mt-2">
                 Based on {formatINR(safeStats.revenue.mrr || 0)} MRR
               </p>
             </div>
             <div className="hidden md:block">
-              <BarChart3 className="w-20 h-20 text-gray-300" />
+              <BarChart3 className="w-20 h-20 text-white/20" />
             </div>
           </div>
         </div>
       </div>
 
       {/* Quick Actions */}
-      <div className="bg-[#0a0e27] rounded-2xl border border-white/[0.1] p-6">
-        <h3 className="text-lg font-semibold text-white mb-4">Quick Actions</h3>
+      <div className="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm">
+        <h3 className="text-lg font-semibold text-slate-900 mb-4">Quick Actions</h3>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <Link
             to="/manage-wabmeta-admin/users"
-            className="flex items-center space-x-3 p-4 bg-[#050816] rounded-xl hover:bg-[#0a0e27]/[0.04] transition-colors"
+            className="flex items-center space-x-3 p-4 bg-slate-50 border border-slate-100 rounded-xl hover:bg-slate-100 transition-colors"
           >
             <Users className="w-5 h-5 text-blue-600" />
-            <span className="font-medium text-gray-300">Manage Users</span>
+            <span className="font-medium text-slate-700">Manage Users</span>
           </Link>
           <Link
             to="/manage-wabmeta-admin/subscriptions"
-            className="flex items-center space-x-3 p-4 bg-[#050816] rounded-xl hover:bg-[#0a0e27]/[0.04] transition-colors"
+            className="flex items-center space-x-3 p-4 bg-slate-50 border border-slate-100 rounded-xl hover:bg-slate-100 transition-colors"
           >
             <Building2 className="w-5 h-5 text-purple-600" />
-            <span className="font-medium text-gray-300">Organizations</span>
+            <span className="font-medium text-slate-700">Organizations</span>
           </Link>
           <Link
             to="/manage-wabmeta-admin/plans"
-            className="flex items-center space-x-3 p-4 bg-[#050816] rounded-xl hover:bg-[#0a0e27]/[0.04] transition-colors"
+            className="flex items-center space-x-3 p-4 bg-slate-50 border border-slate-100 rounded-xl hover:bg-slate-100 transition-colors"
           >
             <CreditCard className="w-5 h-5 text-green-600" />
-            <span className="font-medium text-gray-300">Manage Plans</span>
+            <span className="font-medium text-slate-700">Manage Plans</span>
           </Link>
           <Link
             to="/manage-wabmeta-admin/settings"
-            className="flex items-center space-x-3 p-4 bg-[#050816] rounded-xl hover:bg-[#0a0e27]/[0.04] transition-colors"
+            className="flex items-center space-x-3 p-4 bg-slate-50 border border-slate-100 rounded-xl hover:bg-slate-100 transition-colors"
           >
             <Activity className="w-5 h-5 text-orange-600" />
-            <span className="font-medium text-gray-300">System Settings</span>
+            <span className="font-medium text-slate-700">System Settings</span>
           </Link>
         </div>
       </div>
