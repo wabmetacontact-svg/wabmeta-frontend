@@ -70,7 +70,7 @@ interface Conversation {
   createdAt?: string;
 }
 
-type FilterTab = 'all' | 'unread' | 'archived';
+type FilterTab = 'all' | 'unread' | 'archived' | string;
 
 // ============================================
 // QUICK REPLIES (localStorage based)
@@ -725,7 +725,7 @@ const Inbox: React.FC = () => {
     [fetchConversations, navigate]
   );
 
-  const handleClearChat = useCallback(async (conv: Conversation) => {
+  const handleClearChat = useCallback(async (_conv: Conversation) => {
     if (window.confirm('Are you sure you want to clear this chat? This will only remove messages locally.')) {
       setMessages([]);
       toast.success('Chat cleared locally');

@@ -482,7 +482,7 @@ const ConversationItem: React.FC<Props> = ({
             {(() => {
               const mergedLabels = Array.from(new Map(
                 [
-                  ...AVAILABLE_LABELS.map(l => ({ label: l })), 
+                  ...AVAILABLE_LABELS.map(l => ({ label: l } as { label: string; color?: string })), 
                   ...allLabels
                 ].map(item => [item.label, item])
               ).values());

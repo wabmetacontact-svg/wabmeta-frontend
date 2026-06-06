@@ -63,6 +63,8 @@ export interface Message {
   };
   isForwarded?: boolean;
   edited?: boolean;
+  waMessageId?: string | null;
+  wamId?: string | null;
 }
 
 interface Props {

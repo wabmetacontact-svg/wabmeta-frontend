@@ -27,7 +27,7 @@ const LabelManager: React.FC<Props> = ({ labels, allLabels = [], onAddLabel, onR
 
   const mergedLabels = Array.from(new Map(
     [
-      ...AVAILABLE_LABELS.map(l => ({ label: l })),
+      ...AVAILABLE_LABELS.map(l => ({ label: l } as { label: string; color?: string })),
       ...allLabels
     ].map(item => [item.label, item])
   ).values());
@@ -42,7 +42,7 @@ const LabelManager: React.FC<Props> = ({ labels, allLabels = [], onAddLabel, onR
           const style = getLabelStyle(labelName, labelObj?.color);
           return (
             <span
-              key={label}
+              key={labelName}
               className={`
                 inline-flex items-center gap-1 px-2 py-1
                 text-[10px] font-medium rounded-md

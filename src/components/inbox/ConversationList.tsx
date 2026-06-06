@@ -11,6 +11,9 @@ import {
   CheckSquare,
   Square,
   Check,
+  MessageSquarePlus,
+  Inbox,
+  Pin,
 } from 'lucide-react';
 import ConversationItem from './ConversationItem';
 import type { ContactLike } from '../../utils/inboxHelpers';
@@ -85,7 +88,6 @@ const ConversationList: React.FC<Props> = ({
   onBulkArchive,
   onBulkDelete,
 }) => {
-  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
 
   // Check if we are in selection mode
   const isSelectionMode = selectedConversationIds.length > 0;
@@ -307,7 +309,7 @@ const ConversationList: React.FC<Props> = ({
               bg-[#0a0e27]/[0.04] border border-white/[0.06]
               flex items-center justify-center mb-4
             ">
-              <InboxIcon className="w-7 h-7 text-gray-500" />
+              <Inbox className="w-7 h-7 text-gray-500" />
             </div>
             <h3 className="text-sm font-semibold text-white mb-1">
               {searchQuery
