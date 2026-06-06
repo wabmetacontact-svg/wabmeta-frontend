@@ -2,8 +2,8 @@ import React from 'react';
 import { Loader2 } from 'lucide-react';
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'ghost' | 'danger';
-  size?: 'sm' | 'md' | 'lg';
+  variant?: 'primary' | 'secondary' | 'ghost' | 'danger' | 'outline';
+  size?: 'xs' | 'sm' | 'md' | 'lg';
   fullWidth?: boolean;
   loading?: boolean;
   icon?: React.ReactNode;
@@ -23,47 +23,72 @@ const Button: React.FC<ButtonProps> = ({
   className = '',
   ...props
 }) => {
-  const base =
-    'inline-flex items-center justify-center gap-2 font-semibold rounded-xl ' +
-    'transition-all duration-200 ease-out select-none ' +
-    'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 ' +
-    'focus-visible:ring-offset-white dark:focus-visible:ring-offset-slate-950 ' +
-    'disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 ' +
-    (fullWidth ? 'w-full ' : '');
+  const base = [
+    'inline-flex items-center justify-center gap-2',
+    'font-semibold rounded-xl',
+    'transition-all duration-200',
+    'select-none',
+    'focus:outline-none',
+    'focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2',
+    'disabled:opacity-50 disabled:cursor-not-allowed',
+    'disabled:hover:translate-y-0 disabled:hover:shadow-none',
+    fullWidth ? 'w-full' : '',
+  ].join(' ');
 
   const sizes = {
+    xs: 'px-3 py-1.5 text-xs',
     sm: 'px-4 py-2 text-sm',
     md: 'px-5 py-2.5 text-sm',
     lg: 'px-7 py-3.5 text-base',
   };
 
   const variants = {
-    primary:
-      'bg-primary-500 text-white shadow-sm ' +
-      'hover:bg-primary-600 hover:-translate-y-0.5 hover:shadow-md active:translate-y-0',
-    secondary:
-      'bg-white text-gray-800 border border-gray-200 hover:bg-gray-50 hover:border-gray-300 ' +
-      'dark:bg-slate-800 dark:text-slate-100 dark:border-slate-700 dark:hover:bg-slate-700',
-    ghost:
-      'bg-transparent text-gray-600 hover:bg-gray-100 hover:text-gray-900 ' +
-      'dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white',
-    danger:
-      'bg-red-500 text-white shadow-sm ' +
-      'hover:bg-red-600 hover:-translate-y-0.5 hover:shadow-md active:translate-y-0',
-  };
+    primary: [
+      'bg-primary-500 text-white',
+      'hover:bg-primary-600',
+      'hover:-translate-y-0.5',
+      'hover:shadow-md active:translate-y-0',
+      'shadow-sm',
+    ].join(' '),
 
-  const isDisabled = disabled || loading;
+    secondary: [
+      'bg-gray-100 text-gray-700',
+      'hover:bg-gray-200 hover:text-gray-900',
+      'active:bg-gray-300',
+    ].join(' '),
+
+    outline: [
+      'bg-white text-gray-700',
+      'border border-gray-200',
+      'hover:bg-gray-50 hover:border-gray-300',
+      'active:bg-gray-100',
+    ].join(' '),
+
+    ghost: [
+      'bg-transparent text-gray-600',
+      'hover:bg-gray-100 hover:text-gray-900',
+      'active:bg-gray-200',
+    ].join(' '),
+
+    danger: [
+      'bg-red-500 text-white',
+      'hover:bg-red-600',
+      'hover:-translate-y-0.5',
+      'hover:shadow-md active:translate-y-0',
+      'shadow-sm',
+    ].join(' '),
+  };
 
   return (
     <button
       className={`${base} ${sizes[size]} ${variants[variant]} ${className}`}
-      disabled={isDisabled}
+      disabled={disabled || loading}
       {...props}
     >
       {loading ? (
         <>
           <Loader2 className="w-4 h-4 animate-spin" />
-          <span>Please wait...</span>
+          <span>Please wait…</span>
         </>
       ) : (
         <>

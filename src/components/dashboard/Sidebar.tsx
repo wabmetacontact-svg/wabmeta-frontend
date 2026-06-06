@@ -1,45 +1,24 @@
-import React, { useState, useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
+import React, { useState, useEffect } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
-  LayoutDashboard,
-  Users,
-  Send,
-  FileText,
-  Inbox,
-  Bot,
-  BarChart3,
-  Settings,
-  HelpCircle,
-  ChevronLeft,
-  ChevronRight,
-  LogOut,
-  Zap,
-  CreditCard,
-  UserCircle,
-  Wallet,
-  Plus,
-  Sparkles,
-  Lock,
-  MessageSquare,
-  Instagram,
-  Heart,
-  MessageCircle,
-  Image,
-  BookOpen,
-  TrendingUp,
-  Megaphone,
+  LayoutDashboard, Users, Send, FileText, Inbox,
+  Bot, BarChart3, Settings, HelpCircle,
+  ChevronLeft, ChevronRight, LogOut, Zap,
+  CreditCard, Wallet, Sparkles, Lock,
+  MessageSquare, Instagram, MessageCircle,
+  Image, BookOpen, TrendingUp, Megaphone,
   ChevronDown,
-} from "lucide-react";
-import logo from "../../assets/logo.png";
-import { useApp } from "../../context/AppContext";
-import { usePlanAccess } from "../../hooks/usePlanAccess";
-import { useAuth } from "../../context/AuthContext";
-import type { User } from "../../types/auth";
-import { FaWhatsapp } from "react-icons/fa";
+} from 'lucide-react';
+import { FaWhatsapp } from 'react-icons/fa';
+import logo from '../../assets/logo.png';
+import { useApp } from '../../context/AppContext';
+import { usePlanAccess } from '../../hooks/usePlanAccess';
+import { useAuth } from '../../context/AuthContext';
+import type { User } from '../../types/auth';
 
-// ─── Types ────────────────────────────────────────────────────────────────────
+// ─── Types ───────────────────────────────────────────────────────────────────
 
-type Channel = "whatsapp" | "instagram";
+type Channel = 'whatsapp' | 'instagram';
 
 interface NavItem {
   name: string;
@@ -59,301 +38,199 @@ interface NavGroup {
 
 interface SidebarProps {
   collapsed: boolean;
-  setCollapsed: (collapsed: boolean) => void;
+  setCollapsed: (v: boolean) => void;
 }
 
-// ─── Prefetch helper ──────────────────────────────────────────────────────────
+// ─── Helpers ─────────────────────────────────────────────────────────────────
 
 const prefetched = new Set<string>();
 const prefetchRouteChunk = (href: string) => {
   if (prefetched.has(href)) return;
   prefetched.add(href);
-  switch (href) {
-    case "/dashboard": import("../../pages/Dashboard"); break;
-    case "/dashboard/inbox": import("../../pages/Inbox"); break;
-    case "/dashboard/contacts": import("../../pages/Contacts"); break;
-    case "/dashboard/templates": import("../../pages/Templates"); break;
-    case "/dashboard/campaigns": import("../../pages/Campaigns"); break;
-    case "/dashboard/wallet": import("../../pages/Wallet"); break;
-    case "/dashboard/settings": import("../../pages/Settings"); break;
-    case "/dashboard/reports": import("../../pages/Reports"); break;
-    case "/dashboard/chatbots": import("../../pages/ChatbotList"); break;
-    case "/dashboard/automations": import("../../pages/Automation"); break;
-    case "/dashboard/crm": import("../../pages/CRM"); break;
-    default: break;
-  }
+  const map: Record<string, () => Promise<any>> = {
+    '/dashboard':            () => import('../../pages/Dashboard'),
+    '/dashboard/inbox':      () => import('../../pages/Inbox'),
+    '/dashboard/contacts':   () => import('../../pages/Contacts'),
+    '/dashboard/templates':  () => import('../../pages/Templates'),
+    '/dashboard/campaigns':  () => import('../../pages/Campaigns'),
+    '/dashboard/wallet':     () => import('../../pages/Wallet'),
+    '/dashboard/settings':   () => import('../../pages/Settings'),
+    '/dashboard/reports':    () => import('../../pages/Reports'),
+    '/dashboard/chatbots':   () => import('../../pages/ChatbotList'),
+    '/dashboard/automations':() => import('../../pages/Automation'),
+    '/dashboard/crm':        () => import('../../pages/CRM'),
+  };
+  map[href]?.();
 };
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const getDisplayName = (u: User | null): string => {
-  if (!u) return "Guest";
-  const full = [u.firstName, u.lastName].filter(Boolean).join(" ").trim();
+  if (!u) return 'Guest';
+  const full = [u.firstName, u.lastName].filter(Boolean).join(' ').trim();
   if (full) return full;
-  const legacyName = (u as any).name;
-  if (legacyName?.trim()) return legacyName.trim();
-  if (u.email?.trim()) return u.email.trim();
-  return "User";
+  return (u as any).name?.trim() || u.email?.trim() || 'User';
 };
 
-const getGreeting = (): string => {
-  const h = new Date().getHours();
-  if (h >= 5 && h < 12) return "Good morning";
-  if (h >= 12 && h < 17) return "Good afternoon";
-  if (h >= 17 && h < 22) return "Good evening";
-  return "Good night";
-};
+// ─── Navigation Config ────────────────────────────────────────────────────────
 
-// ─── WhatsApp Navigation ──────────────────────────────────────────────────────
-
-const getWhatsAppNav = (
-  unreadCount: number,
-  totalContacts: number
-): NavGroup[] => [
+const getWhatsAppNav = (unreadCount: number, totalContacts: number): NavGroup[] => [
   {
-    title: "Main",
+    title: 'Main',
     items: [
-      { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+      { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
       {
-        name: "Inbox",
-        href: "/dashboard/inbox",
+        name: 'Inbox',
+        href: '/dashboard/inbox',
         icon: Inbox,
-        featureKey: "inbox",
-        badge: unreadCount > 0
-          ? unreadCount > 99 ? "99+" : unreadCount
-          : undefined,
-        badgeColor: "bg-red-500",
+        featureKey: 'inbox',
+        badge: unreadCount > 0 ? (unreadCount > 99 ? '99+' : unreadCount) : undefined,
+        badgeColor: 'bg-red-500',
       },
       {
-        name: "Contacts",
-        href: "/dashboard/contacts",
+        name: 'Contacts',
+        href: '/dashboard/contacts',
         icon: Users,
         badge: totalContacts > 0
-          ? totalContacts > 1000
-            ? `${(totalContacts / 1000).toFixed(1)}k`
-            : totalContacts.toLocaleString()
+          ? totalContacts > 1000 ? `${(totalContacts / 1000).toFixed(1)}k` : totalContacts
           : undefined,
-        badgeColor: "bg-blue-500",
+        badgeColor: 'bg-blue-500',
       },
     ],
   },
   {
-    title: "CRM",
+    title: 'CRM',
     items: [
       {
-        name: "CRM",
-        href: "/dashboard/crm",
+        name: 'CRM',
+        href: '/dashboard/crm',
         icon: Users,
         subItems: [
-          { name: "Dashboard", href: "/dashboard/crm" },
-          { name: "Leads", href: "/dashboard/crm/leads" },
+          { name: 'Overview', href: '/dashboard/crm' },
+          { name: 'Leads', href: '/dashboard/crm/leads' },
         ],
       },
     ],
   },
   {
-    title: "Messaging",
+    title: 'Messaging',
     items: [
-      {
-        name: "Campaigns",
-        href: "/dashboard/campaigns",
-        icon: Send,
-        featureKey: "campaigns",
-      },
-      { name: "Templates", href: "/dashboard/templates", icon: FileText },
-      {
-        name: "Chatbots",
-        href: "/dashboard/chatbots",
-        icon: Bot,
-        featureKey: "chatbot",
-      },
-      {
-        name: "Automations",
-        href: "/dashboard/automations",
-        icon: Zap,
-        featureKey: "automation",
-      },
+      { name: 'Campaigns',   href: '/dashboard/campaigns',   icon: Send,     featureKey: 'campaigns' },
+      { name: 'Templates',   href: '/dashboard/templates',   icon: FileText },
+      { name: 'Chatbots',    href: '/dashboard/chatbots',    icon: Bot,      featureKey: 'chatbot' },
+      { name: 'Automations', href: '/dashboard/automations', icon: Zap,      featureKey: 'automation' },
     ],
   },
   {
-    title: "Analytics",
+    title: 'Analytics',
     items: [
-      {
-        name: "Reports",
-        href: "/dashboard/reports",
-        icon: BarChart3,
-        featureKey: "reports",
-      },
+      { name: 'Reports', href: '/dashboard/reports', icon: BarChart3, featureKey: 'reports' },
     ],
   },
   {
-    title: "Settings",
+    title: 'Account',
     items: [
-      { name: "Team", href: "/dashboard/team", icon: UserCircle },
-      { name: "Billing", href: "/dashboard/billing", icon: CreditCard },
-      {
-        name: "Wallet",
-        href: "/dashboard/wallet",
-        icon: Wallet,
-        featureKey: "wallet",
-      },
-      { name: "Settings", href: "/dashboard/settings", icon: Settings },
+      { name: 'Billing', href: '/dashboard/billing', icon: CreditCard },
+      { name: 'Wallet',  href: '/dashboard/wallet',  icon: Wallet, featureKey: 'wallet' },
+      { name: 'Settings',href: '/dashboard/settings', icon: Settings },
     ],
   },
 ];
-
-// ─── Instagram Navigation ─────────────────────────────────────────────────────
 
 const getInstagramNav = (): NavGroup[] => [
   {
-    title: "Overview",
+    title: 'Overview',
     items: [
-      {
-        name: "Dashboard",
-        href: "/instagram/dashboard",
-        icon: LayoutDashboard,
-      },
+      { name: 'Dashboard', href: '/instagram/dashboard', icon: LayoutDashboard },
     ],
   },
   {
-    title: "Engagement",
+    title: 'Engagement',
     items: [
-      {
-        name: "DM Automation",
-        href: "/instagram/dm-automation",
-        icon: MessageCircle,
-      },
-      {
-        name: "Comment Automation",
-        href: "/instagram/comments",
-        icon: MessageSquare,
-      },
-      {
-        name: "Story Automation",
-        href: "/instagram/stories",
-        icon: BookOpen,
-      },
+      { name: 'DM Automation',      href: '/instagram/dm-automation', icon: MessageCircle },
+      { name: 'Comment Automation', href: '/instagram/comments',      icon: MessageSquare },
+      { name: 'Story Automation',   href: '/instagram/stories',       icon: BookOpen },
     ],
   },
   {
-    title: "Content",
+    title: 'Content',
     items: [
-      {
-        name: "Post Management",
-        href: "/instagram/posts",
-        icon: Image,
-        comingSoon: true,
-      },
-      {
-        name: "Campaigns",
-        href: "/instagram/campaigns",
-        icon: Megaphone,
-        comingSoon: true,
-      },
+      { name: 'Post Management', href: '/instagram/posts',      icon: Image,    comingSoon: true },
+      { name: 'Campaigns',       href: '/instagram/campaigns',  icon: Megaphone,comingSoon: true },
     ],
   },
   {
-    title: "Growth",
+    title: 'Growth',
     items: [
-      {
-        name: "Lead Generation",
-        href: "/instagram/leads",
-        icon: Users,
-        comingSoon: true,
-      },
-      {
-        name: "Analytics",
-        href: "/instagram/analytics",
-        icon: TrendingUp,
-        comingSoon: true,
-      },
+      { name: 'Lead Generation', href: '/instagram/leads',     icon: Users,       comingSoon: true },
+      { name: 'Analytics',       href: '/instagram/analytics', icon: TrendingUp,  comingSoon: true },
     ],
   },
   {
-    title: "Settings",
+    title: 'Settings',
     items: [
-      {
-        name: "IG Settings",
-        href: "/instagram/settings",
-        icon: Settings,
-      },
+      { name: 'IG Settings', href: '/instagram/settings', icon: Settings },
     ],
   },
 ];
 
-// ─── Channel Switcher Component ───────────────────────────────────────────────
+// ─── Channel Switcher ─────────────────────────────────────────────────────────
 
 interface ChannelSwitcherProps {
-  activeChannel: Channel;
-  onSwitch: (channel: Channel) => void;
+  active: Channel;
+  onSwitch: (ch: Channel) => void;
   collapsed: boolean;
 }
 
-const ChannelSwitcher: React.FC<ChannelSwitcherProps> = ({
-  activeChannel,
-  onSwitch,
-  collapsed,
-}) => {
+const CHANNELS = [
+  {
+    id: 'whatsapp' as Channel,
+    label: 'WhatsApp',
+    icon: FaWhatsapp,
+    color: '#25D366',
+    bg: '#f0fdf4',
+    border: '#bbf7d0',
+  },
+  {
+    id: 'instagram' as Channel,
+    label: 'Instagram',
+    icon: Instagram,
+    color: '#e1306c',
+    bg: '#fff0f5',
+    border: '#fecdd3',
+    badge: 'Beta',
+  },
+];
+
+const ChannelSwitcher: React.FC<ChannelSwitcherProps> = ({ active, onSwitch, collapsed }) => {
   const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
+  const current = CHANNELS.find(c => c.id === active)!;
 
-  const channels: {
-    id: Channel;
-    label: string;
-    icon: React.ElementType;
-    color: string;
-    gradient: string;
-    badge?: string;
-  }[] = [
-    {
-      id: "whatsapp",
-      label: "WhatsApp",
-      icon: FaWhatsapp,
-      color: "#25d366",
-      gradient: "from-[#25d366] to-[#128C7E]",
-    },
-    {
-      id: "instagram",
-      label: "Instagram",
-      icon: Instagram,
-      color: "#e1306c",
-      gradient: "from-[#833ab4] via-[#fd1d1d] to-[#fcb045]",
-      badge: "Beta",
-    },
-  ];
-
-  const active = channels.find((c) => c.id === activeChannel)!;
+  const handleSwitch = (ch: typeof CHANNELS[0]) => {
+    onSwitch(ch.id);
+    setOpen(false);
+    navigate(ch.id === 'instagram' ? '/instagram/dashboard' : '/dashboard');
+  };
 
   if (collapsed) {
     return (
-      <div className="flex flex-col gap-1.5 mx-auto mt-3 px-2">
-        {channels.map((ch) => {
-          const isActive = ch.id === activeChannel;
+      <div className="flex flex-col items-center gap-1.5 px-2 mt-3">
+        {CHANNELS.map(ch => {
+          const isActive = ch.id === active;
           return (
             <button
               key={ch.id}
-              onClick={() => onSwitch(ch.id)}
+              onClick={() => handleSwitch(ch)}
               title={ch.label}
-              className={`
-                w-10 h-10 rounded-xl flex items-center justify-center
-                transition-all duration-300 mx-auto
-                ${isActive
-                  ? "shadow-lg scale-105"
-                  : "opacity-50 hover:opacity-80 bg-white/[0.04] border border-white/[0.08]"
-                }
-              `}
-              style={
-                isActive
-                  ? {
-                      background: `linear-gradient(135deg, ${ch.color}40, ${ch.color}20)`,
-                      border: `1px solid ${ch.color}60`,
-                      boxShadow: `0 4px 16px ${ch.color}30`,
-                    }
-                  : {}
-              }
+              className="w-10 h-10 rounded-xl flex items-center justify-center
+                transition-all duration-200"
+              style={{
+                background: isActive ? ch.bg : 'transparent',
+                border: `1px solid ${isActive ? ch.border : '#e5e7eb'}`,
+              }}
             >
               <ch.icon
                 className="w-4 h-4"
-                style={{ color: isActive ? ch.color : "#9ca3af" }}
+                style={{ color: isActive ? ch.color : '#9ca3af' }}
               />
             </button>
           );
@@ -367,101 +244,63 @@ const ChannelSwitcher: React.FC<ChannelSwitcherProps> = ({
       <button
         onClick={() => setOpen(!open)}
         className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl
-          bg-white/[0.04] border border-white/[0.08]
-          hover:bg-white/[0.06] hover:border-white/[0.12]
-          transition-all duration-300 group"
+          bg-gray-50 border border-gray-200
+          hover:bg-gray-100 hover:border-gray-300
+          transition-all duration-200"
       >
-        {/* Active channel icon */}
         <div
           className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-          style={{
-            background: `linear-gradient(135deg, ${active.color}40, ${active.color}20)`,
-            border: `1px solid ${active.color}50`,
-          }}
+          style={{ background: current.bg, border: `1px solid ${current.border}` }}
         >
-          <active.icon className="w-4 h-4" style={{ color: active.color }} />
+          <current.icon className="w-4 h-4" style={{ color: current.color }} />
         </div>
 
         <div className="flex-1 text-left min-w-0">
-          <p className="text-xs font-semibold text-white truncate">
-            {active.label}
+          <p className="text-sm font-semibold text-gray-800 truncate">
+            {current.label}
           </p>
-          <p className="text-[10px] text-gray-500 font-mono">
-            Active channel
-          </p>
+          <p className="text-xs text-gray-400">Active channel</p>
         </div>
 
         <ChevronDown
-          className={`w-4 h-4 text-gray-500 transition-transform duration-300
-            ${open ? "rotate-180" : ""}`}
+          className={`w-4 h-4 text-gray-400 transition-transform duration-200
+            ${open ? 'rotate-180' : ''}`}
         />
       </button>
 
-      {/* Dropdown */}
       {open && (
-        <div
-          className="absolute top-full left-0 right-0 mt-2 rounded-xl overflow-hidden
-            bg-[#0a0e27]/95 backdrop-blur-xl
-            border border-white/[0.1]
-            shadow-[0_16px_40px_rgba(0,0,0,0.4)]
-            z-50"
-        >
-          {channels.map((ch) => {
-            const isActive = ch.id === activeChannel;
+        <div className="absolute top-full left-0 right-0 mt-1.5 rounded-xl overflow-hidden
+          bg-white border border-gray-200 shadow-lg z-50">
+          {CHANNELS.map(ch => {
+            const isActive = ch.id === active;
             return (
               <button
                 key={ch.id}
-                onClick={() => {
-                  onSwitch(ch.id);
-                  setOpen(false);
-                }}
-                className={`
-                  w-full flex items-center gap-3 px-3 py-2.5
-                  transition-all duration-300
-                  ${isActive
-                    ? "bg-white/[0.06]"
-                    : "hover:bg-white/[0.04]"
-                  }
-                `}
+                onClick={() => handleSwitch(ch)}
+                className={`w-full flex items-center gap-3 px-3 py-2.5
+                  transition-colors
+                  ${isActive ? 'bg-gray-50' : 'hover:bg-gray-50'}`}
               >
                 <div
                   className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-                  style={{
-                    background: `linear-gradient(135deg, ${ch.color}40, ${ch.color}20)`,
-                    border: `1px solid ${ch.color}50`,
-                  }}
+                  style={{ background: ch.bg, border: `1px solid ${ch.border}` }}
                 >
-                  <ch.icon
-                    className="w-4 h-4"
-                    style={{ color: ch.color }}
-                  />
+                  <ch.icon className="w-4 h-4" style={{ color: ch.color }} />
                 </div>
-
                 <div className="flex-1 text-left">
                   <div className="flex items-center gap-2">
-                    <p className="text-xs font-semibold text-white">
-                      {ch.label}
-                    </p>
+                    <p className="text-sm font-semibold text-gray-800">{ch.label}</p>
                     {ch.badge && (
-                      <span
-                        className="px-1.5 py-0.5 rounded-full text-[9px] font-bold"
-                        style={{
-                          background: `${ch.color}25`,
-                          color: ch.color,
-                          border: `1px solid ${ch.color}40`,
-                        }}
-                      >
+                      <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold
+                        bg-pink-50 text-pink-600 border border-pink-200">
                         {ch.badge}
                       </span>
                     )}
                   </div>
                 </div>
-
                 {isActive && (
-                  <div
-                    className="w-2 h-2 rounded-full flex-shrink-0"
-                    style={{ backgroundColor: ch.color }}
-                  />
+                  <div className="w-2 h-2 rounded-full flex-shrink-0"
+                    style={{ background: ch.color }} />
                 )}
               </button>
             );
@@ -477,177 +316,133 @@ const ChannelSwitcher: React.FC<ChannelSwitcherProps> = ({
 const Sidebar: React.FC<SidebarProps> = ({ collapsed, setCollapsed }) => {
   const location = useLocation();
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
-
   const { unreadCount, totalContacts } = useApp();
   const { hasAccess } = usePlanAccess();
   const { logout } = useAuth();
 
-  // Detect active channel from URL
-  const [activeChannel, setActiveChannel] = useState<Channel>(() => {
-    return location.pathname.startsWith("/instagram")
-      ? "instagram"
-      : "whatsapp";
-  });
+  const [activeChannel, setActiveChannel] = useState<Channel>(() =>
+    location.pathname.startsWith('/instagram') ? 'instagram' : 'whatsapp'
+  );
 
-  // Sync channel with URL
   useEffect(() => {
-    if (location.pathname.startsWith("/instagram")) {
-      setActiveChannel("instagram");
-    } else {
-      setActiveChannel("whatsapp");
-    }
+    setActiveChannel(
+      location.pathname.startsWith('/instagram') ? 'instagram' : 'whatsapp'
+    );
   }, [location.pathname]);
 
   const [user] = useState<User | null>(() => {
-    const stored = localStorage.getItem("wabmeta_user");
-    if (stored) {
-      try {
-        return JSON.parse(stored);
-      } catch {
-        return null;
-      }
-    }
-    return null;
+    try {
+      const s = localStorage.getItem('wabmeta_user');
+      return s ? JSON.parse(s) : null;
+    } catch { return null; }
   });
 
-  const [greeting, setGreeting] = useState(getGreeting());
-  useEffect(() => {
-    const timer = setInterval(() => setGreeting(getGreeting()), 60000);
-    return () => clearInterval(timer);
-  }, []);
-
   const displayName = getDisplayName(user);
-  const firstName = displayName.split(" ")[0];
-  const email = user?.email || "";
-  const initial = (displayName?.charAt(0) || "G").toUpperCase();
+  const initial = (displayName.charAt(0) || 'G').toUpperCase();
+  const email = user?.email || '';
 
-  const handleLogout = async () => {
-    await logout();
-  };
+  const navigation = activeChannel === 'instagram'
+    ? getInstagramNav()
+    : getWhatsAppNav(unreadCount, totalContacts);
 
-  // Get navigation based on active channel
-  const navigation =
-    activeChannel === "instagram"
-      ? getInstagramNav()
-      : getWhatsAppNav(unreadCount, totalContacts);
-
-  // Active check
   const isActive = (href: string) => {
-    if (href === "/dashboard" || href === "/instagram/dashboard") {
+    if (href === '/dashboard' || href === '/instagram/dashboard') {
       return location.pathname === href;
     }
     return location.pathname.startsWith(href);
   };
 
-  // Active indicator color per channel
-  const activeColor =
-    activeChannel === "instagram"
-      ? { bg: "rgba(225,48,108,0.2)", border: "#e1306c50", bar: "#e1306c", glow: "rgba(225,48,108,0.25)" }
-      : { bg: "rgba(16,185,129,0.2)", border: "#10b98150", bar: "#10b981", glow: "rgba(16,185,129,0.25)" };
+  // Active colors per channel
+  const active = activeChannel === 'instagram'
+    ? { bg: '#fff0f5', border: '#fecdd3', text: '#e1306c', bar: '#e1306c' }
+    : { bg: '#f0fdf4', border: '#bbf7d0', text: '#16a34a', bar: '#25D366' };
 
   return (
     <aside
-      className={`fixed left-0 top-0 z-40 h-screen transition-all duration-300 ease-in-out
-        ${collapsed ? "w-20" : "w-72"}
+      className={`
+        fixed left-0 top-0 z-40 h-screen
+        transition-all duration-300 ease-in-out
+        ${collapsed ? 'w-20' : 'w-64'}
       `}
     >
-      {/* Glass background */}
-      <div className="absolute inset-0 bg-[#0a0e27]/80 backdrop-blur-2xl border-r border-white/[0.08]" />
-
-      {/* Inner gradient accent - changes per channel */}
-      <div
-        className="absolute inset-0 pointer-events-none transition-all duration-700"
-        style={{
-          background:
-            activeChannel === "instagram"
-              ? "radial-gradient(ellipse 70% 40% at 0% 0%, rgba(131,58,180,0.08) 0%, transparent 60%)"
-              : "radial-gradient(ellipse 70% 40% at 0% 0%, rgba(16,185,129,0.08) 0%, transparent 60%)",
-        }}
-      />
+      {/* Background */}
+      <div className="absolute inset-0 bg-white border-r border-gray-200" />
 
       <div className="relative flex flex-col h-full">
 
-        {/* ── TOP: Logo + collapse ── */}
-        <div
-          className={`flex items-center h-16 px-4 border-b border-white/[0.06]
-            ${collapsed ? "justify-center" : "justify-between"}
-          `}
-        >
+        {/* ── Header ── */}
+        <div className={`
+          flex items-center h-16 px-4
+          border-b border-gray-100
+          ${collapsed ? 'justify-center' : 'justify-between'}
+        `}>
           <Link to="/dashboard" className="flex items-center gap-2 group">
             <img
               src={logo}
               alt="WabMeta"
-              className={`object-contain transition-all duration-300
-                ${collapsed ? "w-10 h-10" : "h-8 w-auto"}
-                group-hover:scale-105
-              `}
+              className={`object-contain transition-all duration-300 group-hover:scale-105
+                ${collapsed ? 'w-8 h-8' : 'h-7 w-auto'}`}
             />
           </Link>
 
           {!collapsed && (
             <button
               onClick={() => setCollapsed(true)}
-              className="p-1.5 rounded-lg
-                bg-white/[0.04] border border-white/[0.06]
-                hover:bg-white/[0.08] hover:border-white/[0.12]
-                text-gray-400 hover:text-white transition-all duration-300"
+              className="p-1.5 rounded-lg text-gray-400
+                hover:text-gray-600 hover:bg-gray-100
+                transition-all duration-200"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
           )}
         </div>
 
+        {/* Collapse expand button when collapsed */}
         {collapsed && (
           <button
             onClick={() => setCollapsed(false)}
-            className="mx-auto mt-3 p-1.5 rounded-lg
-              bg-white/[0.04] border border-white/[0.06]
-              hover:bg-white/[0.08] hover:border-white/[0.12]
-              text-gray-400 hover:text-white transition-all duration-300"
+            className="mx-auto mt-3 p-1.5 rounded-lg text-gray-400
+              hover:text-gray-600 hover:bg-gray-100
+              transition-all duration-200"
           >
             <ChevronRight className="w-4 h-4" />
           </button>
         )}
 
-        {/* ── CHANNEL SWITCHER ── */}
+        {/* ── Channel Switcher ── */}
         <ChannelSwitcher
-          activeChannel={activeChannel}
-          onSwitch={(ch) => {
-            setActiveChannel(ch);
-            // Navigate to channel dashboard
-            // (navigation happens via Link components in nav)
-          }}
+          active={activeChannel}
+          onSwitch={setActiveChannel}
           collapsed={collapsed}
         />
 
-
-
-        {/* ── NAVIGATION ── */}
+        {/* ── Navigation ── */}
         <nav className="flex-1 overflow-y-auto py-4 px-3 scrollbar-thin">
-          {navigation.map((group, groupIndex) => (
-            <div key={group.title} className={groupIndex > 0 ? "mt-5" : "mt-2"}>
+          {navigation.map((group, gi) => (
+            <div key={group.title} className={gi > 0 ? 'mt-6' : 'mt-2'}>
+              {/* Group title */}
               {!collapsed && (
-                <div className="flex items-center justify-between px-3 mb-2">
-                  <h3 className="text-[10px] font-mono uppercase tracking-[0.15em] text-gray-500">
-                    {group.title}
-                  </h3>
-                </div>
+                <p className="px-3 mb-1.5 text-[10px] font-semibold uppercase
+                  tracking-widest text-gray-400">
+                  {group.title}
+                </p>
               )}
 
-              {collapsed && groupIndex > 0 && (
-                <div className="mx-3 my-3 h-px bg-white/[0.05]" />
+              {/* Divider when collapsed */}
+              {collapsed && gi > 0 && (
+                <div className="mx-3 my-3 h-px bg-gray-100" />
               )}
 
-              <div className="space-y-1">
-                {group.items.map((item) => {
-                  const active = isActive(item.href);
+              <div className="space-y-0.5">
+                {group.items.map(item => {
+                  const itemActive = isActive(item.href);
                   const isLocked = !!(item.featureKey && !hasAccess(item.featureKey));
                   const isSoon = !!item.comingSoon;
 
                   return (
                     <div
                       key={item.name}
-                      className="relative group/item"
+                      className="relative"
                       onMouseEnter={() => {
                         setHoveredItem(item.name);
                         if (!isLocked && !isSoon) prefetchRouteChunk(item.href);
@@ -655,90 +450,53 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, setCollapsed }) => {
                       onMouseLeave={() => setHoveredItem(null)}
                     >
                       <Link
-                        to={isLocked || isSoon ? "#" : item.href}
-                        aria-disabled={isLocked || isSoon}
-                        onClick={(e) => {
-                          if (isLocked || isSoon) e.preventDefault();
-                        }}
-                        className={`relative flex items-center px-3 py-2.5 rounded-xl
-                          transition-all duration-300 overflow-hidden
-                          ${active ? "text-white" : "text-gray-400 hover:text-white"}
-                          ${collapsed ? "justify-center" : ""}
-                          ${isLocked || isSoon ? "opacity-50 cursor-not-allowed" : ""}
+                        to={isLocked || isSoon ? '#' : item.href}
+                        onClick={e => { if (isLocked || isSoon) e.preventDefault(); }}
+                        className={`
+                          relative flex items-center px-3 py-2.5 rounded-xl
+                          transition-all duration-200
+                          ${collapsed ? 'justify-center' : ''}
+                          ${isLocked || isSoon ? 'opacity-40 cursor-not-allowed' : ''}
+                          ${itemActive ? 'text-gray-900' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'}
                         `}
+                        style={itemActive ? {
+                          background: active.bg,
+                          border: `1px solid ${active.border}`,
+                        } : {}}
                       >
-                        {/* Active background */}
-                        {active && (
-                          <>
-                            <div
-                              className="absolute inset-0 rounded-xl"
-                              style={{
-                                background: `linear-gradient(to right, ${activeColor.bg}, transparent)`,
-                                border: `1px solid ${activeColor.border}`,
-                              }}
-                            />
-                            <div
-                              className="absolute inset-0 rounded-xl"
-                              style={{
-                                boxShadow: `0 4px 16px ${activeColor.glow}`,
-                              }}
-                            />
-                            {/* Left bar */}
-                            <div
-                              className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-6 rounded-r-full"
-                              style={{
-                                backgroundColor: activeColor.bar,
-                                boxShadow: `0 0 8px ${activeColor.bar}80`,
-                              }}
-                            />
-                          </>
-                        )}
-
-                        {/* Hover background */}
-                        {!active && (
+                        {/* Left bar indicator */}
+                        {itemActive && (
                           <div
-                            className="absolute inset-0 rounded-xl
-                              bg-white/[0.04] opacity-0 group-hover/item:opacity-100
-                              transition-opacity duration-300"
+                            className="absolute left-0 top-1/2 -translate-y-1/2
+                              w-0.5 h-5 rounded-r-full"
+                            style={{ background: active.bar }}
                           />
                         )}
 
+                        {/* Icon */}
                         <item.icon
-                          className={`relative w-4 h-4 flex-shrink-0 transition-all duration-300
-                            ${active ? "" : "text-gray-500 group-hover/item:text-white"}
-                          `}
-                          style={active ? { color: activeColor.bar } : {}}
+                          className="w-4 h-4 flex-shrink-0"
+                          style={itemActive ? { color: active.text } : {}}
                         />
 
+                        {/* Label + badges */}
                         {!collapsed && (
                           <>
-                            <span className="relative ml-3 text-sm font-medium flex-1">
+                            <span className="ml-3 text-sm font-medium flex-1">
                               {item.name}
                             </span>
-
-                            <div className="relative ml-auto flex items-center gap-2">
+                            <div className="ml-auto flex items-center gap-1.5">
                               {isSoon ? (
-                                <span
-                                  className="px-1.5 py-0.5 text-[9px] font-bold rounded-full"
-                                  style={{
-                                    background: "rgba(99,102,241,0.2)",
-                                    color: "#818cf8",
-                                    border: "1px solid rgba(99,102,241,0.3)",
-                                  }}
-                                >
+                                <span className="px-1.5 py-0.5 text-[9px] font-bold
+                                  rounded-full bg-indigo-50 text-indigo-500 border border-indigo-200">
                                   Soon
                                 </span>
                               ) : isLocked ? (
-                                <Lock className="w-3.5 h-3.5 text-gray-500" />
+                                <Lock className="w-3.5 h-3.5 text-gray-400" />
                               ) : item.badge ? (
-                                <span
-                                  className={`px-1.5 py-0.5 text-[10px] font-mono font-bold rounded-full
-                                    ${item.badgeColor
-                                      ? `${item.badgeColor} text-white`
-                                      : "bg-white/[0.08] border border-white/[0.1] text-gray-300"
-                                    }
-                                  `}
-                                >
+                                <span className={`px-1.5 py-0.5 text-[10px]
+                                  font-bold rounded-full text-white
+                                  ${item.badgeColor || 'bg-gray-400'}`}>
                                   {item.badge}
                                 </span>
                               ) : null}
@@ -747,24 +505,23 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, setCollapsed }) => {
                         )}
                       </Link>
 
-                      {/* Sub-items */}
-                      {!collapsed && item.subItems && active && (
-                        <div className="ml-8 mt-1 space-y-0.5 pl-3 border-l border-white/[0.06]">
-                          {item.subItems.map((sub) => {
+                      {/* Sub items */}
+                      {!collapsed && item.subItems && itemActive && (
+                        <div className="ml-7 mt-1 space-y-0.5 pl-3
+                          border-l-2 border-gray-100">
+                          {item.subItems.map(sub => {
                             const subActive = location.pathname === sub.href;
                             return (
                               <Link
                                 key={sub.name}
                                 to={sub.href}
-                                className={`block px-3 py-1.5 text-xs rounded-lg transition-all duration-300
+                                className={`block px-3 py-1.5 text-xs rounded-lg
+                                  transition-colors
                                   ${subActive
-                                    ? "font-medium bg-white/[0.04]"
-                                    : "text-gray-500 hover:text-white hover:bg-white/[0.04]"
-                                  }
-                                `}
-                                style={
-                                  subActive ? { color: activeColor.bar } : {}
-                                }
+                                    ? 'font-semibold'
+                                    : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'
+                                  }`}
+                                style={subActive ? { color: active.text } : {}}
                               >
                                 {sub.name}
                               </Link>
@@ -773,26 +530,20 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, setCollapsed }) => {
                         </div>
                       )}
 
-                      {/* Collapsed Tooltip */}
+                      {/* Collapsed tooltip */}
                       {collapsed && hoveredItem === item.name && (
-                        <div
-                          className="absolute left-full top-1/2 -translate-y-1/2 ml-3 px-3 py-2
-                            bg-[#0a0e27]/95 backdrop-blur-xl
-                            border border-white/[0.12]
-                            text-white text-xs font-medium rounded-lg whitespace-nowrap z-50
-                            shadow-xl"
-                        >
+                        <div className="absolute left-full top-1/2 -translate-y-1/2 ml-3
+                          px-3 py-2 bg-gray-900 text-white text-xs font-medium
+                          rounded-lg whitespace-nowrap z-50 shadow-lg
+                          pointer-events-none">
                           <div className="flex items-center gap-2">
                             <span>{item.name}</span>
-                            {isSoon && (
-                              <span className="text-[9px] text-indigo-400">
-                                Soon
-                              </span>
-                            )}
-                            {isLocked && (
-                              <Lock className="w-3 h-3 text-gray-400" />
-                            )}
+                            {isSoon && <span className="text-indigo-300 text-[9px]">Soon</span>}
+                            {isLocked && <Lock className="w-3.5 h-3.5 text-gray-300" />}
                           </div>
+                          {/* Arrow */}
+                          <div className="absolute right-full top-1/2 -translate-y-1/2
+                            border-4 border-transparent border-r-gray-900" />
                         </div>
                       )}
                     </div>
@@ -801,116 +552,91 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, setCollapsed }) => {
               </div>
             </div>
           ))}
-
-
         </nav>
 
-        {/* ── BOTTOM SECTION ── */}
-        <div className="p-3 border-t border-white/[0.06] space-y-1">
+        {/* ── Footer ── */}
+        <div className="p-3 border-t border-gray-100 space-y-0.5">
+
           {/* Help */}
           <div
-            className="relative"
-            onMouseEnter={() => collapsed && setHoveredItem("help")}
+            onMouseEnter={() => collapsed && setHoveredItem('help')}
             onMouseLeave={() => setHoveredItem(null)}
+            className="relative"
           >
             <Link
               to="/dashboard/help"
               className={`flex items-center px-3 py-2.5 rounded-xl
-                text-gray-400 hover:text-white hover:bg-white/[0.04]
-                transition-all duration-300
-                ${collapsed ? "justify-center" : ""}
-              `}
+                text-gray-500 hover:text-gray-900 hover:bg-gray-50
+                transition-all duration-200
+                ${collapsed ? 'justify-center' : ''}`}
             >
               <HelpCircle className="w-4 h-4" />
               {!collapsed && (
                 <span className="ml-3 text-sm font-medium">Help & Support</span>
               )}
             </Link>
-
-            {collapsed && hoveredItem === "help" && (
-              <div
-                className="absolute left-full top-1/2 -translate-y-1/2 ml-3 px-3 py-2
-                  bg-[#0a0e27]/95 backdrop-blur-xl border border-white/[0.12]
-                  text-white text-xs font-medium rounded-lg whitespace-nowrap z-50 shadow-xl"
-              >
+            {collapsed && hoveredItem === 'help' && (
+              <div className="absolute left-full top-1/2 -translate-y-1/2 ml-3
+                px-3 py-2 bg-gray-900 text-white text-xs font-medium
+                rounded-lg whitespace-nowrap z-50 shadow-lg pointer-events-none">
                 Help & Support
+                <div className="absolute right-full top-1/2 -translate-y-1/2
+                  border-4 border-transparent border-r-gray-900" />
               </div>
             )}
           </div>
 
           {/* Logout */}
           <div
-            className="relative"
-            onMouseEnter={() => collapsed && setHoveredItem("logout")}
+            onMouseEnter={() => collapsed && setHoveredItem('logout')}
             onMouseLeave={() => setHoveredItem(null)}
+            className="relative"
           >
             <button
-              onClick={handleLogout}
+              onClick={logout}
               className={`w-full flex items-center px-3 py-2.5 rounded-xl
-                text-gray-400 hover:text-red-400 hover:bg-red-500/10
-                hover:border-red-400/20 border border-transparent
-                transition-all duration-300
-                ${collapsed ? "justify-center" : ""}
-              `}
+                text-gray-500 hover:text-red-500 hover:bg-red-50
+                transition-all duration-200
+                ${collapsed ? 'justify-center' : ''}`}
             >
               <LogOut className="w-4 h-4" />
               {!collapsed && (
                 <span className="ml-3 text-sm font-medium">Logout</span>
               )}
             </button>
-
-            {collapsed && hoveredItem === "logout" && (
-              <div
-                className="absolute left-full top-1/2 -translate-y-1/2 ml-3 px-3 py-2
-                  bg-[#0a0e27]/95 backdrop-blur-xl border border-white/[0.12]
-                  text-white text-xs font-medium rounded-lg whitespace-nowrap z-50 shadow-xl"
-              >
+            {collapsed && hoveredItem === 'logout' && (
+              <div className="absolute left-full top-1/2 -translate-y-1/2 ml-3
+                px-3 py-2 bg-gray-900 text-white text-xs font-medium
+                rounded-lg whitespace-nowrap z-50 shadow-lg pointer-events-none">
                 Logout
+                <div className="absolute right-full top-1/2 -translate-y-1/2
+                  border-4 border-transparent border-r-gray-900" />
               </div>
             )}
           </div>
 
           {/* User Card */}
-          {!collapsed && email && (
-            <div
-              className="mt-3 p-2.5 rounded-xl
-                bg-white/[0.03] backdrop-blur-xl border border-white/[0.06]
-                hover:bg-white/[0.05] transition-all duration-300 cursor-pointer"
-            >
+          {!collapsed && (
+            <div className="mt-2 p-3 rounded-xl bg-gray-50 border border-gray-200">
               <div className="flex items-center gap-2.5">
-                <div
-                  className="w-8 h-8 rounded-lg
-                    bg-gradient-to-br from-green-500 to-emerald-600
-                    flex items-center justify-center text-white font-bold text-xs flex-shrink-0"
-                >
+                <div className="w-8 h-8 rounded-lg flex-shrink-0
+                  bg-gradient-to-br from-primary-500 to-primary-600
+                  flex items-center justify-center
+                  text-white font-bold text-xs">
                   {initial}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-semibold text-white truncate">
+                  <p className="text-sm font-semibold text-gray-800 truncate">
                     {displayName}
                   </p>
-                  <p className="text-[10px] text-gray-500 truncate font-mono">
-                    {email}
-                  </p>
+                  <p className="text-xs text-gray-400 truncate">{email}</p>
                 </div>
-                <Sparkles className="w-3 h-3 text-green-400 flex-shrink-0" />
+                <Sparkles className="w-3.5 h-3.5 text-primary-500 flex-shrink-0" />
               </div>
             </div>
           )}
         </div>
       </div>
-
-      <style>{`
-        .scrollbar-thin::-webkit-scrollbar { width: 4px; }
-        .scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
-        .scrollbar-thin::-webkit-scrollbar-thumb {
-          background: rgba(255,255,255,0.08);
-          border-radius: 4px;
-        }
-        .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-          background: rgba(255,255,255,0.15);
-        }
-      `}</style>
     </aside>
   );
 };
