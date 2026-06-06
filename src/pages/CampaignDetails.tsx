@@ -923,6 +923,6 @@ const StatCard: React.FC<{
     </div>
   </div>
 );
-}
+};
 
 export default CampaignDetails;
