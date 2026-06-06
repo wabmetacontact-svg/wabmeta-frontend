@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
-  Users, MessageSquare, Send, CheckCircle, XCircle,
-  TrendingUp, TrendingDown, Zap, RefreshCw, ArrowUpRight,
+  Users, MessageSquare, Send, CheckCircle,
+  Zap, RefreshCw, ArrowUpRight,
   Mail, FileText, Bot, Workflow, Radio, UserPlus,
-  Sparkles, Inbox, Phone, Instagram, Target, Play, Pause,
+  Sparkles, Inbox, Phone, Instagram,
   MoreHorizontal, ArrowRight, BarChart3,
 } from 'lucide-react';
 import { FaWhatsapp } from 'react-icons/fa';
 import toast from 'react-hot-toast';
-import api, { dashboard } from '../services/api';
+import { dashboard } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useSocket } from '../context/SocketContext';
 import PageSkeleton from '../components/common/PageSkeleton';
@@ -121,7 +121,6 @@ const Dashboard: React.FC = () => {
 
   // Real data
   const contactsTotal       = stats?.contacts?.total ?? 0;
-  const contactsGrowth      = stats?.contacts?.growth ?? 0;
   const messagesSent        = stats?.messages?.sent ?? 0;
   const messagesGrowth      = stats?.messages?.growth ?? 0;
   const deliveryRate        = stats?.delivery?.deliveryRate ?? 0;
