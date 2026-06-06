@@ -1,99 +1,7 @@
-import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowRight, Sparkles, MessageCircle } from 'lucide-react';
-
-const ChatSimulator = () => {
-  const [step, setStep] = useState(0);
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setStep((prev) => (prev + 1) % 6);
-    }, 3000);
-    return () => clearInterval(timer);
-  }, []);
-
-  return (
-    <div className="w-full max-w-[320px] rounded-2xl bg-white border border-slate-200/80 shadow-xl overflow-hidden font-sans">
-      {/* Header */}
-      <div className="bg-slate-50 border-b border-slate-100 p-4 flex items-center justify-between">
-        <div className="flex items-center gap-2.5">
-          <div className="h-9 w-9 rounded-full bg-blue-50 flex items-center justify-center font-bold text-[#2883CF] text-sm border border-blue-100">
-            WM
-          </div>
-          <div>
-            <h4 className="text-xs font-bold text-slate-800">WabMeta Auto-Responder</h4>
-            <div className="flex items-center gap-1.5">
-              <span className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
-              <span className="text-[10px] text-slate-500 font-semibold">Online</span>
-            </div>
-          </div>
-        </div>
-        <div className="flex gap-1.5">
-          <span className="w-1.5 h-1.5 rounded-full bg-slate-300" />
-          <span className="w-1.5 h-1.5 rounded-full bg-slate-300" />
-          <span className="w-1.5 h-1.5 rounded-full bg-slate-300" />
-        </div>
-      </div>
-
-      {/* Messages */}
-      <div className="p-4 space-y-3 h-[280px] bg-slate-50/20 overflow-y-auto flex flex-col justify-end">
-        {step >= 1 && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="self-start max-w-[80%] rounded-2xl rounded-tl-none bg-white p-3 text-xs text-slate-700 shadow-sm border border-slate-100"
-          >
-            Hi! Can I schedule a product demo?
-          </motion.div>
-        )}
-        {step >= 2 && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="self-end max-w-[80%] rounded-2xl rounded-tr-none bg-[#2883CF] p-3 text-xs text-white shadow-sm font-medium"
-          >
-            Absolutely! Click a time below to book a live demo:
-          </motion.div>
-        )}
-        {step >= 3 && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="self-end flex gap-2"
-          >
-            <button className={`px-3 py-1.5 rounded-full border text-[10px] font-bold transition-all ${step >= 4 ? 'bg-[#2883CF] border-[#2883CF] text-white shadow-sm' : 'bg-white border-slate-200 text-[#2883CF]'}`}>
-              Today at 3:00 PM
-            </button>
-            {step < 4 && (
-              <button className="px-3 py-1.5 rounded-full bg-white border border-slate-200 text-slate-500 text-[10px] font-bold">
-                Tomorrow
-              </button>
-            )}
-          </motion.div>
-        )}
-        {step >= 4 && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="self-start max-w-[80%] rounded-2xl rounded-tl-none bg-white p-3 text-xs text-slate-700 shadow-sm border border-slate-100"
-          >
-            Today at 3:00 PM works great!
-          </motion.div>
-        )}
-        {step >= 5 && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="self-end max-w-[80%] rounded-2xl rounded-tr-none bg-[#2883CF] p-3 text-xs text-white shadow-sm font-medium"
-          >
-            Confirmed! 🎉 A calendar invite has been sent to your email. See you soon!
-          </motion.div>
-        )}
-      </div>
-    </div>
-  );
-};
+import { ArrowRight, Sparkles, MessageCircle, Zap } from 'lucide-react';
+import heroIllustration from '../../assets/images/hero-illustration.png';
 
 const Hero = () => {
   return (
@@ -195,89 +103,62 @@ const Hero = () => {
             </div>
           </div>
 
-          {/* RIGHT: Visual Mockups Canvas */}
+          {/* RIGHT: Original Illustration with new background theme */}
           <div className="relative flex items-center justify-center p-4 lg:p-8 lg:col-span-6">
-            {/* The flow connection lines in the background */}
-            <div className="absolute inset-0 pointer-events-none hidden md:block">
-              <svg className="w-full h-full" fill="none">
-                <path
-                  d="M 50, 120 C 120, 80 200, 60 250, 100"
-                  stroke="#cbd5e1"
-                  strokeWidth="1.5"
-                  strokeDasharray="4 4"
-                  opacity="0.8"
-                />
-                <path
-                  d="M 120, 360 C 220, 340 250, 280 280, 240"
-                  stroke="#cbd5e1"
-                  strokeWidth="1.5"
-                  strokeDasharray="4 4"
-                  opacity="0.8"
-                />
-              </svg>
-            </div>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.7, delay: 0.2 }}
+              className="relative w-full max-w-[560px]"
+            >
+              {/* Glow behind illustration */}
+              <div className="absolute inset-0 -z-10 mx-auto h-[420px] w-[420px] translate-y-8 rounded-full bg-sky-300/30 blur-3xl pointer-events-none" />
 
-            {/* Main Interactive Elements Group */}
-            <div className="relative z-10 w-full max-w-[420px] lg:max-w-none lg:w-auto">
-              
-              {/* Trigger Flow Node */}
+              {/* Floating card 1 — Messages sent */}
               <motion.div
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
-                className="absolute -top-10 -left-6 bg-white border border-slate-200 rounded-xl p-3 shadow-lg z-20 flex items-center gap-2.5 max-w-[190px]"
+                initial={{ opacity: 0, x: -30 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.6 }}
+                className="absolute left-2 top-6 z-10 hidden rounded-2xl border border-white/80 bg-white/95 p-3 shadow-2xl backdrop-blur sm:flex sm:items-center sm:gap-3"
               >
-                <div className="h-6 w-6 rounded-full bg-blue-50 flex items-center justify-center text-xs text-[#2883CF] font-bold border border-blue-100">
-                  ⚡
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50">
+                  <MessageCircle className="h-5 w-5 text-[#2883CF]" />
                 </div>
                 <div>
-                  <p className="text-[9px] text-slate-400 uppercase tracking-wider font-extrabold leading-none">Trigger</p>
-                  <p className="text-[11px] font-bold text-slate-700 mt-1">Keyword is "demo"</p>
+                  <p className="text-xs text-gray-500 font-semibold">Messages Sent</p>
+                  <p className="text-sm font-bold text-[#0f2540]">1,24,580</p>
                 </div>
               </motion.div>
 
-              {/* Central WhatsApp Simulator Frame */}
-              <div className="relative mx-auto bg-slate-100/40 p-4 rounded-[28px] border border-slate-200/50 backdrop-blur-sm shadow-inner">
-                <ChatSimulator />
-              </div>
-
-              {/* Stats Widget */}
+              {/* Floating card 2 — Delivery rate */}
               <motion.div
                 initial={{ opacity: 0, x: 30 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.5 }}
-                className="absolute -bottom-8 -right-6 w-[200px] rounded-xl border border-slate-200 bg-white p-4 shadow-xl z-20 flex flex-col gap-1.5"
+                transition={{ delay: 0.8 }}
+                className="absolute -bottom-2 right-2 z-10 hidden rounded-2xl border border-white/80 bg-white/95 p-3 shadow-2xl backdrop-blur sm:flex sm:items-center sm:gap-3"
               >
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Campaign Stats</span>
-                  <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-sky-50">
+                  <Zap className="h-5 w-5 text-[#1e3a5f]" />
                 </div>
-                <div className="flex items-baseline gap-1.5">
-                  <span className="text-2xl font-black text-[#0f2540] tracking-tight">98.7%</span>
-                  <span className="text-[10px] text-emerald-600 font-bold">▲ 1.4%</span>
+                <div>
+                  <p className="text-xs text-gray-500 font-semibold">Delivery Rate</p>
+                  <p className="text-sm font-bold text-[#0f2540]">98.7%</p>
                 </div>
-                <p className="text-[10px] text-slate-500 font-semibold leading-none">Delivery Success Rate</p>
-                <svg className="w-full h-8 mt-1.5" viewBox="0 0 100 30" fill="none">
-                  <path
-                    d="M0,25 Q15,10 30,20 T60,5 T90,15 L100,10"
-                    stroke="#2883CF"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                  />
-                  <path
-                    d="M0,25 Q15,10 30,20 T60,5 T90,15 L100,10 L100,30 L0,30 Z"
-                    fill="url(#sparkline-grad)"
-                    opacity="0.1"
-                  />
-                  <defs>
-                    <linearGradient id="sparkline-grad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#2883CF" />
-                      <stop offset="100%" stopColor="#2883CF" stopOpacity="0" />
-                    </linearGradient>
-                  </defs>
-                </svg>
               </motion.div>
-            </div>
+
+              {/* Main illustration */}
+              <motion.img
+                src={heroIllustration}
+                alt="WabMeta WhatsApp Analytics Dashboard"
+                className="relative h-auto w-full drop-shadow-2xl"
+                animate={{ y: [0, -10, 0] }}
+                transition={{
+                  duration: 5,
+                  repeat: Infinity,
+                  ease: 'easeInOut',
+                }}
+              />
+            </motion.div>
           </div>
         </div>
       </div>
