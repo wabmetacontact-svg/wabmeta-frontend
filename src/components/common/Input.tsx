@@ -11,7 +11,6 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
 const Input = forwardRef<HTMLInputElement, InputProps>(
   ({ label, error, icon, type = 'text', helperText, className = '', ...props }, ref) => {
     const [showPassword, setShowPassword] = useState(false);
-    const [isFocused, setIsFocused] = useState(false);
 
     const isPassword = type === 'password';
     const inputType = isPassword ? (showPassword ? 'text' : 'password') : type;
@@ -19,29 +18,17 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
     return (
       <div className="w-full">
         {label && (
-          <label className="block text-sm font-medium text-gray-300 mb-2">
+          <label className="mb-1.5 block text-sm font-medium text-secondary-700">
             {label}
-            {props.required && <span className="text-red-400 ml-1">*</span>}
+            {props.required && <span className="ml-1 text-error">*</span>}
           </label>
         )}
 
-        <div className="relative group">
-          {/* Glow effect on focus */}
-          <div className={`absolute inset-0 rounded-xl transition-opacity duration-300 pointer-events-none
-            ${isFocused 
-              ? 'opacity-100 bg-gradient-to-r from-green-500/10 to-emerald-500/10 blur-md' 
-              : 'opacity-0'
-            }`}
-          />
-
+        <div className="relative">
           {icon && (
-            <div className={`absolute left-4 top-1/2 -translate-y-1/2 z-10 transition-colors duration-300
-              ${error 
-                ? 'text-red-400' 
-                : isFocused 
-                  ? 'text-green-400' 
-                  : 'text-gray-500'
-              }`}
+            <div
+              className={`absolute left-3.5 top-1/2 -translate-y-1/2 z-10 transition-colors duration-150
+                ${error ? 'text-error' : 'text-secondary-400'}`}
             >
               {icon}
             </div>
@@ -50,25 +37,20 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
           <input
             ref={ref}
             type={inputType}
-            onFocus={() => setIsFocused(true)}
-            onBlur={() => setIsFocused(false)}
             className={`
-              relative w-full
-              ${icon ? 'pl-12' : 'pl-4'} 
-              ${isPassword ? 'pr-12' : 'pr-4'} 
-              py-3.5 
-              bg-white/[0.04] backdrop-blur-xl
-              border rounded-xl 
-              text-white placeholder:text-gray-500
-              transition-all duration-300
-              focus:outline-none focus:bg-white/[0.06]
-              disabled:opacity-50 disabled:cursor-not-allowed
+              w-full rounded-xl bg-white text-secondary-900 placeholder:text-secondary-400
+              border outline-none transition-colors duration-150
+              ${icon ? 'pl-11' : 'pl-3.5'}
+              ${isPassword ? 'pr-11' : 'pr-3.5'}
+              h-11 text-sm
+              disabled:bg-secondary-50 disabled:text-secondary-400 disabled:cursor-not-allowed
               ${error
-                ? 'border-red-400/40 focus:border-red-400/60'
-                : 'border-white/[0.08] focus:border-green-400/40 hover:border-white/[0.15]'
+                ? 'border-error focus:border-error focus:ring-2 focus:ring-error/20'
+                : 'border-secondary-200 hover:border-secondary-300 focus:border-primary-600 focus:ring-2 focus:ring-primary-600/15'
               }
               ${className}
             `}
+            aria-invalid={!!error}
             {...props}
           />
 
@@ -76,25 +58,25 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-4 top-1/2 -translate-y-1/2 z-10
-                text-gray-500 hover:text-white transition-colors
-                p-1 rounded-lg hover:bg-white/[0.05]"
+              className="absolute right-3 top-1/2 -translate-y-1/2 z-10 rounded-lg p-1
+                text-secondary-400 hover:text-secondary-700 hover:bg-secondary-100 transition-colors"
               tabIndex={-1}
+              aria-label={showPassword ? 'Hide password' : 'Show password'}
             >
-              {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </button>
           )}
         </div>
 
         {error && (
-          <p className="mt-2 text-xs text-red-400 flex items-center gap-1.5 animate-fadeIn">
-            <span className="w-1 h-1 rounded-full bg-red-400" />
+          <p className="mt-1.5 flex items-center gap-1.5 text-sm text-error">
+            <span className="h-1 w-1 rounded-full bg-error" />
             {error}
           </p>
         )}
 
         {helperText && !error && (
-          <p className="mt-2 text-xs text-gray-500">{helperText}</p>
+          <p className="mt-1.5 text-sm text-secondary-500">{helperText}</p>
         )}
       </div>
     );
