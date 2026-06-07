@@ -174,9 +174,9 @@ const ChatWindow: React.FC<Props> = ({
     toast.success('Copied to clipboard', {
       duration: 2000,
       style: {
-        background: '#1a2238',
-        color: '#fff',
-        border: '1px solid rgba(255,255,255,0.1)',
+        background: '#fff',
+        color: '#1f2937',
+        border: '1px solid #e5e7eb',
       },
     });
   }, []);
@@ -186,8 +186,8 @@ const ChatWindow: React.FC<Props> = ({
     return (
       <div className="flex-1 flex items-center justify-center chat-bg">
         <div className="flex flex-col items-center gap-3">
-          <div className="w-10 h-10 border-2 border-white/10 border-t-emerald-500 rounded-full animate-spin" />
-          <p className="text-sm text-gray-400">Loading messages...</p>
+          <div className="w-10 h-10 border-2 border-gray-200 border-t-emerald-500 rounded-full animate-spin" />
+          <p className="text-sm text-gray-500">Loading messages...</p>
         </div>
       </div>
     );
@@ -200,13 +200,13 @@ const ChatWindow: React.FC<Props> = ({
         <div className="flex flex-col items-center gap-3 text-center px-6">
           <div className="
             w-20 h-20 rounded-full
-            bg-emerald-500/10 border border-emerald-500/20
+            bg-emerald-50 border border-emerald-250
             flex items-center justify-center
           ">
-            <MessageSquare className="w-9 h-9 text-emerald-400" />
+            <MessageSquare className="w-9 h-9 text-emerald-600" />
           </div>
-          <h3 className="text-base font-semibold text-white">No messages yet</h3>
-          <p className="text-sm text-gray-400 max-w-xs">
+          <h3 className="text-base font-semibold text-gray-800">No messages yet</h3>
+          <p className="text-sm text-gray-500 max-w-xs">
             Start the conversation by sending a message below
           </p>
         </div>
@@ -231,9 +231,8 @@ const ChatWindow: React.FC<Props> = ({
               <div key={item.key} className="flex justify-center my-4">
                 <span className="
                   px-3 py-1
-                  bg-[#0a0e27]/[0.06] backdrop-blur-sm
-                  border border-white/[0.05]
-                  text-gray-300 text-[11px] font-medium
+                  bg-gray-200 border-transparent
+                  text-gray-650 text-[11px] font-medium
                   rounded-full shadow-sm
                 ">
                   {formatDateSeparator(item.date)}
@@ -295,7 +294,7 @@ const ChatWindow: React.FC<Props> = ({
               bg-red-500 text-white
               text-[10px] font-bold
               rounded-full flex items-center justify-center
-              ring-2 ring-[#0a0e1c]
+              ring-2 ring-white
             ">
               {newMessageCount > 99 ? '99+' : newMessageCount}
             </span>

@@ -36,8 +36,8 @@ const MessageSearchBar: React.FC<Props> = ({
   return (
     <div className="
       flex-shrink-0 animate-slide-right
-      bg-[#0f1729]/90 backdrop-blur-xl
-      border-b border-white/[0.06]
+      bg-white
+      border-b border-gray-200
       px-3 py-2.5
     ">
       <div className="flex items-center gap-2">
@@ -58,10 +58,10 @@ const MessageSearchBar: React.FC<Props> = ({
             placeholder="Search in conversation..."
             className="
               w-full pl-9 pr-3 py-2
-              bg-[#0a0e27]/[0.05] border border-white/[0.08]
-              rounded-lg text-sm text-white
+              bg-gray-50 border border-gray-200
+              rounded-lg text-sm text-gray-900
               placeholder:text-gray-500
-              focus:outline-none focus:border-emerald-400/40
+              focus:outline-none focus:border-emerald-500/50
               transition-all
             "
           />
@@ -69,7 +69,7 @@ const MessageSearchBar: React.FC<Props> = ({
 
         {query && (
           <div className="flex items-center gap-1">
-            <span className="text-xs text-gray-400 font-mono px-2">
+            <span className="text-xs text-gray-500 font-mono px-2">
               {resultsCount > 0 ? `${currentIndex + 1}/${resultsCount}` : '0/0'}
             </span>
             <button
@@ -77,8 +77,8 @@ const MessageSearchBar: React.FC<Props> = ({
               disabled={resultsCount === 0}
               className="
                 p-1.5 rounded-md
-                hover:bg-[#0a0e27]/[0.08]
-                text-gray-300 hover:text-white
+                hover:bg-gray-100
+                text-gray-655 hover:text-gray-900
                 disabled:opacity-30 disabled:cursor-not-allowed
                 transition-colors
               "
@@ -90,8 +90,8 @@ const MessageSearchBar: React.FC<Props> = ({
               disabled={resultsCount === 0}
               className="
                 p-1.5 rounded-md
-                hover:bg-[#0a0e27]/[0.08]
-                text-gray-300 hover:text-white
+                hover:bg-gray-100
+                text-gray-655 hover:text-gray-900
                 disabled:opacity-30 disabled:cursor-not-allowed
                 transition-colors
               "
@@ -105,8 +105,8 @@ const MessageSearchBar: React.FC<Props> = ({
           onClick={onClose}
           className="
             p-1.5 rounded-md
-            hover:bg-[#0a0e27]/[0.08]
-            text-gray-300 hover:text-white
+            hover:bg-gray-100
+            text-gray-655 hover:text-gray-900
             transition-colors
           "
         >

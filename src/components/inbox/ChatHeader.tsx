@@ -133,8 +133,7 @@ const ChatHeader: React.FC<Props> = ({
   return (
     <div className="
       flex-shrink-0 relative z-[100]
-      bg-[#0a0e1c]/80 backdrop-blur-xl
-      border-b border-white/[0.06]
+      bg-white border-b border-gray-200
       px-3 sm:px-4 py-3
     ">
       <div className="flex items-center justify-between gap-3">
@@ -146,8 +145,8 @@ const ChatHeader: React.FC<Props> = ({
               onClick={onBack}
               className="
                 lg:hidden p-1.5 -ml-1 rounded-lg
-                hover:bg-[#0a0e27]/[0.06]
-                text-gray-300 hover:text-white
+                hover:bg-gray-100
+                text-gray-500 hover:text-gray-900
                 transition-colors flex-shrink-0
               "
             >
@@ -165,7 +164,7 @@ const ChatHeader: React.FC<Props> = ({
               bg-gradient-to-br ${avatarColor}
               flex items-center justify-center
               text-white font-semibold
-              shadow-md ring-2 ring-white/5
+              shadow-md ring-2 ring-white
               group-hover:ring-emerald-400/30
               transition-all
             `}>
@@ -180,7 +179,7 @@ const ChatHeader: React.FC<Props> = ({
               )}
             </div>
             {conversation.isWindowOpen && (
-              <div className="absolute bottom-0 right-0 w-[12px] h-[12px] bg-emerald-500 rounded-full ring-2 ring-[#0a0e1c] z-10" />
+              <div className="absolute bottom-0 right-0 w-[12px] h-[12px] bg-emerald-500 rounded-full ring-2 ring-white z-10" />
             )}
           </button>
 
@@ -189,10 +188,10 @@ const ChatHeader: React.FC<Props> = ({
             onClick={onToggleContactInfo}
             className="text-left min-w-0 flex-1 hover:opacity-80 transition-opacity"
           >
-            <h2 className="font-semibold text-white text-sm sm:text-base truncate flex items-center gap-1.5">
+            <h2 className="font-semibold text-gray-900 text-sm sm:text-base truncate flex items-center gap-1.5">
               {name}
               {conversation.isMuted && (
-                <VolumeX className="w-3.5 h-3.5 text-gray-500 flex-shrink-0" />
+                <VolumeX className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
               )}
             </h2>
             <p className="text-xs truncate">
@@ -209,8 +208,8 @@ const ChatHeader: React.FC<Props> = ({
             title="Voice call"
             className="
               p-2 rounded-lg
-              hover:bg-emerald-500/10
-              text-gray-400 hover:text-emerald-400
+              hover:bg-emerald-50
+              text-gray-500 hover:text-emerald-600
               transition-all hover:scale-110
             "
           >
@@ -224,8 +223,8 @@ const ChatHeader: React.FC<Props> = ({
               title="Video call"
               className="
                 p-2 rounded-lg
-                hover:bg-blue-500/10
-                text-gray-400 hover:text-blue-400
+                hover:bg-blue-50
+                text-gray-500 hover:text-blue-600
                 transition-all hover:scale-110
                 hidden sm:block
               "
@@ -240,8 +239,8 @@ const ChatHeader: React.FC<Props> = ({
             title="Search in chat"
             className="
               p-2 rounded-lg
-              hover:bg-[#0a0e27]/[0.06]
-              text-gray-400 hover:text-white
+              hover:bg-gray-100
+              text-gray-500 hover:text-gray-950
               transition-all hover:scale-110
               hidden sm:block
             "
@@ -256,8 +255,8 @@ const ChatHeader: React.FC<Props> = ({
             className={`
               p-2 rounded-lg transition-all hover:scale-110
               ${showContactInfo
-                ? 'bg-emerald-500/15 text-emerald-400'
-                : 'hover:bg-[#0a0e27]/[0.06] text-gray-400 hover:text-white'
+                ? 'bg-emerald-50 text-emerald-600'
+                : 'hover:bg-gray-100 text-gray-500 hover:text-gray-950'
               }
             `}
           >
@@ -271,8 +270,8 @@ const ChatHeader: React.FC<Props> = ({
               title="More"
               className="
                 p-2 rounded-lg
-                hover:bg-[#0a0e27]/[0.06]
-                text-gray-400 hover:text-white
+                hover:bg-gray-100
+                text-gray-500 hover:text-gray-950
                 transition-all
               "
             >
@@ -286,8 +285,8 @@ const ChatHeader: React.FC<Props> = ({
                 className="
                   absolute right-0 top-12 z-50
                   w-56 py-1.5
-                  bg-[#0f1729]/98 backdrop-blur-xl
-                  border border-white/[0.1]
+                  bg-white
+                  border border-gray-200
                   rounded-xl shadow-2xl
                   animate-fade-in
                   max-h-[calc(100vh-100px)] overflow-y-auto
@@ -298,7 +297,7 @@ const ChatHeader: React.FC<Props> = ({
                     onSearchMessages();
                     setShowMenu(false);
                   }}
-                  className="sm:hidden w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-200 hover:bg-[#0a0e27]/[0.05] transition-colors"
+                  className="sm:hidden w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                 >
                   <Search className="w-4 h-4 text-gray-400" />
                   Search messages
@@ -310,16 +309,16 @@ const ChatHeader: React.FC<Props> = ({
                       onMute();
                       setShowMenu(false);
                     }}
-                    className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-200 hover:bg-[#0a0e27]/[0.05] transition-colors"
+                    className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                   >
                     {conversation.isMuted ? (
                       <>
-                        <Bell className="w-4 h-4 text-gray-400" />
+                        <Volume2 className="w-4 h-4 text-gray-500" />
                         Unmute notifications
                       </>
                     ) : (
                       <>
-                        <BellOff className="w-4 h-4 text-gray-400" />
+                        <VolumeX className="w-4 h-4 text-gray-500" />
                         Mute notifications
                       </>
                     )}
@@ -330,7 +329,7 @@ const ChatHeader: React.FC<Props> = ({
                   onClick={() => {
                     setShowMenu(false);
                   }}
-                  className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-200 hover:bg-[#0a0e27]/[0.05] transition-colors"
+                  className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                 >
                   <Star className="w-4 h-4 text-gray-400" />
                   Starred messages
@@ -340,7 +339,7 @@ const ChatHeader: React.FC<Props> = ({
                   onClick={() => {
                     setShowMenu(false);
                   }}
-                  className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-200 hover:bg-[#0a0e27]/[0.05] transition-colors"
+                  className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                 >
                   <Tag className="w-4 h-4 text-gray-400" />
                   Manage labels
@@ -352,14 +351,14 @@ const ChatHeader: React.FC<Props> = ({
                       onExportChat();
                       setShowMenu(false);
                     }}
-                    className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-200 hover:bg-[#0a0e27]/[0.05] transition-colors"
+                    className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                   >
                     <Download className="w-4 h-4 text-gray-400" />
                     Export chat
                   </button>
                 )}
 
-                <div className="border-t border-white/[0.06] my-1" />
+                <div className="border-t border-gray-100 my-1" />
 
                 {onArchive && (
                   <button
@@ -367,7 +366,7 @@ const ChatHeader: React.FC<Props> = ({
                       onArchive();
                       setShowMenu(false);
                     }}
-                    className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-200 hover:bg-[#0a0e27]/[0.05] transition-colors"
+                    className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                   >
                     <Archive className="w-4 h-4 text-gray-400" />
                     {conversation.isArchived ? 'Unarchive chat' : 'Archive chat'}
@@ -380,7 +379,7 @@ const ChatHeader: React.FC<Props> = ({
                       onClearChat();
                       setShowMenu(false);
                     }}
-                    className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-amber-400 hover:bg-amber-500/10 transition-colors"
+                    className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-amber-600 hover:bg-amber-50 transition-colors"
                   >
                     <Trash2 className="w-4 h-4" />
                     Clear messages
@@ -393,7 +392,7 @@ const ChatHeader: React.FC<Props> = ({
                       onDelete();
                       setShowMenu(false);
                     }}
-                    className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-red-400 hover:bg-red-500/10 transition-colors"
+                    className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
                   >
                     <Trash2 className="w-4 h-4" />
                     Delete conversation

@@ -130,7 +130,7 @@ const Help: React.FC = () => {
   // Video Modal Component
   const VideoModal: React.FC<{ video: VideoTutorial; onClose: () => void }> = ({ video, onClose }) => (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4" onClick={onClose}>
-      <div className="relative w-full max-w-4xl bg-gray-900 rounded-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
+      <div className="relative w-full max-w-4xl bg-white rounded-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
         {/* Close Button */}
         <button
           onClick={onClose}
@@ -162,9 +162,9 @@ const Help: React.FC = () => {
         </div>
 
         {/* Video Info */}
-        <div className="p-6 bg-gray-800">
-          <h3 className="text-xl font-bold text-white mb-2">{video.title}</h3>
-          <p className="text-gray-400">{video.description}</p>
+        <div className="p-6 bg-gray-50 border-t border-gray-200">
+          <h3 className="text-xl font-bold text-gray-900 mb-2">{video.title}</h3>
+          <p className="text-gray-600">{video.description}</p>
         </div>
       </div>
     </div>
@@ -177,11 +177,11 @@ const Help: React.FC = () => {
       description: 'Get instant help via WhatsApp',
       action: 'Chat Now',
       link: WHATSAPP_LINK,
-      color: 'bg-green-500 hover:bg-green-600',
-      iconBg: 'bg-green-100 dark:bg-green-900/30',
-      iconColor: 'text-green-600 dark:text-green-400',
+      color: 'bg-green-600 hover:bg-green-700',
+      iconBg: 'bg-green-50',
+      iconColor: 'text-green-600',
       badge: 'Fastest',
-      badgeColor: 'bg-green-100 text-green-700',
+      badgeColor: 'bg-green-100 text-green-800',
       responseTime: 'Usually responds in 5 mins',
     },
     {
@@ -190,9 +190,9 @@ const Help: React.FC = () => {
       description: 'Send us a detailed message',
       action: 'Send Email',
       link: `mailto:${SUPPORT_EMAIL}?subject=Support Request - WabMeta`,
-      color: 'bg-blue-500 hover:bg-blue-600',
-      iconBg: 'bg-blue-100 dark:bg-blue-900/30',
-      iconColor: 'text-blue-600 dark:text-blue-400',
+      color: 'bg-blue-600 hover:bg-blue-700',
+      iconBg: 'bg-blue-50',
+      iconColor: 'text-blue-600',
       badge: null,
       badgeColor: '',
       responseTime: 'Usually responds in 24 hours',
@@ -203,9 +203,9 @@ const Help: React.FC = () => {
       description: 'Talk to our support team',
       action: 'Call Now',
       link: `tel:+${SUPPORT_WHATSAPP}`,
-      color: 'bg-purple-500 hover:bg-purple-600',
-      iconBg: 'bg-purple-100 dark:bg-purple-900/30',
-      iconColor: 'text-purple-600 dark:text-purple-400',
+      color: 'bg-purple-600 hover:bg-purple-700',
+      iconBg: 'bg-purple-50',
+      iconColor: 'text-purple-600',
       badge: null,
       badgeColor: '',
       responseTime: 'Mon-Sat, 9AM - 6PM IST',
@@ -216,9 +216,9 @@ const Help: React.FC = () => {
       description: 'Browse our detailed guides',
       action: 'View Docs',
       link: '/documentation',
-      color: 'bg-orange-500 hover:bg-orange-600',
-      iconBg: 'bg-orange-100 dark:bg-orange-900/30',
-      iconColor: 'text-orange-600 dark:text-orange-400',
+      color: 'bg-orange-600 hover:bg-orange-700',
+      iconBg: 'bg-orange-50',
+      iconColor: 'text-orange-600',
       badge: null,
       badgeColor: '',
       responseTime: 'Self-service',
@@ -282,23 +282,23 @@ const Help: React.FC = () => {
 
       {/* Header */}
       <div className="text-center mb-12">
-        <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full mb-4">
-          <Headphones className="w-8 h-8 text-green-600 dark:text-green-400" />
+        <div className="inline-flex items-center justify-center w-16 h-16 bg-green-50 border border-green-100 rounded-full mb-4">
+          <Headphones className="w-8 h-8 text-green-600" />
         </div>
-        <h1 className="text-3xl font-bold text-white mb-2">
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">
           Help & Support
         </h1>
-        <p className="text-gray-400 max-w-xl mx-auto">
+        <p className="text-gray-500 max-w-xl mx-auto">
           Need assistance? We're here to help! Choose your preferred support channel or browse our resources.
         </p>
       </div>
 
-      {/* ✅ SUPPORT CHANNELS */}
+      {/* SUPPORT CHANNELS */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
         {supportChannels.map((channel, index) => (
           <div
             key={index}
-            className="bg-[#0a0e27] rounded-2xl shadow-lg border border-white/[0.08] overflow-hidden hover:shadow-xl transition-all duration-300 flex flex-col"
+            className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-300 flex flex-col"
           >
             <div className="p-6 flex-1">
               {channel.badge && (
@@ -311,14 +311,14 @@ const Help: React.FC = () => {
                 <channel.icon className={`w-6 h-6 ${channel.iconColor}`} />
               </div>
 
-              <h3 className="text-lg font-semibold text-white mb-2">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
                 {channel.title}
               </h3>
-              <p className="text-gray-400 text-sm mb-3">
+              <p className="text-gray-500 text-sm mb-3">
                 {channel.description}
               </p>
 
-              <div className="flex items-center text-xs text-gray-400">
+              <div className="flex items-center text-xs text-gray-500">
                 <Clock className="w-3 h-3 mr-1" />
                 {channel.responseTime}
               </div>
@@ -329,7 +329,7 @@ const Help: React.FC = () => {
                 href={channel.link}
                 target={channel.link.startsWith('http') ? '_blank' : '_self'}
                 rel="noopener noreferrer"
-                className={`w-full flex items-center justify-center px-4 py-3 ${channel.color} text-white font-medium rounded-xl transition-colors`}
+                className={`w-full flex items-center justify-center px-4 py-3 ${channel.color} text-white font-medium rounded-xl transition-colors shadow-sm`}
               >
                 {channel.action}
                 <ArrowRight className="w-4 h-4 ml-2" />
@@ -339,16 +339,16 @@ const Help: React.FC = () => {
         ))}
       </div>
 
-      {/* ✅ QUICK WHATSAPP SUPPORT BANNER */}
-      <div className="bg-gradient-to-r from-green-500 to-emerald-600 rounded-2xl p-6 md:p-8 mb-12 text-white">
+      {/* QUICK WHATSAPP SUPPORT BANNER */}
+      <div className="bg-gradient-to-r from-green-500 to-emerald-600 rounded-2xl p-6 md:p-8 mb-12 text-white shadow-md">
         <div className="flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-4">
-            <div className="bg-[#0a0e27]/20 p-4 rounded-full">
+            <div className="bg-white/10 p-4 rounded-full">
               <MessageCircle className="w-8 h-8" />
             </div>
             <div>
               <h3 className="text-xl font-bold mb-1">Need Immediate Help?</h3>
-              <p className="text-green-100">
+              <p className="text-green-50">
                 Chat with our support team on WhatsApp for instant assistance
               </p>
             </div>
@@ -357,7 +357,7 @@ const Help: React.FC = () => {
             href={WHATSAPP_LINK}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-2 bg-[#0a0e27] text-green-600 font-semibold px-6 py-3 rounded-xl hover:bg-green-50 transition-colors shadow-lg"
+            className="flex items-center gap-2 bg-white text-emerald-700 font-semibold px-6 py-3 rounded-xl hover:bg-emerald-50 transition-colors shadow-lg"
           >
             <MessageCircle className="w-5 h-5" />
             Chat on WhatsApp
@@ -365,16 +365,16 @@ const Help: React.FC = () => {
         </div>
       </div>
 
-      {/* ✅ NEW: VIDEO TUTORIALS SECTION */}
+      {/* VIDEO TUTORIALS SECTION */}
       <div id="video-tutorials" className="mb-12">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-14 h-14 bg-red-100 dark:bg-red-900/30 rounded-full mb-4">
-            <Video className="w-7 h-7 text-red-600 dark:text-red-400" />
+          <div className="inline-flex items-center justify-center w-14 h-14 bg-red-50 border border-red-100 rounded-full mb-4">
+            <Video className="w-7 h-7 text-red-600" />
           </div>
-          <h2 className="text-2xl font-bold text-white mb-2">
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">
             Video Tutorials
           </h2>
-          <p className="text-gray-400">
+          <p className="text-gray-500">
             Learn WabMeta with our step-by-step video guides
           </p>
         </div>
@@ -386,8 +386,8 @@ const Help: React.FC = () => {
               key={category.id}
               onClick={() => setActiveCategory(category.id)}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${activeCategory === category.id
-                ? 'bg-green-500 text-white shadow-lg'
-                : 'bg-[#0a0e27] text-gray-300 border border-white/[0.1] hover:border-green-500'
+                ? 'bg-green-600 text-white shadow-md'
+                : 'bg-white text-gray-600 border border-gray-200 hover:border-green-500 hover:bg-gray-50'
                 }`}
             >
               <category.icon className="w-4 h-4" />
@@ -401,7 +401,7 @@ const Help: React.FC = () => {
           {filteredVideos.map((video) => (
             <div
               key={video.id}
-              className="bg-[#0a0e27] rounded-xl overflow-hidden border border-white/[0.1] hover:shadow-xl transition-all duration-300 cursor-pointer group"
+              className="bg-white rounded-xl overflow-hidden border border-gray-200 hover:shadow-md transition-all duration-300 cursor-pointer group"
               onClick={() => setSelectedVideo(video)}
             >
               {/* Thumbnail */}
@@ -418,7 +418,6 @@ const Help: React.FC = () => {
                     alt={video.title}
                     className="w-full h-full object-cover"
                     onError={(e) => {
-                      // Fallback to default thumbnail if maxres not available
                       e.currentTarget.src = `https://img.youtube.com/vi/${video.youtubeId}/hqdefault.jpg`;
                     }}
                   />
@@ -430,7 +429,7 @@ const Help: React.FC = () => {
 
                 {/* Play Button Overlay */}
                 <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                  <div className="bg-[#0a0e27]/90 rounded-full p-4 transform group-hover:scale-110 transition-transform">
+                  <div className="bg-white/90 rounded-full p-4 transform group-hover:scale-110 transition-transform shadow-md">
                     <Play className="w-8 h-8 text-green-600" fill="currentColor" />
                   </div>
                 </div>
@@ -443,16 +442,16 @@ const Help: React.FC = () => {
 
               {/* Video Info */}
               <div className="p-5">
-                <h3 className="font-semibold text-white mb-2 group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors">
+                <h3 className="font-semibold text-gray-900 mb-2 group-hover:text-green-600 transition-colors">
                   {video.title}
                 </h3>
-                <p className="text-sm text-gray-400 line-clamp-2">
+                <p className="text-sm text-gray-500 line-clamp-2">
                   {video.description}
                 </p>
 
                 {/* Category Badge */}
                 <div className="mt-3">
-                  <span className="inline-block px-3 py-1 text-xs font-medium bg-[#0a0e27]/[0.04] dark:bg-gray-700 text-gray-400 dark:text-gray-300 rounded-full">
+                  <span className="inline-block px-3 py-1 text-xs font-medium bg-gray-100 text-gray-600 rounded-full">
                     {videoCategories.find(c => c.id === video.category)?.label}
                   </span>
                 </div>
@@ -462,9 +461,9 @@ const Help: React.FC = () => {
         </div>
 
         {filteredVideos.length === 0 && (
-          <div className="text-center py-12 bg-[#0a0e27] rounded-xl border border-white/[0.1]">
+          <div className="text-center py-12 bg-white rounded-xl border border-gray-200">
             <Video className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-400">
+            <p className="text-gray-500">
               No videos found in this category
             </p>
           </div>
@@ -473,7 +472,7 @@ const Help: React.FC = () => {
 
       {/* Quick Links */}
       <div className="mb-12">
-        <h2 className="text-xl font-bold text-white mb-6">
+        <h2 className="text-xl font-bold text-gray-900 mb-6">
           Quick Links
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -481,12 +480,12 @@ const Help: React.FC = () => {
             <a
               key={index}
               href={link.link}
-              className="flex items-center gap-3 p-4 bg-[#0a0e27] rounded-xl border border-white/[0.1] hover:border-green-500 dark:hover:border-green-500 hover:shadow-md transition-all group"
+              className="flex items-center gap-3 p-4 bg-white rounded-xl border border-gray-200 hover:border-green-500 hover:shadow-sm transition-all group"
             >
-              <div className="bg-[#0a0e27]/[0.04] dark:bg-gray-700 p-2 rounded-lg group-hover:bg-green-100 dark:group-hover:bg-green-900/30 transition-colors">
-                <link.icon className="w-5 h-5 text-gray-400 group-hover:text-green-600 dark:group-hover:text-green-400" />
+              <div className="bg-gray-50 p-2 rounded-lg group-hover:bg-green-50 transition-colors">
+                <link.icon className="w-5 h-5 text-gray-500 group-hover:text-green-600" />
               </div>
-              <span className="font-medium text-gray-300 group-hover:text-green-600 dark:group-hover:text-green-400">
+              <span className="font-medium text-gray-700 group-hover:text-green-600">
                 {link.title}
               </span>
             </a>
@@ -497,7 +496,7 @@ const Help: React.FC = () => {
       {/* FAQs Section */}
       <div id="faqs" className="mb-12">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-          <h2 className="text-xl font-bold text-white">
+          <h2 className="text-xl font-bold text-gray-900">
             Frequently Asked Questions
           </h2>
 
@@ -508,7 +507,7 @@ const Help: React.FC = () => {
               placeholder="Search FAQs..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-white/[0.12] rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent dark:bg-gray-800 dark:text-white text-sm"
+              className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white text-gray-900 text-sm focus:outline-none"
             />
           </div>
         </div>
@@ -517,13 +516,13 @@ const Help: React.FC = () => {
           {filteredFAQs.map((faq, index) => (
             <div
               key={index}
-              className="bg-[#0a0e27] rounded-xl border border-white/[0.1] overflow-hidden"
+              className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm"
             >
               <button
                 onClick={() => toggleFAQ(index)}
-                className="w-full flex items-center justify-between p-5 text-left hover:bg-[#0a0e27]/[0.04] transition-colors"
+                className="w-full flex items-center justify-between p-5 text-left hover:bg-gray-55 transition-colors"
               >
-                <span className="font-medium text-white pr-4">
+                <span className="font-medium text-gray-900 pr-4">
                   {faq.question}
                 </span>
                 {openFAQ === index ? (
@@ -535,8 +534,8 @@ const Help: React.FC = () => {
 
               {openFAQ === index && (
                 <div className="px-5 pb-5 pt-0">
-                  <div className="border-t border-white/[0.08] pt-4">
-                    <p className="text-gray-400 leading-relaxed">
+                  <div className="border-t border-gray-100 pt-4">
+                    <p className="text-gray-600 leading-relaxed">
                       {faq.answer}
                     </p>
                   </div>
@@ -546,16 +545,16 @@ const Help: React.FC = () => {
           ))}
 
           {filteredFAQs.length === 0 && (
-            <div className="text-center py-12 bg-[#0a0e27] rounded-xl border border-white/[0.1]">
+            <div className="text-center py-12 bg-white rounded-xl border border-gray-200">
               <HelpCircle className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-400 mb-4">
+              <p className="text-gray-500 mb-4">
                 No FAQs found matching your search.
               </p>
               <a
                 href={WHATSAPP_LINK}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center text-green-600 dark:text-green-400 font-medium hover:underline"
+                className="inline-flex items-center text-green-600 font-medium hover:underline"
               >
                 <MessageCircle className="w-4 h-4 mr-2" />
                 Ask us on WhatsApp
@@ -565,9 +564,9 @@ const Help: React.FC = () => {
         </div>
       </div>
 
-      {/* ✅ CONTACT INFO CARD */}
-      <div className="bg-[#0a0e27]/50 rounded-2xl p-6 md:p-8">
-        <h2 className="text-xl font-bold text-white mb-6 text-center">
+      {/* CONTACT INFO CARD */}
+      <div className="bg-gray-50 border border-gray-200 rounded-2xl p-6 md:p-8 shadow-sm">
+        <h2 className="text-xl font-bold text-gray-900 mb-6 text-center">
           Contact Information
         </h2>
 
@@ -576,55 +575,55 @@ const Help: React.FC = () => {
             href={WHATSAPP_LINK}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex flex-col items-center p-6 bg-[#0a0e27] rounded-xl shadow-sm hover:shadow-md transition-all border border-white/[0.08] group"
+            className="flex flex-col items-center p-6 bg-white rounded-xl shadow-sm hover:shadow-md transition-all border border-gray-200 group"
           >
-            <div className="bg-green-100 dark:bg-green-900/30 p-4 rounded-full mb-4 group-hover:scale-110 transition-transform">
-              <MessageCircle className="w-6 h-6 text-green-600 dark:text-green-400" />
+            <div className="bg-green-50 p-4 rounded-full mb-4 group-hover:scale-110 transition-transform">
+              <MessageCircle className="w-6 h-6 text-green-600" />
             </div>
-            <h3 className="font-semibold text-white mb-1">WhatsApp</h3>
-            <p className="text-green-600 dark:text-green-400 font-medium">+91 9211938200</p>
-            <span className="text-xs text-gray-400 mt-2">Click to chat</span>
+            <h3 className="font-semibold text-gray-900 mb-1">WhatsApp</h3>
+            <p className="text-green-600 font-medium">+91 9211938200</p>
+            <span className="text-xs text-gray-500 mt-2">Click to chat</span>
           </a>
 
           <a
             href={`mailto:${SUPPORT_EMAIL}`}
-            className="flex flex-col items-center p-6 bg-[#0a0e27] rounded-xl shadow-sm hover:shadow-md transition-all border border-white/[0.08] group"
+            className="flex flex-col items-center p-6 bg-white rounded-xl shadow-sm hover:shadow-md transition-all border border-gray-200 group"
           >
-            <div className="bg-blue-100 dark:bg-blue-900/30 p-4 rounded-full mb-4 group-hover:scale-110 transition-transform">
-              <Mail className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+            <div className="bg-blue-50 p-4 rounded-full mb-4 group-hover:scale-110 transition-transform">
+              <Mail className="w-6 h-6 text-blue-600" />
             </div>
-            <h3 className="font-semibold text-white mb-1">Email</h3>
-            <p className="text-blue-600 dark:text-blue-400 font-medium text-sm">{SUPPORT_EMAIL}</p>
-            <span className="text-xs text-gray-400 mt-2">Click to email</span>
+            <h3 className="font-semibold text-gray-900 mb-1">Email</h3>
+            <p className="text-blue-600 font-medium text-sm">{SUPPORT_EMAIL}</p>
+            <span className="text-xs text-gray-500 mt-2">Click to email</span>
           </a>
 
           <a
             href={`tel:+${SUPPORT_WHATSAPP}`}
-            className="flex flex-col items-center p-6 bg-[#0a0e27] rounded-xl shadow-sm hover:shadow-md transition-all border border-white/[0.08] group"
+            className="flex flex-col items-center p-6 bg-white rounded-xl shadow-sm hover:shadow-md transition-all border border-gray-200 group"
           >
-            <div className="bg-purple-100 dark:bg-purple-900/30 p-4 rounded-full mb-4 group-hover:scale-110 transition-transform">
-              <Phone className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+            <div className="bg-purple-50 p-4 rounded-full mb-4 group-hover:scale-110 transition-transform">
+              <Phone className="w-6 h-6 text-purple-600" />
             </div>
-            <h3 className="font-semibold text-white mb-1">Phone</h3>
-            <p className="text-purple-600 dark:text-purple-400 font-medium">+91 9211938200</p>
-            <span className="text-xs text-gray-400 mt-2">Click to call</span>
+            <h3 className="font-semibold text-gray-900 mb-1">Phone</h3>
+            <p className="text-purple-600 font-medium">+91 9211938200</p>
+            <span className="text-xs text-gray-500 mt-2">Click to call</span>
           </a>
         </div>
 
         <div className="mt-6 text-center">
-          <div className="inline-flex items-center gap-2 text-sm text-gray-400">
+          <div className="inline-flex items-center gap-2 text-sm text-gray-500">
             <Clock className="w-4 h-4" />
             <span>Business Hours: Monday - Saturday, 9:00 AM - 6:00 PM IST</span>
           </div>
         </div>
       </div>
 
-      {/* ✅ VIDEO MODAL */}
+      {/* VIDEO MODAL */}
       {selectedVideo && (
         <VideoModal video={selectedVideo} onClose={() => setSelectedVideo(null)} />
       )}
 
-      {/* ✅ FLOATING WHATSAPP BUTTON */}
+      {/* FLOATING WHATSAPP BUTTON */}
       <a
         href={WHATSAPP_LINK}
         target="_blank"
@@ -633,7 +632,7 @@ const Help: React.FC = () => {
         title="Chat with Support"
       >
         <MessageCircle className="w-6 h-6" />
-        <span className="absolute right-full mr-3 top-1/2 -translate-y-1/2 bg-gray-900 text-white text-sm px-3 py-1 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+        <span className="absolute right-full mr-3 top-1/2 -translate-y-1/2 bg-gray-900 text-white text-sm px-3 py-1 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap shadow-md">
           Chat with Support
         </span>
       </a>

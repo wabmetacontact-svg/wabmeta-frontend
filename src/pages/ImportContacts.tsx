@@ -317,20 +317,20 @@ const ImportContacts: React.FC = () => {
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Header */}
       <div className="flex items-center space-x-4">
-        <Link to="/dashboard/contacts" className="p-2 hover:bg-[#0a0e27]/[0.04] rounded-lg transition-colors">
-          <ArrowLeft className="w-5 h-5 text-gray-400" />
+        <Link to="/dashboard/contacts" className="p-2 hover:bg-gray-100 rounded-lg text-gray-500 hover:text-gray-900 transition-colors">
+          <ArrowLeft className="w-5 h-5" />
         </Link>
         <div className="flex-1">
-          <h1 className="text-2xl font-bold text-white">Import Contacts</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Import Contacts</h1>
           <p className="text-gray-500 mt-1">Upload and import contacts from CSV</p>
         </div>
 
-        {/* ✅ Import Stats Badge */}
+        {/* Import Stats Badge */}
         {importStats && (
           <div className="flex items-center gap-3">
             <div className="text-right">
               <p className="text-sm text-gray-500">Contact Status</p>
-              <p className="text-lg font-bold text-primary-600">
+              <p className="text-lg font-bold text-green-700">
                 {importStats.totalContacts} Contacts
               </p>
             </div>
@@ -347,7 +347,7 @@ const ImportContacts: React.FC = () => {
         )}
       </div>
 
-      {/* ✅ Limit Warning Banner */}
+      {/* Limit Warning Banner */}
       {importStats && !importStats.canImport && (
         <div className="bg-red-50 border border-red-200 rounded-xl p-4">
           <div className="flex items-center gap-3">
@@ -369,14 +369,14 @@ const ImportContacts: React.FC = () => {
         </div>
       )}
 
-      {/* ✅ Free Plan Info (Not Warning) */}
+      {/* Free Plan Info (Not Warning) */}
       {importStats && importStats.planName.toLowerCase().includes('free') && importStats.canImport && (
-        <div className="bg-primary-50 border border-primary-100 rounded-xl p-4">
+        <div className="bg-green-50 border border-green-150 rounded-xl p-4">
           <div className="flex items-center gap-3">
-            <Info className="w-5 h-5 text-primary-600" />
+            <Info className="w-5 h-5 text-green-600" />
             <div className="flex-1">
-              <p className="font-semibold text-primary-900">Trial Plan</p>
-              <p className="text-sm text-primary-700">
+              <p className="font-semibold text-green-900">Trial Plan</p>
+              <p className="text-sm text-green-700">
                 You can import up to <strong>{importStats.maxPerImport} contacts</strong> in this batch. 
                 You have <strong>{importStats.remainingSlots}</strong> total slots remaining.
               </p>
@@ -386,7 +386,7 @@ const ImportContacts: React.FC = () => {
       )}
 
       {/* Progress Steps */}
-      <div className="bg-[#0a0e27] rounded-2xl p-6 border border-white/[0.1]">
+      <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm">
         <div className="flex items-center justify-between">
           {["Upload File", "Map Columns", "Preview", "Complete"].map((label, index) => {
             const isActive = index === visualStepIndex;
@@ -397,20 +397,20 @@ const ImportContacts: React.FC = () => {
                 <div className="flex items-center">
                   <div
                     className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold transition-colors ${isCompleted
-                      ? "bg-primary-500 text-white"
+                      ? "bg-green-600 text-white"
                       : isActive
-                        ? "bg-primary-500 text-white ring-4 ring-primary-100"
+                        ? "bg-green-600 text-white ring-4 ring-green-100"
                         : "bg-gray-200 text-gray-500"
                       }`}
                   >
                     {isCompleted ? <CheckCircle2 className="w-5 h-5" /> : index + 1}
                   </div>
-                  <span className={`ml-3 font-medium hidden sm:inline ${isActive ? "text-white" : "text-gray-500"}`}>
+                  <span className={`ml-3 font-semibold hidden sm:inline ${isActive ? "text-gray-900" : "text-gray-500"}`}>
                     {label}
                   </span>
                 </div>
                 {index < 3 && (
-                  <div className={`w-12 lg:w-24 h-1 mx-4 rounded ${isCompleted ? "bg-primary-500" : "bg-gray-200"}`} />
+                  <div className={`w-12 lg:w-24 h-1 mx-4 rounded ${isCompleted ? "bg-green-600" : "bg-gray-200"}`} />
                 )}
               </div>
             );
@@ -419,21 +419,21 @@ const ImportContacts: React.FC = () => {
       </div>
 
       {/* Content */}
-      <div className="bg-[#0a0e27] rounded-2xl p-6 border border-white/[0.1]">
+      <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm">
         {step === "upload" && (
           <>
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-semibold text-white">Upload Your File</h2>
+              <h2 className="text-lg font-semibold text-gray-900">Upload Your File</h2>
               <button
                 onClick={downloadSampleCsv}
-                className="flex items-center gap-2 text-primary-600 hover:text-primary-700 text-sm font-medium transition-colors"
+                className="flex items-center gap-2 text-green-600 hover:text-green-700 text-sm font-semibold transition-colors"
                 title="Download Sample CSV"
               >
                 <Download className="w-4 h-4" />
                 Sample CSV
               </button>
             </div>
-            <div className="border-2 border-dashed border-white/[0.1] rounded-2xl p-12 text-center hover:bg-[#050816] transition-all cursor-pointer group"
+            <div className="border-2 border-dashed border-gray-200 bg-gray-50 rounded-2xl p-12 text-center hover:bg-gray-100/50 hover:border-green-300 transition-all cursor-pointer group"
               onClick={() => document.getElementById('file-upload')?.click()}>
               <input
                 id="file-upload"
@@ -445,10 +445,10 @@ const ImportContacts: React.FC = () => {
                   if (file) handleImport(file);
                 }}
               />
-              <div className="w-16 h-16 bg-primary-50 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
-                <Upload className="w-8 h-8 text-primary-500" />
+              <div className="w-16 h-16 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform border border-green-100">
+                <Upload className="w-8 h-8 text-green-600" />
               </div>
-              <p className="text-lg font-medium text-white">Click to upload or drag and drop</p>
+              <p className="text-lg font-semibold text-gray-900">Click to upload or drag and drop</p>
               <p className="text-sm text-gray-500 mt-1">CSV files only (max 10MB)</p>
             </div>
           </>
@@ -456,7 +456,7 @@ const ImportContacts: React.FC = () => {
 
         {step === "mapping" && (
           <>
-            <h2 className="text-lg font-semibold text-white mb-2">Map Columns</h2>
+            <h2 className="text-lg font-semibold text-gray-900 mb-2">Map Columns</h2>
             <p className="text-gray-500 mb-6">Match your CSV columns to WabMeta fields</p>
 
             <div className="space-y-4">
@@ -466,15 +466,15 @@ const ImportContacts: React.FC = () => {
                 { key: "email", label: "Email", required: false },
                 { key: "company", label: "Company (saved in custom fields)", required: false },
               ].map((field) => (
-                <div key={field.key} className="flex items-center gap-4 p-4 bg-[#050816] rounded-xl">
+                <div key={field.key} className="flex items-center gap-4 p-4 bg-gray-50 border border-gray-200 rounded-xl">
                   <div className="flex-1">
-                    <label className="block text-sm font-medium text-gray-300 mb-1">
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">
                       {field.label} {field.required && <span className="text-red-500">*</span>}
                     </label>
                     <select
                       value={fieldMapping[field.key] || ""}
                       onChange={(e) => setFieldMapping({ ...fieldMapping, [field.key]: e.target.value })}
-                      className="w-full px-4 py-2 bg-[#0a0e27] border border-white/[0.1] rounded-lg"
+                      className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-800 focus:ring-2 focus:ring-green-500 focus:outline-none"
                     >
                       <option value="">-- Select Column --</option>
                       {csvHeaders.map((h) => (
@@ -489,10 +489,10 @@ const ImportContacts: React.FC = () => {
             </div>
 
             <div className="flex justify-end gap-3 mt-6">
-              <button onClick={resetAll} className="px-5 py-2.5 text-gray-300 rounded-xl hover:bg-[#0a0e27]/[0.04]">
+              <button onClick={resetAll} className="px-5 py-2.5 text-gray-600 rounded-xl hover:bg-gray-100 transition-colors">
                 Cancel
               </button>
-              <button onClick={handleConfirmMapping} className="px-5 py-2.5 bg-primary-500 hover:bg-primary-600 text-white rounded-xl">
+              <button onClick={handleConfirmMapping} className="px-5 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-xl font-medium transition-colors shadow-sm">
                 Continue to Preview
               </button>
             </div>
@@ -501,23 +501,23 @@ const ImportContacts: React.FC = () => {
 
         {step === "preview" && (
           <>
-            <h2 className="text-lg font-semibold text-white mb-2">Preview Import</h2>
+            <h2 className="text-lg font-semibold text-gray-900 mb-2">Preview Import</h2>
             <p className="text-gray-500 mb-4">
-              Contacts will be validated for <span className="font-medium">International format (with +)</span>. Invalid numbers will be skipped.
+              Contacts will be validated for <span className="font-semibold text-gray-700">International format (with +)</span>. Invalid numbers will be skipped.
             </p>
 
             <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
-              <div className="flex items-center gap-2 text-blue-800">
-                <Users className="w-5 h-5" />
-                <span className="font-medium">{stats.total} rows</span>
+              <div className="flex items-center gap-2 text-blue-800 text-sm">
+                <Users className="w-5 h-5 text-blue-600" />
+                <span className="font-semibold">{stats.total} rows</span>
                 <span>•</span>
-                <span className="font-medium">{stats.valid} valid</span>
+                <span className="font-semibold">{stats.valid} valid</span>
                 <span>•</span>
-                <span className="font-medium">{stats.invalid} invalid</span>
+                <span className="font-semibold text-red-700">{stats.invalid} invalid</span>
               </div>
             </div>
 
-            {/* ✅ Partial Import Warning */}
+            {/* Partial Import Warning */}
             {importStats && stats.valid > importStats.remainingSlots && (
               <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 mb-6">
                 <div className="flex items-center gap-3">
@@ -533,35 +533,35 @@ const ImportContacts: React.FC = () => {
               </div>
             )}
 
-            <div className="overflow-x-auto rounded-xl border border-white/[0.1] max-h-96">
+            <div className="overflow-x-auto rounded-xl border border-gray-200 max-h-96">
               <table className="w-full">
-                <thead className="bg-[#050816] sticky top-0">
+                <thead className="bg-gray-50 sticky top-0 border-b border-gray-200">
                   <tr>
-                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-400">Row</th>
-                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-400">First</th>
-                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-400">Last</th>
-                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-400">Phone</th>
-                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-400">Email</th>
-                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-400">Status</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-650 uppercase">Row</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-655 uppercase">First</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-655 uppercase">Last</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-655 uppercase">Phone</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-655 uppercase">Email</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-655 uppercase">Status</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
                   {previewRows.map((c, idx) => {
                     const ok = c.phone && /^\+\d{7,15}$/.test(c.phone);
                     return (
-                      <tr key={idx}>
-                        <td className="px-4 py-3 text-gray-400">{c.__rowIndex}</td>
-                        <td className="px-4 py-3">{c.firstName || "-"}</td>
-                        <td className="px-4 py-3">{c.lastName || "-"}</td>
-                        <td className="px-4 py-3">{c.phone || "-"}</td>
-                        <td className="px-4 py-3">{c.email || "-"}</td>
-                        <td className="px-4 py-3">
+                      <tr key={idx} className="hover:bg-gray-50/50">
+                        <td className="px-4 py-3 text-sm text-gray-550">{c.__rowIndex}</td>
+                        <td className="px-4 py-3 text-sm text-gray-800">{c.firstName || "-"}</td>
+                        <td className="px-4 py-3 text-sm text-gray-800">{c.lastName || "-"}</td>
+                        <td className="px-4 py-3 text-sm text-gray-800 font-mono">{c.phone || "-"}</td>
+                        <td className="px-4 py-3 text-sm text-gray-650">{c.email || "-"}</td>
+                        <td className="px-4 py-3 text-sm">
                           {ok ? (
-                            <span className="inline-flex items-center gap-1 text-green-600">
+                            <span className="inline-flex items-center gap-1 text-green-600 font-semibold">
                               <CheckCircle2 className="w-4 h-4" /> Valid
                             </span>
                           ) : (
-                            <span className="inline-flex items-center gap-1 text-red-600">
+                            <span className="inline-flex items-center gap-1 text-red-600 font-semibold">
                               <AlertCircle className="w-4 h-4" /> Invalid phone
                             </span>
                           )}
@@ -574,12 +574,12 @@ const ImportContacts: React.FC = () => {
             </div>
 
             <div className="flex justify-end gap-3 mt-6">
-              <button onClick={() => setStep("mapping")} className="px-5 py-2.5 text-gray-300 rounded-xl hover:bg-[#0a0e27]/[0.04]">
+              <button onClick={() => setStep("mapping")} className="px-5 py-2.5 text-gray-600 rounded-xl hover:bg-gray-100 transition-colors">
                 Back
               </button>
               <button 
                 onClick={handleStartImport} 
-                className="px-5 py-2.5 bg-primary-500 hover:bg-primary-600 text-white rounded-xl"
+                className="px-5 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-xl font-medium transition-colors shadow-sm"
               >
                 Import {Math.min(stats.valid, importStats?.remainingSlots || 0)} Contacts
               </button>
@@ -589,8 +589,8 @@ const ImportContacts: React.FC = () => {
 
         {step === "importing" && (
           <div className="py-16 text-center">
-            <Loader2 className="w-16 h-16 text-primary-500 animate-spin mx-auto mb-6" />
-            <h2 className="text-xl font-bold text-white mb-2">Importing...</h2>
+            <Loader2 className="w-16 h-16 text-green-600 animate-spin mx-auto mb-6" />
+            <h2 className="text-xl font-bold text-gray-900 mb-2">Importing...</h2>
             <p className="text-gray-500">Uploading in one batch (fast & safe).</p>
           </div>
         )}
@@ -598,44 +598,44 @@ const ImportContacts: React.FC = () => {
         {step === "complete" && importResult && (
           <div className="py-6">
             <div className="text-center">
-              <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <div className="w-20 h-20 bg-green-50 border border-green-200 rounded-full flex items-center justify-center mx-auto mb-6">
                 <CheckCircle2 className="w-10 h-10 text-green-600" />
               </div>
 
-              <h2 className="text-2xl font-bold text-white mb-2">Import Complete!</h2>
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">Import Complete!</h2>
               <p className="text-gray-500 mb-8">Contacts processed successfully.</p>
 
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 max-w-2xl mx-auto mb-8">
-                <div className="bg-[#050816] rounded-xl p-4">
-                  <p className="text-3xl font-bold text-white">{importResult.total}</p>
-                  <p className="text-sm text-gray-500">Total Rows</p>
+                <div className="bg-gray-50 border border-gray-200 rounded-xl p-4">
+                  <p className="text-3xl font-bold text-gray-900">{importResult.total}</p>
+                  <p className="text-sm text-gray-500 mt-1 font-semibold">Total Rows</p>
                 </div>
-                <div className="bg-green-50 rounded-xl p-4">
-                  <p className="text-3xl font-bold text-green-600">{importResult.imported}</p>
-                  <p className="text-sm text-gray-500">Imported</p>
+                <div className="bg-green-50 border border-green-100 rounded-xl p-4">
+                  <p className="text-3xl font-bold text-green-700">{importResult.imported}</p>
+                  <p className="text-sm text-gray-500 mt-1 font-semibold">Imported</p>
                 </div>
-                <div className="bg-yellow-50 rounded-xl p-4">
-                  <p className="text-3xl font-bold text-yellow-600">{importResult.duplicates}</p>
-                  <p className="text-sm text-gray-500">Duplicates Skipped</p>
+                <div className="bg-yellow-50 border border-yellow-100 rounded-xl p-4">
+                  <p className="text-3xl font-bold text-yellow-750">{importResult.duplicates}</p>
+                  <p className="text-sm text-gray-500 mt-1 font-semibold">Duplicates Skipped</p>
                 </div>
-                <div className="bg-red-50 rounded-xl p-4">
-                  <p className="text-3xl font-bold text-red-600">{importResult.errors}</p>
-                  <p className="text-sm text-gray-500">Errors / Invalid</p>
+                <div className="bg-red-50 border border-red-100 rounded-xl p-4">
+                  <p className="text-3xl font-bold text-red-700">{importResult.errors}</p>
+                  <p className="text-sm text-gray-500 mt-1 font-semibold">Errors / Invalid</p>
                 </div>
               </div>
 
               <div className="flex items-center justify-center gap-4">
                 <button
                   onClick={() => navigate("/dashboard/contacts")}
-                  className="px-6 py-2.5 bg-primary-500 hover:bg-primary-600 text-white rounded-xl"
+                  className="px-6 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-xl font-medium transition-colors shadow-sm"
                 >
                   View Contacts
                 </button>
                 <button
                   onClick={resetAll}
-                  className="px-6 py-2.5 text-gray-300 rounded-xl hover:bg-[#0a0e27]/[0.04] flex items-center gap-2"
+                  className="px-6 py-2.5 text-gray-650 rounded-xl border border-gray-200 hover:bg-gray-50 flex items-center gap-2 transition-all shadow-sm"
                 >
-                  <RefreshCw className="w-4 h-4" />
+                  <RefreshCw className="w-4 h-4 text-gray-500" />
                   Import More
                 </button>
               </div>
@@ -644,29 +644,29 @@ const ImportContacts: React.FC = () => {
             {failures.length > 0 && (
               <div className="mt-10">
                 <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-lg font-semibold text-white">Import Errors</h3>
+                  <h3 className="text-lg font-semibold text-gray-900">Import Errors</h3>
                   <button
                     onClick={downloadErrorCsv}
-                    className="flex items-center gap-2 text-primary-600 hover:text-primary-700 font-medium"
+                    className="flex items-center gap-2 text-green-600 hover:text-green-750 font-semibold"
                   >
                     <Download className="w-4 h-4" />
                     Download error report
                   </button>
                 </div>
 
-                <div className="overflow-x-auto rounded-xl border border-white/[0.1]">
+                <div className="overflow-x-auto rounded-xl border border-gray-200">
                   <table className="w-full">
-                    <thead className="bg-[#050816]">
+                    <thead className="bg-gray-50 border-b border-gray-200">
                       <tr>
-                        <th className="px-4 py-3 text-left text-sm font-semibold text-gray-400">Row</th>
-                        <th className="px-4 py-3 text-left text-sm font-semibold text-gray-400">Error</th>
+                        <th className="px-4 py-3 text-left text-xs font-semibold text-gray-650 uppercase">Row</th>
+                        <th className="px-4 py-3 text-left text-xs font-semibold text-gray-650 uppercase">Error</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100">
                       {failures.slice(0, 200).map((f, i) => (
-                        <tr key={i}>
-                          <td className="px-4 py-3 text-gray-300">{f.row}</td>
-                          <td className="px-4 py-3 text-red-700">{f.error}</td>
+                        <tr key={i} className="hover:bg-gray-50/50">
+                          <td className="px-4 py-3 text-sm text-gray-800 font-semibold">{f.row}</td>
+                          <td className="px-4 py-3 text-sm text-red-700 font-medium">{f.error}</td>
                         </tr>
                       ))}
                     </tbody>

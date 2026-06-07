@@ -149,18 +149,18 @@ const LeadsList: React.FC = () => {
             case 'URGENT': return 'bg-red-100 text-red-700';
             case 'HIGH': return 'bg-orange-100 text-orange-700';
             case 'MEDIUM': return 'bg-yellow-100 text-yellow-700';
-            case 'LOW': return 'bg-[#0a0e27]/[0.04] text-gray-300';
-            default: return 'bg-[#0a0e27]/[0.04] text-gray-300';
+            case 'LOW': return 'bg-gray-100 text-gray-600';
+            default: return 'bg-gray-100 text-gray-600';
         }
     };
 
     return (
         <div className="h-full flex flex-col">
             {/* Header */}
-            <div className="flex-shrink-0 bg-[#0a0e27] border-b border-white/[0.1] px-6 py-4">
+            <div className="flex-shrink-0 bg-white border-b border-gray-200 px-6 py-4">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
-                        <h1 className="text-xl font-bold text-white">Leads</h1>
+                        <h1 className="text-xl font-bold text-gray-900">Leads</h1>
 
                         {/* Pipeline Selector */}
                         <select
@@ -169,7 +169,7 @@ const LeadsList: React.FC = () => {
                                 const pip = pipelines.find(p => p.id === e.target.value);
                                 setSelectedPipeline(pip || null);
                             }}
-                            className="px-3 py-1.5 bg-[#0a0e27]/[0.04] dark:bg-gray-700 border-none rounded-lg text-sm"
+                            className="px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-800 focus:ring-2 focus:ring-green-500 focus:outline-none"
                         >
                             {pipelines.map(p => (
                                 <option key={p.id} value={p.id}>{p.name}</option>
@@ -186,21 +186,21 @@ const LeadsList: React.FC = () => {
                                 placeholder="Search leads..."
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
-                                className="pl-9 pr-4 py-2 w-64 bg-[#0a0e27]/[0.04] dark:bg-gray-700 border-none rounded-lg text-sm"
+                                className="pl-9 pr-4 py-2 w-64 bg-gray-50 border border-gray-200 focus:ring-2 focus:ring-green-500 focus:border-green-500 rounded-lg text-sm text-gray-800 focus:outline-none"
                             />
                         </div>
 
                         {/* View Toggle */}
-                        <div className="flex bg-[#0a0e27]/[0.04] dark:bg-gray-700 rounded-lg p-1">
+                        <div className="flex bg-gray-100 border border-gray-200 rounded-lg p-1">
                             <button
                                 onClick={() => setViewMode('kanban')}
-                                className={`p-1.5 rounded ${viewMode === 'kanban' ? 'bg-[#0a0e27] dark:bg-gray-600 shadow-sm' : ''}`}
+                                className={`p-1.5 rounded transition-all ${viewMode === 'kanban' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}
                             >
                                 <LayoutGrid className="w-4 h-4" />
                             </button>
                             <button
                                 onClick={() => setViewMode('list')}
-                                className={`p-1.5 rounded ${viewMode === 'list' ? 'bg-[#0a0e27] dark:bg-gray-600 shadow-sm' : ''}`}
+                                className={`p-1.5 rounded transition-all ${viewMode === 'list' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}
                             >
                                 <List className="w-4 h-4" />
                             </button>
@@ -210,16 +210,16 @@ const LeadsList: React.FC = () => {
                         <button
                             onClick={handleSync}
                             disabled={syncing}
-                            className="flex items-center gap-2 px-4 py-2 border border-white/[0.1] text-gray-300 rounded-lg hover:bg-[#0a0e27]/[0.04] text-sm disabled:opacity-50"
+                            className="flex items-center gap-2 px-4 py-2 border border-gray-200 text-gray-700 bg-white rounded-lg hover:bg-gray-50 text-sm disabled:opacity-50 transition-colors shadow-sm"
                         >
-                            {syncing ? <Loader2 className="w-4 h-4 animate-spin" /> : <TrendingUp className="w-4 h-4" />}
+                            {syncing ? <Loader2 className="w-4 h-4 animate-spin" /> : <TrendingUp className="w-4 h-4 text-gray-500" />}
                             Sync
                         </button>
 
                         {/* Add Lead */}
                         <button
                             onClick={() => setShowCreateModal(true)}
-                            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm"
+                            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm font-medium transition-colors shadow-sm"
                         >
                             <Plus className="w-4 h-4" />
                             Add Lead
@@ -240,26 +240,26 @@ const LeadsList: React.FC = () => {
                             {selectedPipeline?.stages.map((stage) => (
                                 <div
                                     key={stage.id}
-                                    className="w-80 flex-shrink-0 bg-[#0a0e27]/[0.04] rounded-xl flex flex-col"
+                                    className="w-80 flex-shrink-0 bg-gray-50/50 border border-gray-200/60 rounded-xl flex flex-col shadow-sm"
                                 >
                                     {/* Stage Header */}
                                     <div
-                                        className="p-3 rounded-t-xl flex items-center justify-between"
-                                        style={{ backgroundColor: stage.color + '20' }}
+                                        className="p-3 rounded-t-xl flex items-center justify-between border-b border-gray-100"
+                                        style={{ backgroundColor: stage.color + '15' }}
                                     >
                                         <div className="flex items-center gap-2">
                                             <div
                                                 className="w-3 h-3 rounded-full"
                                                 style={{ backgroundColor: stage.color }}
                                             />
-                                            <span className="font-medium text-white">
+                                            <span className="font-semibold text-gray-900">
                                                 {stage.name}
                                             </span>
                                             <span className="text-sm text-gray-500">
                                                 ({leadsByStage[stage.id]?.length || 0})
                                             </span>
                                         </div>
-                                        <span className="text-xs text-gray-500">{stage.probability}%</span>
+                                        <span className="text-xs text-gray-500 font-medium">{stage.probability}%</span>
                                     </div>
 
                                     {/* Leads */}
@@ -268,7 +268,7 @@ const LeadsList: React.FC = () => {
                                             <div
                                                 ref={provided.innerRef}
                                                 {...provided.droppableProps}
-                                                className={`flex-1 p-2 space-y-2 overflow-y-auto ${snapshot.isDraggingOver ? 'bg-green-50 dark:bg-green-900/20' : ''
+                                                className={`flex-1 p-2 space-y-2 overflow-y-auto ${snapshot.isDraggingOver ? 'bg-green-50/30' : ''
                                                     }`}
                                             >
                                                 {leadsByStage[stage.id]?.map((lead, index) => (
@@ -279,33 +279,33 @@ const LeadsList: React.FC = () => {
                                                                 {...provided.draggableProps}
                                                                 {...provided.dragHandleProps}
                                                                 onClick={() => navigate(`/dashboard/crm/leads/${lead.id}`)}
-                                                                className={`bg-[#0a0e27] dark:bg-gray-700 rounded-lg p-3 shadow-sm cursor-pointer hover:shadow-md transition-shadow ${snapshot.isDragging ? 'shadow-lg ring-2 ring-green-500' : ''
+                                                                className={`bg-white border border-gray-200 rounded-lg p-3 shadow-sm cursor-pointer hover:shadow-md transition-all ${snapshot.isDragging ? 'shadow-lg ring-2 ring-green-500' : ''
                                                                     }`}
                                                             >
                                                                 <div className="flex items-start justify-between mb-2">
-                                                                    <h4 className="font-medium text-white text-sm">
+                                                                    <h4 className="font-semibold text-gray-900 text-sm">
                                                                         {lead.title}
                                                                     </h4>
-                                                                    <span className={`px-1.5 py-0.5 text-xs rounded ${getPriorityColor(lead.priority)}`}>
+                                                                    <span className={`px-1.5 py-0.5 text-[10px] font-medium rounded ${getPriorityColor(lead.priority)}`}>
                                                                         {lead.priority}
                                                                     </span>
                                                                 </div>
 
                                                                 {lead.contact && (
-                                                                    <p className="text-sm text-gray-500 mb-2">
+                                                                    <p className="text-sm text-gray-600 mb-2">
                                                                         {lead.contact.firstName} {lead.contact.lastName}
                                                                     </p>
                                                                 )}
 
                                                                 <div className="flex items-center justify-between text-xs text-gray-500">
                                                                     {lead.value && (
-                                                                        <span className="font-medium text-green-600">
+                                                                        <span className="font-semibold text-green-700">
                                                                             {formatCurrency(lead.value)}
                                                                         </span>
                                                                     )}
                                                                     {lead.expectedCloseDate && (
                                                                         <span className="flex items-center gap-1">
-                                                                            <Calendar className="w-3 h-3" />
+                                                                            <Calendar className="w-3 h-3 text-gray-400" />
                                                                             {new Date(lead.expectedCloseDate).toLocaleDateString()}
                                                                         </span>
                                                                     )}
@@ -326,45 +326,45 @@ const LeadsList: React.FC = () => {
             ) : (
                 /* List View */
                 <div className="flex-1 overflow-auto p-4">
-                    <div className="bg-[#0a0e27] rounded-xl border border-white/[0.1]">
+                    <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
                         <table className="w-full">
-                            <thead className="bg-[#050816] dark:bg-gray-700">
+                            <thead className="bg-gray-50 border-b border-gray-200">
                                 <tr>
-                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Lead</th>
-                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Contact</th>
-                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Stage</th>
-                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Value</th>
-                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Priority</th>
-                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Created</th>
+                                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Lead</th>
+                                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Contact</th>
+                                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Stage</th>
+                                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Value</th>
+                                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Priority</th>
+                                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Created</th>
                                     <th className="px-4 py-3"></th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                            <tbody className="divide-y divide-gray-150">
                                 {Object.values(leadsByStage).flat().map((lead) => (
                                     <tr
                                         key={lead.id}
                                         onClick={() => navigate(`/dashboard/crm/leads/${lead.id}`)}
-                                        className="hover:bg-[#0a0e27]/[0.04] cursor-pointer"
+                                        className="hover:bg-gray-50/50 cursor-pointer transition-colors"
                                     >
                                         <td className="px-4 py-3">
-                                            <p className="font-medium text-white">{lead.title}</p>
+                                            <p className="font-semibold text-gray-900">{lead.title}</p>
                                         </td>
-                                        <td className="px-4 py-3 text-sm text-gray-500">
+                                        <td className="px-4 py-3 text-sm text-gray-600">
                                             {lead.contact ? `${lead.contact.firstName || ''} ${lead.contact.lastName || ''}` : '-'}
                                         </td>
                                         <td className="px-4 py-3">
                                             <span
-                                                className="px-2 py-1 text-xs rounded-full"
+                                                className="px-2.5 py-0.5 text-xs font-medium rounded-full"
                                                 style={{ backgroundColor: lead.stage?.color + '20', color: lead.stage?.color }}
                                             >
                                                 {lead.stage?.name}
                                             </span>
                                         </td>
-                                        <td className="px-4 py-3 text-sm font-medium text-green-600">
+                                        <td className="px-4 py-3 text-sm font-semibold text-green-700">
                                             {lead.value ? formatCurrency(lead.value) : '-'}
                                         </td>
                                         <td className="px-4 py-3">
-                                            <span className={`px-2 py-1 text-xs rounded ${getPriorityColor(lead.priority)}`}>
+                                            <span className={`px-2 py-0.5 text-xs font-medium rounded ${getPriorityColor(lead.priority)}`}>
                                                 {lead.priority}
                                             </span>
                                         </td>
@@ -372,8 +372,8 @@ const LeadsList: React.FC = () => {
                                             {new Date(lead.createdAt).toLocaleDateString()}
                                         </td>
                                         <td className="px-4 py-3">
-                                            <button className="p-1 hover:bg-[#0a0e27]/[0.04] dark:hover:bg-gray-600 rounded">
-                                                <MoreVertical className="w-4 h-4 text-gray-400" />
+                                            <button className="p-1 hover:bg-gray-100 rounded text-gray-400 hover:text-gray-600 transition-colors">
+                                                <MoreVertical className="w-4 h-4" />
                                             </button>
                                         </td>
                                     </tr>

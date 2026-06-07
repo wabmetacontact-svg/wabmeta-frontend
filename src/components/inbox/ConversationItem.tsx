@@ -151,7 +151,7 @@ const ConversationItem: React.FC<Props> = ({
   };
 
   return (
-    <div className={`relative transition-all duration-300 rounded-lg m-1 border-2 ${isSelected ? 'border-emerald-500 bg-[#0a0e27]/[0.06]' : 'border-transparent'}`}>
+    <div className={`relative transition-all duration-300 rounded-lg m-1 border-2 ${isSelected ? 'border-emerald-500 bg-emerald-50/40' : 'border-transparent'}`}>
       <div
         onClick={(e) => {
           if (isSelectionMode && onToggleSelection) {
@@ -164,7 +164,7 @@ const ConversationItem: React.FC<Props> = ({
         className={`
           group flex items-start gap-3 px-3 py-3 cursor-pointer rounded-lg
           transition-all duration-300
-          ${!isSelected && 'hover:bg-[#0a0e27]/[0.03]'}
+          ${!isSelected && 'hover:bg-gray-50'}
         `}
       >
         {/* ── Avatar ─────────────────────────────────────────────────────── */}
@@ -175,7 +175,7 @@ const ConversationItem: React.FC<Props> = ({
               bg-gradient-to-br ${avatarColor}
               flex items-center justify-center
               text-white font-semibold text-base
-              shadow-md ring-2 ring-[#0a0e27]
+              shadow-md ring-2 ring-white
               ${hasUnread ? 'ring-emerald-400/30' : ''}
               ${isSelectionMode || isSelectedForAction ? 'opacity-0' : 'group-hover:opacity-0'}
               transition-opacity duration-200
@@ -199,14 +199,14 @@ const ConversationItem: React.FC<Props> = ({
             }}
             className={`
               absolute inset-0 flex items-center justify-center rounded-full
-              ${isSelectionMode || isSelectedForAction ? 'opacity-100 bg-black/40' : 'opacity-0 group-hover:opacity-100 bg-black/40'}
+              ${isSelectionMode || isSelectedForAction ? 'opacity-100 bg-black/20' : 'opacity-0 group-hover:opacity-100 bg-black/20'}
               transition-all duration-200 cursor-pointer
             `}
           >
             {isSelectedForAction ? (
-              <CheckSquare className="w-5 h-5 text-emerald-400" />
+              <CheckSquare className="w-5 h-5 text-emerald-600" />
             ) : (
-              <Square className="w-5 h-5 text-white/70" />
+              <Square className="w-5 h-5 text-white/90" />
             )}
           </div>
 
@@ -214,20 +214,20 @@ const ConversationItem: React.FC<Props> = ({
 
           {/* Pin badge */}
           {conv.isPinned && (
-            <div className="absolute bottom-0 right-0 w-[18px] h-[18px] bg-amber-400 rounded-full flex items-center justify-center ring-2 ring-[#0a0e27] z-10">
+            <div className="absolute bottom-0 right-0 w-[18px] h-[18px] bg-amber-400 rounded-full flex items-center justify-center ring-2 ring-white z-10">
               <Pin className="w-2.5 h-2.5 text-amber-900" />
             </div>
           )}
 
           {/* Online indicator (when window is open) */}
           {!conv.isPinned && conv.isWindowOpen && (
-            <div className="absolute bottom-0 right-0 w-[14px] h-[14px] bg-emerald-500 rounded-full ring-2 ring-[#0a0e27] z-10" />
+            <div className="absolute bottom-0 right-0 w-[14px] h-[14px] bg-emerald-500 rounded-full ring-2 ring-white z-10" />
           )}
 
           {/* Muted icon */}
           {conv.isMuted && (
-            <div className="absolute top-0 right-0 w-[16px] h-[16px] bg-gray-700 rounded-full flex items-center justify-center ring-2 ring-[#0a0e27] z-10">
-              <VolumeX className="w-2.5 h-2.5 text-gray-300" />
+            <div className="absolute top-0 right-0 w-[16px] h-[16px] bg-gray-200 rounded-full flex items-center justify-center ring-2 ring-white z-10">
+              <VolumeX className="w-2.5 h-2.5 text-gray-500" />
             </div>
           )}
         </div>
@@ -240,8 +240,8 @@ const ConversationItem: React.FC<Props> = ({
               className={`
                 text-sm truncate flex-1
                 ${hasUnread
-                  ? 'font-semibold text-white'
-                  : 'font-medium text-gray-200'
+                  ? 'font-semibold text-gray-900'
+                  : 'font-medium text-gray-700'
                 }
               `}
             >
@@ -251,8 +251,8 @@ const ConversationItem: React.FC<Props> = ({
               className={`
                 text-[11px] ml-2 flex-shrink-0
                 ${hasUnread
-                  ? 'text-emerald-400 font-medium'
-                  : 'text-gray-500'
+                  ? 'text-emerald-600 font-medium'
+                  : 'text-gray-400'
                 }
               `}
             >
@@ -265,11 +265,11 @@ const ConversationItem: React.FC<Props> = ({
             {/* Typing indicator OR preview */}
             <div className="flex items-center gap-1.5 flex-1 min-w-0">
               {conv.isTyping ? (
-                <span className="flex items-center gap-1 text-emerald-400 text-xs">
+                <span className="flex items-center gap-1 text-emerald-600 text-xs">
                   <span className="flex gap-0.5">
-                    <span className="w-1 h-1 bg-emerald-400 rounded-full typing-dot" />
-                    <span className="w-1 h-1 bg-emerald-400 rounded-full typing-dot" />
-                    <span className="w-1 h-1 bg-emerald-400 rounded-full typing-dot" />
+                    <span className="w-1 h-1 bg-emerald-600 rounded-full typing-dot" />
+                    <span className="w-1 h-1 bg-emerald-600 rounded-full typing-dot" />
+                    <span className="w-1 h-1 bg-emerald-600 rounded-full typing-dot" />
                   </span>
                   <span className="font-medium">typing...</span>
                 </span>
@@ -280,8 +280,8 @@ const ConversationItem: React.FC<Props> = ({
                     className={`
                       text-xs truncate
                       ${hasUnread
-                        ? 'text-gray-200 font-medium'
-                        : 'text-gray-400'
+                        ? 'text-gray-800 font-medium'
+                        : 'text-gray-500'
                       }
                     `}
                   >
@@ -329,7 +329,7 @@ const ConversationItem: React.FC<Props> = ({
                 );
               })}
               {conv.labels.length > 3 && (
-                <span className="text-[9px] text-gray-500 self-center">
+                <span className="text-[9px] text-gray-400 self-center">
                   +{conv.labels.length - 3}
                 </span>
               )}
@@ -347,7 +347,7 @@ const ConversationItem: React.FC<Props> = ({
           className="
             p-1 rounded-md
             opacity-0 group-hover:opacity-100
-            hover:bg-[#0a0e27]/[0.08]
+            hover:bg-gray-100
             transition-all duration-200
             flex-shrink-0 self-start mt-1
           "
@@ -363,8 +363,7 @@ const ConversationItem: React.FC<Props> = ({
           className="
             absolute right-3 top-12 z-30
             w-48 py-1.5
-            bg-[#0f1729]/98 backdrop-blur-xl
-            border border-white/[0.1]
+            bg-white border border-gray-200
             rounded-xl shadow-2xl
             animate-fade-in
           "
@@ -374,16 +373,16 @@ const ConversationItem: React.FC<Props> = ({
               onPin(e);
               setShowMenu(false);
             }}
-            className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-200 hover:bg-[#0a0e27]/[0.05] transition-colors"
+            className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
           >
             {conv.isPinned ? (
               <>
-                <PinOff className="w-4 h-4 text-gray-400" />
+                <PinOff className="w-4 h-4 text-gray-500" />
                 Unpin conversation
               </>
             ) : (
               <>
-                <Pin className="w-4 h-4 text-gray-400" />
+                <Pin className="w-4 h-4 text-gray-500" />
                 Pin to top
               </>
             )}
@@ -395,9 +394,9 @@ const ConversationItem: React.FC<Props> = ({
               setShowLabels(true);
               setShowMenu(false);
             }}
-            className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-200 hover:bg-[#0a0e27]/[0.05] transition-colors"
+            className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
           >
-            <Tag className="w-4 h-4 text-gray-400" />
+            <Tag className="w-4 h-4 text-gray-500" />
             Add label
           </button>
 
@@ -407,9 +406,9 @@ const ConversationItem: React.FC<Props> = ({
                 onMute(e);
                 setShowMenu(false);
               }}
-              className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-200 hover:bg-[#0a0e27]/[0.05] transition-colors"
+              className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
             >
-              <VolumeX className="w-4 h-4 text-gray-400" />
+              <VolumeX className="w-4 h-4 text-gray-500" />
               {conv.isMuted ? 'Unmute' : 'Mute notifications'}
             </button>
           )}
@@ -419,29 +418,29 @@ const ConversationItem: React.FC<Props> = ({
               e.stopPropagation();
               setShowMenu(false);
             }}
-            className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-200 hover:bg-[#0a0e27]/[0.05] transition-colors"
+            className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
           >
-            <UserCheck className="w-4 h-4 text-gray-400" />
+            <UserCheck className="w-4 h-4 text-gray-500" />
             Mark as read
           </button>
 
-          <div className="border-t border-white/[0.06] my-1" />
+          <div className="border-t border-gray-100 my-1" />
 
           <button
             onClick={(e) => {
               onArchive(e);
               setShowMenu(false);
             }}
-            className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-200 hover:bg-[#0a0e27]/[0.05] transition-colors"
+            className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
           >
             {conv.isArchived ? (
               <>
-                <ArchiveRestore className="w-4 h-4 text-gray-400" />
+                <ArchiveRestore className="w-4 h-4 text-gray-500" />
                 Unarchive
               </>
             ) : (
               <>
-                <Archive className="w-4 h-4 text-gray-400" />
+                <Archive className="w-4 h-4 text-gray-500" />
                 Archive
               </>
             )}
@@ -453,7 +452,7 @@ const ConversationItem: React.FC<Props> = ({
                 onDelete(e);
                 setShowMenu(false);
               }}
-              className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-red-400 hover:bg-red-500/10 transition-colors"
+              className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
             >
               <Trash2 className="w-4 h-4" />
               Delete
@@ -469,13 +468,12 @@ const ConversationItem: React.FC<Props> = ({
           className="
             absolute right-3 top-12 z-30
             w-56 py-1.5
-            bg-[#0f1729]/98 backdrop-blur-xl
-            border border-white/[0.1]
+            bg-white border border-gray-200
             rounded-xl shadow-2xl
             animate-fade-in
           "
         >
-          <div className="px-3 py-1.5 text-[10px] font-bold text-gray-500 uppercase tracking-wider">
+          <div className="px-3 py-1.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider">
             Apply Label
           </div>
           <div className="max-h-64 overflow-y-auto inbox-scroll">
@@ -490,7 +488,7 @@ const ConversationItem: React.FC<Props> = ({
               
               if (unappliedLabels.length === 0) {
                 return (
-                  <div className="px-3 py-3 text-xs text-gray-500 text-center">
+                  <div className="px-3 py-3 text-xs text-gray-400 text-center">
                     All labels applied
                   </div>
                 );
@@ -506,7 +504,7 @@ const ConversationItem: React.FC<Props> = ({
                       onAddLabel(label);
                       setShowLabels(false);
                     }}
-                    className="w-full flex items-center gap-2.5 px-3 py-2 text-sm hover:bg-[#0a0e27]/[0.05] transition-colors"
+                    className="w-full flex items-center gap-2.5 px-3 py-2 text-sm hover:bg-gray-50 transition-colors"
                   >
                     <span className={`w-3 h-3 rounded-full ${style.dot}`} />
                     <span className={`capitalize text-xs font-medium ${style.text}`}>
@@ -518,13 +516,13 @@ const ConversationItem: React.FC<Props> = ({
             })()}
           </div>
           
-          <div className="border-t border-white/[0.06] mt-1 p-2">
+          <div className="border-t border-gray-100 mt-1 p-2">
             <div className="flex gap-1 mb-2 overflow-x-auto inbox-scroll pb-1">
               {CUSTOM_PALETTE.map((p) => (
                 <button
                   key={p.color}
                   onClick={(e) => { e.stopPropagation(); setSelectedColor(p.color); }}
-                  className={`w-5 h-5 rounded-full flex-shrink-0 border-2 ${selectedColor === p.color ? 'border-white' : 'border-transparent'}`}
+                  className={`w-5 h-5 rounded-full flex-shrink-0 border-2 ${selectedColor === p.color ? 'border-gray-300' : 'border-transparent'}`}
                   style={{ backgroundColor: p.color }}
                   title={p.name}
                 />
@@ -547,8 +545,8 @@ const ConversationItem: React.FC<Props> = ({
                   }
                 }}
                 className="
-                  flex-1 bg-white/[0.05] border border-white/[0.1] rounded text-sm px-2 py-1
-                  text-gray-200 placeholder-gray-500 focus:outline-none focus:border-emerald-500/50
+                  flex-1 bg-gray-50 border border-gray-200 rounded text-sm px-2 py-1
+                  text-gray-900 placeholder-gray-400 focus:outline-none focus:border-emerald-500/50
                 "
               />
               <button
@@ -561,7 +559,7 @@ const ConversationItem: React.FC<Props> = ({
                     setShowLabels(false);
                   }
                 }}
-                className="bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30 px-3 py-1 rounded text-sm font-medium transition-colors"
+                className="bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 px-3 py-1 rounded text-sm font-medium transition-colors"
               >
                 Add
               </button>

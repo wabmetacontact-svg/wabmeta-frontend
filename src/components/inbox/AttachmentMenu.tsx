@@ -87,14 +87,13 @@ const AttachmentMenu: React.FC<Props> = ({ isOpen, onClose, onSelect, position =
         absolute left-2 z-30
         ${position === 'top' ? 'bottom-full mb-2' : 'top-full mt-2'}
         w-[280px]
-        bg-[#0f1729]/98 backdrop-blur-2xl
-        border border-white/[0.1]
+        bg-white border border-gray-200
         rounded-2xl shadow-2xl
         p-3 animate-fade-in
       `}
     >
       <div className="px-1 mb-2">
-        <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">
+        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
           Send Attachment
         </p>
       </div>
@@ -110,8 +109,8 @@ const AttachmentMenu: React.FC<Props> = ({ isOpen, onClose, onSelect, position =
             className="
               flex flex-col items-center gap-2
               p-3 rounded-xl
-              bg-[#0a0e27]/[0.03] hover:bg-[#0a0e27]/[0.06]
-              border border-white/[0.05] hover:border-white/[0.1]
+              bg-gray-50 hover:bg-gray-100
+              border border-gray-200/50 hover:border-gray-200
               transition-all hover:scale-105 active:scale-95
               group
             "
@@ -125,7 +124,7 @@ const AttachmentMenu: React.FC<Props> = ({ isOpen, onClose, onSelect, position =
             `}>
               {option.icon}
             </div>
-            <span className="text-[11px] font-medium text-gray-200">
+            <span className="text-[11px] font-medium text-gray-700">
               {option.label}
             </span>
           </button>

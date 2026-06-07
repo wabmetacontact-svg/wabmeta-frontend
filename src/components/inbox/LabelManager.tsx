@@ -68,9 +68,9 @@ const LabelManager: React.FC<Props> = ({ labels, allLabels = [], onAddLabel, onR
             className="
               inline-flex items-center gap-1 px-2 py-1
               text-[10px] font-medium rounded-md
-              bg-[#0a0e27]/[0.04] hover:bg-[#0a0e27]/[0.08]
-              border border-dashed border-white/[0.15]
-              text-gray-300 hover:text-white
+              bg-gray-50 hover:bg-gray-100
+              border border-dashed border-gray-200
+              text-gray-500 hover:text-gray-900
               transition-all
             "
           >
@@ -91,13 +91,13 @@ const LabelManager: React.FC<Props> = ({ labels, allLabels = [], onAddLabel, onR
           className="
             absolute left-0 top-full mt-2 z-20
             w-52 py-1.5
-            bg-[#0f1729]/98 backdrop-blur-xl
-            border border-white/[0.1]
-            rounded-xl shadow-2xl
+            bg-white
+            border border-gray-200
+            rounded-xl shadow-lg
             animate-fade-in
           "
         >
-          <div className="px-3 py-1.5 text-[10px] font-bold text-gray-500 uppercase tracking-wider border-b border-white/[0.06]">
+          <div className="px-3 py-1.5 text-[10px] font-bold text-gray-500 uppercase tracking-wider border-b border-gray-100">
             Choose Label
           </div>
           <div className="max-h-56 overflow-y-auto inbox-scroll py-1">
@@ -112,7 +112,7 @@ const LabelManager: React.FC<Props> = ({ labels, allLabels = [], onAddLabel, onR
                   }}
                   className="
                     w-full flex items-center gap-2.5 px-3 py-2
-                    text-sm hover:bg-[#0a0e27]/[0.05]
+                    text-sm hover:bg-gray-50
                     transition-colors
                   "
                 >

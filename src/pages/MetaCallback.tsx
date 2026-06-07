@@ -366,28 +366,24 @@ const MetaCallback: React.FC = () => {
     return false;
   };
 
-  // ============================================
-  // RENDER
-  // ============================================
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-green-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center p-4">
-      <div className="max-w-md w-full bg-[#0a0e27] rounded-2xl shadow-xl p-8 text-center">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 to-green-100 flex items-center justify-center p-4">
+      <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 text-center border border-gray-100">
         {/* Status Icon */}
         <div className="mb-6">
           {ui.status === 'loading' && (
-            <div className="mx-auto w-20 h-20 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
-              <Loader2 className="w-10 h-10 text-green-600 dark:text-green-400 animate-spin" />
+            <div className="mx-auto w-20 h-20 bg-green-50 rounded-full flex items-center justify-center">
+              <Loader2 className="w-10 h-10 text-green-600 animate-spin" />
             </div>
           )}
           {ui.status === 'success' && (
-            <div className="mx-auto w-20 h-20 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center animate-scale-in">
-              <CheckCircle className="w-10 h-10 text-green-600 dark:text-green-400" />
+            <div className="mx-auto w-20 h-20 bg-green-50 rounded-full flex items-center justify-center animate-scale-in">
+              <CheckCircle className="w-10 h-10 text-green-600" />
             </div>
           )}
           {ui.status === 'error' && (
-            <div className="mx-auto w-20 h-20 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center">
-              <XCircle className="w-10 h-10 text-red-600 dark:text-red-400" />
+            <div className="mx-auto w-20 h-20 bg-red-50 rounded-full flex items-center justify-center">
+              <XCircle className="w-10 h-10 text-red-650" />
             </div>
           )}
         </div>
@@ -395,8 +391,8 @@ const MetaCallback: React.FC = () => {
         {/* Title */}
         <h1
           className={`text-2xl font-bold mb-2 ${ui.status === 'error'
-              ? 'text-red-900 dark:text-red-200'
-              : 'text-white'
+              ? 'text-red-750'
+              : 'text-gray-900'
             }`}
         >
           {ui.status === 'loading' && 'Connecting...'}
@@ -405,16 +401,16 @@ const MetaCallback: React.FC = () => {
         </h1>
 
         {/* Message */}
-        <p className="text-gray-400 mb-4">{ui.message}</p>
+        <p className="text-gray-600 mb-4">{ui.message}</p>
 
         {/* Details */}
         {ui.details && (
           <div
             className={`text-sm mb-6 p-3 rounded-lg ${ui.status === 'success'
-                ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300'
+                ? 'bg-green-50 text-green-750'
                 : ui.status === 'error'
-                  ? 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300'
-                  : 'bg-[#050816] dark:bg-gray-700 text-gray-400 dark:text-gray-300'
+                  ? 'bg-red-50 text-red-750'
+                  : 'bg-gray-50 text-gray-650 border border-gray-150'
               }`}
           >
             {ui.details}
@@ -441,7 +437,7 @@ const MetaCallback: React.FC = () => {
 
         {/* Success redirect message */}
         {ui.status === 'success' && (
-          <p className="text-sm text-gray-400">
+          <p className="text-sm text-gray-500">
             {window.opener ? 'Closing window...' : 'Redirecting to dashboard...'}
           </p>
         )}
@@ -471,15 +467,14 @@ const MetaCallback: React.FC = () => {
                   navigate('/dashboard');
                 }
               }}
-              className="w-full py-3 px-4 text-gray-400 hover:text-white dark:hover:text-gray-200 font-medium transition-colors"
+              className="w-full py-3 px-4 text-gray-500 hover:text-gray-800 font-medium transition-colors"
             >
               {window.opener ? 'Close Window' : 'Return to Dashboard'}
             </button>
           </div>
         )}
 
-        {/* Footer */}
-        <div className="mt-8 pt-6 border-t border-white/[0.1]">
+        <div className="mt-8 pt-6 border-t border-gray-100">
           <div className="flex items-center justify-center text-sm text-gray-400">
             <AlertTriangle className="w-4 h-4 mr-2" />
             <span>Secure connection with Meta</span>

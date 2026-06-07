@@ -124,30 +124,29 @@ const LeadDetail: React.FC = () => {
     if (!lead) {
         return <div>Lead not found</div>;
     }
-
     return (
         <div className="max-w-6xl mx-auto space-y-6">
             {/* Header */}
-            <div className="bg-[#0a0e27] rounded-xl border border-white/[0.1] p-6">
+            <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
                 <div className="flex items-start justify-between">
                     <div className="flex items-start gap-4">
                         <button
                             onClick={() => navigate('/dashboard/crm/leads')}
-                            className="p-2 hover:bg-[#0a0e27]/[0.04] dark:hover:bg-gray-700 rounded-lg"
+                            className="p-2 hover:bg-gray-100 rounded-lg text-gray-500 hover:text-gray-900 transition-colors"
                         >
                             <ArrowLeft className="w-5 h-5" />
                         </button>
                         <div>
-                            <h1 className="text-2xl font-bold text-white">{lead.title}</h1>
+                            <h1 className="text-2xl font-bold text-gray-900">{lead.title}</h1>
                             {lead.contact && (
                                 <div className="flex items-center gap-4 mt-2 text-gray-500">
-                                    <span className="flex items-center gap-1">
-                                        <Phone className="w-4 h-4" />
+                                    <span className="flex items-center gap-1 text-sm">
+                                        <Phone className="w-4 h-4 text-gray-400" />
                                         {lead.contact.phone}
                                     </span>
                                     {lead.contact.email && (
-                                        <span className="flex items-center gap-1">
-                                            <Mail className="w-4 h-4" />
+                                        <span className="flex items-center gap-1 text-sm">
+                                            <Mail className="w-4 h-4 text-gray-400" />
                                             {lead.contact.email}
                                         </span>
                                     )}
@@ -159,7 +158,7 @@ const LeadDetail: React.FC = () => {
                     <div className="flex items-center gap-2">
                         <button
                             onClick={handleDelete}
-                            className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg"
+                            className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                         >
                             <Trash2 className="w-5 h-5" />
                         </button>
@@ -167,13 +166,13 @@ const LeadDetail: React.FC = () => {
                 </div>
 
                 {/* Stage & Info */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6 pt-6 border-t border-white/[0.1]">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6 pt-6 border-t border-gray-200">
                     <div>
                         <label className="text-sm text-gray-500">Stage</label>
                         <select
                             value={lead.stageId || ''}
                             onChange={(e) => handleStageChange(e.target.value)}
-                            className="mt-1 w-full px-3 py-2 bg-[#050816] dark:bg-gray-700 border-none rounded-lg font-medium"
+                            className="mt-1 w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg font-semibold focus:ring-2 focus:ring-green-500 focus:outline-none"
                             style={{ color: lead.stage?.color }}
                         >
                             {lead.pipeline?.stages.map((stage) => (
@@ -184,19 +183,19 @@ const LeadDetail: React.FC = () => {
 
                     <div>
                         <label className="text-sm text-gray-500">Value</label>
-                        <p className="mt-1 text-lg font-bold text-green-600">
+                        <p className="mt-1 text-lg font-bold text-green-700">
                             {lead.value ? formatCurrency(Number(lead.value)) : '-'}
                         </p>
                     </div>
 
                     <div>
                         <label className="text-sm text-gray-500">Priority</label>
-                        <p className="mt-1 font-medium text-white">{lead.priority}</p>
+                        <p className="mt-1 font-semibold text-gray-900">{lead.priority}</p>
                     </div>
 
                     <div>
                         <label className="text-sm text-gray-500">Expected Close</label>
-                        <p className="mt-1 font-medium text-white">
+                        <p className="mt-1 font-semibold text-gray-900">
                             {lead.expectedCloseDate
                                 ? new Date(lead.expectedCloseDate).toLocaleDateString()
                                 : '-'}
@@ -206,14 +205,14 @@ const LeadDetail: React.FC = () => {
             </div>
 
             {/* Tabs Content */}
-            <div className="bg-[#0a0e27] rounded-xl border border-white/[0.1]">
+            <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
                 {/* Tab Headers */}
-                <div className="flex border-b border-white/[0.1]">
+                <div className="flex border-b border-gray-200 bg-gray-50">
                     <button
                         onClick={() => setActiveTab('notes')}
-                        className={`flex items-center gap-2 px-4 py-3 font-medium ${activeTab === 'notes'
-                                ? 'border-b-2 border-green-500 text-green-600'
-                                : 'text-gray-500 hover:text-gray-300'
+                        className={`flex items-center gap-2 px-6 py-3 font-semibold text-sm transition-all ${activeTab === 'notes'
+                                ? 'border-b-2 border-green-500 text-green-600 bg-white'
+                                : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100/50'
                             }`}
                     >
                         <MessageSquare className="w-4 h-4" />
@@ -221,9 +220,9 @@ const LeadDetail: React.FC = () => {
                     </button>
                     <button
                         onClick={() => setActiveTab('tasks')}
-                        className={`flex items-center gap-2 px-4 py-3 font-medium ${activeTab === 'tasks'
-                                ? 'border-b-2 border-green-500 text-green-600'
-                                : 'text-gray-500 hover:text-gray-300'
+                        className={`flex items-center gap-2 px-6 py-3 font-semibold text-sm transition-all ${activeTab === 'tasks'
+                                ? 'border-b-2 border-green-500 text-green-600 bg-white'
+                                : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100/50'
                             }`}
                     >
                         <CheckSquare className="w-4 h-4" />
@@ -231,9 +230,9 @@ const LeadDetail: React.FC = () => {
                     </button>
                     <button
                         onClick={() => setActiveTab('activity')}
-                        className={`flex items-center gap-2 px-4 py-3 font-medium ${activeTab === 'activity'
-                                ? 'border-b-2 border-green-500 text-green-600'
-                                : 'text-gray-500 hover:text-gray-300'
+                        className={`flex items-center gap-2 px-6 py-3 font-semibold text-sm transition-all ${activeTab === 'activity'
+                                ? 'border-b-2 border-green-500 text-green-600 bg-white'
+                                : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100/50'
                             }`}
                     >
                         <Activity className="w-4 h-4" />
@@ -242,7 +241,7 @@ const LeadDetail: React.FC = () => {
                 </div>
 
                 {/* Tab Content */}
-                <div className="p-4">
+                <div className="p-6">
                     {/* Notes Tab */}
                     {activeTab === 'notes' && (
                         <div className="space-y-4">
@@ -252,13 +251,13 @@ const LeadDetail: React.FC = () => {
                                     value={newNote}
                                     onChange={(e) => setNewNote(e.target.value)}
                                     placeholder="Add a note..."
-                                    className="flex-1 px-3 py-2 bg-[#050816] dark:bg-gray-700 border border-white/[0.1] dark:border-gray-600 rounded-lg resize-none"
+                                    className="flex-1 px-3 py-2 bg-white border border-gray-200 rounded-lg resize-none text-gray-900 focus:ring-2 focus:ring-green-500 focus:outline-none"
                                     rows={2}
                                 />
                                 <button
                                     onClick={handleAddNote}
                                     disabled={addingNote || !newNote.trim()}
-                                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 self-end"
+                                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 self-end transition-colors shadow-sm"
                                 >
                                     {addingNote ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                                 </button>
@@ -267,9 +266,9 @@ const LeadDetail: React.FC = () => {
                             {/* Notes List */}
                             <div className="space-y-3">
                                 {notes.map((note) => (
-                                    <div key={note.id} className="p-3 bg-[#050816] dark:bg-gray-700 rounded-lg">
-                                        <p className="text-white whitespace-pre-wrap">{note.content}</p>
-                                        <p className="text-xs text-gray-500 mt-2">
+                                    <div key={note.id} className="p-4 bg-gray-50 border border-gray-200 rounded-lg">
+                                        <p className="text-gray-800 whitespace-pre-wrap text-sm">{note.content}</p>
+                                        <p className="text-xs text-gray-500 mt-2 font-mono">
                                             {new Date(note.createdAt).toLocaleString()}
                                         </p>
                                     </div>
@@ -286,30 +285,30 @@ const LeadDetail: React.FC = () => {
                         <div className="space-y-4">
                             {/* Add Task */}
                             {showTaskForm ? (
-                                <div className="p-4 bg-[#050816] dark:bg-gray-700 rounded-lg space-y-3">
+                                <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg space-y-3">
                                     <input
                                         type="text"
                                         value={newTask.title}
                                         onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
                                         placeholder="Task title..."
-                                        className="w-full px-3 py-2 border border-white/[0.1] dark:border-gray-600 rounded-lg"
+                                        className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 text-gray-900 text-sm focus:outline-none"
                                     />
                                     <input
                                         type="date"
                                         value={newTask.dueDate}
                                         onChange={(e) => setNewTask({ ...newTask, dueDate: e.target.value })}
-                                        className="w-full px-3 py-2 border border-white/[0.1] dark:border-gray-600 rounded-lg"
+                                        className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 text-gray-900 text-sm focus:outline-none"
                                     />
                                     <div className="flex gap-2">
                                         <button
                                             onClick={handleAddTask}
-                                            className="px-4 py-2 bg-green-600 text-white rounded-lg"
+                                            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm font-medium transition-colors shadow-sm"
                                         >
                                             Add Task
                                         </button>
                                         <button
                                             onClick={() => setShowTaskForm(false)}
-                                            className="px-4 py-2 text-gray-400 hover:bg-[#0a0e27]/[0.04] rounded-lg"
+                                            className="px-4 py-2 text-gray-650 hover:bg-gray-150 border border-gray-200 rounded-lg text-sm transition-colors"
                                         >
                                             Cancel
                                         </button>
@@ -318,7 +317,7 @@ const LeadDetail: React.FC = () => {
                             ) : (
                                 <button
                                     onClick={() => setShowTaskForm(true)}
-                                    className="flex items-center gap-2 px-4 py-2 text-green-600 hover:bg-green-50 rounded-lg"
+                                    className="flex items-center gap-2 px-4 py-2 text-green-600 hover:bg-green-50 rounded-lg font-medium transition-colors"
                                 >
                                     <Plus className="w-4 h-4" />
                                     Add Task
@@ -330,24 +329,24 @@ const LeadDetail: React.FC = () => {
                                 {tasks.map((task) => (
                                     <div
                                         key={task.id}
-                                        className={`flex items-center gap-3 p-3 rounded-lg ${task.isCompleted ? 'bg-green-50 dark:bg-green-900/20' : 'bg-[#050816] dark:bg-gray-700'
+                                        className={`flex items-center gap-3 p-3 rounded-lg border ${task.isCompleted ? 'bg-green-50/50 border-green-100' : 'bg-gray-50 border-gray-200'
                                             }`}
                                     >
                                         <button
                                             onClick={() => !task.isCompleted && handleCompleteTask(task.id)}
-                                            className={`w-5 h-5 rounded border-2 flex items-center justify-center ${task.isCompleted
+                                            className={`w-5 h-5 rounded border flex items-center justify-center transition-all ${task.isCompleted
                                                     ? 'bg-green-500 border-green-500 text-white'
-                                                    : 'border-white/[0.12] hover:border-green-500'
+                                                    : 'bg-white border-gray-300 hover:border-green-500'
                                                 }`}
                                         >
                                             {task.isCompleted && '✓'}
                                         </button>
                                         <div className="flex-1">
-                                            <p className={`${task.isCompleted ? 'line-through text-gray-500' : 'text-white'}`}>
+                                            <p className={`text-sm ${task.isCompleted ? 'line-through text-gray-500' : 'text-gray-900 font-medium'}`}>
                                                 {task.title}
                                             </p>
                                             {task.dueDate && (
-                                                <p className="text-xs text-gray-500">
+                                                <p className="text-xs text-gray-500 mt-0.5">
                                                     Due: {new Date(task.dueDate).toLocaleDateString()}
                                                 </p>
                                             )}
@@ -365,16 +364,16 @@ const LeadDetail: React.FC = () => {
                     {activeTab === 'activity' && (
                         <div className="space-y-3">
                             {activities.map((activity) => (
-                                <div key={activity.id} className="flex items-start gap-3 p-3">
-                                    <div className="w-8 h-8 rounded-full bg-[#0a0e27]/[0.04] dark:bg-gray-700 flex items-center justify-center">
+                                <div key={activity.id} className="flex items-start gap-3 p-3 hover:bg-gray-50/50 rounded-lg transition-colors">
+                                    <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center shrink-0">
                                         <Activity className="w-4 h-4 text-gray-500" />
                                     </div>
                                     <div>
-                                        <p className="text-white">{activity.title}</p>
+                                        <p className="text-gray-900 font-semibold text-sm">{activity.title}</p>
                                         {activity.description && (
-                                            <p className="text-sm text-gray-500">{activity.description}</p>
+                                            <p className="text-sm text-gray-500 mt-0.5">{activity.description}</p>
                                         )}
-                                        <p className="text-xs text-gray-400 mt-1">
+                                        <p className="text-xs text-gray-400 mt-1 font-mono">
                                             {new Date(activity.createdAt).toLocaleString()}
                                         </p>
                                     </div>

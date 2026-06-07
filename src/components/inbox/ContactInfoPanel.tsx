@@ -153,20 +153,20 @@ const ContactInfoPanel: React.FC<Props> = ({
   return (
     <div className={`
       ${isMobile ? 'fixed inset-0 z-50' : 'w-80 flex-shrink-0'}
-      bg-[#0a0e1c]/95 backdrop-blur-xl
-      ${!isMobile && 'border-l border-white/[0.06]'}
+      bg-white
+      ${!isMobile && 'border-l border-gray-200'}
       flex flex-col h-full
       animate-slide-right
     `}>
       {/* Header */}
-      <div className="flex-shrink-0 flex items-center justify-between px-4 py-3 border-b border-white/[0.06]">
-        <h3 className="font-semibold text-white text-sm">Contact Info</h3>
+      <div className="flex-shrink-0 flex items-center justify-between px-4 py-3 border-b border-gray-200">
+        <h3 className="font-semibold text-gray-900 text-sm">Contact Info</h3>
         <button
           onClick={onClose}
           className="
             p-1.5 rounded-lg
-            hover:bg-[#0a0e27]/[0.06]
-            text-gray-400 hover:text-white
+            hover:bg-gray-100
+            text-gray-500 hover:text-gray-900
             transition-colors
           "
         >
@@ -177,7 +177,7 @@ const ContactInfoPanel: React.FC<Props> = ({
       {/* Content */}
       <div className="flex-1 overflow-y-auto inbox-scroll">
         {/* Avatar & Name */}
-        <div className="px-6 pt-6 pb-4 text-center border-b border-white/[0.06]">
+        <div className="px-6 pt-6 pb-4 text-center border-b border-gray-200">
           <button
             onClick={onViewProfile}
             className="relative inline-block mb-3 group"
@@ -187,8 +187,8 @@ const ContactInfoPanel: React.FC<Props> = ({
               bg-gradient-to-br ${avatarColor}
               flex items-center justify-center
               text-white text-3xl font-bold
-              shadow-lg ring-4 ring-white/[0.05]
-              group-hover:ring-emerald-400/30
+              shadow-lg ring-4 ring-gray-100
+              group-hover:ring-emerald-450/30
               transition-all
             `}>
               {conversation.contact.avatar ? (
@@ -198,11 +198,11 @@ const ContactInfoPanel: React.FC<Props> = ({
               )}
             </div>
             {conversation.isWindowOpen && (
-              <div className="absolute bottom-1 right-1 w-5 h-5 bg-emerald-500 rounded-full ring-4 ring-[#0a0e1c]" />
+              <div className="absolute bottom-1 right-1 w-5 h-5 bg-emerald-500 rounded-full ring-4 ring-white" />
             )}
           </button>
 
-          <h2 className="text-lg font-bold text-white tracking-tight">{name}</h2>
+          <h2 className="text-lg font-bold text-gray-900 tracking-tight">{name}</h2>
           <p className="text-xs text-gray-500 mt-1">{conversation.contact.phone}</p>
 
           {/* Window status badge */}
@@ -219,13 +219,13 @@ const ContactInfoPanel: React.FC<Props> = ({
         </div>
 
         {/* Quick stats */}
-        <div className="grid grid-cols-3 gap-2 px-4 py-3 border-b border-white/[0.06]">
+        <div className="grid grid-cols-3 gap-2 px-4 py-3 border-b border-gray-200">
           {[
-            { label: 'Total', value: stats.total, color: 'text-white' },
-            { label: 'Received', value: stats.inbound, color: 'text-blue-400' },
-            { label: 'Sent', value: stats.outbound, color: 'text-emerald-400' },
+            { label: 'Total', value: stats.total, color: 'text-gray-800' },
+            { label: 'Received', value: stats.inbound, color: 'text-blue-600' },
+            { label: 'Sent', value: stats.outbound, color: 'text-emerald-600' },
           ].map((s) => (
-            <div key={s.label} className="text-center p-2 rounded-lg bg-[#0a0e27]/[0.03]">
+            <div key={s.label} className="text-center p-2 rounded-lg bg-gray-50">
               <p className={`text-base font-bold ${s.color}`}>{s.value}</p>
               <p className="text-[9px] uppercase tracking-wider text-gray-500 mt-0.5">{s.label}</p>
             </div>
@@ -300,10 +300,10 @@ const ContactInfoPanel: React.FC<Props> = ({
               onClick={onViewProfile}
               className="
                 w-full mt-3 py-2
-                bg-[#0a0e27]/[0.04] hover:bg-[#0a0e27]/[0.06]
-                border border-white/[0.05]
+                bg-gray-50 hover:bg-gray-100
+                border border-gray-200
                 rounded-lg
-                text-xs font-medium text-gray-300 hover:text-white
+                text-xs font-medium text-gray-650 hover:text-gray-900
                 flex items-center justify-center gap-1.5
                 transition-colors
               "
@@ -372,8 +372,8 @@ const ContactInfoPanel: React.FC<Props> = ({
                 onClick={onArchive}
                 className="
                   w-full flex items-center gap-2.5 px-3 py-2
-                  text-sm text-gray-300 hover:text-white
-                  hover:bg-[#0a0e27]/[0.04] rounded-lg
+                  text-sm text-gray-700 hover:text-gray-950
+                  hover:bg-gray-55 rounded-lg
                   transition-colors
                 "
               >
@@ -387,12 +387,12 @@ const ContactInfoPanel: React.FC<Props> = ({
                 onClick={onBlock}
                 className="
                   w-full flex items-center gap-2.5 px-3 py-2
-                  text-sm text-orange-400 hover:text-orange-300
-                  hover:bg-orange-500/10 rounded-lg
+                  text-sm text-orange-600 hover:text-orange-700
+                  hover:bg-orange-50 rounded-lg
                   transition-colors
                 "
               >
-                <Shield className="w-4 h-4" />
+                <Shield className="w-4 h-4 text-orange-500" />
                 <span className="text-xs">Block contact</span>
               </button>
             )}
@@ -402,12 +402,12 @@ const ContactInfoPanel: React.FC<Props> = ({
                 onClick={onDelete}
                 className="
                   w-full flex items-center gap-2.5 px-3 py-2
-                  text-sm text-red-400 hover:text-red-300
-                  hover:bg-red-500/10 rounded-lg
+                  text-sm text-red-600 hover:text-red-700
+                  hover:bg-red-50 rounded-lg
                   transition-colors
                 "
               >
-                <Trash2 className="w-4 h-4" />
+                <Trash2 className="w-4 h-4 text-red-500" />
                 <span className="text-xs">Delete conversation</span>
               </button>
             )}
@@ -440,25 +440,25 @@ const Section: React.FC<SectionProps> = ({
   children,
 }) => {
   return (
-    <div className="border-b border-white/[0.04]">
+    <div className="border-b border-gray-100">
       <button
         onClick={onToggle}
         className="
           w-full flex items-center justify-between
           px-4 py-3
-          hover:bg-[#0a0e27]/[0.02]
+          hover:bg-gray-50/50
           transition-colors
         "
       >
         <div className="flex items-center gap-2">
           <Icon className="w-3.5 h-3.5 text-gray-400" />
-          <span className="text-xs font-semibold text-white uppercase tracking-wider">
+          <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
             {title}
           </span>
           {count !== undefined && count > 0 && (
             <span className="
               text-[9px] font-mono font-bold
-              bg-[#0a0e27]/[0.06] text-gray-400
+              bg-gray-100 text-gray-500
               px-1.5 py-0.5 rounded-md
             ">
               {count}
@@ -466,9 +466,9 @@ const Section: React.FC<SectionProps> = ({
           )}
         </div>
         {isExpanded ? (
-          <ChevronDown className="w-3.5 h-3.5 text-gray-500" />
+          <ChevronDown className="w-3.5 h-3.5 text-gray-400" />
         ) : (
-          <ChevronRight className="w-3.5 h-3.5 text-gray-500" />
+          <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
         )}
       </button>
       {isExpanded && (
@@ -491,29 +491,29 @@ const InfoRow: React.FC<InfoRowProps> = ({ icon: Icon, label, value, onCopy, act
   return (
     <div className="
       group flex items-start gap-2.5 py-2
-      hover:bg-[#0a0e27]/[0.02] rounded-lg px-2 -mx-2
+      hover:bg-gray-50 rounded-lg px-2 -mx-2
       transition-colors
     ">
       <div className="
         w-7 h-7 rounded-lg
-        bg-[#0a0e27]/[0.04] border border-white/[0.05]
+        bg-gray-100 border border-gray-200
         flex items-center justify-center flex-shrink-0
       ">
-        <Icon className="w-3.5 h-3.5 text-gray-400" />
+        <Icon className="w-3.5 h-3.5 text-gray-500" />
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-[10px] font-medium text-gray-500 uppercase tracking-wider mb-0.5">
+        <p className="text-[10px] font-medium text-gray-400 uppercase tracking-wider mb-0.5">
           {label}
         </p>
-        <p className="text-xs text-white break-words">{value}</p>
+        <p className="text-xs text-gray-800 break-words">{value}</p>
       </div>
       {ActionIcon && onCopy && (
         <button
           onClick={onCopy}
           className="
             p-1.5 rounded-md
-            hover:bg-[#0a0e27]/[0.08]
-            text-gray-400 hover:text-white
+            hover:bg-gray-150
+            text-gray-500 hover:text-gray-900
             opacity-0 group-hover:opacity-100
             transition-all flex-shrink-0
           "

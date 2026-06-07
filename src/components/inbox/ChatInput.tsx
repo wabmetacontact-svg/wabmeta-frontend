@@ -329,29 +329,29 @@ const ChatInput: React.FC<Props> = ({
     return (
       <div className="
         flex-shrink-0
-        bg-[#0a0e1c]/80 backdrop-blur-xl
-        border-t border-white/[0.06]
+        bg-white
+        border-t border-gray-200
         p-3 sm:p-4
       ">
         <div className="
-          bg-gradient-to-br from-amber-500/10 to-orange-500/10
-          border border-amber-500/20
+          bg-gradient-to-br from-amber-500/5 to-orange-500/5
+          border border-amber-200
           rounded-2xl p-4
           flex flex-col sm:flex-row items-center justify-between gap-3
         ">
           <div className="flex items-center gap-3 text-center sm:text-left">
             <div className="
               w-11 h-11 rounded-xl
-              bg-amber-500/20 border border-amber-500/30
+              bg-amber-50 border border-amber-200
               flex items-center justify-center flex-shrink-0
             ">
-              <Clock className="w-5 h-5 text-amber-400" />
+              <Clock className="w-5 h-5 text-amber-600" />
             </div>
             <div>
-              <p className="text-sm font-semibold text-white">
+              <p className="text-sm font-semibold text-gray-900">
                 24-Hour Session Closed
               </p>
-              <p className="text-xs text-gray-400 mt-0.5">
+              <p className="text-xs text-gray-500 mt-0.5">
                 Start a new session using an approved template
               </p>
             </div>
@@ -360,10 +360,10 @@ const ChatInput: React.FC<Props> = ({
             onClick={onOpenTemplateModal}
             className="
               w-full sm:w-auto px-5 py-2.5
-              bg-emerald-500 hover:bg-emerald-600
+              bg-emerald-600 hover:bg-emerald-700
               text-white rounded-xl font-medium
               flex items-center justify-center gap-2
-              transition-all shadow-md hover:shadow-emerald-500/30
+              transition-all shadow-md hover:shadow-emerald-500/20
               hover:scale-105 active:scale-95
             "
           >
@@ -380,8 +380,8 @@ const ChatInput: React.FC<Props> = ({
     return (
       <div className="
         flex-shrink-0
-        bg-[#0a0e1c]/80 backdrop-blur-xl
-        border-t border-white/[0.06]
+        bg-white
+        border-t border-gray-200
         p-3 sm:p-4
       ">
         <VoiceRecorder
@@ -402,15 +402,15 @@ const ChatInput: React.FC<Props> = ({
       onDrop={handleDrop}
       className={`
         flex-shrink-0 relative
-        bg-[#0a0e1c]/80 backdrop-blur-xl
-        border-t border-white/[0.06]
+        bg-white
+        border-t border-gray-200
         ${isDragging ? 'drag-active' : ''}
       `}
     >
       {/* Drag overlay */}
       {isDragging && (
-        <div className="absolute inset-0 z-50 flex items-center justify-center bg-emerald-500/10 backdrop-blur-sm pointer-events-none">
-          <div className="flex flex-col items-center gap-2 text-emerald-400">
+        <div className="absolute inset-0 z-50 flex items-center justify-center bg-emerald-500/5 backdrop-blur-sm pointer-events-none">
+          <div className="flex flex-col items-center gap-2 text-emerald-600">
             <Paperclip className="w-8 h-8" />
             <p className="text-sm font-medium">Drop file to send</p>
           </div>
@@ -431,14 +431,13 @@ const ChatInput: React.FC<Props> = ({
         <div className="
           absolute bottom-full left-3 right-3 mb-2 z-30
           max-h-64 overflow-y-auto inbox-scroll
-          bg-[#0f1729]/98 backdrop-blur-xl
-          border border-white/[0.1]
+          bg-white border border-gray-200
           rounded-2xl shadow-2xl
           py-2 animate-fade-in
         ">
-          <div className="px-3 pb-2 flex items-center gap-1.5 border-b border-white/[0.06]">
-            <Zap className="w-3.5 h-3.5 text-emerald-400" />
-            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+          <div className="px-3 pb-2 flex items-center gap-1.5 border-b border-gray-100">
+            <Zap className="w-3.5 h-3.5 text-emerald-600" />
+            <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">
               Quick Replies
             </p>
           </div>
@@ -448,19 +447,19 @@ const ChatInput: React.FC<Props> = ({
               onClick={() => handleQuickReplySelect(qr)}
               className="
                 w-full px-3 py-2 text-left
-                hover:bg-[#0a0e27]/[0.04]
+                hover:bg-gray-50
                 transition-colors group
               "
             >
               <div className="flex items-start gap-2">
                 <span className="
                   flex-shrink-0 text-[10px] font-mono font-bold
-                  text-emerald-400 bg-emerald-500/10
+                  text-emerald-700 bg-emerald-50
                   px-1.5 py-0.5 rounded
                 ">
                   /{qr.shortcut}
                 </span>
-                <p className="text-xs text-gray-300 line-clamp-2 group-hover:text-white">
+                <p className="text-xs text-gray-750 line-clamp-2 group-hover:text-gray-900">
                   {qr.text}
                 </p>
               </div>
@@ -474,33 +473,33 @@ const ChatInput: React.FC<Props> = ({
         <div className="
           flex items-center gap-1
           px-3 sm:px-4 pt-2 pb-1
-          border-b border-white/[0.04]
+          border-b border-gray-100
           animate-fade-in
         ">
           <button
             onClick={() => wrapSelection('*', '*')}
-            className="p-1.5 rounded-md hover:bg-[#0a0e27]/[0.06] text-gray-400 hover:text-white transition-colors"
+            className="p-1.5 rounded-md hover:bg-gray-105 text-gray-500 hover:text-gray-800 transition-colors"
             title="Bold (Ctrl+B)"
           >
             <Bold className="w-3.5 h-3.5" />
           </button>
           <button
             onClick={() => wrapSelection('_', '_')}
-            className="p-1.5 rounded-md hover:bg-[#0a0e27]/[0.06] text-gray-400 hover:text-white transition-colors"
+            className="p-1.5 rounded-md hover:bg-gray-105 text-gray-500 hover:text-gray-800 transition-colors"
             title="Italic (Ctrl+I)"
           >
             <Italic className="w-3.5 h-3.5" />
           </button>
           <button
             onClick={() => wrapSelection('```', '```')}
-            className="p-1.5 rounded-md hover:bg-[#0a0e27]/[0.06] text-gray-400 hover:text-white transition-colors"
+            className="p-1.5 rounded-md hover:bg-gray-105 text-gray-500 hover:text-gray-800 transition-colors"
             title="Code"
           >
             <Code className="w-3.5 h-3.5" />
           </button>
           <button
             onClick={() => wrapSelection('~', '~')}
-            className="p-1.5 rounded-md hover:bg-[#0a0e27]/[0.06] text-gray-400 hover:text-white transition-colors text-sm font-medium"
+            className="p-1.5 rounded-md hover:bg-gray-105 text-gray-500 hover:text-gray-800 transition-colors text-sm font-medium"
             title="Strikethrough"
           >
             <span className="line-through">S</span>
@@ -508,7 +507,7 @@ const ChatInput: React.FC<Props> = ({
           <div className="ml-auto">
             <button
               onClick={() => setShowFormatting(false)}
-              className="p-1.5 rounded-md hover:bg-[#0a0e27]/[0.06] text-gray-400 hover:text-white transition-colors"
+              className="p-1.5 rounded-md hover:bg-gray-105 text-gray-500 hover:text-gray-800 transition-colors"
             >
               <X className="w-3.5 h-3.5" />
             </button>
@@ -517,7 +516,7 @@ const ChatInput: React.FC<Props> = ({
       )}
 
       {/* Main input area */}
-      <form onSubmit={handleSubmit} className="p-3 sm:p-4">
+      <form onSubmit={handleSubmit} className="p-3 sm:p-4 bg-white">
         {/* Hidden file input */}
         <input
           ref={fileInputRef}
@@ -527,7 +526,7 @@ const ChatInput: React.FC<Props> = ({
           className="hidden"
         />
 
-        <div className="flex items-end gap-2">
+        <div className="flex items-end gap-2 bg-white">
           {/* Attachment button */}
           <div className="relative flex-shrink-0">
             <button
@@ -541,8 +540,8 @@ const ChatInput: React.FC<Props> = ({
                 p-2.5 rounded-xl
                 transition-all hover:scale-105 active:scale-95
                 ${showAttachments
-                  ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
-                  : 'hover:bg-[#0a0e27]/[0.06] text-gray-400 hover:text-white border border-transparent'
+                  ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                  : 'hover:bg-gray-105 text-gray-500 hover:text-gray-800 border border-transparent'
                 }
                 disabled:opacity-50 disabled:cursor-not-allowed
               `}
@@ -571,8 +570,8 @@ const ChatInput: React.FC<Props> = ({
               hidden sm:block p-2.5 rounded-xl
               transition-all hover:scale-105 active:scale-95
               ${showFormatting
-                ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
-                : 'hover:bg-[#0a0e27]/[0.06] text-gray-400 hover:text-white border border-transparent'
+                ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                : 'hover:bg-gray-105 text-gray-500 hover:text-gray-800 border border-transparent'
               }
             `}
             title="Formatting"
@@ -581,7 +580,7 @@ const ChatInput: React.FC<Props> = ({
           </button>
 
           {/* Text input */}
-          <div className="flex-1 relative">
+          <div className="flex-1 relative bg-white">
             <textarea
               ref={textareaRef}
               value={message}
@@ -592,11 +591,11 @@ const ChatInput: React.FC<Props> = ({
               rows={1}
               className="
                 w-full px-4 py-3
-                bg-[#0a0e27]/[0.04] border border-white/[0.08]
+                bg-gray-50 border border-gray-205
                 rounded-2xl
-                text-white placeholder:text-gray-500
+                text-gray-900 placeholder:text-gray-400
                 text-sm leading-relaxed
-                focus:outline-none focus:bg-[#0a0e27]/[0.06] focus:border-emerald-400/40
+                focus:outline-none focus:bg-white focus:border-emerald-500/50
                 resize-none transition-all
                 disabled:opacity-50 disabled:cursor-not-allowed
                 inbox-scroll
@@ -609,7 +608,7 @@ const ChatInput: React.FC<Props> = ({
               <span className={`
                 absolute bottom-1.5 right-3
                 text-[10px] font-mono
-                ${message.length > 4000 ? 'text-red-400' : 'text-gray-500'}
+                ${message.length > 4000 ? 'text-red-600' : 'text-gray-500'}
               `}>
                 {message.length}/4096
               </span>
@@ -617,7 +616,7 @@ const ChatInput: React.FC<Props> = ({
           </div>
 
           {/* Emoji button */}
-          <div className="relative flex-shrink-0">
+          <div className="relative flex-shrink-0 bg-white">
             <button
               type="button"
               onClick={() => {
@@ -628,8 +627,8 @@ const ChatInput: React.FC<Props> = ({
                 p-2.5 rounded-xl
                 transition-all hover:scale-105 active:scale-95
                 ${showEmoji
-                  ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
-                  : 'hover:bg-[#0a0e27]/[0.06] text-gray-400 hover:text-white border border-transparent'
+                  ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                  : 'hover:bg-gray-105 text-gray-500 hover:text-gray-800 border border-transparent'
                 }
               `}
               title="Emoji"
@@ -651,10 +650,10 @@ const ChatInput: React.FC<Props> = ({
               disabled={sending || disabled || uploading || message.length > 4096}
               className="
                 flex-shrink-0 p-2.5 rounded-xl
-                bg-gradient-to-br from-emerald-500 to-emerald-600
-                hover:from-emerald-600 hover:to-emerald-700
+                bg-gradient-to-br from-emerald-600 to-emerald-700
+                hover:from-emerald-700 hover:to-emerald-800
                 text-white
-                transition-all shadow-md hover:shadow-emerald-500/40
+                transition-all shadow-md hover:shadow-emerald-500/20
                 disabled:opacity-50 disabled:cursor-not-allowed
                 hover:scale-105 active:scale-95
               "
@@ -674,10 +673,10 @@ const ChatInput: React.FC<Props> = ({
                 disabled={disabled || uploading}
                 className="
                   flex-shrink-0 p-2.5 rounded-xl
-                  bg-gradient-to-br from-emerald-500 to-emerald-600
-                  hover:from-emerald-600 hover:to-emerald-700
+                  bg-gradient-to-br from-emerald-600 to-emerald-700
+                  hover:from-emerald-700 hover:to-emerald-800
                   text-white
-                  transition-all shadow-md hover:shadow-emerald-500/40
+                  transition-all shadow-md hover:shadow-emerald-500/20
                   disabled:opacity-50 disabled:cursor-not-allowed
                   hover:scale-105 active:scale-95
                 "
@@ -690,16 +689,16 @@ const ChatInput: React.FC<Props> = ({
         </div>
 
         {/* Helper text */}
-        <div className="hidden sm:flex items-center justify-between mt-1.5 px-1">
+        <div className="hidden sm:flex items-center justify-between mt-1.5 px-1 bg-white">
           <p className="text-[10px] text-gray-500 font-mono">
-            <kbd className="px-1 py-0.5 bg-[#0a0e27]/[0.04] rounded text-[9px]">Enter</kbd>
+            <kbd className="px-1 py-0.5 bg-gray-100 border border-gray-200/50 rounded text-[9px]">Enter</kbd>
             <span className="mx-1">to send,</span>
-            <kbd className="px-1 py-0.5 bg-[#0a0e27]/[0.04] rounded text-[9px]">Shift + Enter</kbd>
+            <kbd className="px-1 py-0.5 bg-gray-100 border border-gray-200/50 rounded text-[9px]">Shift + Enter</kbd>
             <span className="mx-1">for new line</span>
             {quickReplies.length > 0 && (
               <>
                 <span className="mx-2">•</span>
-                <kbd className="px-1 py-0.5 bg-[#0a0e27]/[0.04] rounded text-[9px]">/</kbd>
+                <kbd className="px-1 py-0.5 bg-gray-100 border border-gray-200/50 rounded text-[9px]">/</kbd>
                 <span className="mx-1">for quick replies</span>
               </>
             )}
