@@ -214,7 +214,9 @@ const HowItWorks = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-12">
           
           {/* ━━━ Card 1: Connect Channel ━━━ */}
-          <div className="bg-green-100/50 border-2 border-green-300/70 rounded-2xl p-5 shadow-sm hover:shadow-lg hover:border-green-400 transition-all duration-300">
+          <div className="relative bg-[#f0fbf4] border border-green-200/50 rounded-lg p-5 shadow-[5px_5px_15px_rgba(0,0,0,0.05),0_2px_4px_rgba(0,0,0,0.02)] rotate-1 hover:rotate-0 hover:scale-[1.03] hover:shadow-[12px_16px_28px_rgba(0,0,0,0.08)] hover:z-20 transition-all duration-300">
+            {/* Washi Tape */}
+            <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 w-16 h-7 bg-white/60 backdrop-blur-[2px] border-x border-b border-black/[0.03] shadow-[0_1px_3px_rgba(0,0,0,0.02)] rounded-sm -rotate-2 z-20 pointer-events-none" />
             <h4 className="font-heading font-bold text-base text-gray-900 mb-1">Connect Your Channel</h4>
             <p className="text-xs text-gray-500 mb-4">Choose a channel to get started</p>
             
@@ -253,7 +255,9 @@ const HowItWorks = () => {
           </div>
 
           {/* ━━━ Card 2: Business Profile ━━━ */}
-          <div className="bg-purple-100/50 border-2 border-purple-300/70 rounded-2xl p-5 shadow-sm hover:shadow-lg hover:border-purple-400 transition-all duration-300">
+          <div className="relative bg-[#f8f5fc] border border-purple-200/50 rounded-lg p-5 shadow-[5px_5px_15px_rgba(0,0,0,0.05),0_2px_4px_rgba(0,0,0,0.02)] -rotate-1 hover:rotate-0 hover:scale-[1.03] hover:shadow-[12px_16px_28px_rgba(0,0,0,0.08)] hover:z-20 transition-all duration-300">
+            {/* Washi Tape */}
+            <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 w-16 h-7 bg-white/60 backdrop-blur-[2px] border-x border-b border-black/[0.03] shadow-[0_1px_3px_rgba(0,0,0,0.02)] rounded-sm rotate-2 z-20 pointer-events-none" />
             <h4 className="font-heading font-bold text-base text-gray-900 mb-1">Business Profile</h4>
             <p className="text-xs text-gray-500 mb-4">Set up your business details</p>
             
@@ -295,7 +299,9 @@ const HowItWorks = () => {
           </div>
 
           {/* ━━━ Card 3: Choose Bot ━━━ */}
-          <div className="bg-blue-100/50 border-2 border-blue-300/70 rounded-2xl p-5 shadow-sm hover:shadow-lg hover:border-blue-400 transition-all duration-300">
+          <div className="relative bg-[#f0f7ff] border border-blue-200/50 rounded-lg p-5 shadow-[5px_5px_15px_rgba(0,0,0,0.05),0_2px_4px_rgba(0,0,0,0.02)] rotate-2 hover:rotate-0 hover:scale-[1.03] hover:shadow-[12px_16px_28px_rgba(0,0,0,0.08)] hover:z-20 transition-all duration-300">
+            {/* Washi Tape */}
+            <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 w-16 h-7 bg-white/60 backdrop-blur-[2px] border-x border-b border-black/[0.03] shadow-[0_1px_3px_rgba(0,0,0,0.02)] rounded-sm -rotate-1 z-20 pointer-events-none" />
             <h4 className="font-heading font-bold text-base text-gray-900 mb-1">Choose Your Bot</h4>
             <p className="text-xs text-gray-500 mb-4">Build or choose a chatbot</p>
             
@@ -360,7 +366,9 @@ const HowItWorks = () => {
           </div>
 
           {/* ━━━ Card 4: Launch Campaign ━━━ */}
-          <div className="bg-pink-100/50 border-2 border-pink-300/70 rounded-2xl p-5 shadow-sm hover:shadow-lg hover:border-pink-400 transition-all duration-300">
+          <div className="relative bg-[#fff1f2] border border-pink-200/50 rounded-lg p-5 shadow-[5px_5px_15px_rgba(0,0,0,0.05),0_2px_4px_rgba(0,0,0,0.02)] -rotate-2 hover:rotate-0 hover:scale-[1.03] hover:shadow-[12px_16px_28px_rgba(0,0,0,0.08)] hover:z-20 transition-all duration-300">
+            {/* Washi Tape */}
+            <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 w-16 h-7 bg-white/60 backdrop-blur-[2px] border-x border-b border-black/[0.03] shadow-[0_1px_3px_rgba(0,0,0,0.02)] rounded-sm rotate-3 z-20 pointer-events-none" />
             <h4 className="font-heading font-bold text-base text-gray-900 mb-1">Launch Campaign</h4>
             <p className="text-xs text-gray-500 mb-4">Send messages to your audience</p>
             
@@ -400,7 +408,9 @@ const HowItWorks = () => {
           </div>
 
           {/* ━━━ Card 5: Track & Grow ━━━ */}
-          <div className="bg-green-100/50 border-2 border-green-300/70 rounded-2xl p-5 shadow-sm hover:shadow-lg hover:border-green-400 transition-all duration-300">
+          <div className="relative bg-[#fefce8] border border-amber-200/50 rounded-lg p-5 shadow-[5px_5px_15px_rgba(0,0,0,0.05),0_2px_4px_rgba(0,0,0,0.02)] rotate-1 hover:rotate-0 hover:scale-[1.03] hover:shadow-[12px_16px_28px_rgba(0,0,0,0.08)] hover:z-20 transition-all duration-300">
+            {/* Washi Tape */}
+            <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 w-16 h-7 bg-white/60 backdrop-blur-[2px] border-x border-b border-black/[0.03] shadow-[0_1px_3px_rgba(0,0,0,0.02)] rounded-sm -rotate-2 z-20 pointer-events-none" />
             <h4 className="font-heading font-bold text-base text-gray-900 mb-1">Track & Grow</h4>
             <p className="text-xs text-gray-500 mb-4">Monitor performance in real-time</p>
             
