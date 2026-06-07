@@ -1,399 +1,487 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
 import { 
-  UserPlus, 
-  Link2, 
-  MessageSquare, 
-  Rocket,
-  ArrowRight,
-  Check,
-  Clock,
+  Zap, ChevronRight, Check, MessageCircle, Instagram, 
+  Bot, ShieldCheck, BookOpen, Headphones, Sparkles,
+  ArrowRight
 } from 'lucide-react';
 
-const HowItWorks: React.FC = () => {
-  const [activeStep, setActiveStep] = useState(0);
-  const sectionRef = useRef<HTMLDivElement>(null);
-
+const HowItWorks = () => {
   const steps = [
     {
-      step: '01',
-      icon: UserPlus,
-      time: '~2 min',
-      title: 'Create your account',
-      shortTitle: 'Sign up',
-      description: 'No credit card. No "talk to sales". Just an email, a password, and you\'re in.',
-      details: [
-        'Email + password, that\'s it',
-        '2-day free trial unlocked instantly',
-        'Skip onboarding if you want'
-      ],
-      accentColor: '#2883CF',
-      gradientFrom: 'from-blue-500/10',
-      gradientTo: 'to-sky-500/2',
-      iconBg: 'from-[#2883CF] to-sky-600',
+      number: '1',
+      title: 'Connect',
+      description: 'Link your WhatsApp or Instagram account',
+      color: 'bg-green-500',
+      lightColor: 'bg-green-50',
+      textColor: 'text-green-600',
     },
     {
-      step: '02',
-      icon: Link2,
-      time: '~3 min',
-      title: 'Connect WhatsApp',
-      shortTitle: 'Connect',
-      description: 'Embedded Meta signup. Click, login to Facebook, done. We handle the API headaches.',
-      details: [
-        'Official Meta embedded signup',
-        'Auto phone number verification',
-        'No webhook config needed'
-      ],
-      accentColor: '#2563eb',
-      gradientFrom: 'from-blue-500/10',
-      gradientTo: 'to-cyan-500/2',
-      iconBg: 'from-blue-500 to-cyan-600',
+      number: '2',
+      title: 'Set Up',
+      description: 'Create your profile and configure your preferences',
+      color: 'bg-purple-500',
+      lightColor: 'bg-purple-50',
+      textColor: 'text-purple-600',
     },
     {
-      step: '03',
-      icon: MessageSquare,
-      time: '~1 min',
-      title: 'Bring your contacts',
-      shortTitle: 'Import',
-      description: 'Drop a CSV. Paste numbers. Or sync from your CRM. We figure out the rest.',
-      details: [
-        'CSV / Excel drag & drop',
-        'Smart duplicate detection',
-        'Auto-tag by source'
-      ],
-      accentColor: '#9333ea',
-      gradientFrom: 'from-purple-500/10',
-      gradientTo: 'to-pink-500/2',
-      iconBg: 'from-purple-500 to-pink-600',
+      number: '3',
+      title: 'Automate',
+      description: 'Build your chatbot or choose from ready-made templates',
+      color: 'bg-blue-500',
+      lightColor: 'bg-blue-50',
+      textColor: 'text-blue-600',
     },
     {
-      step: '04',
-      icon: Rocket,
-      time: 'now',
-      title: 'Send your first campaign',
-      shortTitle: 'Launch',
-      description: 'Pick a template, hit send. Track opens, replies, and conversions in real-time.',
-      details: [
-        'Pre-approved templates ready',
-        'Variable personalization',
-        'Live delivery tracking'
-      ],
-      accentColor: '#d97706',
-      gradientFrom: 'from-amber-500/10',
-      gradientTo: 'to-orange-500/2',
-      iconBg: 'from-amber-500 to-orange-600',
-    }
+      number: '4',
+      title: 'Engage',
+      description: 'Launch campaigns and start conversations instantly',
+      color: 'bg-pink-500',
+      lightColor: 'bg-pink-50',
+      textColor: 'text-pink-600',
+    },
+    {
+      number: '5',
+      title: 'Grow',
+      description: 'Track performance and scale your business',
+      color: 'bg-green-500',
+      lightColor: 'bg-green-50',
+      textColor: 'text-green-600',
+    },
   ];
 
-  // ✅ Auto-cycle through steps
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setActiveStep((prev) => (prev + 1) % steps.length);
-    }, 4000);
-    return () => clearInterval(interval);
-  }, [steps.length]);
-
   return (
-    <section ref={sectionRef} className="relative py-24 lg:py-32 overflow-hidden bg-white">
+    <section className="relative py-24 bg-gradient-to-b from-gray-50/50 via-white to-gray-50/30 overflow-hidden">
+      
+      {/* Decorative dots pattern */}
+      <div 
+        className="absolute inset-0 opacity-30 pointer-events-none"
+        style={{
+          backgroundImage: 'radial-gradient(circle, #cbd5e1 1px, transparent 1px)',
+          backgroundSize: '32px 32px',
+        }}
+      />
 
-      {/* ✅ Light Mode Background with soft radial blobs & grid lines */}
-      <div className="absolute inset-0 -z-10 bg-gradient-to-b from-white via-slate-50 to-white">
-        <div className="absolute inset-0"
-          style={{
-            background: `
-              radial-gradient(ellipse 50% 40% at 80% 20%, rgba(40, 131, 207, 0.05) 0%, transparent 60%),
-              radial-gradient(ellipse 50% 40% at 20% 80%, rgba(59, 130, 246, 0.04) 0%, transparent 60%)
-            `,
-          }}
-        />
-        <div className="absolute inset-0 opacity-[0.015]"
-          style={{
-            backgroundImage: `linear-gradient(rgba(0,0,0,0.3) 1px, transparent 1px), 
-                              linear-gradient(90deg, rgba(0,0,0,0.3) 1px, transparent 1px)`,
-            backgroundSize: '60px 60px',
-          }}
-        />
-      </div>
+      <div className="max-w-7xl mx-auto px-4 md:px-6 relative z-10">
+        
+        {/* ═══════ Section Header ═══════ */}
+        <div className="relative mb-20">
+          
+          {/* LEFT: Decorative Icons (Hidden on mobile) */}
+          <div className="absolute left-0 top-1/2 -translate-y-1/2 hidden lg:block">
+            <div className="relative w-64 h-48">
+              {/* Connection lines */}
+              <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 256 192">
+                <ellipse cx="128" cy="96" rx="100" ry="70" fill="none" stroke="#e5e7eb" strokeWidth="1" strokeDasharray="3 3" />
+              </svg>
+              
+              {/* WhatsApp */}
+              <div className="absolute top-2 left-12 w-14 h-14 bg-white rounded-2xl shadow-lg flex items-center justify-center animate-float-slow">
+                <div className="w-9 h-9 bg-green-500 rounded-xl flex items-center justify-center">
+                  <MessageCircle size={20} className="text-white fill-white" />
+                </div>
+              </div>
+              
+              {/* Instagram */}
+              <div className="absolute bottom-4 left-0 w-14 h-14 bg-white rounded-2xl shadow-lg flex items-center justify-center animate-float">
+                <div className="w-9 h-9 bg-gradient-to-br from-purple-500 via-pink-500 to-orange-400 rounded-xl flex items-center justify-center">
+                  <Instagram size={20} className="text-white" />
+                </div>
+              </div>
+              
+              {/* Bot */}
+              <div className="absolute bottom-12 left-32 w-14 h-14 bg-white rounded-2xl shadow-lg flex items-center justify-center animate-float-delay">
+                <div className="w-9 h-9 bg-purple-500 rounded-xl flex items-center justify-center">
+                  <Bot size={20} className="text-white" />
+                </div>
+              </div>
+              
+              {/* Green dot */}
+              <div className="absolute top-12 right-4 w-3 h-3 bg-green-500 rounded-full" />
+            </div>
+          </div>
 
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-
-        {/* ✅ EDITORIAL HEADER */}
-        <div className="grid grid-cols-12 gap-6 mb-16 lg:mb-24">
-          <div className="col-span-12 lg:col-span-7">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="h-px w-12 bg-gray-200" />
-              <span className="text-xs font-mono uppercase tracking-[0.2em] text-gray-500 font-bold">
-                The setup
+          {/* CENTER: Heading */}
+          <div className="text-center max-w-3xl mx-auto">
+            {/* Badge */}
+            <div className="inline-flex items-center gap-2 bg-green-50 border border-green-200 rounded-full px-4 py-2 mb-6">
+              <Zap size={16} className="text-green-600 fill-green-600" />
+              <span className="text-green-700 text-sm font-semibold tracking-wide">
+                QUICK & EASY SETUP
               </span>
             </div>
 
-            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-[1.05] tracking-tight">
-              <span className="text-gray-950">From signup to first send</span>
-              <br />
-              <span className="bg-gradient-to-r from-[#2883CF] to-sky-500 bg-clip-text text-transparent italic">
-                in under 6 minutes.
-              </span>
+            <h2 className="font-heading text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-[1.15] tracking-tight mb-6">
+              Get WabMeta up and running in just{' '}
+              <span className="text-green-500">a few minutes</span>
             </h2>
+
+            <p className="text-gray-600 text-lg leading-relaxed">
+              Connect your channels, set up automation and start engaging with 
+              your customers — all in just a few simple steps.
+            </p>
           </div>
 
-          <div className="col-span-12 lg:col-span-5 lg:pt-16">
-            <p className="text-base lg:text-lg text-gray-600 leading-relaxed mb-4">
-              We've watched 800+ businesses go through onboarding. We timed every step. We removed every friction point.
-            </p>
-            <div className="inline-flex items-center gap-2 text-xs font-mono text-gray-500">
-              <Clock className="w-3.5 h-3.5" />
-              <span>Avg. total time: 5m 47s</span>
+          {/* RIGHT: Setup Complete Card (Hidden on mobile) */}
+          <div className="absolute right-0 top-1/2 -translate-y-1/2 hidden lg:block">
+            <div className="relative">
+              {/* Floating dots */}
+              <div className="absolute -top-4 -left-8 w-3 h-3 bg-purple-400 rotate-45" />
+              <div className="absolute -top-2 right-0 w-2.5 h-2.5 bg-yellow-400 rounded-full" />
+              <div className="absolute top-12 -right-6 w-3 h-3 bg-blue-400 rounded-full" />
+              <div className="absolute bottom-8 -right-8 w-3 h-3 bg-yellow-400 rotate-45" />
+              <div className="absolute -bottom-2 left-4 w-3 h-3 bg-pink-400 rotate-45" />
+              <div className="absolute top-1/2 -left-12 w-2.5 h-2.5 bg-pink-300 rounded-full" />
+              <div className="absolute -bottom-4 right-12 w-3 h-3 bg-green-400 rounded-sm" />
+              
+              {/* Card */}
+              <div className="bg-white border border-gray-200 rounded-2xl shadow-xl p-6 w-56 rotate-3 hover:rotate-0 transition-transform duration-500">
+                <div className="w-14 h-14 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-3 shadow-lg">
+                  <Check size={28} className="text-white" strokeWidth={3} />
+                </div>
+                <h4 className="font-heading font-bold text-base text-gray-900 text-center mb-1">
+                  Setup Complete!
+                </h4>
+                <p className="text-xs text-gray-600 text-center leading-relaxed">
+                  You're all set to engage and grow your business.
+                </p>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* ✅ INTERACTIVE STEPS */}
-        <div className="grid grid-cols-12 gap-6 lg:gap-10">
+        {/* ═══════ Steps Header Row ═══════ */}
+        <div className="hidden lg:grid grid-cols-5 gap-4 mb-8 relative">
+          {steps.map((step, index) => (
+            <div key={step.number} className="relative">
+              {/* Step Header */}
+              <div className="flex items-start gap-3">
+                <div className={`w-10 h-10 ${step.color} rounded-full flex items-center justify-center text-white font-bold text-base shadow-md flex-shrink-0`}>
+                  {step.number}
+                </div>
+                <div className="flex-1 pt-0.5">
+                  <h3 className="font-heading font-bold text-base text-gray-900 mb-1">
+                    {step.title}
+                  </h3>
+                  <p className="text-xs text-gray-600 leading-snug">
+                    {step.description}
+                  </p>
+                </div>
+              </div>
 
-          {/* LEFT: Step navigator */}
-          <div className="col-span-12 lg:col-span-5">
-            <div className="space-y-3">
-              {steps.map((step, index) => {
-                const isActive = activeStep === index;
-                return (
-                  <button
-                    key={step.step}
-                    onClick={() => setActiveStep(index)}
-                    className={`group w-full text-left relative
-                      rounded-2xl overflow-hidden
-                      transition-all duration-500 ease-out
-                      ${isActive 
-                        ? 'bg-white shadow-[0_12px_30px_rgba(0,0,0,0.06)] border border-gray-200 scale-[1.02]' 
-                        : 'bg-white border border-gray-200/60 hover:border-gray-300 hover:shadow-sm'
-                      }
-                    `}
-                  >
-                    {/* Active gradient bg */}
-                    {isActive && (
-                      <div className={`absolute inset-0 bg-gradient-to-br ${step.gradientFrom} ${step.gradientTo} opacity-100 transition-opacity`} />
-                    )}
+              {/* Arrow Connector */}
+              {index < steps.length - 1 && (
+                <div className="absolute top-5 -right-2 flex items-center z-10">
+                  <div className="w-6 border-t border-dashed border-gray-300" />
+                  <ChevronRight size={16} className="text-gray-400" />
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
 
-                    {/* Active left bar */}
-                    <div 
-                      className={`absolute left-0 top-0 bottom-0 w-1 rounded-r-full transition-all duration-500`}
-                      style={{ 
-                        backgroundColor: step.accentColor,
-                        opacity: isActive ? 1 : 0,
-                        boxShadow: isActive ? `0 0 20px ${step.accentColor}80` : 'none',
-                      }}
-                    />
+        {/* ═══════ Mobile Steps Header ═══════ */}
+        <div className="lg:hidden space-y-4 mb-8">
+          {steps.map((step) => (
+            <div key={step.number} className="flex items-start gap-3 bg-white border border-gray-200 rounded-2xl p-4">
+              <div className={`w-10 h-10 ${step.color} rounded-full flex items-center justify-center text-white font-bold text-base shadow-md flex-shrink-0`}>
+                {step.number}
+              </div>
+              <div>
+                <h3 className="font-heading font-bold text-base text-gray-900 mb-1">
+                  {step.title}
+                </h3>
+                <p className="text-xs text-gray-600 leading-snug">
+                  {step.description}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
 
-                    <div className="relative flex items-center gap-4 p-5">
+        {/* ═══════ Step Cards Row (Interactive Previews) ═══════ */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-12">
+          
+          {/* ━━━ Card 1: Connect Channel ━━━ */}
+          <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm hover:shadow-lg transition-shadow">
+            <h4 className="font-heading font-bold text-base text-gray-900 mb-1">Connect Your Channel</h4>
+            <p className="text-xs text-gray-500 mb-4">Choose a channel to get started</p>
+            
+            <div className="space-y-3 mb-4">
+              {/* WhatsApp Option (Selected) */}
+              <div className="border-2 border-green-400 bg-green-50/40 rounded-xl p-3 flex items-center gap-3 relative">
+                <div className="w-9 h-9 bg-green-500 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <MessageCircle size={18} className="text-white fill-white" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-gray-900">WhatsApp</p>
+                  <p className="text-[10px] text-gray-500 truncate">Connect your WhatsApp Business account</p>
+                </div>
+                <div className="w-4 h-4 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0">
+                  <Check size={10} className="text-white" strokeWidth={3} />
+                </div>
+              </div>
 
-                      {/* Step number / Icon */}
-                      <div className="flex-shrink-0">
-                        <div className={`relative w-12 h-12 rounded-xl 
-                          flex items-center justify-center transition-all duration-500
-                          ${isActive 
-                            ? `bg-gradient-to-br ${step.iconBg} shadow-lg` 
-                            : 'bg-gray-50 border border-gray-100'
-                          }
-                        `}
-                        style={{
-                          boxShadow: isActive ? `0 8px 24px ${step.accentColor}30` : 'none',
-                        }}
-                        >
-                          {isActive ? (
-                            <step.icon className="w-5 h-5 text-white" />
-                          ) : (
-                            <span className="text-xs font-mono font-bold text-gray-400">
-                              {step.step}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Title + meta */}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className={`text-xs font-mono uppercase tracking-wider transition-colors
-                            ${isActive ? 'text-gray-500' : 'text-gray-400'}
-                          `}>
-                            Step {step.step}
-                          </span>
-                          <span className="text-xs text-gray-300">·</span>
-                          <span className={`text-xs font-mono transition-colors
-                            ${isActive ? 'text-gray-500' : 'text-gray-400'}
-                          `}>
-                            {step.time}
-                          </span>
-                        </div>
-                        <h3 className={`text-base lg:text-lg font-semibold transition-colors
-                          ${isActive ? 'text-gray-950' : 'text-gray-500 group-hover:text-gray-700'}
-                        `}>
-                          {step.title}
-                        </h3>
-                      </div>
-
-                      {/* Active indicator dot */}
-                      {isActive && (
-                        <div className="flex-shrink-0">
-                          <div className="relative">
-                            <span className="absolute inset-0 rounded-full animate-ping"
-                              style={{ backgroundColor: step.accentColor, opacity: 0.4 }}
-                            />
-                            <span className="relative block w-2 h-2 rounded-full"
-                              style={{ backgroundColor: step.accentColor }}
-                            />
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </button>
-                );
-              })}
+              {/* Instagram Option */}
+              <div className="border border-gray-200 rounded-xl p-3 flex items-center gap-3">
+                <div className="w-9 h-9 bg-gradient-to-br from-purple-500 via-pink-500 to-orange-400 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <Instagram size={18} className="text-white" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-gray-900">Instagram</p>
+                  <p className="text-[10px] text-gray-500 truncate">Connect your Instagram Business account</p>
+                </div>
+                <div className="w-4 h-4 border-2 border-gray-300 rounded-full flex-shrink-0" />
+              </div>
             </div>
 
-            {/* Progress indicator */}
-            <div className="mt-8 flex items-center gap-2">
-              {steps.map((step, i) => (
-                <div
-                  key={i}
-                  className="h-1 rounded-full flex-1 overflow-hidden bg-gray-100"
-                >
-                  <div
-                    className="h-full transition-all duration-500 ease-out"
-                    style={{
-                      width: activeStep === i ? '100%' : activeStep > i ? '100%' : '0%',
-                      backgroundColor: step.accentColor,
-                    }}
-                  />
+            <button className="w-full bg-green-500 hover:bg-green-600 text-white text-sm font-semibold py-2.5 rounded-xl transition-colors flex items-center justify-center gap-1.5">
+              Connect Now <ArrowRight size={14} />
+            </button>
+            <p className="text-[10px] text-gray-400 text-center mt-2">It only takes a few seconds</p>
+          </div>
+
+          {/* ━━━ Card 2: Business Profile ━━━ */}
+          <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm hover:shadow-lg transition-shadow">
+            <h4 className="font-heading font-bold text-base text-gray-900 mb-1">Business Profile</h4>
+            <p className="text-xs text-gray-500 mb-4">Set up your business details</p>
+            
+            <div className="space-y-3 mb-4">
+              <div>
+                <label className="text-[10px] text-gray-500 mb-1 block">Business Name</label>
+                <div className="border border-gray-200 rounded-lg px-3 py-2 text-xs text-gray-900 bg-gray-50">
+                  Acme Store
+                </div>
+              </div>
+              
+              <div>
+                <label className="text-[10px] text-gray-500 mb-1 block">Business Category</label>
+                <div className="border border-gray-200 rounded-lg px-3 py-2 text-xs text-gray-900 bg-gray-50 flex items-center justify-between">
+                  <span>E-commerce</span>
+                  <ChevronRight size={12} className="text-gray-400 rotate-90" />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-[10px] text-gray-500 mb-1 block">Time Zone</label>
+                <div className="border border-gray-200 rounded-lg px-3 py-2 text-xs text-gray-900 bg-gray-50">
+                  (GMT+05:30) Asia/Kolkata
+                </div>
+              </div>
+
+              <div>
+                <label className="text-[10px] text-gray-500 mb-1 block">Language</label>
+                <div className="border border-gray-200 rounded-lg px-3 py-2 text-xs text-gray-900 bg-gray-50 flex items-center justify-between">
+                  <span>English</span>
+                  <ChevronRight size={12} className="text-gray-400 rotate-90" />
+                </div>
+              </div>
+            </div>
+
+            <button className="w-full bg-purple-500 hover:bg-purple-600 text-white text-sm font-semibold py-2.5 rounded-xl transition-colors flex items-center justify-center gap-1.5">
+              Save & Continue <ArrowRight size={14} />
+            </button>
+          </div>
+
+          {/* ━━━ Card 3: Choose Bot ━━━ */}
+          <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm hover:shadow-lg transition-shadow">
+            <h4 className="font-heading font-bold text-base text-gray-900 mb-1">Choose Your Bot</h4>
+            <p className="text-xs text-gray-500 mb-4">Build or choose a chatbot</p>
+            
+            <div className="space-y-2 mb-4">
+              {/* AI Chatbot (Selected) */}
+              <div className="border-2 border-blue-400 bg-blue-50/30 rounded-xl p-3">
+                <div className="flex items-start gap-2">
+                  <div className="w-7 h-7 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <Bot size={14} className="text-purple-600" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1.5">
+                      <p className="text-xs font-semibold text-gray-900">AI Chatbot</p>
+                      <span className="text-[9px] text-blue-600 italic">(Recommended)</span>
+                    </div>
+                    <p className="text-[10px] text-gray-500 leading-snug mt-0.5">
+                      Smart AI-powered chatbot that can understand and reply automatically.
+                    </p>
+                  </div>
+                  <div className="w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
+                    <div className="w-1.5 h-1.5 bg-white rounded-full" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Template Bots */}
+              <div className="border border-gray-200 rounded-xl p-3">
+                <div className="flex items-start gap-2">
+                  <div className="w-7 h-7 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <BookOpen size={14} className="text-blue-600" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-semibold text-gray-900">Template Bots</p>
+                    <p className="text-[10px] text-gray-500 leading-snug mt-0.5">
+                      Choose from our ready-made chatbot templates.
+                    </p>
+                  </div>
+                  <div className="w-4 h-4 border-2 border-gray-300 rounded-full flex-shrink-0" />
+                </div>
+              </div>
+
+              {/* Custom Bot */}
+              <div className="border border-gray-200 rounded-xl p-3">
+                <div className="flex items-start gap-2">
+                  <div className="w-7 h-7 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <Sparkles size={14} className="text-gray-600" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-semibold text-gray-900">Custom Bot</p>
+                    <p className="text-[10px] text-gray-500 leading-snug mt-0.5">
+                      Build your own chatbot from scratch.
+                    </p>
+                  </div>
+                  <div className="w-4 h-4 border-2 border-gray-300 rounded-full flex-shrink-0" />
+                </div>
+              </div>
+            </div>
+
+            <button className="w-full bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold py-2.5 rounded-xl transition-colors flex items-center justify-center gap-1.5">
+              Create Bot <ArrowRight size={14} />
+            </button>
+          </div>
+
+          {/* ━━━ Card 4: Launch Campaign ━━━ */}
+          <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm hover:shadow-lg transition-shadow">
+            <h4 className="font-heading font-bold text-base text-gray-900 mb-1">Launch Campaign</h4>
+            <p className="text-xs text-gray-500 mb-4">Send messages to your audience</p>
+            
+            <div className="space-y-3 mb-4">
+              <div>
+                <label className="text-[10px] text-gray-500 mb-1 block">Campaign Name</label>
+                <div className="border border-gray-200 rounded-lg px-3 py-2 text-xs text-gray-900 bg-gray-50">
+                  Summer Sale 2024
+                </div>
+              </div>
+              
+              <div>
+                <label className="text-[10px] text-gray-500 mb-1 block">Audience</label>
+                <div className="border border-gray-200 rounded-lg px-3 py-2 text-xs text-gray-900 bg-gray-50 flex items-center justify-between">
+                  <span>All Customers (45,230)</span>
+                  <ChevronRight size={12} className="text-gray-400 rotate-90" />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-[10px] text-gray-500 mb-1 block">Message Preview</label>
+                <div className="bg-gradient-to-br from-yellow-100 to-orange-100 border border-yellow-200 rounded-lg p-3">
+                  <div className="flex items-start gap-2">
+                    <span className="text-base">🎉</span>
+                    <div>
+                      <p className="text-xs font-semibold text-gray-900">Summer Sale is Live!</p>
+                      <p className="text-[10px] text-gray-700">Get Flat 50% OFF on all products. Shop now!</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <button className="w-full bg-pink-500 hover:bg-pink-600 text-white text-sm font-semibold py-2.5 rounded-xl transition-colors flex items-center justify-center gap-1.5">
+              Send Campaign 🚀
+            </button>
+          </div>
+
+          {/* ━━━ Card 5: Track & Grow ━━━ */}
+          <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm hover:shadow-lg transition-shadow">
+            <h4 className="font-heading font-bold text-base text-gray-900 mb-1">Track & Grow</h4>
+            <p className="text-xs text-gray-500 mb-4">Monitor performance in real-time</p>
+            
+            <div className="space-y-3 mb-4">
+              {[
+                { label: 'Messages Sent', value: '45,230', change: '+32%' },
+                { label: 'Delivered', value: '44,230', change: '+28%' },
+                { label: 'Read', value: '31,421', change: '+24%' },
+                { label: 'Replies', value: '6,782', change: '+38%' },
+              ].map((stat, i) => (
+                <div key={i} className="flex items-center justify-between text-xs">
+                  <span className="text-gray-500">{stat.label}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold text-gray-900">{stat.value}</span>
+                    <span className="text-green-500 text-[10px] font-semibold">↑ {stat.change}</span>
+                  </div>
                 </div>
               ))}
             </div>
-          </div>
 
-          {/* RIGHT: Active step detail card */}
-          <div className="col-span-12 lg:col-span-7">
-            <div className="sticky top-32">
-              {steps.map((step, index) => {
-                const isActive = activeStep === index;
-                if (!isActive) return null;
+            <button className="w-full bg-green-50 hover:bg-green-100 text-green-600 text-sm font-semibold py-2 rounded-xl transition-colors flex items-center justify-center gap-1.5 mb-3 border border-green-200">
+              View Analytics <ArrowRight size={14} />
+            </button>
 
-                return (
-                  <div
-                    key={step.step}
-                    className="relative rounded-3xl overflow-hidden
-                      bg-white
-                      border border-gray-200
-                      shadow-[0_20px_40px_rgba(0,0,0,0.06)]
-                      p-8 lg:p-10
-                      animate-fadeIn"
-                  >
-                    {/* Gradient bg */}
-                    <div className={`absolute inset-0 bg-gradient-to-br ${step.gradientFrom} ${step.gradientTo} opacity-100`} />
-
-                    {/* Shimmer */}
-                    <div className="absolute inset-0 pointer-events-none"
-                      style={{
-                        background: 'linear-gradient(135deg, rgba(255,255,255,0.6) 0%, transparent 50%)',
-                      }}
-                    />
-
-                    {/* Top edge */}
-                    <div className="absolute top-0 left-[10%] right-[10%] h-px 
-                      bg-gradient-to-r from-transparent via-white/80 to-transparent" />
-
-                    <div className="relative">
-
-                      {/* Big step number watermark */}
-                      <div className="absolute top-0 right-0 text-[8rem] lg:text-[10rem] font-bold 
-                        bg-gradient-to-br from-gray-900/[0.06] to-transparent bg-clip-text text-transparent
-                        leading-none select-none pointer-events-none">
-                        {step.step}
-                      </div>
-
-                      {/* Icon */}
-                      <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${step.iconBg}
-                        flex items-center justify-center mb-6
-                        shadow-lg`}
-                        style={{
-                          boxShadow: `0 12px 32px ${step.accentColor}40`,
-                        }}
-                      >
-                        <step.icon className="w-8 h-8 text-white" />
-                      </div>
-
-                      {/* Title */}
-                      <h3 className="text-3xl lg:text-4xl font-bold text-gray-950 mb-4 tracking-tight">
-                        {step.title}
-                      </h3>
-
-                      {/* Description */}
-                      <p className="text-base lg:text-lg text-gray-600 mb-8 leading-relaxed max-w-xl">
-                        {step.description}
-                      </p>
-
-                      {/* Detail checkmarks */}
-                      <div className="space-y-3">
-                        {step.details.map((detail, i) => (
-                          <div
-                            key={detail}
-                            className="flex items-center gap-3 text-gray-700"
-                            style={{
-                              animation: `slideUp 0.4s ease-out ${i * 100}ms backwards`,
-                            }}
-                          >
-                            <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0"
-                              style={{ backgroundColor: `${step.accentColor}15`, border: `1px solid ${step.accentColor}30` }}
-                            >
-                              <Check className="w-3 h-3" style={{ color: step.accentColor }} strokeWidth={3} />
-                            </div>
-                            <span className="text-sm lg:text-base font-medium">{detail}</span>
-                          </div>
-                        ))}
-                      </div>
-
-                      {/* Bottom meta */}
-                      <div className="mt-8 pt-6 border-t border-gray-200 flex items-center justify-between">
-                        <div className="flex items-center gap-2 text-xs font-mono text-gray-500">
-                          <Clock className="w-3.5 h-3.5" />
-                          Takes about {step.time}
-                        </div>
-                        <div className="text-xs font-mono text-gray-400">
-                          {step.step} / 04
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+            {/* Growth chart */}
+            <svg className="w-full" height="50" viewBox="0 0 200 50">
+              <defs>
+                <linearGradient id="growthGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#22c55e" stopOpacity="0.3" />
+                  <stop offset="100%" stopColor="#22c55e" stopOpacity="0" />
+                </linearGradient>
+              </defs>
+              <path 
+                d="M0,40 Q20,38 40,32 T80,25 T120,20 T160,12 T200,5 L200,50 L0,50 Z" 
+                fill="url(#growthGradient)" 
+              />
+              <path 
+                d="M0,40 Q20,38 40,32 T80,25 T120,20 T160,12 T200,5" 
+                fill="none" 
+                stroke="#22c55e" 
+                strokeWidth="2" 
+              />
+            </svg>
           </div>
         </div>
 
-        {/* ✅ Bottom CTA - minimal */}
-        <div className="mt-20 lg:mt-24 flex flex-col items-center text-center">
-          <p className="text-sm font-mono text-gray-600 mb-6 max-w-md">
-            Watch a real founder go through this entire flow on a screen recording.
-          </p>
-
-          <Link
-            to="/signup"
-            className="group inline-flex items-center gap-3 
-              bg-gradient-to-r from-[#2883CF] to-sky-500
-              text-white px-8 py-4 rounded-full text-[15px] font-semibold
-              shadow-[0_8px_32px_rgba(40,131,207,0.25)]
-              hover:shadow-[0_12px_40px_rgba(40,131,207,0.45)]
-              hover:-translate-y-0.5
-              transition-all duration-500 ease-out
-              border border-blue-500/30
-              overflow-hidden relative"
-          >
-            <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/25 to-transparent
-              -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
-            <span className="relative">Try the whole flow yourself</span>
-            <ArrowRight className="relative w-4 h-4 group-hover:translate-x-1 transition-transform" />
-          </Link>
-
-          <p className="mt-4 text-xs text-gray-500">
-            No card. No commitment. 2 days free.
-          </p>
+        {/* ═══════ Bottom Trust Bar ═══════ */}
+        <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-6 md:p-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[
+              {
+                icon: ShieldCheck,
+                bg: 'bg-green-100',
+                color: 'text-green-600',
+                title: 'Secure & Reliable',
+                desc: 'Enterprise-grade security and 99.9% uptime',
+              },
+              {
+                icon: Zap,
+                bg: 'bg-blue-100',
+                color: 'text-blue-600',
+                title: 'No Coding Needed',
+                desc: 'Set up everything without any technical skills',
+              },
+              {
+                icon: Headphones,
+                bg: 'bg-purple-100',
+                color: 'text-purple-600',
+                title: '24/7 Support',
+                desc: 'Our support team is always here to help you',
+              },
+              {
+                icon: BookOpen,
+                bg: 'bg-pink-100',
+                color: 'text-pink-600',
+                title: 'Free Resources',
+                desc: 'Access guides, templates and video tutorials',
+              },
+            ].map((item, i) => (
+              <div key={i} className="flex items-start gap-3">
+                <div className={`w-12 h-12 ${item.bg} rounded-2xl flex items-center justify-center flex-shrink-0`}>
+                  <item.icon size={22} className={item.color} />
+                </div>
+                <div>
+                  <h4 className="font-heading font-bold text-sm text-gray-900 mb-1">
+                    {item.title}
+                  </h4>
+                  <p className="text-xs text-gray-600 leading-relaxed">
+                    {item.desc}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </section>
