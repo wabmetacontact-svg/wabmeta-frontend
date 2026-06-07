@@ -260,7 +260,7 @@ interface Plan {
 const PricingCard = ({ plan }: { plan: Plan }) => {
   const [isHovered, setIsHovered] = useState(false);
 
-  const isGreen = plan.highlighted && isHovered;
+  const isGreen = isHovered;
 
   const cardClasses = isGreen
     ? 'bg-green-600 text-white border-2 border-green-600 shadow-2xl shadow-green-600/30 lg:scale-105'
