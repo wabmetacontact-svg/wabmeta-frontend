@@ -106,23 +106,30 @@ const HowItWorks = () => {
           </div>
 
           {/* CENTER: Heading */}
-          <div className="text-center max-w-3xl mx-auto">
-            {/* Badge */}
-            <div className="inline-flex items-center gap-2 bg-green-50 border border-green-200 rounded-full px-4 py-2 mb-6">
-              <Zap size={16} className="text-green-600 fill-green-600" />
-              <span className="text-green-700 text-sm font-semibold tracking-wide">
-                QUICK & EASY SETUP
+          <div className="text-center max-w-3xl mx-auto relative z-10">
+            {/* Eyebrow with centered lines */}
+            <div className="flex items-center justify-center gap-3 mb-6">
+              <div className="h-px w-12 bg-gray-200" />
+              <span className="text-xs font-mono uppercase tracking-[0.2em] text-gray-500 font-bold">
+                Quick & Easy Setup
               </span>
+              <div className="h-px w-12 bg-gray-200" />
             </div>
 
-            <h2 className="font-heading text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-[1.15] tracking-tight mb-6">
-              Get WabMeta up and running in just{' '}
-              <span className="text-green-500">a few minutes</span>
+            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-[1.05] tracking-tight text-gray-950 mb-6">
+              <span>Get WabMeta up and</span>{' '}
+              <span className="bg-gradient-to-r from-gray-400 to-gray-500 bg-clip-text text-transparent italic font-light">
+                running
+              </span>
+              <br />
+              <span>in just</span>{' '}
+              <span className="bg-gradient-to-r from-green-700 via-emerald-600 to-green-700 bg-clip-text text-transparent">
+                a few minutes.
+              </span>
             </h2>
 
-            <p className="text-gray-600 text-lg leading-relaxed">
-              Connect your channels, set up automation and start engaging with 
-              your customers — all in just a few simple steps.
+            <p className="text-base lg:text-lg text-gray-600 leading-relaxed">
+              Connect your channels, set up automation and start engaging with your customers — all in just a few simple steps.
             </p>
           </div>
 

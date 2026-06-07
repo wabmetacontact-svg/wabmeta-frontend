@@ -109,70 +109,75 @@ const Pricing = () => {
       <div className="max-w-7xl mx-auto px-4 md:px-6 relative z-10">
         
         {/* ═══════ Section Header ═══════ */}
-        <div className="text-center mb-12">
-          {/* Badge */}
-          <div className="inline-flex items-center gap-2 mb-4">
-            <span className="w-1.5 h-1.5 bg-green-500 rounded-full" />
-            <span className="text-green-600 text-sm font-semibold tracking-wider">
-              SIMPLE, TRANSPARENT PRICING
-            </span>
+        <div className="grid grid-cols-12 gap-6 mb-16 lg:mb-24">
+          <div className="col-span-12 lg:col-span-7">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="h-px w-12 bg-gray-200" />
+              <span className="text-xs font-mono uppercase tracking-[0.2em] text-gray-500 font-bold">
+                Simple, Transparent Pricing
+              </span>
+            </div>
+
+            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-[1.05] tracking-tight text-gray-950">
+              <span>Choose the</span>{' '}
+              <span className="bg-gradient-to-r from-gray-400 to-gray-500 bg-clip-text text-transparent italic font-light">
+                perfect
+              </span>
+              <br />
+              <span>plan for your</span>{' '}
+              <span className="bg-gradient-to-r from-green-700 via-emerald-600 to-green-700 bg-clip-text text-transparent">
+                business.
+              </span>
+            </h2>
           </div>
 
-          {/* Heading */}
-          <h2 className="font-heading text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-[1.15] tracking-tight mb-4">
-            Choose the{' '}
-            <span className="text-green-500">perfect</span>{' '}
-            plan for your{' '}
-            <span className="text-purple-500">business</span>
-          </h2>
-
-          {/* Subheading */}
-          <p className="text-gray-600 text-lg max-w-2xl mx-auto leading-relaxed mb-8">
-            Flexible plans to help you automate, engage and grow — 
-            start free and upgrade anytime.
-          </p>
-
-          {/* ═══════ Billing Toggle ═══════ */}
-          <div className="inline-flex items-center gap-3 bg-white border border-gray-200 rounded-full p-1.5 shadow-sm">
-            <button
-              onClick={() => setBillingCycle('monthly')}
-              className={`px-5 py-2 rounded-full text-sm font-semibold transition-all ${
-                billingCycle === 'monthly'
-                  ? 'bg-gray-900 text-white shadow-md'
-                  : 'text-gray-700 hover:text-gray-900'
-              }`}
-            >
-              Monthly Billing
-            </button>
+          <div className="col-span-12 lg:col-span-5 lg:pt-12 flex flex-col items-start gap-6">
+            <p className="text-base lg:text-lg text-gray-600 leading-relaxed">
+              Flexible plans to help you automate, engage and grow — start free and upgrade anytime.
+            </p>
             
-            {/* Toggle Switch */}
-            <button
-              onClick={() => setBillingCycle(billingCycle === 'monthly' ? 'yearly' : 'monthly')}
-              className={`relative w-12 h-6 rounded-full transition-colors ${
-                billingCycle === 'yearly' ? 'bg-green-500' : 'bg-gray-200'
-              }`}
-            >
-              <div 
-                className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow-md transition-all ${
-                  billingCycle === 'yearly' ? 'left-[26px]' : 'left-0.5'
+            {/* ═══════ Billing Toggle ═══════ */}
+            <div className="inline-flex items-center gap-3 bg-white border border-gray-200 rounded-full p-1.5 shadow-sm">
+              <button
+                onClick={() => setBillingCycle('monthly')}
+                className={`px-4 py-2 rounded-full text-xs font-semibold transition-all ${
+                  billingCycle === 'monthly'
+                    ? 'bg-gray-900 text-white shadow-md'
+                    : 'text-gray-700 hover:text-gray-900'
                 }`}
-              />
-            </button>
-            
-            <button
-              onClick={() => setBillingCycle('yearly')}
-              className={`px-5 py-2 rounded-full text-sm font-semibold transition-all flex items-center gap-2 ${
-                billingCycle === 'yearly'
-                  ? 'bg-gray-900 text-white shadow-md'
-                  : 'text-gray-700 hover:text-gray-900'
-              }`}
-            >
-              Yearly Billing
-            </button>
-            
-            <span className="text-green-600 text-xs font-semibold pr-4">
-              Save up to 20%
-            </span>
+              >
+                Monthly
+              </button>
+              
+              {/* Toggle Switch */}
+              <button
+                onClick={() => setBillingCycle(billingCycle === 'monthly' ? 'yearly' : 'monthly')}
+                className={`relative w-12 h-6 rounded-full transition-colors ${
+                  billingCycle === 'yearly' ? 'bg-green-500' : 'bg-gray-200'
+                }`}
+              >
+                <div 
+                  className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow-md transition-all ${
+                    billingCycle === 'yearly' ? 'left-[26px]' : 'left-0.5'
+                  }`}
+                />
+              </button>
+              
+              <button
+                onClick={() => setBillingCycle('yearly')}
+                className={`px-4 py-2 rounded-full text-xs font-semibold transition-all flex items-center gap-2 ${
+                  billingCycle === 'yearly'
+                    ? 'bg-gray-900 text-white shadow-md'
+                    : 'text-gray-700 hover:text-gray-900'
+                }`}
+              >
+                Yearly
+              </button>
+              
+              <span className="text-green-600 text-xs font-semibold pr-3">
+                Save 20%
+              </span>
+            </div>
           </div>
         </div>
 

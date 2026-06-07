@@ -17,31 +17,32 @@ const Features = () => {
       <div className="max-w-7xl mx-auto px-4 md:px-6 relative z-10">
         
         {/* ═══════ Section Header ═══════ */}
-        <div className="text-center mb-16">
-          {/* Badge */}
-          <div className="inline-flex items-center gap-2 bg-green-50 border border-green-200 rounded-full px-4 py-2 mb-6">
-            <Sparkles size={16} className="text-green-600" />
-            <span className="text-green-700 text-sm font-semibold tracking-wide">
-              POWERFUL FEATURES
-            </span>
+        <div className="grid grid-cols-12 gap-6 mb-16 lg:mb-24">
+          <div className="col-span-12 lg:col-span-7">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="h-px w-12 bg-gray-200" />
+              <span className="text-xs font-mono uppercase tracking-[0.2em] text-gray-500 font-bold">
+                Powerful Features
+              </span>
+            </div>
+
+            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-[1.05] tracking-tight text-gray-950">
+              <span>Everything you need to</span>{' '}
+              <span className="bg-gradient-to-r from-gray-400 to-gray-500 bg-clip-text text-transparent italic font-light">
+                automate,
+              </span>
+              <br />
+              <span className="bg-gradient-to-r from-green-700 via-emerald-600 to-green-700 bg-clip-text text-transparent">
+                engage & grow.
+              </span>
+            </h2>
           </div>
 
-          {/* Heading */}
-          <h2 className="font-heading text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-[1.15] tracking-tight mb-6 max-w-4xl mx-auto">
-            Everything you need to{' '}
-            <br className="hidden md:block" />
-            <span className="text-green-500">automate</span>
-            <span className="text-gray-900">, </span>
-            <span className="text-blue-500">engage</span>
-            <span className="text-gray-900"> & </span>
-            <span className="text-pink-500">grow</span>
-          </h2>
-
-          {/* Subheading */}
-          <p className="text-gray-600 text-lg max-w-2xl mx-auto leading-relaxed">
-            All the tools you need to build stronger relationships, 
-            delight customers and scale your business.
-          </p>
+          <div className="col-span-12 lg:col-span-5 lg:pt-16">
+            <p className="text-base lg:text-lg text-gray-600 leading-relaxed">
+              All the tools you need to build stronger relationships, delight customers and scale your business.
+            </p>
+          </div>
         </div>
 
         {/* ═══════ Hub & Spoke Layout ═══════ */}
