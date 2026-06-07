@@ -84,8 +84,8 @@ const ProductDetail: React.FC = () => {
             <Link to="/" className="header__logo" aria-label="WabMeta Home">
               <span className="header__logo-mark">
                 <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M12 2L2 7V17L12 22L22 17V7L12 2Z" stroke="#FF3E00" strokeWidth="2.5" />
-                  <line x1="12" y1="2" x2="12" y2="22" stroke="#FF3E00" strokeWidth="2" />
+                  <path d="M12 2L2 7V17L12 22L22 17V7L12 2Z" stroke="#2883CF" strokeWidth="2.5" />
+                  <line x1="12" y1="2" x2="12" y2="22" stroke="#2883CF" strokeWidth="2" />
                 </svg>
               </span>
               WabMeta
