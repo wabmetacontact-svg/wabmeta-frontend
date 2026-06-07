@@ -8,7 +8,7 @@ import Logo from '../common/Logo';
 
 const Features = () => {
   return (
-    <section className="relative py-24 bg-gradient-to-b from-white via-gray-50/30 to-white overflow-hidden">
+    <section className="relative pt-24 pb-12 bg-gradient-to-b from-white via-gray-50/30 to-white overflow-hidden">
       
       {/* Decorative background */}
       <div className="absolute top-20 right-10 w-72 h-72 bg-green-100/30 rounded-full blur-3xl pointer-events-none" />
@@ -426,17 +426,6 @@ const Features = () => {
           </div>
         </div>
 
-        {/* ═══════ CTA Button ═══════ */}
-        <div className="flex justify-center mt-16">
-          <Link
-            to="/features"
-            className="group inline-flex items-center gap-2 bg-gray-900 hover:bg-gray-800 text-white font-semibold px-6 py-3.5 rounded-full transition-all duration-200 hover:shadow-xl hover:-translate-y-0.5"
-          >
-            <Zap size={18} className="text-green-400" />
-            Explore All Features
-            <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
-          </Link>
-        </div>
       </div>
     </section>
   );
