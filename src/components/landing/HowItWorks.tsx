@@ -3,6 +3,7 @@ import {
   Bot, ShieldCheck, BookOpen, Headphones, Sparkles,
   ArrowRight
 } from 'lucide-react';
+import { FaWhatsapp, FaInstagram } from 'react-icons/fa';
 
 const HowItWorks = () => {
   const steps = [
@@ -60,6 +61,11 @@ const HowItWorks = () => {
         }}
       />
 
+      {/* Background Blur Blobs */}
+      <div className="absolute top-1/4 left-0 w-96 h-96 bg-green-200/40 rounded-full blur-3xl pointer-events-none z-0" />
+      <div className="absolute top-1/3 left-1/3 w-[500px] h-[500px] bg-blue-200/30 rounded-full blur-3xl pointer-events-none z-0" />
+      <div className="absolute top-1/4 right-0 w-96 h-96 bg-pink-200/40 rounded-full blur-3xl pointer-events-none z-0" />
+
       <div className="max-w-7xl mx-auto px-4 md:px-6 relative z-10">
         
         {/* ═══════ Section Header ═══════ */}
@@ -75,15 +81,15 @@ const HowItWorks = () => {
               
               {/* WhatsApp */}
               <div className="absolute top-2 left-12 w-14 h-14 bg-white rounded-2xl shadow-lg flex items-center justify-center animate-float-slow">
-                <div className="w-9 h-9 bg-green-500 rounded-xl flex items-center justify-center">
-                  <MessageCircle size={20} className="text-white fill-white" />
+                <div className="w-9 h-9 bg-[#25D366] rounded-xl flex items-center justify-center shadow-sm">
+                  <FaWhatsapp size={20} className="text-white" />
                 </div>
               </div>
               
               {/* Instagram */}
               <div className="absolute bottom-4 left-0 w-14 h-14 bg-white rounded-2xl shadow-lg flex items-center justify-center animate-float">
-                <div className="w-9 h-9 bg-gradient-to-br from-purple-500 via-pink-500 to-orange-400 rounded-xl flex items-center justify-center">
-                  <Instagram size={20} className="text-white" />
+                <div className="w-9 h-9 bg-gradient-to-tr from-[#f09433] via-[#e6683c] via-[#dc2743] via-[#cc2366] to-[#bc1888] rounded-xl flex items-center justify-center shadow-sm">
+                  <FaInstagram size={20} className="text-white" />
                 </div>
               </div>
               
@@ -208,8 +214,8 @@ const HowItWorks = () => {
             <div className="space-y-3 mb-4">
               {/* WhatsApp Option (Selected) */}
               <div className="border-2 border-green-400 bg-green-50/40 rounded-xl p-3 flex items-center gap-3 relative">
-                <div className="w-9 h-9 bg-green-500 rounded-xl flex items-center justify-center flex-shrink-0">
-                  <MessageCircle size={18} className="text-white fill-white" />
+                <div className="w-9 h-9 bg-[#25D366] rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm">
+                  <FaWhatsapp size={18} className="text-white" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-gray-900">WhatsApp</p>
@@ -222,8 +228,8 @@ const HowItWorks = () => {
 
               {/* Instagram Option */}
               <div className="border border-gray-200 rounded-xl p-3 flex items-center gap-3">
-                <div className="w-9 h-9 bg-gradient-to-br from-purple-500 via-pink-500 to-orange-400 rounded-xl flex items-center justify-center flex-shrink-0">
-                  <Instagram size={18} className="text-white" />
+                <div className="w-9 h-9 bg-gradient-to-tr from-[#f09433] via-[#e6683c] via-[#dc2743] via-[#cc2366] to-[#bc1888] rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm">
+                  <FaInstagram size={18} className="text-white" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-gray-900">Instagram</p>
