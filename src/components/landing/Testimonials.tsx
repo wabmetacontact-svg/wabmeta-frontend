@@ -1,319 +1,187 @@
-import React, { useState, useEffect } from 'react';
-import { Star, ArrowLeft, ArrowRight, Quote } from 'lucide-react';
+import { useState } from 'react';
+import { Star, Quote, MessageCircle, Instagram, Bot } from 'lucide-react';
 
-const Testimonials: React.FC = () => {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [isAutoPlay, setIsAutoPlay] = useState(true);
+interface Testimonial {
+  name: string;
+  role: string;
+  company: string;
+  content: string;
+  metric: string;
+  metricLabel: string;
+  avatar: string;
+  bgGradient: string;
+  category: 'whatsapp' | 'instagram' | 'chatbot';
+  featured?: boolean;
+}
 
-  const testimonials = [
-    {
-      name: 'Priya Sharma',
-      role: 'Marketing Director',
-      company: 'TechStart India',
-      avatar: 'PS',
-      rating: 5,
-      text: "We were burning ₹40K/month on SaaS that promised everything. WabMeta replaced 3 of them and our customer engagement actually went up 40%. The bulk messaging alone saves us 20 hours every week.",
-      metrics: { messages: '50K+', response: '95%', saved: '20hrs/wk' },
-      accentColor: '#2883CF',
-      tag: 'Marketing',
-    },
-    {
-      name: 'Rahul Verma',
-      role: 'CEO',
-      company: 'QuickCommerce',
-      avatar: 'RV',
-      rating: 5,
-      text: "Set up our entire customer support automation in one afternoon. Not exaggerating. The chatbot builder is so intuitive my non-tech co-founder built half of it. Support team now handles only complex queries.",
-      metrics: { messages: '100K+', response: '98%', saved: '40hrs/wk' },
-      accentColor: '#0ea5e9',
-      tag: 'E-commerce',
-    },
-    {
-      name: 'Anjali Patel',
-      role: 'Operations Head',
-      company: 'FoodExpress',
-      avatar: 'AP',
-      rating: 5,
-      text: "Tried 4 WhatsApp platforms before this. WabMeta is the only one where the analytics actually mean something. Their support replied to my Sunday night email within 12 minutes. That's wild.",
-      metrics: { messages: '200K+', response: '99%', saved: '60hrs/wk' },
-      accentColor: '#3b82f6',
-      tag: 'Food & Bev',
-    },
-    {
-      name: 'Vikram Singh',
-      role: 'Founder',
-      company: 'EduLearn',
-      avatar: 'VS',
-      rating: 5,
-      text: "Running ed-tech means managing thousands of parent queries. Team collaboration features changed everything for us. Multiple agents on one inbox, internal notes, assignment rules — exactly what we needed.",
-      metrics: { messages: '75K+', response: '97%', saved: '30hrs/wk' },
-      accentColor: '#2563eb',
-      tag: 'Education',
-    },
-  ];
+const testimonials: Testimonial[] = [
+  {
+    name: 'Rahul Sharma',
+    role: 'Founder',
+    company: 'QuickMart',
+    content: 'WabMeta transformed how we handle customer support. Our response time dropped from 4 hours to instant. The AI chatbot handles 80% of queries automatically — game changer!',
+    metric: '80%',
+    metricLabel: 'queries automated',
+    avatar: 'RS',
+    bgGradient: 'from-green-400 to-emerald-600',
+    category: 'whatsapp',
+    featured: true,
+  },
+  {
+    name: 'Priya Mehta',
+    role: 'Marketing Head',
+    company: 'EduLearn',
+    content: 'Instagram DM automation is a game-changer. When someone comments on our reel, they automatically get course details. Enrollment went up 3x in just 2 months.',
+    metric: '3x',
+    metricLabel: 'course enrollment',
+    avatar: 'PM',
+    bgGradient: 'from-purple-400 to-pink-600',
+    category: 'instagram',
+  },
+  {
+    name: 'Arjun Patel',
+    role: 'CEO',
+    company: 'TravelEasy',
+    content: 'We send 15,000+ WhatsApp messages monthly for tour packages. WabMeta makes it seamless. The campaign analytics help us optimize every send.',
+    metric: '15K+',
+    metricLabel: 'monthly messages',
+    avatar: 'AP',
+    bgGradient: 'from-blue-400 to-cyan-600',
+    category: 'whatsapp',
+  },
+  {
+    name: 'Sneha Gupta',
+    role: 'Owner',
+    company: 'FashionHub',
+    content: 'The chatbot builder is incredibly intuitive. I built a complete order-tracking bot in one afternoon. My team is now free to focus on actual sales.',
+    metric: '1 day',
+    metricLabel: 'to build bot',
+    avatar: 'SG',
+    bgGradient: 'from-orange-400 to-red-600',
+    category: 'chatbot',
+  },
+  {
+    name: 'Mohammed Khan',
+    role: 'Digital Manager',
+    company: 'RealEstate Pro',
+    content: 'Lead qualification via WhatsApp chatbot is brilliant. Prospects answer questions, get tagged in CRM automatically. Our sales cycle shortened by 40%.',
+    metric: '40%',
+    metricLabel: 'shorter sales cycle',
+    avatar: 'MK',
+    bgGradient: 'from-teal-400 to-green-600',
+    category: 'chatbot',
+  },
+  {
+    name: 'Anjali Singh',
+    role: 'Co-founder',
+    company: 'HealthFirst',
+    content: 'Patient appointment reminders via WhatsApp have cut no-shows by 65%. Setup was super easy and the support team is always responsive.',
+    metric: '65%',
+    metricLabel: 'fewer no-shows',
+    avatar: 'AS',
+    bgGradient: 'from-indigo-400 to-purple-600',
+    category: 'whatsapp',
+    featured: true,
+  },
+  {
+    name: 'Vikram Singh',
+    role: 'Marketing Lead',
+    company: 'FitGym',
+    content: 'Story reply automation on Instagram brings 200+ leads weekly. Our gym memberships have doubled since we started using WabMeta.',
+    metric: '200+',
+    metricLabel: 'leads per week',
+    avatar: 'VS',
+    bgGradient: 'from-pink-400 to-rose-600',
+    category: 'instagram',
+  },
+  {
+    name: 'Kavita Reddy',
+    role: 'Founder',
+    company: 'BeautyBox',
+    content: 'WhatsApp catalog feature is amazing! Customers browse products and order directly in chat. Our conversion rate is 4x higher than our website.',
+    metric: '4x',
+    metricLabel: 'higher conversion',
+    avatar: 'KR',
+    bgGradient: 'from-fuchsia-400 to-purple-600',
+    category: 'whatsapp',
+  },
+  {
+    name: 'Rohit Verma',
+    role: 'Operations',
+    company: 'FoodieDelights',
+    content: 'Order confirmations, delivery updates, feedback collection — all automated via WabMeta. Saved us 20+ hours per week on customer communication.',
+    metric: '20hr',
+    metricLabel: 'saved weekly',
+    avatar: 'RV',
+    bgGradient: 'from-amber-400 to-orange-600',
+    category: 'chatbot',
+  },
+];
 
-  // Auto play
-  useEffect(() => {
-    if (!isAutoPlay) return;
-    const interval = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % testimonials.length);
-    }, 6000);
-    return () => clearInterval(interval);
-  }, [isAutoPlay, testimonials.length]);
+const categoryConfig = {
+  all: { label: 'All Stories', icon: Star, color: 'text-gray-700' },
+  whatsapp: { label: 'WhatsApp', icon: MessageCircle, color: 'text-green-600' },
+  instagram: { label: 'Instagram', icon: Instagram, color: 'text-pink-600' },
+  chatbot: { label: 'AI Chatbot', icon: Bot, color: 'text-purple-600' },
+};
 
-  const current = testimonials[currentIndex];
+const Testimonials = () => {
+  const [activeCategory, setActiveCategory] = useState<'all' | 'whatsapp' | 'instagram' | 'chatbot'>('all');
+
+  const filteredTestimonials = activeCategory === 'all' 
+    ? testimonials 
+    : testimonials.filter(t => t.category === activeCategory);
 
   return (
-    <section className="relative py-24 lg:py-32 overflow-hidden bg-white">
+    <section className="relative py-24 bg-gradient-to-b from-white via-gray-50/30 to-white overflow-hidden">
+      
+      {/* Decorative background */}
+      <div className="absolute top-40 right-10 w-96 h-96 bg-green-100/30 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-40 left-10 w-96 h-96 bg-purple-100/30 rounded-full blur-3xl pointer-events-none" />
 
-      {/* ✅ Background */}
-      <div className="absolute inset-0 -z-10 bg-gradient-to-b from-white via-slate-50 to-white">
-        <div className="absolute inset-0 transition-all duration-1000"
-          style={{
-            background: `
-              radial-gradient(ellipse 60% 50% at 20% 30%, ${current.accentColor}10 0%, transparent 60%),
-              radial-gradient(ellipse 60% 50% at 80% 70%, ${current.accentColor}08 0%, transparent 60%)
-            `,
-          }}
-        />
-        <div className="absolute inset-0 opacity-[0.015]"
-          style={{
-            backgroundImage: `linear-gradient(rgba(0,0,0,0.3) 1px, transparent 1px), 
-                              linear-gradient(90deg, rgba(0,0,0,0.3) 1px, transparent 1px)`,
-            backgroundSize: '60px 60px',
-          }}
-        />
-      </div>
-
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-
-        {/* ✅ EDITORIAL HEADER */}
-        <div className="grid grid-cols-12 gap-6 mb-16 lg:mb-20">
+      <div className="max-w-7xl mx-auto px-4 md:px-6 relative z-10">
+        
+        {/* ═══════ Section Header ═══════ */}
+        <div className="grid grid-cols-12 gap-6 mb-16 lg:mb-24">
           <div className="col-span-12 lg:col-span-7">
             <div className="flex items-center gap-3 mb-6">
               <div className="h-px w-12 bg-gray-200" />
               <span className="text-xs font-mono uppercase tracking-[0.2em] text-gray-500 font-bold">
-                Real talk from real customers
+                Loved by businesses
               </span>
             </div>
 
-            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-[1.05] tracking-tight">
-              <span className="text-gray-950">847 businesses</span>
+            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-[1.05] tracking-tight text-gray-950">
+              <span>Real businesses.</span>{' '}
               <br />
-              <span className="bg-gradient-to-r from-gray-500 to-gray-600 bg-clip-text text-transparent italic font-light">
-                already switched.
-              </span>
-              <br />
-              <span className="bg-gradient-to-r from-[#2883CF] to-sky-500 bg-clip-text text-transparent">
-                Here's why.
+              <span className="bg-gradient-to-r from-green-700 via-emerald-600 to-green-700 bg-clip-text text-transparent">
+                Real results.
               </span>
             </h2>
           </div>
 
-          <div className="col-span-12 lg:col-span-5 lg:pt-16">
+          <div className="col-span-12 lg:col-span-5 lg:pt-12 flex flex-col items-start gap-6">
             <p className="text-base lg:text-lg text-gray-600 leading-relaxed">
-              We didn't pay anyone for these. These are real users we asked. We left the typos in. We didn't edit the negatives out — there just weren't any worth showing.
+              Join 10,000+ growing businesses who are automating conversations and scaling their growth with WabMeta.
             </p>
-          </div>
-        </div>
-
-        {/* ✅ MAIN TESTIMONIAL CARD */}
-        <div className="grid grid-cols-12 gap-6 lg:gap-8">
-
-          {/* LEFT: Big quote card */}
-          <div className="col-span-12 lg:col-span-8">
-            <div 
-              className="relative rounded-3xl overflow-hidden
-                bg-white
-                border border-gray-200/80
-                shadow-[0_20px_50px_rgba(0,0,0,0.05)]
-                p-8 lg:p-12 min-h-[480px] flex flex-col
-                transition-all duration-700"
-              onMouseEnter={() => setIsAutoPlay(false)}
-              onMouseLeave={() => setIsAutoPlay(true)}
-            >
-              {/* Gradient bg based on current */}
-              <div className="absolute inset-0 transition-all duration-700"
-                style={{
-                  background: `radial-gradient(ellipse 70% 60% at 30% 20%, ${current.accentColor}12 0%, transparent 60%)`,
-                }}
-              />
-
-              {/* Shimmer */}
-              <div className="absolute inset-0 pointer-events-none"
-                style={{
-                  background: 'linear-gradient(135deg, rgba(255,255,255,0.6) 0%, transparent 50%)',
-                }}
-              />
-
-              {/* Top edge */}
-              <div className="absolute top-0 left-[15%] right-[15%] h-px 
-                bg-gradient-to-r from-transparent via-gray-200 to-transparent" />
-
-              {/* Giant watermark quote */}
-              <Quote 
-                className="absolute top-8 right-8 w-32 h-32 lg:w-48 lg:h-48 opacity-[0.05] -z-0"
-                style={{ color: current.accentColor }}
-                strokeWidth={1}
-              />
-
-              <div className="relative z-10 flex flex-col h-full" key={currentIndex}>
-
-                {/* Top meta */}
-                <div className="flex items-center justify-between mb-8 animate-fadeIn">
-                  <div className="flex items-center gap-3">
-                    <div className="px-3 py-1 rounded-full text-[10px] font-mono uppercase tracking-wider backdrop-blur-xl"
-                      style={{
-                        backgroundColor: `${current.accentColor}12`,
-                        border: `1px solid ${current.accentColor}25`,
-                        color: current.accentColor,
-                      }}
-                    >
-                      {current.tag}
-                    </div>
-                    <div className="flex items-center gap-0.5">
-                      {[...Array(current.rating)].map((_, i) => (
-                        <Star key={i} className="w-4 h-4 text-amber-400 fill-amber-400" />
-                      ))}
-                    </div>
-                  </div>
-
-                  <span className="text-xs font-mono text-gray-400 font-medium">
-                    {String(currentIndex + 1).padStart(2, '0')} / {String(testimonials.length).padStart(2, '0')}
-                  </span>
-                </div>
-
-                {/* Quote */}
-                <blockquote className="text-xl lg:text-2xl xl:text-3xl text-gray-900 leading-relaxed font-light mb-8 flex-1 animate-fadeIn"
-                  style={{ animationDelay: '0.1s', animationFillMode: 'backwards' }}
-                >
-                  <span className="text-3xl lg:text-4xl text-gray-300 leading-none align-top mr-1">"</span>
-                  {current.text}
-                  <span className="text-3xl lg:text-4xl text-gray-300 leading-none align-bottom ml-1">"</span>
-                </blockquote>
-
-                {/* Author + Metrics */}
-                <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-6 pt-6 border-t border-gray-100 animate-fadeIn"
-                  style={{ animationDelay: '0.2s', animationFillMode: 'backwards' }}
-                >
-                  {/* Author */}
-                  <div className="flex items-center gap-4">
-                    <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-white font-bold text-lg"
-                      style={{
-                        background: `linear-gradient(135deg, ${current.accentColor}, ${current.accentColor}aa)`,
-                        boxShadow: `0 8px 20px ${current.accentColor}30`,
-                      }}
-                    >
-                      {current.avatar}
-                    </div>
-                    <div>
-                      <div className="font-semibold text-gray-950">{current.name}</div>
-                      <div className="text-sm text-gray-600">{current.role}</div>
-                      <div className="text-xs text-gray-400 font-mono mt-0.5">{current.company}</div>
-                    </div>
-                  </div>
-
-                  {/* Metrics */}
-                  <div className="flex gap-4 lg:gap-6 text-right">
-                    <div>
-                      <div className="text-lg lg:text-xl font-bold text-gray-950">{current.metrics.messages}</div>
-                      <div className="text-[10px] uppercase tracking-wider text-gray-400 font-bold">Messages</div>
-                    </div>
-                    <div className="w-px bg-gray-150" />
-                    <div>
-                      <div className="text-lg lg:text-xl font-bold text-gray-950">{current.metrics.response}</div>
-                      <div className="text-[10px] uppercase tracking-wider text-gray-400 font-bold">Delivered</div>
-                    </div>
-                    <div className="w-px bg-gray-150" />
-                    <div>
-                      <div className="text-lg lg:text-xl font-bold text-gray-950">{current.metrics.saved}</div>
-                      <div className="text-[10px] uppercase tracking-wider text-gray-400 font-bold">Saved</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Navigation */}
-            <div className="flex items-center justify-between mt-6">
-              {/* Dots */}
-              <div className="flex items-center gap-2">
-                {testimonials.map((t, i) => (
-                  <button
-                    key={i}
-                    onClick={() => { setCurrentIndex(i); setIsAutoPlay(false); }}
-                    className="h-1.5 rounded-full transition-all duration-500 overflow-hidden bg-gray-100"
-                    style={{
-                      width: i === currentIndex ? '32px' : '8px',
-                      backgroundColor: i === currentIndex ? t.accentColor : 'rgba(0,0,0,0.1)',
-                    }}
-                  />
-                ))}
-              </div>
-
-              {/* Arrows */}
-              <div className="flex gap-2">
-                <button
-                  onClick={() => { 
-                    setCurrentIndex((p) => (p - 1 + testimonials.length) % testimonials.length); 
-                    setIsAutoPlay(false); 
-                  }}
-                  className="w-11 h-11 rounded-full bg-white border border-gray-200
-                    hover:bg-gray-50 hover:border-gray-300 hover:shadow-sm
-                    flex items-center justify-center text-gray-500 hover:text-gray-800
-                    transition-all duration-300"
-                >
-                  <ArrowLeft className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => { 
-                    setCurrentIndex((p) => (p + 1) % testimonials.length); 
-                    setIsAutoPlay(false); 
-                  }}
-                  className="w-11 h-11 rounded-full bg-white border border-gray-200
-                    hover:bg-gray-50 hover:border-gray-300 hover:shadow-sm
-                    flex items-center justify-center text-gray-500 hover:text-gray-800
-                    transition-all duration-300"
-                >
-                  <ArrowRight className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* RIGHT: Other testimonials preview */}
-          <div className="col-span-12 lg:col-span-4">
-            <div className="space-y-3">
-              <div className="text-xs font-mono uppercase tracking-widest text-gray-400 font-bold mb-4">
-                More stories
-              </div>
-              {testimonials.map((t, i) => {
-                if (i === currentIndex) return null;
+            
+            {/* Category Filter Tabs */}
+            <div className="inline-flex items-center gap-2 bg-white border border-gray-200 rounded-full p-1.5 shadow-sm flex-wrap">
+              {Object.entries(categoryConfig).map(([key, config]) => {
+                const Icon = config.icon;
+                const isActive = activeCategory === key;
                 return (
                   <button
-                    key={i}
-                    onClick={() => { setCurrentIndex(i); setIsAutoPlay(false); }}
-                    className="group w-full text-left p-4 rounded-2xl
-                      bg-white border border-gray-200/60
-                      hover:bg-gray-50 hover:border-gray-300 hover:shadow-sm
-                      transition-all duration-300"
+                    key={key}
+                    onClick={() => setActiveCategory(key as any)}
+                    className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold transition-all ${
+                      isActive
+                        ? 'bg-gray-900 text-white shadow-md'
+                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                    }`}
                   >
-                    <div className="flex items-start gap-3">
-                      <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold text-xs flex-shrink-0"
-                        style={{
-                          background: `linear-gradient(135deg, ${t.accentColor}, ${t.accentColor}aa)`,
-                        }}
-                      >
-                        {t.avatar}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="text-sm font-medium text-gray-950 group-hover:text-[#2883CF] transition-colors truncate">{t.name}</div>
-                        <div className="text-xs text-gray-400 truncate">{t.company}</div>
-                        <p className="text-xs text-gray-600 mt-2 line-clamp-2 leading-relaxed">
-                          {t.text.substring(0, 80)}...
-                        </p>
-                      </div>
-                    </div>
+                    <Icon size={12} className={isActive ? 'text-white' : config.color} />
+                    {config.label}
                   </button>
                 );
               })}
@@ -321,32 +189,153 @@ const Testimonials: React.FC = () => {
           </div>
         </div>
 
-        {/* ✅ TRUSTED BY - editorial logos */}
-        <div className="mt-20 lg:mt-24 pt-12 border-t border-gray-200">
-          <div className="text-center mb-8">
-            <span className="text-xs font-mono uppercase tracking-widest text-gray-400 font-bold">
-              And trusted by teams at
-            </span>
-          </div>
-
-          <div className="flex flex-wrap items-center justify-center gap-8 lg:gap-14">
-            {['Flipkart', 'Zomato', 'Swiggy', 'PhonePe', 'Razorpay', 'Paytm'].map((company, i) => (
-              <div 
-                key={company} 
-                className="text-xl lg:text-2xl font-bold text-gray-400 hover:text-gray-800
-                  transition-all duration-500 cursor-default
-                  hover:scale-105"
-                style={{
-                  animation: `fadeIn 0.6s ease-out ${i * 100}ms backwards`,
-                }}
-              >
-                {company}
+        {/* ═══════ Stats Bar ═══════ */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12 max-w-4xl mx-auto">
+          {[
+            { value: '10,000+', label: 'Happy Businesses' },
+            { value: '50M+', label: 'Messages Sent' },
+            { value: '4.9/5', label: 'Average Rating' },
+            { value: '98%', label: 'Would Recommend' },
+          ].map((stat, i) => (
+            <div key={i} className="text-center">
+              <div className="font-heading font-bold text-2xl md:text-3xl bg-gradient-to-br from-gray-900 to-gray-600 bg-clip-text text-transparent mb-1">
+                {stat.value}
               </div>
-            ))}
-          </div>
+              <div className="text-xs text-gray-500">
+                {stat.label}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* ═══════ Masonry Grid of Testimonials ═══════ */}
+        <div className="columns-1 md:columns-2 lg:columns-3 gap-5 space-y-5">
+          {filteredTestimonials.map((testimonial, i) => (
+            <TestimonialCard key={`${testimonial.name}-${i}`} testimonial={testimonial} />
+          ))}
+        </div>
+
+        {/* ═══════ Bottom CTA ═══════ */}
+        <div className="text-center mt-16">
+          <p className="text-gray-500 text-sm mb-4">
+            Want to share your story?
+          </p>
+          <a 
+            href="mailto:hello@wabmeta.com"
+            className="inline-flex items-center gap-2 text-green-600 hover:text-green-700 font-semibold text-sm group"
+          >
+            Send us your testimonial 
+            <span className="group-hover:translate-x-1 transition-transform">→</span>
+          </a>
         </div>
       </div>
     </section>
+  );
+};
+
+// ═══════════════════════════════════════════════════
+// Testimonial Card Component
+// ═══════════════════════════════════════════════════
+const TestimonialCard = ({ testimonial }: { testimonial: Testimonial }) => {
+  const categoryIcons = {
+    whatsapp: { Icon: MessageCircle, color: 'text-green-500', bg: 'bg-green-50' },
+    instagram: { Icon: Instagram, color: 'text-pink-500', bg: 'bg-pink-50' },
+    chatbot: { Icon: Bot, color: 'text-purple-500', bg: 'bg-purple-50' },
+  };
+
+  const { Icon, color, bg } = categoryIcons[testimonial.category];
+
+  return (
+    <div 
+      className={`break-inside-avoid group relative ${
+        testimonial.featured 
+          ? 'bg-gradient-to-br from-gray-900 to-gray-800 border border-gray-700' 
+          : 'bg-white border border-gray-200 hover:border-gray-300'
+      } rounded-2xl p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl overflow-hidden`}
+    >
+      {/* Quote icon (background) */}
+      <Quote 
+        size={80} 
+        className={`absolute -top-2 -right-2 opacity-[0.06] ${
+          testimonial.featured ? 'text-white' : 'text-gray-900'
+        }`}
+        strokeWidth={1}
+      />
+
+      {/* Category badge */}
+      <div className={`inline-flex items-center gap-1.5 ${
+        testimonial.featured 
+          ? 'bg-white/10 border-white/20' 
+          : `${bg} border-transparent`
+      } border rounded-full px-2.5 py-1 mb-4`}>
+        <Icon size={12} className={testimonial.featured ? 'text-white' : color} />
+        <span className={`text-[10px] font-bold uppercase tracking-wider ${
+          testimonial.featured ? 'text-white' : color
+        }`}>
+          {testimonial.category}
+        </span>
+      </div>
+
+      {/* Stars */}
+      <div className="flex gap-0.5 mb-3">
+        {[...Array(5)].map((_, j) => (
+          <Star 
+            key={j} 
+            size={14} 
+            className={`fill-yellow-400 text-yellow-400`}
+          />
+        ))}
+      </div>
+
+      {/* Content */}
+      <p className={`text-sm leading-relaxed mb-5 ${
+        testimonial.featured ? 'text-gray-100' : 'text-gray-700'
+      }`}>
+        "{testimonial.content}"
+      </p>
+
+      {/* Metric Badge */}
+      <div className={`inline-flex items-center gap-2 mb-5 px-3 py-2 rounded-xl ${
+        testimonial.featured 
+          ? 'bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-400/30' 
+          : 'bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200'
+      }`}>
+        <span className="text-lg">📈</span>
+        <div>
+          <div className={`font-heading font-bold text-base leading-none ${
+            testimonial.featured ? 'text-green-300' : 'text-green-700'
+          }`}>
+            {testimonial.metric}
+          </div>
+          <div className={`text-[10px] ${
+            testimonial.featured ? 'text-green-200/80' : 'text-green-600'
+          } mt-0.5`}>
+            {testimonial.metricLabel}
+          </div>
+        </div>
+      </div>
+
+      {/* Author */}
+      <div className={`flex items-center gap-3 pt-4 border-t ${
+        testimonial.featured ? 'border-gray-700' : 'border-gray-100'
+      }`}>
+        <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${testimonial.bgGradient} flex items-center justify-center text-white text-xs font-bold flex-shrink-0 shadow-md`}>
+          {testimonial.avatar}
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className={`text-sm font-bold ${
+            testimonial.featured ? 'text-white' : 'text-gray-900'
+          }`}>
+            {testimonial.name}
+          </div>
+          <div className={`text-xs ${
+            testimonial.featured ? 'text-gray-400' : 'text-gray-500'
+          }`}>
+            {testimonial.role} · {testimonial.company}
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };
 

@@ -3,7 +3,9 @@ import Hero from '../components/landing/Hero';
 import Features from '../components/landing/Features';
 import HowItWorks from '../components/landing/HowItWorks';
 import Pricing from '../components/landing/Pricing';
+import Testimonials from '../components/landing/Testimonials';
 import Team from '../components/landing/Team';
+import FAQ from '../components/landing/FAQ';
 
 const Landing = () => {
   return (
@@ -13,7 +15,9 @@ const Landing = () => {
       <Features />
       <HowItWorks />
       <Pricing />
+      <Testimonials />
       <Team />
+      <FAQ />
     </div>
   );
 };
