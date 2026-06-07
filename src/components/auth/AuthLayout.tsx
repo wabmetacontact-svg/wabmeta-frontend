@@ -35,7 +35,7 @@ const TESTIMONIAL = {
 
 const BrandPanel: React.FC = () => (
   <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden
-    bg-linear-to-br from-primary-600 via-primary-700 to-primary-800">
+    bg-gradient-to-br from-primary-600 via-primary-700 to-primary-800">
 
     {/* Ambient glows */}
     <div
