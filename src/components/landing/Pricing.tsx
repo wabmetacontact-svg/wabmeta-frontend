@@ -260,40 +260,32 @@ interface Plan {
 const PricingCard = ({ plan }: { plan: Plan }) => {
   const cardClasses = plan.highlighted
     ? 'bg-green-600 text-white border-2 border-green-600 shadow-2xl shadow-green-600/30 lg:scale-105'
-    : 'bg-white border border-gray-200 hover:bg-green-600 hover:text-white hover:border-green-600 hover:shadow-2xl hover:shadow-green-600/20';
+    : 'bg-white border border-gray-200 hover:border-gray-300 hover:shadow-xl';
 
-  const titleClasses = plan.highlighted 
-    ? 'text-white' 
-    : 'text-gray-900 group-hover:text-white transition-colors duration-300';
-  const taglineClasses = plan.highlighted 
-    ? 'text-green-100' 
-    : 'text-gray-500 group-hover:text-green-100 transition-colors duration-300';
-  const priceClasses = plan.highlighted 
-    ? 'text-white' 
-    : 'text-gray-900 group-hover:text-white transition-colors duration-300';
-  const priceLabelClasses = plan.highlighted 
-    ? 'text-green-100' 
-    : 'text-gray-500 group-hover:text-green-100 transition-colors duration-300';
+  const titleClasses = plan.highlighted ? 'text-white' : 'text-gray-900';
+  const taglineClasses = plan.highlighted ? 'text-green-100' : 'text-gray-500';
+  const priceClasses = plan.highlighted ? 'text-white' : 'text-gray-900';
+  const priceLabelClasses = plan.highlighted ? 'text-green-100' : 'text-gray-500';
 
   const getCtaButton = () => {
     if (plan.ctaStyle === 'solid-white') {
       return 'bg-white text-gray-900 hover:bg-gray-50';
     }
     if (plan.ctaStyle === 'outline-green') {
-      return 'border-2 border-green-500 text-green-600 bg-transparent hover:bg-green-500 hover:text-white group-hover:bg-white group-hover:text-green-700 group-hover:border-white';
+      return 'border-2 border-green-500 text-green-600 hover:bg-green-500 hover:text-white';
     }
-    return 'border-2 border-gray-300 text-gray-700 bg-transparent hover:border-gray-900 hover:bg-gray-900 hover:text-white group-hover:bg-white group-hover:text-green-700 group-hover:border-white';
+    return 'border-2 border-gray-300 text-gray-700 hover:border-gray-900 hover:bg-gray-900 hover:text-white';
   };
 
   return (
-    <div className={`group relative rounded-2xl p-6 transition-all duration-300 ${cardClasses}`}>
+    <div className={`relative rounded-2xl p-6 transition-all duration-300 ${cardClasses}`}>
       
       {/* Badge */}
       {plan.badge && (
-        <div className={`absolute top-4 right-4 px-2 py-1 rounded-md text-[10px] font-bold tracking-wide transition-colors duration-300 ${
+        <div className={`absolute top-4 right-4 px-2 py-1 rounded-md text-[10px] font-bold tracking-wide ${
           plan.highlighted 
             ? 'bg-gray-900 text-white' 
-            : 'bg-purple-100 text-purple-700 group-hover:bg-white group-hover:text-green-700'
+            : 'bg-purple-100 text-purple-700'
         }`}>
           {plan.badge}
         </div>
@@ -314,8 +306,8 @@ const PricingCard = ({ plan }: { plan: Plan }) => {
             {plan.price}
           </span>
           {plan.originalPrice && (
-            <span className={`text-sm line-through transition-colors duration-300 ${
-              plan.highlighted ? 'text-green-200' : 'text-gray-400 group-hover:text-green-200'
+            <span className={`text-sm line-through ${
+              plan.highlighted ? 'text-green-200' : 'text-gray-400'
             }`}>
               {plan.originalPrice}
             </span>
@@ -326,8 +318,8 @@ const PricingCard = ({ plan }: { plan: Plan }) => {
             {plan.priceLabel}
           </span>
           {plan.savings && (
-            <span className={`text-xs font-semibold flex items-center gap-0.5 transition-colors duration-300 ${
-              plan.highlighted ? 'text-green-100' : 'text-green-600 group-hover:text-green-100'
+            <span className={`text-xs font-semibold flex items-center gap-0.5 ${
+              plan.highlighted ? 'text-green-100' : 'text-green-600'
             }`}>
               <Sparkles size={10} />
               {plan.savings}
@@ -337,8 +329,8 @@ const PricingCard = ({ plan }: { plan: Plan }) => {
       </div>
 
       {/* Divider */}
-      <div className={`h-px mb-5 transition-colors duration-300 ${
-        plan.highlighted ? 'bg-green-500' : 'bg-gray-100 group-hover:bg-green-500'
+      <div className={`h-px mb-5 ${
+        plan.highlighted ? 'bg-green-500' : 'bg-gray-100'
       }`} />
 
       {/* Features */}
@@ -346,17 +338,17 @@ const PricingCard = ({ plan }: { plan: Plan }) => {
         {plan.features.map((feature, i) => (
           <li 
             key={i} 
-            className={`text-sm flex items-start gap-2 transition-colors duration-300 ${
+            className={`text-sm flex items-start gap-2 ${
               feature.active 
-                ? (plan.highlighted ? 'text-white' : 'text-gray-700 group-hover:text-white')
-                : (plan.highlighted ? 'text-green-200/60 line-through' : 'text-gray-300 line-through group-hover:text-green-200/60')
+                ? (plan.highlighted ? 'text-white' : 'text-gray-700')
+                : (plan.highlighted ? 'text-green-200/60 line-through' : 'text-gray-300 line-through')
             }`}
           >
             {/* Custom Check / Cross marker */}
             {feature.active ? (
-              <Check size={16} className={`flex-shrink-0 mt-0.5 transition-colors duration-300 ${plan.highlighted ? 'text-white' : 'text-green-500 group-hover:text-white'}`} />
+              <Check size={16} className={`flex-shrink-0 mt-0.5 ${plan.highlighted ? 'text-white' : 'text-green-500'}`} />
             ) : (
-              <span className={`text-sm font-semibold flex-shrink-0 w-4 text-center transition-colors duration-300 ${plan.highlighted ? 'text-green-300/40' : 'text-gray-300 group-hover:text-green-300/40'}`}>×</span>
+              <span className={`text-sm font-semibold flex-shrink-0 w-4 text-center ${plan.highlighted ? 'text-green-300/40' : 'text-gray-300'}`}>×</span>
             )}
             <span className="flex-1">{feature.text}</span>
           </li>
@@ -365,7 +357,7 @@ const PricingCard = ({ plan }: { plan: Plan }) => {
 
       {/* CTA Button */}
       <button
-        className={`w-full py-2.5 rounded-xl text-sm font-semibold transition-all duration-300 ${getCtaButton()}`}
+        className={`w-full py-2.5 rounded-xl text-sm font-semibold transition-all ${getCtaButton()}`}
       >
         {plan.cta}
       </button>
