@@ -10,7 +10,7 @@ import {
   ChevronDown,
 } from 'lucide-react';
 import { FaWhatsapp } from 'react-icons/fa';
-import logo from '../../assets/logo.png';
+import Logo from '../common/Logo';
 import { useApp } from '../../context/AppContext';
 import { usePlanAccess } from '../../hooks/usePlanAccess';
 import { useAuth } from '../../context/AuthContext';
@@ -377,11 +377,9 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, setCollapsed }) => {
           ${collapsed ? 'justify-center' : 'justify-between'}
         `}>
           <Link to="/dashboard" className="flex items-center gap-2 group">
-            <img
-              src={logo}
-              alt="WabMeta"
-              className={`object-contain transition-all duration-300 group-hover:scale-105
-                ${collapsed ? 'w-8 h-8' : 'h-7 w-auto'}`}
+            <Logo
+              variant={collapsed ? 'icon' : 'full'}
+              theme="light"
             />
           </Link>
 

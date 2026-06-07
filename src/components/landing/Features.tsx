@@ -1,411 +1,491 @@
-import React from 'react';
+import { Link } from 'react-router-dom';
 import {
-  Bot,
-  Zap,
-  Send,
-  Instagram,
-  Sparkles,
+  Sparkles, ArrowRight, MessageCircle, Bot, Workflow,
+  MessageSquare, Users, Instagram, BarChart3, Wallet,
+  Zap, Send, Check
 } from 'lucide-react';
 
-const Features: React.FC = () => {
+const Features = () => {
   return (
-    <section id="features" className="relative py-24 lg:py-32 overflow-hidden bg-white">
+    <section className="relative py-24 bg-gradient-to-b from-white via-gray-50/30 to-white overflow-hidden">
       
-      {/* ✅ Premium Background with dot grid & radial glow blobs */}
-      <div className="absolute inset-0 -z-10">
-        <div className="absolute inset-0 bg-gradient-to-b from-white via-slate-50 to-white" />
-        
-        {/* Dot grid pattern */}
-        <div 
-          className="absolute inset-0 opacity-[0.25]"
-          style={{
-            backgroundImage: `radial-gradient(rgba(40, 131, 207, 0.15) 1px, transparent 1px)`,
-            backgroundSize: '24px 24px',
-          }}
-        />
+      {/* Decorative background */}
+      <div className="absolute top-20 right-10 w-72 h-72 bg-green-100/30 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-20 left-10 w-72 h-72 bg-purple-100/30 rounded-full blur-3xl pointer-events-none" />
 
-        {/* Soft floating blur blobs */}
-        <div
-          className="absolute top-1/4 left-10 w-[600px] h-[600px] rounded-full opacity-[0.04]"
-          style={{
-            background: 'radial-gradient(circle, rgba(40,131,207,0.3) 0%, transparent 70%)',
-            filter: 'blur(90px)',
-          }}
-        />
-        <div
-          className="absolute bottom-1/4 right-10 w-[700px] h-[700px] rounded-full opacity-[0.04]"
-          style={{
-            background: 'radial-gradient(circle, rgba(56,189,248,0.25) 0%, transparent 70%)',
-            filter: 'blur(100px)',
-          }}
-        />
-      </div>
-
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-4 md:px-6 relative z-10">
         
-        {/* Badge & Editorial Header */}
-        <div className="text-center mb-16 lg:mb-24">
-          <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#2883CF]/10 border border-[#2883CF]/20 text-[#2883CF] text-xs font-semibold uppercase tracking-wider mb-4 shadow-sm">
-            <Sparkles className="w-3.5 h-3.5" />
-            Capabilities
-          </span>
-          <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-gray-950 max-w-3xl mx-auto leading-[1.1]">
-            Tons of features to grow your business
+        {/* ═══════ Section Header ═══════ */}
+        <div className="text-center mb-16">
+          {/* Badge */}
+          <div className="inline-flex items-center gap-2 bg-green-50 border border-green-200 rounded-full px-4 py-2 mb-6">
+            <Sparkles size={16} className="text-green-600" />
+            <span className="text-green-700 text-sm font-semibold tracking-wide">
+              POWERFUL FEATURES
+            </span>
+          </div>
+
+          {/* Heading */}
+          <h2 className="font-heading text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-[1.15] tracking-tight mb-6 max-w-4xl mx-auto">
+            Everything you need to{' '}
+            <br className="hidden md:block" />
+            <span className="text-green-500">automate</span>
+            <span className="text-gray-900">, </span>
+            <span className="text-blue-500">engage</span>
+            <span className="text-gray-900"> & </span>
+            <span className="text-pink-500">grow</span>
           </h2>
-          <p className="mt-4 text-sm sm:text-base text-gray-600 max-w-lg mx-auto">
-            Seven powerful tools deeply integrated into one central dashboard. Configure once, run forever.
+
+          {/* Subheading */}
+          <p className="text-gray-600 text-lg max-w-2xl mx-auto leading-relaxed">
+            All the tools you need to build stronger relationships, 
+            delight customers and scale your business.
           </p>
         </div>
 
-        {/* Bento Grid (3 columns on desktop, 2 on tablet, 1 on mobile) */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 max-w-7xl mx-auto">
+        {/* ═══════ Hub & Spoke Layout ═══════ */}
+        <div className="relative">
           
-          {/* 1. BULK MESSAGING (2 columns wide) */}
-          <div className="relative md:col-span-2 rounded-3xl overflow-hidden border border-gray-200/80 bg-white/70 backdrop-blur-md p-8 flex flex-col justify-between min-h-[460px] shadow-[0_12px_30px_rgba(0,0,0,0.03)] group transition-all duration-500 hover:border-gray-300 hover:shadow-xl hover:-translate-y-1">
+          {/* Connecting Dotted Lines (Desktop Only) */}
+          <svg 
+            className="absolute inset-0 w-full h-full pointer-events-none hidden lg:block z-0" 
+            style={{ minHeight: '900px' }}
+            viewBox="0 0 1200 900"
+            preserveAspectRatio="none"
+          >
+            {/* Top Left → Center */}
+            <line x1="350" y1="200" x2="600" y2="450" stroke="#22c55e" strokeWidth="1.5" strokeDasharray="5 5" opacity="0.4" />
+            {/* Top Right → Center */}
+            <line x1="850" y1="200" x2="600" y2="450" stroke="#a855f7" strokeWidth="1.5" strokeDasharray="5 5" opacity="0.4" />
+            {/* Middle Left → Center */}
+            <line x1="280" y1="450" x2="600" y2="450" stroke="#3b82f6" strokeWidth="1.5" strokeDasharray="5 5" opacity="0.4" />
+            {/* Middle Right → Center */}
+            <line x1="920" y1="450" x2="600" y2="450" stroke="#0ea5e9" strokeWidth="1.5" strokeDasharray="5 5" opacity="0.4" />
+            {/* Bottom Left → Center */}
+            <line x1="350" y1="700" x2="600" y2="450" stroke="#f97316" strokeWidth="1.5" strokeDasharray="5 5" opacity="0.4" />
+            {/* Bottom Right → Center */}
+            <line x1="850" y1="700" x2="600" y2="450" stroke="#ec4899" strokeWidth="1.5" strokeDasharray="5 5" opacity="0.4" />
             
-            {/* Visual Header */}
-            <div className="relative h-56 w-full bg-slate-50/50 rounded-2xl border border-gray-100 flex items-center justify-center overflow-hidden mb-6">
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-sky-500/2 to-transparent" />
+            {/* Connection dots */}
+            <circle cx="600" cy="450" r="4" fill="#22c55e" />
+          </svg>
+
+          {/* ═══════ Center Logo (Desktop) ═══════ */}
+          <div className="hidden lg:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20 items-center justify-center">
+            <div className="relative">
+              {/* Outer ring */}
+              <div className="absolute inset-0 bg-green-100 rounded-full blur-2xl scale-150 opacity-50" />
               
-              {/* Campaign Status Card Mockup */}
-              <div className="relative bg-white border border-gray-200/80 rounded-2xl shadow-lg p-5 w-full max-w-[380px] transform group-hover:scale-[1.02] transition-transform duration-500">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-lg bg-[#2883CF]/15 flex items-center justify-center">
-                      <Send className="w-4.5 h-4.5 text-[#2883CF]" />
+              {/* Main circle */}
+              <div className="relative w-48 h-48 bg-white border-2 border-gray-100 rounded-full shadow-2xl flex flex-col items-center justify-center">
+                {/* Logo */}
+                <div className="w-20 h-20 bg-green-500 rounded-2xl flex items-center justify-center shadow-lg mb-3">
+                  <MessageCircle size={36} className="text-white" />
+                </div>
+                <div className="font-heading font-bold text-xl text-gray-900">
+                  WabMeta
+                </div>
+                <div className="text-xs text-green-600 font-medium italic mt-0.5">
+                  All-in-One Platform
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* ═══════ Feature Cards Grid ═══════ */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-x-[280px] lg:gap-y-8 relative z-10">
+            
+            {/* ━━━ Card 1: WhatsApp Campaigns ━━━ */}
+            <FeatureCard
+              icon={<MessageCircle size={24} className="text-white" />}
+              iconBg="bg-green-500"
+              title="WhatsApp Campaigns"
+              description="Send bulk messages, run targeted campaigns and track real-time results."
+              arrowColor="text-green-500"
+              preview={
+                <div className="bg-white border border-gray-100 rounded-xl p-3 shadow-sm">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-1.5">
+                      <Send size={12} className="text-green-500" />
+                      <span className="text-xs font-semibold text-gray-900">Summer Sale Campaign</span>
+                    </div>
+                    <span className="text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">
+                      Completed
+                    </span>
+                  </div>
+                  <div className="space-y-2">
+                    {[
+                      { label: 'Delivered', value: '45,000', percent: 98, color: 'bg-green-500' },
+                      { label: 'Read', value: '39,000', percent: 83, color: 'bg-green-400' },
+                      { label: 'Replies', value: '8,200', percent: 18, color: 'bg-green-300' },
+                    ].map((stat, i) => (
+                      <div key={i}>
+                        <div className="flex items-center justify-between text-[10px] mb-1">
+                          <span className="text-gray-500">{stat.label}</span>
+                          <span className="font-semibold text-gray-900">{stat.value}</span>
+                          <span className="text-gray-400">{stat.percent}%</span>
+                        </div>
+                        <div className="w-full h-1 bg-gray-100 rounded-full overflow-hidden">
+                          <div className={`h-full ${stat.color} rounded-full`} style={{ width: `${stat.percent}%` }} />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              }
+            />
+
+            {/* ━━━ Card 2: AI Chatbot Builder ━━━ */}
+            <FeatureCard
+              icon={<Bot size={24} className="text-white" />}
+              iconBg="bg-purple-500"
+              title="AI Chatbot Builder"
+              description="Build smart AI chatbots with drag & drop. Answer FAQs and close sales automatically."
+              arrowColor="text-purple-500"
+              cardBg="bg-purple-50/40"
+              preview={
+                <div className="bg-white border border-gray-100 rounded-xl p-3 shadow-sm">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-1.5">
+                      <div className="w-5 h-5 bg-purple-100 rounded-md flex items-center justify-center">
+                        <Bot size={10} className="text-purple-600" />
+                      </div>
+                      <span className="text-xs font-semibold text-gray-900">AI Assistant</span>
+                    </div>
+                    <span className="text-gray-400">⋯</span>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="bg-gray-50 rounded-lg p-2">
+                      <p className="text-[11px] text-gray-700">Hi there! 👋</p>
+                      <p className="text-[11px] text-gray-700">How can I help you today?</p>
+                    </div>
+                    <div className="bg-purple-100 rounded-lg p-2 ml-auto w-fit">
+                      <p className="text-[11px] text-purple-900">What is the price?</p>
+                    </div>
+                    <div className="bg-gray-50 rounded-lg p-2">
+                      <p className="text-[11px] text-gray-700">The price starts from ₹999. Would you like to see our catalog?</p>
+                      <div className="flex items-center justify-end gap-0.5 mt-1">
+                        <span className="text-[8px] text-gray-400">11:30 AM</span>
+                        <Check size={8} className="text-blue-500" />
+                        <Check size={8} className="text-blue-500 -ml-1.5" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              }
+            />
+
+            {/* ━━━ Card 3: Workflow Automation ━━━ */}
+            <FeatureCard
+              icon={<Workflow size={24} className="text-white" />}
+              iconBg="bg-teal-500"
+              title="Workflow Automation"
+              description="Create powerful automation workflows with triggers, conditions, delays and actions."
+              arrowColor="text-teal-500"
+              preview={
+                <div className="bg-white border border-gray-100 rounded-xl p-3 shadow-sm space-y-2">
+                  <div className="flex items-center gap-2 p-2 bg-yellow-50 border border-yellow-200 rounded-lg">
+                    <div className="w-6 h-6 bg-yellow-400 rounded-md flex items-center justify-center flex-shrink-0">
+                      <Zap size={12} className="text-white" />
                     </div>
                     <div>
-                      <div className="text-xs font-bold text-gray-900">Festival Promo Campaign</div>
-                      <div className="text-[9px] text-gray-400 font-mono">ID: WAB-9043</div>
+                      <p className="text-[10px] text-gray-500">When User Sends</p>
+                      <p className="text-xs font-semibold text-gray-900">"Hi / Hello"</p>
                     </div>
                   </div>
-                  <span className="px-2 py-0.5 rounded bg-blue-50 text-[9px] font-bold text-[#2883CF] animate-pulse">Sending</span>
-                </div>
-                
-                {/* Stats Bar */}
-                <div className="space-y-3">
-                  <div className="flex justify-between text-[10px] text-gray-500">
-                    <span>Progress: 84% completed</span>
-                    <span className="font-bold text-gray-800">42,000 / 50,000 sent</span>
+                  <div className="flex justify-center text-gray-300 text-xs">↓</div>
+                  <div className="flex items-center gap-2 p-2 bg-purple-50 border border-purple-200 rounded-lg">
+                    <div className="w-6 h-6 bg-purple-500 rounded-md flex items-center justify-center flex-shrink-0">
+                      <Bot size={12} className="text-white" />
+                    </div>
+                    <div>
+                      <p className="text-[10px] text-purple-600 font-medium">AI Reply</p>
+                      <p className="text-xs font-semibold text-gray-900">Welcome! How can I help you?</p>
+                    </div>
                   </div>
-                  <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                    <div className="h-full bg-gradient-to-r from-[#2883CF] to-sky-500 rounded-full transition-all duration-1000" style={{ width: '84%' }} />
+                  <div className="flex justify-center text-gray-300 text-xs">↓</div>
+                  <div className="flex items-center gap-2 p-2 bg-pink-50 border border-pink-200 rounded-lg">
+                    <div className="w-6 h-6 bg-pink-500 rounded-md flex items-center justify-center flex-shrink-0">
+                      <Users size={12} className="text-white" />
+                    </div>
+                    <div>
+                      <p className="text-[10px] text-pink-600 font-medium">Assign to Agent</p>
+                      <p className="text-xs font-semibold text-gray-900">Sales Team</p>
+                    </div>
+                  </div>
+                </div>
+              }
+            />
+
+            {/* ━━━ Card 4: Shared Team Inbox ━━━ */}
+            <FeatureCard
+              icon={<MessageSquare size={24} className="text-white" />}
+              iconBg="bg-blue-500"
+              title="Shared Team Inbox"
+              description="Manage all conversations in one place. Assign, reply and collaborate in real-time."
+              arrowColor="text-blue-500"
+              preview={
+                <div className="bg-white border border-gray-100 rounded-xl p-3 shadow-sm">
+                  <div className="flex items-center justify-between mb-3 pb-2 border-b border-gray-100">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-xs font-semibold text-gray-900">All Conversations</span>
+                      <span className="text-[10px] bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded-full font-bold">12</span>
+                    </div>
+                  </div>
+                  <div className="flex gap-3 text-[10px] mb-3 pb-2 border-b border-gray-100">
+                    <span className="text-gray-900 font-semibold">Mine <span className="text-gray-400">8</span></span>
+                    <span className="text-gray-500">Unassigned <span className="text-gray-400">12</span></span>
+                    <span className="text-gray-500">Team <span className="text-gray-400">24</span></span>
+                  </div>
+                  <div className="space-y-2">
+                    {[
+                      { name: 'Rahul Verma', msg: 'Hi, I want to know...', time: '2m', color: 'bg-blue-500' },
+                      { name: 'Neha Singh', msg: 'Please share the price', time: '5m', color: 'bg-pink-500' },
+                      { name: 'Aman Khan', msg: 'Thank you!', time: '1h', color: 'bg-purple-500' },
+                    ].map((chat, i) => (
+                      <div key={i} className="flex items-center gap-2">
+                        <div className={`w-6 h-6 ${chat.color} rounded-full flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0`}>
+                          {chat.name.charAt(0)}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[11px] font-semibold text-gray-900 truncate">{chat.name}</p>
+                          <p className="text-[10px] text-gray-500 truncate">{chat.msg}</p>
+                        </div>
+                        <span className="text-[9px] text-gray-400">{chat.time}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              }
+            />
+
+            {/* ━━━ Card 5: CRM & Lead Management ━━━ */}
+            <FeatureCard
+              icon={<Users size={24} className="text-white" />}
+              iconBg="bg-orange-500"
+              title="CRM & Lead Management"
+              description="Organize contacts, track leads, set reminders and manage your sales pipeline easily."
+              arrowColor="text-orange-500"
+              cardBg="bg-orange-50/40"
+              preview={
+                <div className="bg-white border border-gray-100 rounded-xl p-3 shadow-sm">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-semibold">
+                      New Lead
+                    </span>
+                    <span className="text-[10px] text-gray-400">2m ago</span>
+                  </div>
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center text-orange-600 text-xs font-bold">
+                      RS
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-gray-900">Rohit Sharma</p>
+                      <p className="text-[10px] text-gray-500">+91 98765 43210</p>
+                    </div>
+                  </div>
+                  <p className="text-[11px] text-gray-700 mb-3 pb-3 border-b border-gray-100">
+                    Interested in Gold Plan
+                  </p>
+                  <div className="flex items-center gap-2">
+                    {[
+                      { label: 'New', active: true, color: 'bg-orange-400' },
+                      { label: 'Contacted', active: true, color: 'bg-yellow-400' },
+                      { label: 'Qualified', active: true, color: 'bg-blue-400' },
+                      { label: 'Won', active: false, color: 'bg-gray-300' },
+                    ].map((stage, i) => (
+                      <div key={i} className="flex items-center gap-1">
+                        <div className={`w-1.5 h-1.5 ${stage.color} rounded-full`} />
+                        <span className={`text-[9px] ${stage.active ? 'text-gray-700 font-medium' : 'text-gray-400'}`}>
+                          {stage.label}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              }
+            />
+
+            {/* ━━━ Card 6: Instagram Automation ━━━ */}
+            <FeatureCard
+              icon={<Instagram size={24} className="text-white" />}
+              iconBg="bg-gradient-to-br from-purple-500 via-pink-500 to-orange-400"
+              title="Instagram Automation"
+              description="Automate DMs, comments, story replies and grow your Instagram engagement."
+              arrowColor="text-pink-500"
+              cardBg="bg-pink-50/40"
+              preview={
+                <div className="bg-white border border-gray-100 rounded-xl p-3 shadow-sm">
+                  <div className="flex items-center justify-between mb-2 pb-2 border-b border-gray-100">
+                    <div className="flex items-center gap-1.5">
+                      <div className="w-5 h-5 bg-gradient-to-br from-purple-500 via-pink-500 to-orange-400 rounded-full" />
+                      <span className="text-xs font-semibold text-gray-900">krrish.store</span>
+                    </div>
+                    <span className="text-[10px] text-gray-400">2h</span>
+                  </div>
+                  <div className="space-y-2 mb-3">
+                    <p className="text-[11px] text-gray-700">
+                      <span className="font-semibold">Comment:</span> Price?
+                    </p>
+                    <p className="text-[11px] text-pink-600">
+                      <span className="font-semibold">✨ Auto-reply:</span> Check your DM 📩
+                    </p>
+                    <p className="text-[10px] text-gray-400">Just now</p>
                   </div>
                   <div className="grid grid-cols-3 gap-2 pt-2 border-t border-gray-100">
                     <div>
-                      <div className="text-xs font-bold text-gray-900">99.2%</div>
-                      <div className="text-[8px] text-gray-500 uppercase font-bold">Delivery</div>
+                      <p className="text-[9px] text-gray-500">Replies</p>
+                      <p className="text-sm font-bold text-gray-900">1,234</p>
                     </div>
                     <div>
-                      <div className="text-xs font-bold text-gray-900">76.4%</div>
-                      <div className="text-[8px] text-gray-500 uppercase font-bold">Read rate</div>
+                      <p className="text-[9px] text-gray-500">Engagement</p>
+                      <p className="text-sm font-bold text-gray-900">18.7%</p>
                     </div>
                     <div>
-                      <div className="text-xs font-bold text-gray-900">18.5%</div>
-                      <div className="text-[8px] text-gray-500 uppercase font-bold">Replies</div>
+                      <p className="text-[9px] text-gray-500">New Leads</p>
+                      <p className="text-sm font-bold text-gray-900">342</p>
                     </div>
                   </div>
                 </div>
-              </div>
-            </div>
+              }
+            />
 
-            {/* Content info */}
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-[10px] font-mono font-bold tracking-widest text-[#2883CF] uppercase">Campaigns</span>
-                <span className="text-xs font-mono font-bold text-gray-400">2.1M Sent · +18%</span>
-              </div>
-              <h3 className="text-xl lg:text-2xl font-bold text-gray-950 mb-2 group-hover:text-[#2883CF] transition-colors">
-                Bulk Messaging
-              </h3>
-              <p className="text-sm text-gray-600 leading-relaxed max-w-2xl">
-                Send personalized messages to thousands of contacts instantly. Smart rate limiting ensures safe, high-speed delivery of 50,000+ messages per hour.
-              </p>
-            </div>
-          </div>
-
-          {/* 2. LIVE INBOX (1 column wide) */}
-          <div className="relative rounded-3xl overflow-hidden border border-gray-200/80 bg-white/70 backdrop-blur-md p-8 flex flex-col justify-between min-h-[460px] shadow-[0_12px_30px_rgba(0,0,0,0.03)] group transition-all duration-500 hover:border-gray-300 hover:shadow-xl hover:-translate-y-1">
-            
-            {/* Visual Header */}
-            <div className="relative h-56 w-full bg-slate-50/50 rounded-2xl border border-gray-100 flex items-center justify-center overflow-hidden mb-6">
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-sky-500/2 to-transparent" />
-              
-              {/* Inbox Mockup */}
-              <div className="relative w-full max-w-[220px] bg-white border border-gray-200/80 rounded-xl shadow-md p-3 space-y-2.5 transform group-hover:scale-[1.03] transition-transform duration-500">
-                <div className="flex items-center justify-between pb-1.5 border-b border-gray-100">
-                  <span className="text-[10px] font-bold text-gray-900">Active Conversations</span>
-                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                </div>
-                
-                {/* Chat items */}
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2 p-1.5 bg-blue-50/50 rounded-lg border border-blue-100/30">
-                    <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-[#2883CF] to-sky-500 text-white font-bold text-[9px] flex items-center justify-center flex-shrink-0">RV</div>
-                    <div className="flex-1 min-w-0">
-                      <div className="text-[9px] font-bold text-gray-900 truncate">Rahul Verma</div>
-                      <div className="text-[8px] text-[#2883CF] truncate font-medium">Assigned to you</div>
+            {/* ━━━ Card 7: Analytics & Reports ━━━ */}
+            <FeatureCard
+              icon={<BarChart3 size={24} className="text-white" />}
+              iconBg="bg-blue-600"
+              title="Analytics & Reports"
+              description="Get detailed insights on delivery, reads, replies, conversions and more."
+              arrowColor="text-blue-600"
+              preview={
+                <div className="bg-white border border-gray-100 rounded-xl p-3 shadow-sm">
+                  <p className="text-[10px] text-gray-500 mb-2">Overview (This Month)</p>
+                  <div className="grid grid-cols-3 gap-2 mb-3">
+                    {[
+                      { label: 'Sent', value: '125K', change: '+12.5%' },
+                      { label: 'Delivered', value: '122K', change: '+11.8%' },
+                      { label: 'Read', value: '98K', change: '+18.3%' },
+                    ].map((stat, i) => (
+                      <div key={i}>
+                        <p className="text-[9px] text-gray-500">{stat.label}</p>
+                        <p className="text-xs font-bold text-gray-900">{stat.value}</p>
+                        <p className="text-[8px] text-green-500 font-semibold">↑ {stat.change}</p>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 pb-2 border-t border-gray-100 pt-2">
+                    <div>
+                      <p className="text-[9px] text-gray-500">Replies</p>
+                      <p className="text-xs font-bold text-gray-900">24K</p>
+                      <p className="text-[8px] text-green-500 font-semibold">↑ +19.6%</p>
+                    </div>
+                    <div>
+                      <p className="text-[9px] text-gray-500">Conversions</p>
+                      <p className="text-xs font-bold text-gray-900">4.6K</p>
+                      <p className="text-[8px] text-green-500 font-semibold">↑ +13.7%</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 p-1.5 opacity-60">
-                    <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-gray-500 to-gray-600 text-white font-bold text-[9px] flex items-center justify-center flex-shrink-0">PS</div>
-                    <div className="flex-1 min-w-0">
-                      <div className="text-[9px] font-bold text-gray-900 truncate">Priya Sharma</div>
-                      <div className="text-[8px] text-gray-500 truncate">Quick reply sent</div>
+                  {/* Mini chart */}
+                  <svg className="w-full mt-2" height="30" viewBox="0 0 120 30">
+                    <polyline
+                      points="0,25 15,20 30,22 45,15 60,18 75,10 90,12 105,5 120,8"
+                      fill="none"
+                      stroke="#3b82f6"
+                      strokeWidth="1.5"
+                    />
+                  </svg>
+                </div>
+              }
+            />
+
+            {/* ━━━ Card 8: Wallet & Billing ━━━ */}
+            <FeatureCard
+              icon={<Wallet size={24} className="text-white" />}
+              iconBg="bg-green-600"
+              title="Wallet & Billing"
+              description="Load wallet, manage balance, view transactions and monitor usage in real-time."
+              arrowColor="text-green-600"
+              preview={
+                <div className="bg-white border border-gray-100 rounded-xl p-3 shadow-sm">
+                  <div className="flex items-center justify-between mb-3 pb-3 border-b border-gray-100">
+                    <div>
+                      <p className="text-[10px] text-gray-500">Current Balance</p>
+                      <p className="text-lg font-bold text-gray-900">₹8,450.00</p>
                     </div>
+                    <button className="bg-green-500 text-white text-[10px] font-semibold px-3 py-1.5 rounded-lg">
+                      Add Money
+                    </button>
                   </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Content info */}
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-[10px] font-mono font-bold tracking-widest text-[#2883CF] uppercase">Conversations</span>
-                <span className="text-xs font-mono font-bold text-gray-400">16 Agents · Live</span>
-              </div>
-              <h3 className="text-xl lg:text-2xl font-bold text-gray-950 mb-2 group-hover:text-[#2883CF] transition-colors">
-                Live Inbox
-              </h3>
-              <p className="text-sm text-gray-600 leading-relaxed">
-                A collaborative team inbox for your entire support staff. Assign chats to agents, add internal notes, and use pre-saved quick replies.
-              </p>
-            </div>
-          </div>
-
-          {/* 3. AI CHATBOT (1 column wide) */}
-          <div className="relative rounded-3xl overflow-hidden border border-gray-200/80 bg-white/70 backdrop-blur-md p-8 flex flex-col justify-between min-h-[460px] shadow-[0_12px_30px_rgba(0,0,0,0.03)] group transition-all duration-500 hover:border-gray-300 hover:shadow-xl hover:-translate-y-1">
-            
-            {/* Visual Header */}
-            <div className="relative h-56 w-full bg-slate-50/50 rounded-2xl border border-gray-100 flex items-center justify-center overflow-hidden mb-6">
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-sky-500/2 to-transparent" />
-              
-              {/* Chatbot flow */}
-              <div className="relative w-full max-w-[220px] space-y-2 transform group-hover:scale-[1.03] transition-transform duration-500">
-                <div className="bg-white border border-gray-200/80 rounded-xl p-3 shadow-md flex items-center gap-2.5">
-                  <div className="w-7 h-7 rounded-lg bg-indigo-500/10 flex items-center justify-center">
-                    <Bot className="w-4 h-4 text-indigo-500" />
-                  </div>
-                  <div>
-                    <div className="text-[10px] font-bold text-gray-900">AI Prompt Router</div>
-                    <div className="text-[8px] text-gray-500 font-mono">OpenAI GPT-4o</div>
-                  </div>
-                </div>
-                {/* Connection Line */}
-                <div className="w-0.5 h-4 bg-gradient-to-b from-indigo-500 to-[#2883CF] mx-auto" />
-                <div className="bg-white border border-gray-200/80 rounded-xl p-2.5 shadow-md text-center text-[9px] font-semibold text-[#2883CF] border-dashed border-[#2883CF]/40">
-                  🎯 Qualify Prospect
-                </div>
-              </div>
-            </div>
-
-            {/* Content info */}
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-[10px] font-mono font-bold tracking-widest text-[#2883CF] uppercase">Automation</span>
-                <span className="text-xs font-mono font-bold text-gray-400">24/7 · AI Powered</span>
-              </div>
-              <h3 className="text-xl lg:text-2xl font-bold text-gray-950 mb-2 group-hover:text-[#2883CF] transition-colors">
-                AI Chatbot
-              </h3>
-              <p className="text-sm text-gray-600 leading-relaxed">
-                Visual drag-and-drop conversational chatbot builder. Easily connect OpenAI, Gemini, or custom webhook models to handle complex customer queries.
-              </p>
-            </div>
-          </div>
-
-          {/* 4. SMART WORKFLOWS (1 column wide) */}
-          <div className="relative rounded-3xl overflow-hidden border border-gray-200/80 bg-white/70 backdrop-blur-md p-8 flex flex-col justify-between min-h-[460px] shadow-[0_12px_30px_rgba(0,0,0,0.03)] group transition-all duration-500 hover:border-gray-300 hover:shadow-xl hover:-translate-y-1">
-            
-            {/* Visual Header */}
-            <div className="relative h-56 w-full bg-slate-50/50 rounded-2xl border border-gray-100 flex items-center justify-center overflow-hidden mb-6">
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-sky-500/2 to-transparent" />
-              
-              {/* Trigger diagram */}
-              <div className="relative w-full max-w-[220px] bg-white border border-gray-200/80 rounded-xl shadow-md p-3.5 space-y-3 transform group-hover:scale-[1.03] transition-transform duration-500">
-                <div className="flex items-center gap-1.5 pb-2 border-b border-gray-100 text-[10px] font-bold text-gray-900">
-                  <Zap className="w-3.5 h-3.5 text-amber-500 fill-amber-500/20" />
-                  <span>Workflow Trigger</span>
-                </div>
-                <div className="space-y-2 text-[9px]">
-                  <div className="flex items-center justify-between text-gray-500">
-                    <span>Trigger: Keyword 'Price'</span>
-                    <span className="text-emerald-500 font-bold">Active</span>
-                  </div>
-                  <div className="p-2 bg-slate-50 border border-gray-100 rounded-lg font-mono text-gray-500">
-                    Action: Send price_list template
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Content info */}
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-[10px] font-mono font-bold tracking-widest text-[#2883CF] uppercase">Automation</span>
-                <span className="text-xs font-mono font-bold text-gray-400">90% Saved · +42%</span>
-              </div>
-              <h3 className="text-xl lg:text-2xl font-bold text-gray-950 mb-2 group-hover:text-[#2883CF] transition-colors">
-                Smart Workflows
-              </h3>
-              <p className="text-sm text-gray-600 leading-relaxed">
-                Trigger automations based on keywords, schedules, or API hooks. Create advanced branches with if-then-else conditions using 50+ templates.
-              </p>
-            </div>
-          </div>
-
-          {/* 5. ANALYTICS (1 column wide) */}
-          <div className="relative rounded-3xl overflow-hidden border border-gray-200/80 bg-white/70 backdrop-blur-md p-8 flex flex-col justify-between min-h-[460px] shadow-[0_12px_30px_rgba(0,0,0,0.03)] group transition-all duration-500 hover:border-gray-300 hover:shadow-xl hover:-translate-y-1">
-            
-            {/* Visual Header */}
-            <div className="relative h-56 w-full bg-slate-50/50 rounded-2xl border border-gray-100 flex items-center justify-center overflow-hidden mb-6">
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-sky-500/2 to-transparent" />
-              
-              {/* Graphic Chart */}
-              <div className="relative w-full max-w-[220px] bg-white border border-gray-200/80 rounded-xl shadow-md p-4 space-y-3 transform group-hover:scale-[1.03] transition-transform duration-500">
-                <div className="flex justify-between items-baseline">
-                  <span className="text-[10px] font-bold text-gray-900">Campaign Performance</span>
-                  <span className="text-[9px] text-emerald-500 font-bold font-mono">+2.3%</span>
-                </div>
-                
-                {/* SVG Curve Line Graph */}
-                <svg className="w-full h-16" viewBox="0 0 100 40">
-                  <defs>
-                    <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#2883CF" stopOpacity="0.2"/>
-                      <stop offset="100%" stopColor="#2883CF" stopOpacity="0"/>
-                    </linearGradient>
-                  </defs>
-                  <path d="M0,35 Q15,30 30,20 T60,15 T90,5 L100,2 L100,40 L0,40 Z" fill="url(#chartGrad)" />
-                  <path d="M0,35 Q15,30 30,20 T60,15 T90,5 L100,2" fill="none" stroke="#2883CF" strokeWidth="2" />
-                  <circle cx="100" cy="2" r="2.5" fill="#2883CF" className="animate-pulse" />
-                </svg>
-              </div>
-            </div>
-
-            {/* Content info */}
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-[10px] font-mono font-bold tracking-widest text-[#2883CF] uppercase">Insights</span>
-                <span className="text-xs font-mono font-bold text-gray-400">99.7% Deliv · +2.3%</span>
-              </div>
-              <h3 className="text-xl lg:text-2xl font-bold text-gray-950 mb-2 group-hover:text-[#2883CF] transition-colors">
-                Analytics
-              </h3>
-              <p className="text-sm text-gray-600 leading-relaxed">
-                Real-time delivery performance statistics. Monitor campaign delivery statuses, read receipts, and agent reply speeds instantly.
-              </p>
-            </div>
-          </div>
-
-          {/* 6. TEAM CRM (1 column wide) */}
-          <div className="relative rounded-3xl overflow-hidden border border-gray-200/80 bg-white/70 backdrop-blur-md p-8 flex flex-col justify-between min-h-[460px] shadow-[0_12px_30px_rgba(0,0,0,0.03)] group transition-all duration-500 hover:border-gray-300 hover:shadow-xl hover:-translate-y-1">
-            
-            {/* Visual Header */}
-            <div className="relative h-56 w-full bg-slate-50/50 rounded-2xl border border-gray-100 flex items-center justify-center overflow-hidden mb-6">
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-sky-500/2 to-transparent" />
-              
-              {/* Stacks profiles */}
-              <div className="relative w-full max-w-[200px] space-y-2 transform group-hover:scale-[1.03] transition-transform duration-500">
-                <div className="bg-white border border-gray-200/80 rounded-xl p-2.5 shadow-md flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 rounded-full bg-emerald-500 text-white font-bold text-[9px] flex items-center justify-center">Ankit</div>
-                    <span className="text-[9px] font-bold text-gray-800">Admin Role</span>
-                  </div>
-                  <span className="text-[8px] text-gray-400">Owner</span>
-                </div>
-                <div className="bg-white border border-gray-200/80 rounded-xl p-2.5 shadow-md flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 rounded-full bg-blue-500 text-white font-bold text-[9px] flex items-center justify-center">Priya</div>
-                    <span className="text-[9px] font-bold text-gray-800">Agent Role</span>
-                  </div>
-                  <span className="text-[8px] text-[#2883CF] font-bold">12 Chats</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Content info */}
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-[10px] font-mono font-bold tracking-widest text-[#2883CF] uppercase">Collaboration</span>
-                <span className="text-xs font-mono font-bold text-gray-400">12+ Team · Pro</span>
-              </div>
-              <h3 className="text-xl lg:text-2xl font-bold text-gray-950 mb-2 group-hover:text-[#2883CF] transition-colors">
-                Team CRM
-              </h3>
-              <p className="text-sm text-gray-600 leading-relaxed">
-                Manage your leads, team members, and customer relations in one central database. Assign agent permissions and roles dynamically.
-              </p>
-            </div>
-          </div>
-
-          {/* 7. INSTAGRAM DMs (2 columns wide - Dark Blue Bento Card) */}
-          <div className="relative md:col-span-2 rounded-3xl overflow-hidden border border-[#2883CF]/20 bg-gradient-to-br from-[#0a0e27] via-[#0c1233] to-[#0a0e27] p-8 flex flex-col justify-between min-h-[460px] shadow-[0_20px_50px_rgba(40,131,207,0.15)] group transition-all duration-500 hover:shadow-2xl">
-            
-            {/* Visual Header */}
-            <div className="relative h-56 w-full bg-white/[0.03] border border-white/[0.08] rounded-2xl flex items-center justify-center overflow-hidden mb-6">
-              {/* Neon background glows */}
-              <div className="absolute w-40 h-40 rounded-full bg-[#e1306c]/10 filter blur-xl opacity-60 top-5 left-10" />
-              <div className="absolute w-40 h-40 rounded-full bg-[#2883CF]/15 filter blur-xl opacity-60 bottom-5 right-10" />
-              
-              {/* Instagram Feed / DM Mockup */}
-              <div className="relative w-full max-w-[400px] grid grid-cols-12 gap-4 items-center px-4 transform group-hover:scale-[1.02] transition-transform duration-500">
-                {/* Left Side: DM window */}
-                <div className="col-span-7 bg-[#0f172a]/95 border border-white/[0.1] rounded-xl p-3 shadow-lg">
-                  <div className="flex items-center gap-2 pb-2 border-b border-white/[0.08] mb-2">
-                    <Instagram className="w-3.5 h-3.5 text-pink-400" />
-                    <span className="text-[9px] font-bold text-white font-mono">Instagram Direct</span>
-                  </div>
-                  <div className="space-y-2">
-                    <div className="p-1.5 bg-white/5 rounded-lg text-[9px] text-gray-300">
-                      "Loved your post! Can I get price?"
+                  <p className="text-[10px] text-gray-500 mb-2">Recent Transaction</p>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-xs font-semibold text-gray-900">Campaign - Summer Sale</p>
+                      <p className="text-[10px] text-gray-400">Today, 11:30 AM</p>
                     </div>
-                    <div className="p-1.5 bg-[#e1306c]/15 border border-[#e1306c]/30 text-white rounded-lg text-[9px] text-right font-medium">
-                      "Sure! Sent details to DMs 📩"
-                    </div>
+                    <span className="text-sm font-bold text-red-500">- ₹2,450.00</span>
                   </div>
                 </div>
-
-                {/* Right Side: Stat metrics */}
-                <div className="col-span-5 space-y-2">
-                  <div className="bg-white/95 rounded-lg p-2.5 shadow-md">
-                    <div className="text-[8px] font-bold text-gray-500 uppercase">Auto answered</div>
-                    <div className="text-sm font-bold text-gray-900 mt-0.5">3.2K/day</div>
-                  </div>
-                  <div className="bg-white/95 rounded-lg p-2.5 shadow-md">
-                    <div className="text-[8px] font-bold text-gray-500 uppercase">Growth rate</div>
-                    <div className="text-sm font-bold text-gray-[#2883CF] mt-0.5">+67%</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Content info */}
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-[10px] font-mono font-bold tracking-widest text-[#e1306c] uppercase">Social Integration</span>
-                <span className="text-xs font-mono font-bold text-white/50">3.2K Replies · +67%</span>
-              </div>
-              <h3 className="text-xl lg:text-2xl font-bold text-white mb-2 group-hover:text-pink-400 transition-colors">
-                Instagram DMs
-              </h3>
-              <p className="text-sm text-gray-300 leading-relaxed max-w-2xl">
-                Automatically reply to DMs, story mentions, and post comments. Seamlessly manage Instagram customer engagement and queries alongside WhatsApp in one unified workspace.
-              </p>
-            </div>
+              }
+            />
           </div>
-
         </div>
 
-        {/* Minimal Bottom Tagline */}
-        <div className="mt-20 text-center">
-          <p className="text-sm text-gray-500 max-w-md mx-auto">
-            Configure automated responses, keyword triggers, and team permissions directly inside your settings.
-          </p>
+        {/* ═══════ CTA Button ═══════ */}
+        <div className="flex justify-center mt-16">
+          <Link
+            to="/features"
+            className="group inline-flex items-center gap-2 bg-gray-900 hover:bg-gray-800 text-white font-semibold px-6 py-3.5 rounded-full transition-all duration-200 hover:shadow-xl hover:-translate-y-0.5"
+          >
+            <Zap size={18} className="text-green-400" />
+            Explore All Features
+            <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+          </Link>
         </div>
-
       </div>
     </section>
+  );
+};
+
+// ═══════════════════════════════════════════════════
+// Feature Card Component
+// ═══════════════════════════════════════════════════
+interface FeatureCardProps {
+  icon: React.ReactNode;
+  iconBg: string;
+  title: string;
+  description: string;
+  arrowColor: string;
+  preview: React.ReactNode;
+  cardBg?: string;
+}
+
+const FeatureCard = ({ icon, iconBg, title, description, arrowColor, preview, cardBg = 'bg-white' }: FeatureCardProps) => {
+  return (
+    <div className={`group ${cardBg} border border-gray-200/80 rounded-2xl p-5 hover:shadow-xl hover:border-gray-300 transition-all duration-300 hover:-translate-y-1`}>
+      <div className="grid grid-cols-2 gap-4 items-start">
+        
+        {/* Left: Icon + Title + Description */}
+        <div>
+          <div className={`w-12 h-12 ${iconBg} rounded-2xl flex items-center justify-center shadow-md mb-3`}>
+            {icon}
+          </div>
+          <h3 className="font-heading font-bold text-base text-gray-900 mb-1.5 leading-tight">
+            {title}
+          </h3>
+          <p className="text-xs text-gray-600 leading-relaxed mb-3">
+            {description}
+          </p>
+          <button className={`w-8 h-8 bg-white border border-gray-200 rounded-full flex items-center justify-center group-hover:border-current transition-all hover:scale-110 ${arrowColor}`}>
+            <ArrowRight size={14} className="text-current" />
+          </button>
+        </div>
+
+        {/* Right: Mini Preview */}
+        <div className="relative">
+          {preview}
+        </div>
+      </div>
+    </div>
   );
 };
 
