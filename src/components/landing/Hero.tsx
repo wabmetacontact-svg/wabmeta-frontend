@@ -330,19 +330,38 @@ const Hero = () => {
           </div>
         </div>
 
-        {/* ═══════ TRUSTED BY BRANDS ═══════ */}
-        <div className="text-center">
-          <p className="text-gray-500 text-sm mb-6">
+      </div>
+
+      {/* ═══════ TRUSTED BY BRANDS ═══════ */}
+      <div className="mt-12 bg-gradient-to-r from-green-600 via-emerald-500 to-green-600 py-6 overflow-hidden shadow-lg border-y border-green-700/20 relative z-10">
+        <div className="max-w-7xl mx-auto px-4 md:px-6 mb-4 text-center">
+          <p className="text-green-100/90 text-sm font-semibold tracking-wider">
             Trusted by growing businesses worldwide
           </p>
+        </div>
+        
+        <div className="relative w-full overflow-hidden flex select-none">
+          {/* Marquee Group 1 */}
+          <div className="flex shrink-0 gap-16 justify-around min-w-full animate-marquee whitespace-nowrap">
+            {['CERA', 'boAt', 'AJIO', 'OYO', 'HDFC BANK', 'Levis', 'lenskart', 'TATA'].map((brand, idx) => (
+              <span
+                key={`brand-1-${idx}`}
+                className="text-white hover:text-green-100 font-extrabold text-xl md:text-2xl transition-colors cursor-default tracking-wide px-4"
+              >
+                {brand}
+              </span>
+            ))}
+          </div>
           
-          <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-8 gap-6 md:gap-8 items-center">
-            {['CERA', 'boAt', 'AJIO', 'OYO', 'HDFC BANK', 'Levis', 'lenskart', 'TATA'].map((brand) => (
-              <div key={brand} className="text-center">
-                <span className="text-gray-400 hover:text-gray-700 font-bold text-lg md:text-xl transition-colors cursor-default">
-                  {brand}
-                </span>
-              </div>
+          {/* Marquee Group 2 (Duplicate for Seamless Loop) */}
+          <div className="flex shrink-0 gap-16 justify-around min-w-full animate-marquee whitespace-nowrap" aria-hidden="true">
+            {['CERA', 'boAt', 'AJIO', 'OYO', 'HDFC BANK', 'Levis', 'lenskart', 'TATA'].map((brand, idx) => (
+              <span
+                key={`brand-2-${idx}`}
+                className="text-white hover:text-green-100 font-extrabold text-xl md:text-2xl transition-colors cursor-default tracking-wide px-4"
+              >
+                {brand}
+              </span>
             ))}
           </div>
         </div>
