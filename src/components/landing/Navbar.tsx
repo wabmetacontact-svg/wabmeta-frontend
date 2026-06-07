@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronDown, MessageCircle, Menu, X } from 'lucide-react';
+import { ChevronDown, Menu, X } from 'lucide-react';
+import Logo from '../common/Logo';
 
 const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
@@ -35,12 +36,7 @@ const Navbar = () => {
           
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2 pl-3">
-            <div className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center shadow-sm">
-              <MessageCircle size={18} className="text-white" />
-            </div>
-            <span className="font-heading font-bold text-xl text-gray-900 tracking-tight">
-              WabMeta
-            </span>
+            <Logo variant="full" theme="light" />
           </Link>
 
           {/* Desktop Nav Links */}

@@ -4,6 +4,7 @@ import {
   MessageSquare, Users, Instagram, BarChart3, Wallet,
   Zap, Send, Check
 } from 'lucide-react';
+import Logo from '../common/Logo';
 
 const Features = () => {
   return (
@@ -77,15 +78,10 @@ const Features = () => {
               <div className="absolute inset-0 bg-green-100 rounded-full blur-2xl scale-150 opacity-50" />
               
               {/* Main circle */}
-              <div className="relative w-48 h-48 bg-white border-2 border-gray-100 rounded-full shadow-2xl flex flex-col items-center justify-center">
+              <div className="relative w-48 h-48 bg-white border-2 border-gray-100 rounded-full shadow-2xl flex flex-col items-center justify-center p-4">
                 {/* Logo */}
-                <div className="w-20 h-20 bg-green-500 rounded-2xl flex items-center justify-center shadow-lg mb-3">
-                  <MessageCircle size={36} className="text-white" />
-                </div>
-                <div className="font-heading font-bold text-xl text-gray-900">
-                  WabMeta
-                </div>
-                <div className="text-xs text-green-600 font-medium italic mt-0.5">
+                <Logo variant="full" theme="light" className="scale-110" />
+                <div className="text-xs text-green-600 font-medium italic mt-2">
                   All-in-One Platform
                 </div>
               </div>
