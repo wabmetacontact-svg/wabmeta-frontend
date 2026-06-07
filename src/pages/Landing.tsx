@@ -6,6 +6,7 @@ import Pricing from '../components/landing/Pricing';
 import Testimonials from '../components/landing/Testimonials';
 import Team from '../components/landing/Team';
 import FAQ from '../components/landing/FAQ';
+import Footer from '../components/landing/Footer';
 
 const Landing = () => {
   return (
@@ -18,6 +19,7 @@ const Landing = () => {
       <Testimonials />
       <Team />
       <FAQ />
+      <Footer />
     </div>
   );
 };

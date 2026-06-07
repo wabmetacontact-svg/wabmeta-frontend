@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import {
   Sparkles, ArrowRight, MessageCircle, Bot, Workflow,
   MessageSquare, Users, Instagram, BarChart3, Wallet,
-  Zap, Send, Check
+  Zap, Send, Check, Megaphone
 } from 'lucide-react';
 import Logo from '../common/Logo';
 
@@ -215,42 +215,52 @@ const Features = () => {
             />
 
             {/* ━━━ Card 4: Shared Team Inbox ━━━ */}
+            {/* ━━━ Card 4: Meta Ads Agency ━━━ */}
             <FeatureCard
-              icon={<MessageSquare size={24} className="text-white" />}
-              iconBg="bg-blue-500"
-              title="Shared Team Inbox"
-              description="Manage all conversations in one place. Assign, reply and collaborate in real-time."
-              arrowColor="text-blue-500"
+              icon={<Megaphone size={24} className="text-white" />}
+              iconBg="bg-gradient-to-br from-[#0064E0] to-[#0080FF]"
+              title="Meta Ads Agency"
+              description="Boost your sales & brand with high-performing Facebook and Instagram ads managed by Meta certified marketing experts."
+              arrowColor="text-blue-600"
+              cardBg="bg-blue-50/20"
               preview={
                 <div className="bg-white border border-gray-100 rounded-xl p-3 shadow-sm">
                   <div className="flex items-center justify-between mb-3 pb-2 border-b border-gray-100">
                     <div className="flex items-center gap-1.5">
-                      <span className="text-xs font-semibold text-gray-900">All Conversations</span>
-                      <span className="text-[10px] bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded-full font-bold">12</span>
+                      <div className="w-5 h-5 bg-[#0064E0] rounded-full flex items-center justify-center text-white text-[10px] font-bold">
+                        f
+                      </div>
+                      <span className="text-xs font-semibold text-gray-900">Meta Ad Campaign</span>
+                    </div>
+                    <span className="text-[9px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full font-semibold">
+                      Active
+                    </span>
+                  </div>
+                  
+                  <div className="space-y-2 mb-3">
+                    <div className="flex items-center justify-between text-[10px]">
+                      <span className="text-gray-500">Campaign Name:</span>
+                      <span className="font-semibold text-gray-900 truncate max-w-[100px]">Sales - Lead Gen</span>
+                    </div>
+                    <div className="flex items-center justify-between text-[10px]">
+                      <span className="text-gray-500">Daily Budget:</span>
+                      <span className="font-semibold text-gray-900">₹1,500</span>
                     </div>
                   </div>
-                  <div className="flex gap-3 text-[10px] mb-3 pb-2 border-b border-gray-100">
-                    <span className="text-gray-900 font-semibold">Mine <span className="text-gray-400">8</span></span>
-                    <span className="text-gray-500">Unassigned <span className="text-gray-400">12</span></span>
-                    <span className="text-gray-500">Team <span className="text-gray-400">24</span></span>
-                  </div>
-                  <div className="space-y-2">
-                    {[
-                      { name: 'Rahul Verma', msg: 'Hi, I want to know...', time: '2m', color: 'bg-blue-500' },
-                      { name: 'Neha Singh', msg: 'Please share the price', time: '5m', color: 'bg-pink-500' },
-                      { name: 'Aman Khan', msg: 'Thank you!', time: '1h', color: 'bg-purple-500' },
-                    ].map((chat, i) => (
-                      <div key={i} className="flex items-center gap-2">
-                        <div className={`w-6 h-6 ${chat.color} rounded-full flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0`}>
-                          {chat.name.charAt(0)}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-[11px] font-semibold text-gray-900 truncate">{chat.name}</p>
-                          <p className="text-[10px] text-gray-500 truncate">{chat.msg}</p>
-                        </div>
-                        <span className="text-[9px] text-gray-400">{chat.time}</span>
-                      </div>
-                    ))}
+
+                  <div className="grid grid-cols-3 gap-2 pt-2 border-t border-gray-100">
+                    <div>
+                      <p className="text-[9px] text-gray-500">Spend</p>
+                      <p className="text-[11px] font-bold text-gray-900">₹12.4K</p>
+                    </div>
+                    <div>
+                      <p className="text-[9px] text-gray-500">Leads</p>
+                      <p className="text-[11px] font-bold text-gray-900">342</p>
+                    </div>
+                    <div>
+                      <p className="text-[9px] text-gray-500">ROAS</p>
+                      <p className="text-[11px] font-bold text-green-600">4.8x</p>
+                    </div>
                   </div>
                 </div>
               }
@@ -395,31 +405,43 @@ const Features = () => {
               }
             />
 
-            {/* ━━━ Card 8: Wallet & Billing ━━━ */}
+            {/* ━━━ Card 8: Shared Team Inbox ━━━ */}
             <FeatureCard
-              icon={<Wallet size={24} className="text-white" />}
-              iconBg="bg-green-600"
-              title="Wallet & Billing"
-              description="Load wallet, manage balance, view transactions and monitor usage in real-time."
-              arrowColor="text-green-600"
+              icon={<MessageSquare size={24} className="text-white" />}
+              iconBg="bg-blue-500"
+              title="Shared Team Inbox"
+              description="Manage all conversations in one place. Assign, reply and collaborate in real-time."
+              arrowColor="text-blue-500"
               preview={
                 <div className="bg-white border border-gray-100 rounded-xl p-3 shadow-sm">
-                  <div className="flex items-center justify-between mb-3 pb-3 border-b border-gray-100">
-                    <div>
-                      <p className="text-[10px] text-gray-500">Current Balance</p>
-                      <p className="text-lg font-bold text-gray-900">₹8,450.00</p>
+                  <div className="flex items-center justify-between mb-3 pb-2 border-b border-gray-100">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-xs font-semibold text-gray-900">All Conversations</span>
+                      <span className="text-[10px] bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded-full font-bold">12</span>
                     </div>
-                    <button className="bg-green-500 text-white text-[10px] font-semibold px-3 py-1.5 rounded-lg">
-                      Add Money
-                    </button>
                   </div>
-                  <p className="text-[10px] text-gray-500 mb-2">Recent Transaction</p>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-xs font-semibold text-gray-900">Campaign - Summer Sale</p>
-                      <p className="text-[10px] text-gray-400">Today, 11:30 AM</p>
-                    </div>
-                    <span className="text-sm font-bold text-red-500">- ₹2,450.00</span>
+                  <div className="flex gap-3 text-[10px] mb-3 pb-2 border-b border-gray-100">
+                    <span className="text-gray-900 font-semibold">Mine <span className="text-gray-400">8</span></span>
+                    <span className="text-gray-500">Unassigned <span className="text-gray-400">12</span></span>
+                    <span className="text-gray-500">Team <span className="text-gray-400">24</span></span>
+                  </div>
+                  <div className="space-y-2">
+                    {[
+                      { name: 'Rahul Verma', msg: 'Hi, I want to know...', time: '2m', color: 'bg-blue-500' },
+                      { name: 'Neha Singh', msg: 'Please share the price', time: '5m', color: 'bg-pink-500' },
+                      { name: 'Aman Khan', msg: 'Thank you!', time: '1h', color: 'bg-purple-500' },
+                    ].map((chat, i) => (
+                      <div key={i} className="flex items-center gap-2">
+                        <div className={`w-6 h-6 ${chat.color} rounded-full flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0`}>
+                          {chat.name.charAt(0)}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[11px] font-semibold text-gray-900 truncate">{chat.name}</p>
+                          <p className="text-[10px] text-gray-500 truncate">{chat.msg}</p>
+                        </div>
+                        <span className="text-[9px] text-gray-400">{chat.time}</span>
+                      </div>
+                    ))}
                   </div>
                 </div>
               }

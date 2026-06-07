@@ -333,17 +333,17 @@ const Hero = () => {
       </div>
 
       {/* ═══════ TRUSTED BY BRANDS ═══════ */}
-      <div className="mt-16 bg-gradient-to-r from-green-700 via-emerald-600 to-green-700 py-6 overflow-hidden shadow-2xl border-y border-white/10 relative z-10">
+      <div className="mt-16 bg-gradient-to-r from-green-600 via-teal-500 to-blue-600 py-6 overflow-hidden shadow-2xl border-y border-white/10 relative z-10">
         <div className="max-w-7xl mx-auto px-4 md:px-6 mb-4 text-center">
-          <p className="text-green-100/75 text-xs font-bold uppercase tracking-[0.2em]">
+          <p className="text-white/80 text-xs font-bold uppercase tracking-[0.2em]">
             Trusted by growing businesses worldwide
           </p>
         </div>
         
         <div className="group relative w-full overflow-hidden flex select-none py-2">
           {/* Left and Right Fade Overlays for Premium Depth */}
-          <div className="absolute top-0 bottom-0 left-0 w-20 md:w-40 bg-gradient-to-r from-green-700 to-transparent z-20 pointer-events-none" />
-          <div className="absolute top-0 bottom-0 right-0 w-20 md:w-40 bg-gradient-to-l from-green-700 to-transparent z-20 pointer-events-none" />
+          <div className="absolute top-0 bottom-0 left-0 w-20 md:w-40 bg-gradient-to-r from-green-600 to-transparent z-20 pointer-events-none" />
+          <div className="absolute top-0 bottom-0 right-0 w-20 md:w-40 bg-gradient-to-l from-blue-600 to-transparent z-20 pointer-events-none" />
 
           {/* Marquee Group 1 */}
           <div className="flex shrink-0 gap-16 items-center min-w-full animate-marquee whitespace-nowrap group-hover:[animation-play-state:paused] py-1">
@@ -352,7 +352,7 @@ const Hero = () => {
                 <span className="text-white/90 hover:text-white hover:scale-105 transition-all duration-300 font-extrabold text-xl md:text-2xl tracking-widest cursor-default select-none">
                   {brand}
                 </span>
-                <span className="text-green-300/40 text-xl font-light select-none">✦</span>
+                <span className="text-white/30 text-xl font-light select-none">✦</span>
               </div>
             ))}
           </div>
@@ -364,7 +364,7 @@ const Hero = () => {
                 <span className="text-white/90 hover:text-white hover:scale-105 transition-all duration-300 font-extrabold text-xl md:text-2xl tracking-widest cursor-default select-none">
                   {brand}
                 </span>
-                <span className="text-green-300/40 text-xl font-light select-none">✦</span>
+                <span className="text-white/30 text-xl font-light select-none">✦</span>
               </div>
             ))}
           </div>
