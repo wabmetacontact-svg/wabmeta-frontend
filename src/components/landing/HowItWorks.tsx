@@ -201,7 +201,7 @@ const HowItWorks = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-12">
           
           {/* ━━━ Card 1: Connect Channel ━━━ */}
-          <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm hover:shadow-lg transition-shadow">
+          <div className="bg-white border-2 border-green-200/60 rounded-2xl p-5 shadow-sm hover:shadow-lg hover:border-green-300 transition-all duration-300 bg-gradient-to-b from-green-50/20 to-white">
             <h4 className="font-heading font-bold text-base text-gray-900 mb-1">Connect Your Channel</h4>
             <p className="text-xs text-gray-500 mb-4">Choose a channel to get started</p>
             
@@ -240,7 +240,7 @@ const HowItWorks = () => {
           </div>
 
           {/* ━━━ Card 2: Business Profile ━━━ */}
-          <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm hover:shadow-lg transition-shadow">
+          <div className="bg-white border-2 border-purple-200/60 rounded-2xl p-5 shadow-sm hover:shadow-lg hover:border-purple-300 transition-all duration-300 bg-gradient-to-b from-purple-50/20 to-white">
             <h4 className="font-heading font-bold text-base text-gray-900 mb-1">Business Profile</h4>
             <p className="text-xs text-gray-500 mb-4">Set up your business details</p>
             
@@ -282,7 +282,7 @@ const HowItWorks = () => {
           </div>
 
           {/* ━━━ Card 3: Choose Bot ━━━ */}
-          <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm hover:shadow-lg transition-shadow">
+          <div className="bg-white border-2 border-blue-200/60 rounded-2xl p-5 shadow-sm hover:shadow-lg hover:border-blue-300 transition-all duration-300 bg-gradient-to-b from-blue-50/20 to-white">
             <h4 className="font-heading font-bold text-base text-gray-900 mb-1">Choose Your Bot</h4>
             <p className="text-xs text-gray-500 mb-4">Build or choose a chatbot</p>
             
@@ -347,7 +347,7 @@ const HowItWorks = () => {
           </div>
 
           {/* ━━━ Card 4: Launch Campaign ━━━ */}
-          <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm hover:shadow-lg transition-shadow">
+          <div className="bg-white border-2 border-pink-200/60 rounded-2xl p-5 shadow-sm hover:shadow-lg hover:border-pink-300 transition-all duration-300 bg-gradient-to-b from-pink-50/20 to-white">
             <h4 className="font-heading font-bold text-base text-gray-900 mb-1">Launch Campaign</h4>
             <p className="text-xs text-gray-500 mb-4">Send messages to your audience</p>
             
@@ -387,7 +387,7 @@ const HowItWorks = () => {
           </div>
 
           {/* ━━━ Card 5: Track & Grow ━━━ */}
-          <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm hover:shadow-lg transition-shadow">
+          <div className="bg-white border-2 border-green-200/60 rounded-2xl p-5 shadow-sm hover:shadow-lg hover:border-green-300 transition-all duration-300 bg-gradient-to-b from-green-50/20 to-white">
             <h4 className="font-heading font-bold text-base text-gray-900 mb-1">Track & Grow</h4>
             <p className="text-xs text-gray-500 mb-4">Monitor performance in real-time</p>
             
