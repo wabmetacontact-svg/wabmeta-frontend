@@ -1,170 +1,352 @@
 import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { ArrowRight, Sparkles, MessageCircle, Zap } from 'lucide-react';
-import heroIllustration from '../../assets/images/hero-illustration.png';
+import { 
+  ArrowRight, Check, ShieldCheck, MessageCircle, 
+  Instagram, Bot, TrendingUp, Send, 
+  Paperclip, Camera, Mic, Users, MessageSquare, Headphones
+} from 'lucide-react';
 
 const Hero = () => {
   return (
-    <section
-      className="relative overflow-hidden bg-slate-50/60 border-b border-slate-200/50 pt-28 pb-20 lg:pt-36 lg:pb-28"
-      style={{
-        backgroundImage: 'radial-gradient(circle at 1px 1px, #e2e8f0 1.5px, transparent 0)',
-        backgroundSize: '28px 28px',
-      }}
-    >
-      {/* Editorial Structural Layout Border Lines */}
-      <div className="absolute top-0 bottom-0 left-[calc(50%-100px)] w-px bg-slate-200/40 hidden lg:block pointer-events-none" />
-      <div className="absolute top-0 bottom-0 right-12 w-px bg-slate-200/40 hidden xl:block pointer-events-none" />
+    <section className="relative min-h-screen bg-white pt-28 pb-12 overflow-hidden">
+      
+      {/* Decorative Background Blobs */}
+      <div className="absolute top-20 right-0 w-96 h-96 bg-green-100/40 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute top-1/3 left-0 w-80 h-80 bg-pink-100/40 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-20 right-1/4 w-72 h-72 bg-purple-100/30 rounded-full blur-3xl pointer-events-none" />
 
-      <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 items-center gap-16 lg:grid-cols-12">
-          {/* LEFT: Text content */}
-          <div className="text-center lg:text-left lg:col-span-6">
-            {/* Top badge */}
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/95 px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-[#1e3a5f] shadow-sm"
-            >
-              <Sparkles className="h-3.5 w-3.5 text-[#2883CF]" />
-              Official Meta Business Partner
-            </motion.div>
+      <div className="max-w-7xl mx-auto px-4 md:px-6 relative z-10">
+        
+        {/* Main Grid: Left Content + Right Mockup */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mb-16">
+          
+          {/* ═══════ LEFT SIDE - Content ═══════ */}
+          <div className="space-y-6">
+            
+            {/* Badge */}
+            <div className="inline-flex items-center gap-2 bg-green-50 border border-green-200 rounded-full px-4 py-2">
+              <ShieldCheck size={16} className="text-green-600" />
+              <span className="text-green-700 text-sm font-medium">
+                Official Meta Business Partner
+              </span>
+            </div>
 
             {/* Heading */}
-            <h1 className="mt-8 text-4xl font-black leading-[1.08] tracking-tight text-[#0f2540] sm:text-5xl lg:text-6xl">
-              Grow Your Business with{' '}
-              <span className="relative inline-block text-[#2883CF] underline decoration-wavy decoration-[#2883CF]/20 underline-offset-8">
-                WhatsApp
+            <h1 className="font-heading text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-[1.15] tracking-tight">
+              One Platform for{' '}
+              <span className="text-green-500">WhatsApp</span>{' '}
+              &{' '}
+              <span className="bg-gradient-to-r from-pink-500 to-purple-500 bg-clip-text text-transparent">
+                Instagram
               </span>{' '}
-              Automation
+              Automation Powered by AI
             </h1>
 
-            {/* Sub heading */}
-            <p className="mt-8 text-base leading-relaxed text-slate-600 sm:text-lg">
-              Send bulk campaigns, automate replies, manage conversations, and
-              track performance — all from one powerful{' '}
-              <span className="font-semibold text-[#1e3a5f] border-b-2 border-[#2883CF]/20 pb-0.5">
-                WhatsApp Cloud API
-              </span>{' '}
-              platform built for modern teams.
+            {/* Subheading */}
+            <p className="text-gray-600 text-lg leading-relaxed max-w-xl">
+              Automate conversations, run targeted campaigns, build AI chatbots, 
+              capture leads and grow your business — all from one place.
             </p>
 
-            {/* Feature pills */}
-            <div className="mt-8 flex flex-wrap items-center justify-center gap-2.5 lg:justify-start">
-              {[
-                { label: 'No-Code Setup' },
-                { label: 'Real-Time Inbox' },
-                { label: 'Meta Verified' },
-              ].map((item, i) => (
-                <span
-                  key={i}
-                  className="inline-flex items-center rounded-md border border-slate-200/80 bg-white px-3 py-1 text-xs font-semibold text-slate-600 shadow-sm"
-                >
-                  {item.label}
-                </span>
-              ))}
-            </div>
-
-            {/* CTAs */}
-            <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row lg:justify-start">
+            {/* CTA Buttons */}
+            <div className="flex flex-col sm:flex-row gap-4 pt-2">
               <Link
                 to="/signup"
-                className="group inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[#2883CF] px-8 py-4 text-sm font-bold text-white shadow-md shadow-blue-500/10 transition-all hover:bg-[#1d70b8] hover:shadow-lg sm:w-auto"
+                className="group inline-flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-semibold px-7 py-3.5 rounded-xl transition-all duration-200 hover:shadow-xl hover:shadow-green-500/30 hover:-translate-y-0.5"
               >
                 Start Free Trial
-                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
               </Link>
-
-              <Link
-                to="/login"
-                className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-8 py-4 text-sm font-bold text-slate-700 shadow-sm transition-all hover:border-slate-300 hover:bg-slate-50 sm:w-auto"
-              >
-                <MessageCircle className="h-4 w-4 text-slate-400" />
+              <button className="inline-flex items-center justify-center gap-2 bg-white hover:bg-gray-50 text-gray-900 font-semibold px-7 py-3.5 rounded-xl border-2 border-gray-200 hover:border-green-500 transition-all duration-200">
                 Book a Demo
-              </Link>
+              </button>
             </div>
 
-            {/* Trust line */}
-            <div className="mt-12 flex flex-col gap-3 border-t border-slate-200/60 pt-8 sm:flex-row sm:items-center sm:gap-6 lg:justify-start">
-              <div className="flex -space-x-1.5 justify-center lg:justify-start">
-                {['#2883CF', '#1e3a5f', '#38bdf8', '#0284c7'].map((c, i) => (
-                  <div
-                    key={i}
-                    className="h-8 w-8 rounded-full border-2 border-white bg-slate-200 shadow-sm ring-1 ring-slate-100"
-                    style={{ background: c }}
-                  />
-                ))}
-              </div>
-              <div className="text-sm text-slate-500">
-                <p className="font-bold text-slate-800">Trusted by over 10,000+ businesses</p>
-                <p className="text-xs">Seamless Meta API integrations worldwide</p>
-              </div>
+            {/* Trust Points */}
+            <div className="flex flex-wrap gap-6 pt-2">
+              {[
+                'No credit card required',
+                '14-day free trial',
+                'Cancel anytime'
+              ].map((point) => (
+                <div key={point} className="flex items-center gap-2">
+                  <div className="w-5 h-5 bg-green-100 rounded-full flex items-center justify-center">
+                    <Check size={12} className="text-green-600" strokeWidth={3} />
+                  </div>
+                  <span className="text-gray-600 text-sm">{point}</span>
+                </div>
+              ))}
             </div>
           </div>
 
-          {/* RIGHT: Original Illustration with new background theme */}
-          <div className="relative flex items-center justify-center p-4 lg:p-8 lg:col-span-6">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.7, delay: 0.2 }}
-              className="relative w-full max-w-[560px]"
-            >
-              {/* Glow behind illustration */}
-              <div className="absolute inset-0 -z-10 mx-auto h-[420px] w-[420px] translate-y-8 rounded-full bg-sky-300/30 blur-3xl pointer-events-none" />
+          {/* ═══════ RIGHT SIDE - Phone Mockup with Floating Cards ═══════ */}
+          <div className="relative h-[600px] lg:h-[700px]">
+            
+            {/* Decorative connecting lines */}
+            <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 600 700">
+              <line x1="180" y1="200" x2="280" y2="280" stroke="#22c55e" strokeWidth="1.5" strokeDasharray="4 4" opacity="0.5" />
+              <line x1="420" y1="180" x2="380" y2="240" stroke="#3b82f6" strokeWidth="1.5" strokeDasharray="4 4" opacity="0.5" />
+              <line x1="200" y1="540" x2="280" y2="500" stroke="#ec4899" strokeWidth="1.5" strokeDasharray="4 4" opacity="0.5" />
+              <line x1="420" y1="600" x2="380" y2="540" stroke="#8b5cf6" strokeWidth="1.5" strokeDasharray="4 4" opacity="0.5" />
+            </svg>
 
-              {/* Floating card 1 — Messages sent */}
-              <motion.div
-                initial={{ opacity: 0, x: -30 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.6 }}
-                className="absolute left-2 top-6 z-10 hidden rounded-2xl border border-white/80 bg-white/95 p-3 shadow-2xl backdrop-blur sm:flex sm:items-center sm:gap-3"
-              >
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50">
-                  <MessageCircle className="h-5 w-5 text-[#2883CF]" />
+            {/* Floating Icon Circles */}
+            <div className="absolute top-[25%] left-[5%] w-14 h-14 bg-white border-2 border-green-200 rounded-full flex items-center justify-center shadow-lg z-10 animate-float-slow">
+              <MessageCircle size={22} className="text-green-500" />
+            </div>
+
+            <div className="absolute top-[10%] right-[15%] w-14 h-14 bg-white border-2 border-blue-200 rounded-full flex items-center justify-center shadow-lg z-10 animate-float">
+              <Bot size={22} className="text-blue-500" />
+            </div>
+
+            <div className="absolute bottom-[20%] left-[15%] w-14 h-14 bg-white border-2 border-pink-200 rounded-full flex items-center justify-center shadow-lg z-10 animate-float-delay">
+              <Instagram size={22} className="text-pink-500" />
+            </div>
+
+            <div className="absolute bottom-[5%] right-[20%] w-14 h-14 bg-white border-2 border-purple-200 rounded-full flex items-center justify-center shadow-lg z-10 animate-float-slow">
+              <TrendingUp size={22} className="text-purple-500" />
+            </div>
+
+            {/* ═══════ PHONE MOCKUP (Center) ═══════ */}
+            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20">
+              <div className="relative w-[280px] bg-gray-900 rounded-[3rem] p-2 shadow-2xl">
+                {/* Notch */}
+                <div className="absolute top-2 left-1/2 -translate-x-1/2 w-24 h-6 bg-gray-900 rounded-full z-30" />
+                
+                {/* Screen */}
+                <div className="bg-white rounded-[2.5rem] overflow-hidden">
+                  
+                  {/* Status Bar */}
+                  <div className="flex items-center justify-between px-6 pt-3 pb-1 text-xs font-semibold text-gray-900">
+                    <span>9:41</span>
+                    <div className="flex items-center gap-1">
+                      <span className="text-[10px]">•••</span>
+                      <span className="text-[10px]">📶</span>
+                      <span className="text-[10px]">🔋</span>
+                    </div>
+                  </div>
+
+                  {/* WhatsApp Header */}
+                  <div className="bg-white px-3 py-2.5 flex items-center gap-2 border-b border-gray-100">
+                    <ArrowRight size={16} className="text-gray-700 rotate-180" />
+                    <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-white text-xs font-bold">
+                      W
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-1">
+                        <span className="text-sm font-semibold text-gray-900">WabMeta Store</span>
+                        <ShieldCheck size={12} className="text-green-500 fill-green-500" />
+                      </div>
+                      <span className="text-[10px] text-gray-500">Business Account</span>
+                    </div>
+                  </div>
+
+                  {/* Chat Area */}
+                  <div className="bg-[#ECE5DD] p-3 space-y-2 min-h-[400px]">
+                    
+                    {/* Message Bubble */}
+                    <div className="bg-white rounded-2xl rounded-tl-sm p-3 max-w-[85%] shadow-sm">
+                      <p className="text-xs text-gray-800 mb-1">Hi there! 👋</p>
+                      <p className="text-xs text-gray-800 mb-2">Check out our latest products.</p>
+                      <span className="text-[9px] text-gray-400 float-right">11:30 AM</span>
+                    </div>
+
+                    {/* Product Cards */}
+                    <div className="bg-white rounded-2xl rounded-tl-sm p-2 max-w-[90%] shadow-sm space-y-2">
+                      
+                      {[
+                        { name: 'Sneakers', price: '₹1,299', emoji: '👟' },
+                        { name: 'Smart Watch', price: '₹2,999', emoji: '⌚' },
+                        { name: 'Backpack', price: '₹899', emoji: '🎒' },
+                      ].map((product, i) => (
+                        <div key={i} className="flex items-center gap-2 p-1.5 bg-gray-50 rounded-xl">
+                          <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center text-2xl shadow-sm">
+                            {product.emoji}
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-xs font-semibold text-gray-900">{product.name}</p>
+                            <p className="text-xs text-gray-600">{product.price}</p>
+                          </div>
+                        </div>
+                      ))}
+
+                      <button className="w-full text-center text-xs text-blue-500 font-medium py-1.5 hover:bg-blue-50 rounded-lg transition-colors">
+                        View More
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Input Bar */}
+                  <div className="bg-gray-50 px-3 py-2 flex items-center gap-2">
+                    <div className="flex-1 bg-white rounded-full px-3 py-2 flex items-center justify-between">
+                      <span className="text-xs text-gray-400">Type a message</span>
+                      <div className="flex items-center gap-2">
+                        <Paperclip size={12} className="text-gray-500" />
+                        <Camera size={12} className="text-gray-500" />
+                      </div>
+                    </div>
+                    <button className="w-9 h-9 bg-green-500 rounded-full flex items-center justify-center">
+                      <Mic size={14} className="text-white" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* ═══════ FLOATING CARD 1: AI Assistant (Top Right) ═══════ */}
+            <div className="absolute top-[8%] right-0 w-64 z-30 animate-float-slow hidden md:block">
+              <div className="bg-green-50 border border-green-200 rounded-2xl p-4 shadow-xl">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-7 h-7 bg-white rounded-lg flex items-center justify-center">
+                    <Bot size={14} className="text-green-600" />
+                  </div>
+                  <span className="text-sm font-semibold text-gray-900">AI Assistant</span>
+                </div>
+                <div className="space-y-2">
+                  <p className="text-xs text-gray-700">
+                    <span className="font-semibold">Customer:</span> What is the price?
+                  </p>
+                  <p className="text-xs text-gray-700 leading-relaxed">
+                    <span className="font-semibold">AI:</span> The price starts from ₹999. Would you like a product catalog?
+                  </p>
+                  <div className="flex items-center justify-end gap-1 pt-1">
+                    <span className="text-[10px] text-gray-500">11:30 AM</span>
+                    <Check size={10} className="text-blue-500" />
+                    <Check size={10} className="text-blue-500 -ml-2" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* ═══════ FLOATING CARD 2: Campaign Report (Middle Right) ═══════ */}
+            <div className="absolute top-[45%] right-0 w-64 z-30 animate-float hidden md:block">
+              <div className="bg-white border border-gray-200 rounded-2xl p-4 shadow-xl">
+                <div className="flex items-center gap-2 mb-4">
+                  <Send size={14} className="text-green-500" />
+                  <span className="text-sm font-semibold text-gray-900">Summer Sale Campaign</span>
+                </div>
+                
+                <div className="space-y-3">
+                  {[
+                    { label: 'Delivered', value: '45,000', progress: 100, color: 'bg-green-500' },
+                    { label: 'Read', value: '39,000', progress: 87, color: 'bg-green-400' },
+                    { label: 'Replies', value: '8,200', progress: 18, color: 'bg-green-300' },
+                  ].map((stat, i) => (
+                    <div key={i}>
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-xs text-gray-600">{stat.label}</span>
+                        <span className="text-xs font-semibold text-gray-900">{stat.value}</span>
+                      </div>
+                      <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                        <div 
+                          className={`h-full ${stat.color} rounded-full transition-all`}
+                          style={{ width: `${stat.progress}%` }}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <button className="w-full text-center text-xs text-green-600 font-medium mt-4 py-2 border border-green-200 rounded-lg hover:bg-green-50 transition-colors">
+                  Open Report
+                </button>
+              </div>
+            </div>
+
+            {/* ═══════ FLOATING CARD 3: Instagram Comment (Bottom Left) ═══════ */}
+            <div className="absolute bottom-[15%] left-0 w-60 z-30 animate-float-delay hidden md:block">
+              <div className="bg-white border border-pink-200 rounded-2xl p-4 shadow-xl">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-7 h-7 bg-gradient-to-br from-purple-500 via-pink-500 to-orange-400 rounded-lg flex items-center justify-center">
+                    <Instagram size={14} className="text-white" />
+                  </div>
+                  <span className="text-sm font-semibold text-gray-900">Instagram Comment</span>
+                </div>
+                
+                <div className="space-y-2 mb-3">
+                  <p className="text-xs text-gray-700">
+                    <span className="font-semibold">User:</span> Price?
+                  </p>
+                  <p className="text-xs text-gray-700">
+                    <span className="font-semibold">Auto Reply:</span> Check your DM 📩
+                  </p>
+                </div>
+
+                <button className="w-full text-center text-xs text-pink-600 font-medium py-2 border border-pink-200 rounded-lg hover:bg-pink-50 transition-colors flex items-center justify-center gap-1">
+                  View in Inbox
+                  <ArrowRight size={10} />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ═══════ STATS BAR ═══════ */}
+        <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-6 md:p-8 mb-12">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-4">
+            {[
+              { 
+                icon: Users, 
+                value: '10,000+', 
+                label: 'Businesses Trust Us',
+                bg: 'bg-green-100',
+                color: 'text-green-600'
+              },
+              { 
+                icon: MessageSquare, 
+                value: '50M+', 
+                label: 'Messages Delivered',
+                bg: 'bg-blue-100',
+                color: 'text-blue-600'
+              },
+              { 
+                icon: ShieldCheck, 
+                value: '99.9%', 
+                label: 'Uptime & Reliability',
+                bg: 'bg-purple-100',
+                color: 'text-purple-600'
+              },
+              { 
+                icon: Headphones, 
+                value: '24/7', 
+                label: 'AI Support',
+                bg: 'bg-orange-100',
+                color: 'text-orange-600'
+              },
+            ].map((stat, i) => (
+              <div key={i} className="flex items-center gap-4">
+                <div className={`w-14 h-14 ${stat.bg} rounded-2xl flex items-center justify-center flex-shrink-0`}>
+                  <stat.icon size={24} className={stat.color} />
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500 font-semibold">Messages Sent</p>
-                  <p className="text-sm font-bold text-[#0f2540]">1,24,580</p>
+                  <div className="text-2xl md:text-3xl font-bold text-gray-900">
+                    {stat.value}
+                  </div>
+                  <div className="text-sm text-gray-600">
+                    {stat.label}
+                  </div>
                 </div>
-              </motion.div>
+              </div>
+            ))}
+          </div>
+        </div>
 
-              {/* Floating card 2 — Delivery rate */}
-              <motion.div
-                initial={{ opacity: 0, x: 30 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.8 }}
-                className="absolute -bottom-2 right-2 z-10 hidden rounded-2xl border border-white/80 bg-white/95 p-3 shadow-2xl backdrop-blur sm:flex sm:items-center sm:gap-3"
-              >
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-sky-50">
-                  <Zap className="h-5 w-5 text-[#1e3a5f]" />
-                </div>
-                <div>
-                  <p className="text-xs text-gray-500 font-semibold">Delivery Rate</p>
-                  <p className="text-sm font-bold text-[#0f2540]">98.7%</p>
-                </div>
-              </motion.div>
-
-              {/* Main illustration */}
-              <motion.img
-                src={heroIllustration}
-                alt="WabMeta WhatsApp Analytics Dashboard"
-                className="relative h-auto w-full drop-shadow-2xl"
-                animate={{ y: [0, -10, 0] }}
-                transition={{
-                  duration: 5,
-                  repeat: Infinity,
-                  ease: 'easeInOut',
-                }}
-              />
-            </motion.div>
+        {/* ═══════ TRUSTED BY BRANDS ═══════ */}
+        <div className="text-center">
+          <p className="text-gray-500 text-sm mb-6">
+            Trusted by growing businesses worldwide
+          </p>
+          
+          <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-8 gap-6 md:gap-8 items-center">
+            {['CERA', 'boAt', 'AJIO', 'OYO', 'HDFC BANK', 'Levis', 'lenskart', 'TATA'].map((brand) => (
+              <div key={brand} className="text-center">
+                <span className="text-gray-400 hover:text-gray-700 font-bold text-lg md:text-xl transition-colors cursor-default">
+                  {brand}
+                </span>
+              </div>
+            ))}
           </div>
         </div>
       </div>
-
-      {/* Bottom smooth fade for next section blending */}
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-gradient-to-b from-transparent to-white" />
     </section>
   );
 };
