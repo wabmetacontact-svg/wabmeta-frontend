@@ -214,246 +214,336 @@ const HowItWorks = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-12">
           
           {/* ━━━ Card 1: Connect Channel ━━━ */}
-          <div className="relative bg-[#f0fbf4] border border-green-200/50 rounded-lg p-5 shadow-[5px_5px_15px_rgba(0,0,0,0.05),0_2px_4px_rgba(0,0,0,0.02)] rotate-1 hover:rotate-0 hover:scale-[1.03] hover:shadow-[12px_16px_28px_rgba(0,0,0,0.08)] hover:z-20 transition-all duration-300">
+          <div className="relative group rotate-1 hover:rotate-0 hover:scale-[1.03] hover:z-20 transition-all duration-300">
             {/* Washi Tape */}
-            <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 w-16 h-7 bg-white/60 backdrop-blur-[2px] border-x border-b border-black/[0.03] shadow-[0_1px_3px_rgba(0,0,0,0.02)] rounded-sm -rotate-2 z-20 pointer-events-none" />
-            <h4 className="font-heading font-bold text-base text-gray-900 mb-1">Connect Your Channel</h4>
-            <p className="text-xs text-gray-500 mb-4">Choose a channel to get started</p>
-            
-            <div className="space-y-3 mb-4">
-              {/* WhatsApp Option (Selected) */}
-              <div className="border-2 border-green-400 bg-green-50/40 rounded-xl p-3 flex items-center gap-3 relative">
-                <div className="w-9 h-9 bg-[#25D366] rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm">
-                  <FaWhatsapp size={18} className="text-white" />
+            <div 
+              className="absolute -top-3 left-1/2 w-20 h-6 bg-white/50 backdrop-blur-[1.5px] border-y border-black/[0.04] shadow-[0_1px_2px_rgba(0,0,0,0.03)] z-25 pointer-events-none"
+              style={{
+                clipPath: 'polygon(2% 0%, 98% 0%, 100% 25%, 97% 50%, 100% 75%, 98% 100%, 0% 100%, 2% 75%, 0% 50%, 3% 25%)',
+                transform: 'translateX(-50%) rotate(-2deg)'
+              }}
+            />
+            {/* Paper Card */}
+            <div 
+              className="relative bg-[#f4fbf7] border border-green-200/40 rounded-md p-5 z-10"
+              style={{
+                backgroundColor: '#f4fbf7',
+                backgroundImage: 'radial-gradient(circle, rgba(0,0,0,0.035) 1px, transparent 1px)',
+                backgroundSize: '16px 16px'
+              }}
+            >
+              <h4 className="font-heading font-bold text-base text-gray-900 mb-1">Connect Your Channel</h4>
+              <p className="text-xs text-gray-500 mb-4">Choose a channel to get started</p>
+              
+              <div className="space-y-3 mb-4">
+                {/* WhatsApp Option (Selected) */}
+                <div className="border-2 border-green-400 bg-green-50/40 rounded-xl p-3 flex items-center gap-3 relative">
+                  <div className="w-9 h-9 bg-[#25D366] rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm">
+                    <FaWhatsapp size={18} className="text-white" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-gray-900">WhatsApp</p>
+                    <p className="text-[10px] text-gray-500 truncate">Connect your WhatsApp Business account</p>
+                  </div>
+                  <div className="w-4 h-4 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0">
+                    <Check size={10} className="text-white" strokeWidth={3} />
+                  </div>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-gray-900">WhatsApp</p>
-                  <p className="text-[10px] text-gray-500 truncate">Connect your WhatsApp Business account</p>
-                </div>
-                <div className="w-4 h-4 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0">
-                  <Check size={10} className="text-white" strokeWidth={3} />
+
+                {/* Instagram Option */}
+                <div className="border border-gray-200 rounded-xl p-3 flex items-center gap-3">
+                  <div className="w-9 h-9 bg-gradient-to-tr from-[#f09433] via-[#e6683c] via-[#dc2743] via-[#cc2366] to-[#bc1888] rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm">
+                    <FaInstagram size={18} className="text-white" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-gray-900">Instagram</p>
+                    <p className="text-[10px] text-gray-500 truncate">Connect your Instagram Business account</p>
+                  </div>
+                  <div className="w-4 h-4 border-2 border-gray-300 rounded-full flex-shrink-0" />
                 </div>
               </div>
 
-              {/* Instagram Option */}
-              <div className="border border-gray-200 rounded-xl p-3 flex items-center gap-3">
-                <div className="w-9 h-9 bg-gradient-to-tr from-[#f09433] via-[#e6683c] via-[#dc2743] via-[#cc2366] to-[#bc1888] rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm">
-                  <FaInstagram size={18} className="text-white" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-gray-900">Instagram</p>
-                  <p className="text-[10px] text-gray-500 truncate">Connect your Instagram Business account</p>
-                </div>
-                <div className="w-4 h-4 border-2 border-gray-300 rounded-full flex-shrink-0" />
-              </div>
+              <button className="w-full bg-green-500 hover:bg-green-600 text-white text-sm font-semibold py-2.5 rounded-xl transition-colors flex items-center justify-center gap-1.5">
+                Connect Now <ArrowRight size={14} />
+              </button>
+              <p className="text-[10px] text-gray-400 text-center mt-2">It only takes a few seconds</p>
             </div>
-
-            <button className="w-full bg-green-500 hover:bg-green-600 text-white text-sm font-semibold py-2.5 rounded-xl transition-colors flex items-center justify-center gap-1.5">
-              Connect Now <ArrowRight size={14} />
-            </button>
-            <p className="text-[10px] text-gray-400 text-center mt-2">It only takes a few seconds</p>
+            {/* Page Curl Shadow */}
+            <div className="absolute -bottom-2 left-4 right-4 h-4 bg-black/[0.12] blur-[3.5px] rounded-[50%_/_10px] -rotate-2 group-hover:rotate-0 group-hover:translate-y-2 group-hover:blur-[5px] group-hover:scale-x-95 group-hover:bg-black/[0.08] transition-all duration-300 z-0 pointer-events-none" />
           </div>
 
           {/* ━━━ Card 2: Business Profile ━━━ */}
-          <div className="relative bg-[#f8f5fc] border border-purple-200/50 rounded-lg p-5 shadow-[5px_5px_15px_rgba(0,0,0,0.05),0_2px_4px_rgba(0,0,0,0.02)] -rotate-1 hover:rotate-0 hover:scale-[1.03] hover:shadow-[12px_16px_28px_rgba(0,0,0,0.08)] hover:z-20 transition-all duration-300">
+          <div className="relative group -rotate-1 hover:rotate-0 hover:scale-[1.03] hover:z-20 transition-all duration-300">
             {/* Washi Tape */}
-            <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 w-16 h-7 bg-white/60 backdrop-blur-[2px] border-x border-b border-black/[0.03] shadow-[0_1px_3px_rgba(0,0,0,0.02)] rounded-sm rotate-2 z-20 pointer-events-none" />
-            <h4 className="font-heading font-bold text-base text-gray-900 mb-1">Business Profile</h4>
-            <p className="text-xs text-gray-500 mb-4">Set up your business details</p>
-            
-            <div className="space-y-3 mb-4">
-              <div>
-                <label className="text-[10px] text-gray-500 mb-1 block">Business Name</label>
-                <div className="border border-gray-200 rounded-lg px-3 py-2 text-xs text-gray-900 bg-gray-50">
-                  Acme Store
-                </div>
-              </div>
+            <div 
+              className="absolute -top-3 left-1/2 w-20 h-6 bg-white/50 backdrop-blur-[1.5px] border-y border-black/[0.04] shadow-[0_1px_2px_rgba(0,0,0,0.03)] z-25 pointer-events-none"
+              style={{
+                clipPath: 'polygon(2% 0%, 98% 0%, 100% 25%, 97% 50%, 100% 75%, 98% 100%, 0% 100%, 2% 75%, 0% 50%, 3% 25%)',
+                transform: 'translateX(-50%) rotate(2deg)'
+              }}
+            />
+            {/* Paper Card */}
+            <div 
+              className="relative bg-[#f8f5fc] border border-purple-200/40 rounded-md p-5 z-10"
+              style={{
+                backgroundColor: '#f8f5fc',
+                backgroundImage: 'radial-gradient(circle, rgba(0,0,0,0.035) 1px, transparent 1px)',
+                backgroundSize: '16px 16px'
+              }}
+            >
+              <h4 className="font-heading font-bold text-base text-gray-900 mb-1">Business Profile</h4>
+              <p className="text-xs text-gray-500 mb-4">Set up your business details</p>
               
-              <div>
-                <label className="text-[10px] text-gray-500 mb-1 block">Business Category</label>
-                <div className="border border-gray-200 rounded-lg px-3 py-2 text-xs text-gray-900 bg-gray-50 flex items-center justify-between">
-                  <span>E-commerce</span>
-                  <ChevronRight size={12} className="text-gray-400 rotate-90" />
+              <div className="space-y-3 mb-4">
+                <div>
+                  <label className="text-[10px] text-gray-500 mb-1 block">Business Name</label>
+                  <div className="border border-gray-200 rounded-lg px-3 py-2 text-xs text-gray-900 bg-gray-50">
+                    Acme Store
+                  </div>
+                </div>
+                
+                <div>
+                  <label className="text-[10px] text-gray-500 mb-1 block">Business Category</label>
+                  <div className="border border-gray-200 rounded-lg px-3 py-2 text-xs text-gray-900 bg-gray-50 flex items-center justify-between">
+                    <span>E-commerce</span>
+                    <ChevronRight size={12} className="text-gray-400 rotate-90" />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-[10px] text-gray-500 mb-1 block">Time Zone</label>
+                  <div className="border border-gray-200 rounded-lg px-3 py-2 text-xs text-gray-900 bg-gray-50">
+                    (GMT+05:30) Asia/Kolkata
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-[10px] text-gray-500 mb-1 block">Language</label>
+                  <div className="border border-gray-200 rounded-lg px-3 py-2 text-xs text-gray-900 bg-gray-50 flex items-center justify-between">
+                    <span>English</span>
+                    <ChevronRight size={12} className="text-gray-400 rotate-90" />
+                  </div>
                 </div>
               </div>
 
-              <div>
-                <label className="text-[10px] text-gray-500 mb-1 block">Time Zone</label>
-                <div className="border border-gray-200 rounded-lg px-3 py-2 text-xs text-gray-900 bg-gray-50">
-                  (GMT+05:30) Asia/Kolkata
-                </div>
-              </div>
-
-              <div>
-                <label className="text-[10px] text-gray-500 mb-1 block">Language</label>
-                <div className="border border-gray-200 rounded-lg px-3 py-2 text-xs text-gray-900 bg-gray-50 flex items-center justify-between">
-                  <span>English</span>
-                  <ChevronRight size={12} className="text-gray-400 rotate-90" />
-                </div>
-              </div>
+              <button className="w-full bg-purple-500 hover:bg-purple-600 text-white text-sm font-semibold py-2.5 rounded-xl transition-colors flex items-center justify-center gap-1.5">
+                Save & Continue <ArrowRight size={14} />
+              </button>
             </div>
-
-            <button className="w-full bg-purple-500 hover:bg-purple-600 text-white text-sm font-semibold py-2.5 rounded-xl transition-colors flex items-center justify-center gap-1.5">
-              Save & Continue <ArrowRight size={14} />
-            </button>
+            {/* Page Curl Shadow */}
+            <div className="absolute -bottom-2 left-4 right-4 h-4 bg-black/[0.12] blur-[3.5px] rounded-[50%_/_10px] rotate-2 group-hover:rotate-0 group-hover:translate-y-2 group-hover:blur-[5px] group-hover:scale-x-95 group-hover:bg-black/[0.08] transition-all duration-300 z-0 pointer-events-none" />
           </div>
 
           {/* ━━━ Card 3: Choose Bot ━━━ */}
-          <div className="relative bg-[#f0f7ff] border border-blue-200/50 rounded-lg p-5 shadow-[5px_5px_15px_rgba(0,0,0,0.05),0_2px_4px_rgba(0,0,0,0.02)] rotate-2 hover:rotate-0 hover:scale-[1.03] hover:shadow-[12px_16px_28px_rgba(0,0,0,0.08)] hover:z-20 transition-all duration-300">
+          <div className="relative group rotate-2 hover:rotate-0 hover:scale-[1.03] hover:z-20 transition-all duration-300">
             {/* Washi Tape */}
-            <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 w-16 h-7 bg-white/60 backdrop-blur-[2px] border-x border-b border-black/[0.03] shadow-[0_1px_3px_rgba(0,0,0,0.02)] rounded-sm -rotate-1 z-20 pointer-events-none" />
-            <h4 className="font-heading font-bold text-base text-gray-900 mb-1">Choose Your Bot</h4>
-            <p className="text-xs text-gray-500 mb-4">Build or choose a chatbot</p>
-            
-            <div className="space-y-2 mb-4">
-              {/* AI Chatbot (Selected) */}
-              <div className="border-2 border-blue-400 bg-blue-50/30 rounded-xl p-3">
-                <div className="flex items-start gap-2">
-                  <div className="w-7 h-7 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <Bot size={14} className="text-purple-600" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-1.5">
-                      <p className="text-xs font-semibold text-gray-900">AI Chatbot</p>
-                      <span className="text-[9px] text-blue-600 italic">(Recommended)</span>
+            <div 
+              className="absolute -top-3 left-1/2 w-20 h-6 bg-white/50 backdrop-blur-[1.5px] border-y border-black/[0.04] shadow-[0_1px_2px_rgba(0,0,0,0.03)] z-25 pointer-events-none"
+              style={{
+                clipPath: 'polygon(2% 0%, 98% 0%, 100% 25%, 97% 50%, 100% 75%, 98% 100%, 0% 100%, 2% 75%, 0% 50%, 3% 25%)',
+                transform: 'translateX(-50%) rotate(-1deg)'
+              }}
+            />
+            {/* Paper Card */}
+            <div 
+              className="relative bg-[#f0f7ff] border border-blue-200/40 rounded-md p-5 z-10"
+              style={{
+                backgroundColor: '#f0f7ff',
+                backgroundImage: 'radial-gradient(circle, rgba(0,0,0,0.035) 1px, transparent 1px)',
+                backgroundSize: '16px 16px'
+              }}
+            >
+              <h4 className="font-heading font-bold text-base text-gray-900 mb-1">Choose Your Bot</h4>
+              <p className="text-xs text-gray-500 mb-4">Build or choose a chatbot</p>
+              
+              <div className="space-y-2 mb-4">
+                {/* AI Chatbot (Selected) */}
+                <div className="border-2 border-blue-400 bg-blue-50/30 rounded-xl p-3">
+                  <div className="flex items-start gap-2">
+                    <div className="w-7 h-7 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <Bot size={14} className="text-purple-600" />
                     </div>
-                    <p className="text-[10px] text-gray-500 leading-snug mt-0.5">
-                      Smart AI-powered chatbot that can understand and reply automatically.
-                    </p>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-1.5">
+                        <p className="text-xs font-semibold text-gray-900">AI Chatbot</p>
+                        <span className="text-[9px] text-blue-600 italic">(Recommended)</span>
+                      </div>
+                      <p className="text-[10px] text-gray-500 leading-snug mt-0.5">
+                        Smart AI-powered chatbot that can understand and reply automatically.
+                      </p>
+                    </div>
+                    <div className="w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
+                      <div className="w-1.5 h-1.5 bg-white rounded-full" />
+                    </div>
                   </div>
-                  <div className="w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
-                    <div className="w-1.5 h-1.5 bg-white rounded-full" />
+                </div>
+
+                {/* Template Bots */}
+                <div className="border border-gray-200 rounded-xl p-3">
+                  <div className="flex items-start gap-2">
+                    <div className="w-7 h-7 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <BookOpen size={14} className="text-blue-600" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-semibold text-gray-900">Template Bots</p>
+                      <p className="text-[10px] text-gray-500 leading-snug mt-0.5">
+                        Choose from our ready-made chatbot templates.
+                      </p>
+                    </div>
+                    <div className="w-4 h-4 border-2 border-gray-300 rounded-full flex-shrink-0" />
+                  </div>
+                </div>
+
+                {/* Custom Bot */}
+                <div className="border border-gray-200 rounded-xl p-3">
+                  <div className="flex items-start gap-2">
+                    <div className="w-7 h-7 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <Sparkles size={14} className="text-gray-600" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-semibold text-gray-900">Custom Bot</p>
+                      <p className="text-[10px] text-gray-500 leading-snug mt-0.5">
+                        Build your own chatbot from scratch.
+                      </p>
+                    </div>
+                    <div className="w-4 h-4 border-2 border-gray-300 rounded-full flex-shrink-0" />
                   </div>
                 </div>
               </div>
 
-              {/* Template Bots */}
-              <div className="border border-gray-200 rounded-xl p-3">
-                <div className="flex items-start gap-2">
-                  <div className="w-7 h-7 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <BookOpen size={14} className="text-blue-600" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-semibold text-gray-900">Template Bots</p>
-                    <p className="text-[10px] text-gray-500 leading-snug mt-0.5">
-                      Choose from our ready-made chatbot templates.
-                    </p>
-                  </div>
-                  <div className="w-4 h-4 border-2 border-gray-300 rounded-full flex-shrink-0" />
-                </div>
-              </div>
-
-              {/* Custom Bot */}
-              <div className="border border-gray-200 rounded-xl p-3">
-                <div className="flex items-start gap-2">
-                  <div className="w-7 h-7 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <Sparkles size={14} className="text-gray-600" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-semibold text-gray-900">Custom Bot</p>
-                    <p className="text-[10px] text-gray-500 leading-snug mt-0.5">
-                      Build your own chatbot from scratch.
-                    </p>
-                  </div>
-                  <div className="w-4 h-4 border-2 border-gray-300 rounded-full flex-shrink-0" />
-                </div>
-              </div>
+              <button className="w-full bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold py-2.5 rounded-xl transition-colors flex items-center justify-center gap-1.5">
+                Create Bot <ArrowRight size={14} />
+              </button>
             </div>
-
-            <button className="w-full bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold py-2.5 rounded-xl transition-colors flex items-center justify-center gap-1.5">
-              Create Bot <ArrowRight size={14} />
-            </button>
+            {/* Page Curl Shadow */}
+            <div className="absolute -bottom-2 left-4 right-4 h-4 bg-black/[0.12] blur-[3.5px] rounded-[50%_/_10px] -rotate-1.5 group-hover:rotate-0 group-hover:translate-y-2 group-hover:blur-[5px] group-hover:scale-x-95 group-hover:bg-black/[0.08] transition-all duration-300 z-0 pointer-events-none" />
           </div>
 
           {/* ━━━ Card 4: Launch Campaign ━━━ */}
-          <div className="relative bg-[#fff1f2] border border-pink-200/50 rounded-lg p-5 shadow-[5px_5px_15px_rgba(0,0,0,0.05),0_2px_4px_rgba(0,0,0,0.02)] -rotate-2 hover:rotate-0 hover:scale-[1.03] hover:shadow-[12px_16px_28px_rgba(0,0,0,0.08)] hover:z-20 transition-all duration-300">
+          <div className="relative group -rotate-2 hover:rotate-0 hover:scale-[1.03] hover:z-20 transition-all duration-300">
             {/* Washi Tape */}
-            <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 w-16 h-7 bg-white/60 backdrop-blur-[2px] border-x border-b border-black/[0.03] shadow-[0_1px_3px_rgba(0,0,0,0.02)] rounded-sm rotate-3 z-20 pointer-events-none" />
-            <h4 className="font-heading font-bold text-base text-gray-900 mb-1">Launch Campaign</h4>
-            <p className="text-xs text-gray-500 mb-4">Send messages to your audience</p>
-            
-            <div className="space-y-3 mb-4">
-              <div>
-                <label className="text-[10px] text-gray-500 mb-1 block">Campaign Name</label>
-                <div className="border border-gray-200 rounded-lg px-3 py-2 text-xs text-gray-900 bg-gray-50">
-                  Summer Sale 2024
-                </div>
-              </div>
+            <div 
+              className="absolute -top-3 left-1/2 w-20 h-6 bg-white/50 backdrop-blur-[1.5px] border-y border-black/[0.04] shadow-[0_1px_2px_rgba(0,0,0,0.03)] z-25 pointer-events-none"
+              style={{
+                clipPath: 'polygon(2% 0%, 98% 0%, 100% 25%, 97% 50%, 100% 75%, 98% 100%, 0% 100%, 2% 75%, 0% 50%, 3% 25%)',
+                transform: 'translateX(-50%) rotate(3deg)'
+              }}
+            />
+            {/* Paper Card */}
+            <div 
+              className="relative bg-[#fff1f2] border border-pink-200/40 rounded-md p-5 z-10"
+              style={{
+                backgroundColor: '#fff1f2',
+                backgroundImage: 'radial-gradient(circle, rgba(0,0,0,0.035) 1px, transparent 1px)',
+                backgroundSize: '16px 16px'
+              }}
+            >
+              <h4 className="font-heading font-bold text-base text-gray-900 mb-1">Launch Campaign</h4>
+              <p className="text-xs text-gray-500 mb-4">Send messages to your audience</p>
               
-              <div>
-                <label className="text-[10px] text-gray-500 mb-1 block">Audience</label>
-                <div className="border border-gray-200 rounded-lg px-3 py-2 text-xs text-gray-900 bg-gray-50 flex items-center justify-between">
-                  <span>All Customers (45,230)</span>
-                  <ChevronRight size={12} className="text-gray-400 rotate-90" />
+              <div className="space-y-3 mb-4">
+                <div>
+                  <label className="text-[10px] text-gray-500 mb-1 block">Campaign Name</label>
+                  <div className="border border-gray-200 rounded-lg px-3 py-2 text-xs text-gray-900 bg-gray-50">
+                    Summer Sale 2024
+                  </div>
                 </div>
-              </div>
+                
+                <div>
+                  <label className="text-[10px] text-gray-500 mb-1 block">Audience</label>
+                  <div className="border border-gray-200 rounded-lg px-3 py-2 text-xs text-gray-900 bg-gray-50 flex items-center justify-between">
+                    <span>All Customers (45,230)</span>
+                    <ChevronRight size={12} className="text-gray-400 rotate-90" />
+                  </div>
+                </div>
 
-              <div>
-                <label className="text-[10px] text-gray-500 mb-1 block">Message Preview</label>
-                <div className="bg-gradient-to-br from-yellow-100 to-orange-100 border border-yellow-200 rounded-lg p-3">
-                  <div className="flex items-start gap-2">
-                    <span className="text-base">🎉</span>
-                    <div>
-                      <p className="text-xs font-semibold text-gray-900">Summer Sale is Live!</p>
-                      <p className="text-[10px] text-gray-700">Get Flat 50% OFF on all products. Shop now!</p>
+                <div>
+                  <label className="text-[10px] text-gray-500 mb-1 block">Message Preview</label>
+                  <div className="bg-gradient-to-br from-yellow-100 to-orange-100 border border-yellow-200 rounded-lg p-3">
+                    <div className="flex items-start gap-2">
+                      <span className="text-base">🎉</span>
+                      <div>
+                        <p className="text-xs font-semibold text-gray-900">Summer Sale is Live!</p>
+                        <p className="text-[10px] text-gray-700">Get Flat 50% OFF on all products. Shop now!</p>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
 
-            <button className="w-full bg-pink-500 hover:bg-pink-600 text-white text-sm font-semibold py-2.5 rounded-xl transition-colors flex items-center justify-center gap-1.5">
-              Send Campaign 🚀
-            </button>
+              <button className="w-full bg-pink-500 hover:bg-pink-600 text-white text-sm font-semibold py-2.5 rounded-xl transition-colors flex items-center justify-center gap-1.5">
+                Send Campaign 🚀
+              </button>
+            </div>
+            {/* Page Curl Shadow */}
+            <div className="absolute -bottom-2 left-4 right-4 h-4 bg-black/[0.12] blur-[3.5px] rounded-[50%_/_10px] rotate-3 group-hover:rotate-0 group-hover:translate-y-2 group-hover:blur-[5px] group-hover:scale-x-95 group-hover:bg-black/[0.08] transition-all duration-300 z-0 pointer-events-none" />
           </div>
 
           {/* ━━━ Card 5: Track & Grow ━━━ */}
-          <div className="relative bg-[#fefce8] border border-amber-200/50 rounded-lg p-5 shadow-[5px_5px_15px_rgba(0,0,0,0.05),0_2px_4px_rgba(0,0,0,0.02)] rotate-1 hover:rotate-0 hover:scale-[1.03] hover:shadow-[12px_16px_28px_rgba(0,0,0,0.08)] hover:z-20 transition-all duration-300">
+          <div className="relative group rotate-1 hover:rotate-0 hover:scale-[1.03] hover:z-20 transition-all duration-300">
             {/* Washi Tape */}
-            <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 w-16 h-7 bg-white/60 backdrop-blur-[2px] border-x border-b border-black/[0.03] shadow-[0_1px_3px_rgba(0,0,0,0.02)] rounded-sm -rotate-2 z-20 pointer-events-none" />
-            <h4 className="font-heading font-bold text-base text-gray-900 mb-1">Track & Grow</h4>
-            <p className="text-xs text-gray-500 mb-4">Monitor performance in real-time</p>
-            
-            <div className="space-y-3 mb-4">
-              {[
-                { label: 'Messages Sent', value: '45,230', change: '+32%' },
-                { label: 'Delivered', value: '44,230', change: '+28%' },
-                { label: 'Read', value: '31,421', change: '+24%' },
-                { label: 'Replies', value: '6,782', change: '+38%' },
-              ].map((stat, i) => (
-                <div key={i} className="flex items-center justify-between text-xs">
-                  <span className="text-gray-500">{stat.label}</span>
-                  <div className="flex items-center gap-2">
-                    <span className="font-semibold text-gray-900">{stat.value}</span>
-                    <span className="text-green-500 text-[10px] font-semibold">↑ {stat.change}</span>
+            <div 
+              className="absolute -top-3 left-1/2 w-20 h-6 bg-white/50 backdrop-blur-[1.5px] border-y border-black/[0.04] shadow-[0_1px_2px_rgba(0,0,0,0.03)] z-25 pointer-events-none"
+              style={{
+                clipPath: 'polygon(2% 0%, 98% 0%, 100% 25%, 97% 50%, 100% 75%, 98% 100%, 0% 100%, 2% 75%, 0% 50%, 3% 25%)',
+                transform: 'translateX(-50%) rotate(-2deg)'
+              }}
+            />
+            {/* Paper Card */}
+            <div 
+              className="relative bg-[#fefce8] border border-amber-200/40 rounded-md p-5 z-10"
+              style={{
+                backgroundColor: '#fefce8',
+                backgroundImage: 'radial-gradient(circle, rgba(0,0,0,0.035) 1px, transparent 1px)',
+                backgroundSize: '16px 16px'
+              }}
+            >
+              <h4 className="font-heading font-bold text-base text-gray-900 mb-1">Track & Grow</h4>
+              <p className="text-xs text-gray-500 mb-4">Monitor performance in real-time</p>
+              
+              <div className="space-y-3 mb-4">
+                {[
+                  { label: 'Messages Sent', value: '45,230', change: '+32%' },
+                  { label: 'Delivered', value: '44,230', change: '+28%' },
+                  { label: 'Read', value: '31,421', change: '+24%' },
+                  { label: 'Replies', value: '6,782', change: '+38%' },
+                ].map((stat, i) => (
+                  <div key={i} className="flex items-center justify-between text-xs">
+                    <span className="text-gray-500">{stat.label}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold text-gray-900">{stat.value}</span>
+                      <span className="text-green-500 text-[10px] font-semibold">↑ {stat.change}</span>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
+
+              <button className="w-full bg-green-50 hover:bg-green-100 text-green-600 text-sm font-semibold py-2 rounded-xl transition-colors flex items-center justify-center gap-1.5 mb-3 border border-green-200">
+                View Analytics <ArrowRight size={14} />
+              </button>
+
+              {/* Growth chart */}
+              <svg className="w-full" height="50" viewBox="0 0 200 50">
+                <defs>
+                  <linearGradient id="growthGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#22c55e" stopOpacity="0.3" />
+                    <stop offset="100%" stopColor="#22c55e" stopOpacity="0" />
+                  </linearGradient>
+                </defs>
+                <path 
+                  d="M0,40 Q20,38 40,32 T80,25 T120,20 T160,12 T200,5 L200,50 L0,50 Z" 
+                  fill="url(#growthGradient)" 
+                />
+                <path 
+                  d="M0,40 Q20,38 40,32 T80,25 T120,20 T160,12 T200,5" 
+                  fill="none" 
+                  stroke="#22c55e" 
+                  strokeWidth="2" 
+                />
+              </svg>
             </div>
-
-            <button className="w-full bg-green-50 hover:bg-green-100 text-green-600 text-sm font-semibold py-2 rounded-xl transition-colors flex items-center justify-center gap-1.5 mb-3 border border-green-200">
-              View Analytics <ArrowRight size={14} />
-            </button>
-
-            {/* Growth chart */}
-            <svg className="w-full" height="50" viewBox="0 0 200 50">
-              <defs>
-                <linearGradient id="growthGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#22c55e" stopOpacity="0.3" />
-                  <stop offset="100%" stopColor="#22c55e" stopOpacity="0" />
-                </linearGradient>
-              </defs>
-              <path 
-                d="M0,40 Q20,38 40,32 T80,25 T120,20 T160,12 T200,5 L200,50 L0,50 Z" 
-                fill="url(#growthGradient)" 
-              />
-              <path 
-                d="M0,40 Q20,38 40,32 T80,25 T120,20 T160,12 T200,5" 
-                fill="none" 
-                stroke="#22c55e" 
-                strokeWidth="2" 
-              />
-            </svg>
+            {/* Page Curl Shadow */}
+            <div className="absolute -bottom-2 left-4 right-4 h-4 bg-black/[0.12] blur-[3.5px] rounded-[50%_/_10px] -rotate-2 group-hover:rotate-0 group-hover:translate-y-2 group-hover:blur-[5px] group-hover:scale-x-95 group-hover:bg-black/[0.08] transition-all duration-300 z-0 pointer-events-none" />
           </div>
         </div>
 
