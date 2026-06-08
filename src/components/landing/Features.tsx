@@ -1,3 +1,4 @@
+import React from 'react';
 import { Link } from 'react-router-dom';
 import {
   Sparkles, ArrowRight, MessageCircle, Bot, Workflow,
@@ -468,24 +469,47 @@ interface FeatureCardProps {
 }
 
 const FeatureCard = ({ icon, iconBg, title, description, arrowColor, preview, cardBg = 'bg-white' }: FeatureCardProps) => {
+  const getWatermarkColorClass = (bg: string) => {
+    if (bg.includes('bg-green')) return 'text-green-500/10';
+    if (bg.includes('bg-purple')) return 'text-purple-500/10';
+    if (bg.includes('bg-teal')) return 'text-teal-500/10';
+    if (bg.includes('bg-orange')) return 'text-orange-500/10';
+    if (bg.includes('bg-pink')) return 'text-pink-500/10';
+    if (bg.includes('bg-blue')) return 'text-blue-500/10';
+    if (bg.includes('from-')) return 'text-blue-500/10';
+    return 'text-gray-500/10';
+  };
+
+  const watermarkColorClass = getWatermarkColorClass(iconBg);
+
+  const watermarkIcon = React.isValidElement(icon)
+    ? React.cloneElement(icon as React.ReactElement<any>, {
+        size: 140,
+        className: `${watermarkColorClass} absolute -left-6 -bottom-6 pointer-events-none transition-transform duration-500 group-hover:scale-110 group-hover:rotate-12`
+      })
+    : null;
+
   return (
-    <div className={`group ${cardBg} border border-gray-200/80 rounded-2xl p-5 hover:shadow-xl hover:border-gray-300 transition-all duration-300 hover:-translate-y-1`}>
-      <div className="grid grid-cols-2 gap-4 items-start">
-        
-        {/* Left: Icon + Title + Description */}
-        <div>
-          <div className={`w-12 h-12 ${iconBg} rounded-2xl flex items-center justify-center shadow-md mb-3`}>
-            {icon}
+    <div className={`group ${cardBg} border border-gray-200/80 rounded-2xl p-6 hover:shadow-xl hover:border-gray-300 transition-all duration-300 hover:-translate-y-1 relative overflow-hidden`}>
+      {/* Background Watermark Icon */}
+      {watermarkIcon}
+
+      <div className="grid grid-cols-2 gap-4 items-start relative z-10">
+        {/* Left: Title + Description + Action */}
+        <div className="flex flex-col h-full justify-between min-h-[150px]">
+          <div>
+            <h3 className="font-heading font-bold text-lg text-gray-900 mb-2 leading-tight">
+              {title}
+            </h3>
+            <p className="text-xs text-gray-600 leading-relaxed">
+              {description}
+            </p>
           </div>
-          <h3 className="font-heading font-bold text-base text-gray-900 mb-1.5 leading-tight">
-            {title}
-          </h3>
-          <p className="text-xs text-gray-600 leading-relaxed mb-3">
-            {description}
-          </p>
-          <button className={`w-8 h-8 bg-white border border-gray-200 rounded-full flex items-center justify-center group-hover:border-current transition-all hover:scale-110 ${arrowColor}`}>
-            <ArrowRight size={14} className="text-current" />
-          </button>
+          <div className="pt-3">
+            <button className={`w-9 h-9 bg-white border border-gray-200 rounded-full flex items-center justify-center group-hover:border-current transition-all hover:scale-110 shadow-sm ${arrowColor}`}>
+              <ArrowRight size={16} className="text-current" />
+            </button>
+          </div>
         </div>
 
         {/* Right: Mini Preview */}
