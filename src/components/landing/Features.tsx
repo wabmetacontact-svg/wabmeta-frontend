@@ -130,7 +130,7 @@ const Features = () => {
               arrowColor="text-purple-500"
               cardBg="bg-purple-50/40"
               preview={
-                <div className="relative flex items-center justify-center h-[210px] w-full">
+                <div className="relative flex items-center justify-center h-[250px] w-full">
                   <img 
                     src={aiChatbot} 
                     alt="AI Chatbot Preview" 
@@ -148,7 +148,7 @@ const Features = () => {
               description="Create powerful automation workflows with triggers, conditions, delays and actions."
               arrowColor="text-teal-500"
               preview={
-                <div className="relative flex items-center justify-center h-[210px] w-full">
+                <div className="relative flex items-center justify-center h-[250px] w-full">
                   <img 
                     src={automatedWorkflow} 
                     alt="Automated Workflow Preview" 
@@ -167,7 +167,7 @@ const Features = () => {
               arrowColor="text-blue-600"
               cardBg="bg-blue-50/20"
               preview={
-                <div className="relative flex items-center justify-center h-[210px] w-full">
+                <div className="relative flex items-center justify-center h-[250px] w-full">
                   <img 
                     src={metaAdsCampaign} 
                     alt="Meta Ads Campaign Preview" 
@@ -186,7 +186,7 @@ const Features = () => {
               arrowColor="text-orange-500"
               cardBg="bg-orange-50/40"
               preview={
-                <div className="relative flex items-center justify-center h-[210px] w-full">
+                <div className="relative flex items-center justify-center h-[250px] w-full">
                   <img 
                     src={crmAndLead} 
                     alt="CRM and Lead Preview" 
@@ -205,7 +205,7 @@ const Features = () => {
               arrowColor="text-pink-500"
               cardBg="bg-pink-50/40"
               preview={
-                <div className="relative flex items-center justify-center h-[210px] w-full">
+                <div className="relative flex items-center justify-center h-[250px] w-full">
                   <img 
                     src={instagramAutomation} 
                     alt="Instagram Automation Preview" 
@@ -223,7 +223,7 @@ const Features = () => {
               description="Get detailed insights on delivery, reads, replies, conversions and more."
               arrowColor="text-blue-600"
               preview={
-                <div className="relative flex items-center justify-center h-[210px] w-full">
+                <div className="relative flex items-center justify-center h-[250px] w-full">
                   <img 
                     src={analyticsAndReports} 
                     alt="Analytics and Reports Preview" 
@@ -241,7 +241,7 @@ const Features = () => {
               description="Manage all conversations in one place. Assign, reply and collaborate in real-time."
               arrowColor="text-blue-500"
               preview={
-                <div className="relative flex items-center justify-center h-[210px] w-full">
+                <div className="relative flex items-center justify-center h-[250px] w-full">
                   <img 
                     src={sharedTeamInbox} 
                     alt="Shared Team Inbox Preview" 
