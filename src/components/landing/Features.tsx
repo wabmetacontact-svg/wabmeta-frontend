@@ -102,7 +102,7 @@ const Features = () => {
               description="Send bulk messages, run targeted campaigns and track real-time results."
               arrowColor="text-green-500"
               preview={
-                <div className="relative flex items-center justify-center h-[170px] w-full">
+                <div className="relative flex items-center justify-center h-[210px] w-full">
                   <img 
                     src={whatsappCampaign} 
                     alt="WhatsApp Campaign Preview" 
