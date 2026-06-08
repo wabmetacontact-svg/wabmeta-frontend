@@ -130,11 +130,11 @@ const Features = () => {
               arrowColor="text-purple-500"
               cardBg="bg-purple-50/40"
               preview={
-                <div className="relative flex items-center justify-center h-[250px] w-full">
+                <div className="relative flex items-center justify-center h-[280px] w-full">
                   <img 
                     src={aiChatbot} 
                     alt="AI Chatbot Preview" 
-                    className="max-w-full max-h-full object-contain transition-transform duration-500 group-hover:scale-105"
+                    className="max-w-full max-h-full object-contain transition-transform duration-500 scale-110 group-hover:scale-115"
                   />
                 </div>
               }
@@ -148,11 +148,11 @@ const Features = () => {
               description="Create powerful automation workflows with triggers, conditions, delays and actions."
               arrowColor="text-teal-500"
               preview={
-                <div className="relative flex items-center justify-center h-[250px] w-full">
+                <div className="relative flex items-center justify-center h-[280px] w-full">
                   <img 
                     src={automatedWorkflow} 
                     alt="Automated Workflow Preview" 
-                    className="max-w-full max-h-full object-contain transition-transform duration-500 group-hover:scale-105"
+                    className="max-w-full max-h-full object-contain transition-transform duration-500 scale-110 group-hover:scale-115"
                   />
                 </div>
               }
@@ -167,11 +167,11 @@ const Features = () => {
               arrowColor="text-blue-600"
               cardBg="bg-blue-50/20"
               preview={
-                <div className="relative flex items-center justify-center h-[250px] w-full">
+                <div className="relative flex items-center justify-center h-[280px] w-full">
                   <img 
                     src={metaAdsCampaign} 
                     alt="Meta Ads Campaign Preview" 
-                    className="max-w-full max-h-full object-contain transition-transform duration-500 group-hover:scale-105"
+                    className="max-w-full max-h-full object-contain transition-transform duration-500 scale-110 group-hover:scale-115"
                   />
                 </div>
               }
@@ -186,11 +186,11 @@ const Features = () => {
               arrowColor="text-orange-500"
               cardBg="bg-orange-50/40"
               preview={
-                <div className="relative flex items-center justify-center h-[250px] w-full">
+                <div className="relative flex items-center justify-center h-[280px] w-full">
                   <img 
                     src={crmAndLead} 
                     alt="CRM and Lead Preview" 
-                    className="max-w-full max-h-full object-contain transition-transform duration-500 group-hover:scale-105"
+                    className="max-w-full max-h-full object-contain transition-transform duration-500 scale-110 group-hover:scale-115"
                   />
                 </div>
               }
@@ -205,11 +205,11 @@ const Features = () => {
               arrowColor="text-pink-500"
               cardBg="bg-pink-50/40"
               preview={
-                <div className="relative flex items-center justify-center h-[250px] w-full">
+                <div className="relative flex items-center justify-center h-[280px] w-full">
                   <img 
                     src={instagramAutomation} 
                     alt="Instagram Automation Preview" 
-                    className="max-w-full max-h-full object-contain transition-transform duration-500 group-hover:scale-105"
+                    className="max-w-full max-h-full object-contain transition-transform duration-500 scale-110 group-hover:scale-115"
                   />
                 </div>
               }
@@ -223,11 +223,11 @@ const Features = () => {
               description="Get detailed insights on delivery, reads, replies, conversions and more."
               arrowColor="text-blue-600"
               preview={
-                <div className="relative flex items-center justify-center h-[250px] w-full">
+                <div className="relative flex items-center justify-center h-[280px] w-full">
                   <img 
                     src={analyticsAndReports} 
                     alt="Analytics and Reports Preview" 
-                    className="max-w-full max-h-full object-contain transition-transform duration-500 group-hover:scale-105"
+                    className="max-w-full max-h-full object-contain transition-transform duration-500 scale-110 group-hover:scale-115"
                   />
                 </div>
               }
@@ -241,11 +241,11 @@ const Features = () => {
               description="Manage all conversations in one place. Assign, reply and collaborate in real-time."
               arrowColor="text-blue-500"
               preview={
-                <div className="relative flex items-center justify-center h-[250px] w-full">
+                <div className="relative flex items-center justify-center h-[280px] w-full">
                   <img 
                     src={sharedTeamInbox} 
                     alt="Shared Team Inbox Preview" 
-                    className="max-w-full max-h-full object-contain transition-transform duration-500 group-hover:scale-105"
+                    className="max-w-full max-h-full object-contain transition-transform duration-500 scale-110 group-hover:scale-115"
                   />
                 </div>
               }
@@ -253,55 +253,6 @@ const Features = () => {
           </div>
         </div>
 
-        {/* ═══════ Bottom Trust Bar ═══════ */}
-        <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-6 md:p-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[
-              {
-                icon: ShieldCheck,
-                bg: 'bg-green-100',
-                color: 'text-green-600',
-                title: 'Secure & Reliable',
-                desc: 'Enterprise-grade security and 99.9% uptime',
-              },
-              {
-                icon: Zap,
-                bg: 'bg-blue-100',
-                color: 'text-blue-600',
-                title: 'No Coding Needed',
-                desc: 'Set up everything without any technical skills',
-              },
-              {
-                icon: Headphones,
-                bg: 'bg-purple-100',
-                color: 'text-purple-600',
-                title: '24/7 Support',
-                desc: 'Our support team is always here to help you',
-              },
-              {
-                icon: BookOpen,
-                bg: 'bg-pink-100',
-                color: 'text-pink-600',
-                title: 'Free Resources',
-                desc: 'Access guides, templates and video tutorials',
-              },
-            ].map((item, i) => (
-              <div key={i} className="flex items-start gap-3">
-                <div className={`w-12 h-12 ${item.bg} rounded-2xl flex items-center justify-center flex-shrink-0`}>
-                  <item.icon size={22} className={item.color} />
-                </div>
-                <div>
-                  <h4 className="font-heading font-bold text-sm text-gray-900 mb-1">
-                    {item.title}
-                  </h4>
-                  <p className="text-xs text-gray-600 leading-relaxed">
-                    {item.desc}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
       </div>
     </section>
   );
