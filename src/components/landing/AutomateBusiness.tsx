@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Send, Database, Bot, Handshake, Megaphone, 
@@ -5,6 +6,27 @@ import {
 } from 'lucide-react';
 
 const AutomateBusiness = () => {
+  const [isVisible, setIsVisible] = useState(false);
+  const sectionRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.unobserve(entry.target);
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (sectionRef.current) {
+      observer.observe(sectionRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
+
   const services = [
     {
       number: '01',
@@ -13,8 +35,6 @@ const AutomateBusiness = () => {
       icon: Send,
       bgColor: 'bg-orange-400',
       hoverShadow: 'hover:shadow-orange-400/40',
-      size: 'w-44 h-44 md:w-48 md:h-48',
-      position: 'translate-y-0',
     },
     {
       number: '02',
@@ -23,8 +43,6 @@ const AutomateBusiness = () => {
       icon: Database,
       bgColor: 'bg-indigo-900',
       hoverShadow: 'hover:shadow-indigo-900/40',
-      size: 'w-44 h-44 md:w-48 md:h-48',
-      position: '-translate-y-6',
     },
     {
       number: '03',
@@ -33,8 +51,6 @@ const AutomateBusiness = () => {
       icon: Bot,
       bgColor: 'bg-teal-500',
       hoverShadow: 'hover:shadow-teal-500/40',
-      size: 'w-40 h-40 md:w-44 md:h-44',
-      position: 'translate-y-2',
     },
     {
       number: '04',
@@ -43,8 +59,6 @@ const AutomateBusiness = () => {
       icon: Handshake,
       bgColor: 'bg-indigo-900',
       hoverShadow: 'hover:shadow-indigo-900/40',
-      size: 'w-44 h-44 md:w-48 md:h-48',
-      position: '-translate-y-4',
     },
     {
       number: '05',
@@ -53,8 +67,6 @@ const AutomateBusiness = () => {
       icon: Send,
       bgColor: 'bg-indigo-900',
       hoverShadow: 'hover:shadow-indigo-900/40',
-      size: 'w-44 h-44 md:w-48 md:h-48',
-      position: 'translate-y-2',
     },
     {
       number: '06',
@@ -63,8 +75,6 @@ const AutomateBusiness = () => {
       icon: Code2,
       bgColor: 'bg-pink-500',
       hoverShadow: 'hover:shadow-pink-500/40',
-      size: 'w-44 h-44 md:w-48 md:h-48',
-      position: '-translate-y-4',
     },
     {
       number: '07',
@@ -73,8 +83,6 @@ const AutomateBusiness = () => {
       icon: TrendingUp,
       bgColor: 'bg-orange-400',
       hoverShadow: 'hover:shadow-orange-400/40',
-      size: 'w-40 h-40 md:w-44 md:h-44',
-      position: 'translate-y-4',
     },
     {
       number: '08',
@@ -83,14 +91,54 @@ const AutomateBusiness = () => {
       icon: Megaphone,
       bgColor: 'bg-teal-500',
       hoverShadow: 'hover:shadow-teal-500/40',
-      size: 'w-44 h-44 md:w-48 md:h-48',
-      position: '-translate-y-2',
     },
   ];
 
   return (
-    <section className="relative py-20 lg:py-28 bg-slate-900 overflow-hidden">
+    <section ref={sectionRef} className="relative py-20 lg:py-28 bg-slate-900 overflow-hidden">
       
+      {/* Inject custom styling and responsive variables directly */}
+      <style dangerouslySetInnerHTML={{ __html: `
+        .orbit-container {
+          --radius: 110px;
+          --b-size: 80px;
+        }
+        @media (min-width: 768px) {
+          .orbit-container {
+            --radius: 220px;
+            --b-size: 144px;
+          }
+        }
+        
+        @keyframes orbit-entry {
+          0% {
+            opacity: 0;
+            transform: translate(-50%, -50%) scale(0.2);
+          }
+          100% {
+            opacity: 1;
+            transform: translate(calc(-50% + var(--tx)), calc(-50% + var(--ty))) scale(1);
+          }
+        }
+        
+        .animate-orbit-entry {
+          animation: orbit-entry 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+        
+        @keyframes float-animation {
+          0%, 100% {
+            transform: translateY(0px);
+          }
+          50% {
+            transform: translateY(-8px);
+          }
+        }
+        
+        .animate-float {
+          animation: float-animation 6s ease-in-out infinite;
+        }
+      `}} />
+
       {/* Background decorative pattern */}
       <div className="absolute inset-0 opacity-30">
         <div 
@@ -108,7 +156,7 @@ const AutomateBusiness = () => {
 
       <div className="max-w-7xl mx-auto px-4 md:px-6 relative z-10">
         
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start mb-16">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-center mb-16">
           
           {/* ═══════ LEFT: Content (5 cols) ═══════ */}
           <div className="lg:col-span-5 space-y-6 relative">
@@ -189,31 +237,59 @@ const AutomateBusiness = () => {
             </div>
           </div>
 
-          {/* ═══════ RIGHT: Service Bubbles Grid (7 cols) ═══════ */}
-          <div className="lg:col-span-7 relative">
+          {/* ═══════ RIGHT: Circular Orbit Layout (7 cols) ═══════ */}
+          <div className="lg:col-span-7 flex items-center justify-center relative min-h-[340px] md:min-h-[640px]">
             
-            {/* Mobile: Simple grid */}
-            <div className="lg:hidden grid grid-cols-2 gap-6">
-              {services.map((service, i) => (
-                <BubbleCard key={i} service={service} mobile />
-              ))}
-            </div>
-
-            {/* Desktop: Custom positioned bubbles */}
-            <div className="hidden lg:block">
-              {/* Row 1 */}
-              <div className="flex justify-between items-end gap-2 mb-6">
-                {services.slice(0, 4).map((service, i) => (
-                  <BubbleCard key={i} service={service} />
-                ))}
-              </div>
+            {/* The circular orbit container */}
+            <div className="relative w-[300px] h-[300px] md:w-[580px] md:h-[580px] flex items-center justify-center orbit-container">
               
-              {/* Row 2 */}
-              <div className="flex justify-between items-start gap-2">
-                {services.slice(4, 8).map((service, i) => (
-                  <BubbleCard key={i + 4} service={service} />
-                ))}
+              {/* Central Hub */}
+              <div 
+                className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20 w-24 h-24 md:w-36 md:h-36 rounded-full bg-slate-800 border border-slate-700/50 shadow-2xl flex flex-col items-center justify-center p-2 text-center"
+                style={{
+                  animation: isVisible ? 'orbit-entry 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards' : 'none',
+                  '--tx': '0px',
+                  '--ty': '0px',
+                } as React.CSSProperties}
+              >
+                <div className="absolute inset-0 rounded-full bg-blue-500/10 animate-ping opacity-60" style={{ animationDuration: '3s' }} />
+                <span className="text-white text-xs md:text-lg font-black font-heading tracking-wider uppercase bg-gradient-to-r from-blue-400 to-indigo-300 bg-clip-text text-transparent">WabMeta</span>
+                <span className="text-[8px] md:text-[11px] text-blue-400 font-extrabold uppercase tracking-widest mt-0.5 md:mt-1">Hub</span>
               </div>
+
+              {/* Orbiting Service Bubbles */}
+              {services.map((service, i) => {
+                const angle = (i * 45 * Math.PI) / 180;
+                const cosVal = Math.cos(angle);
+                const sinVal = Math.sin(angle);
+                return (
+                  <div
+                    key={i}
+                    style={{
+                      position: 'absolute',
+                      left: '50%',
+                      top: '50%',
+                      width: 'var(--b-size)',
+                      height: 'var(--b-size)',
+                      '--tx': `calc(${cosVal.toFixed(4)} * var(--radius))`,
+                      '--ty': `calc(${sinVal.toFixed(4)} * var(--radius))`,
+                      animationDelay: `${i * 120}ms`,
+                    } as React.CSSProperties}
+                    className={`absolute pointer-events-auto ${isVisible ? 'animate-orbit-entry' : 'opacity-0'}`}
+                  >
+                    {/* Floating Inner Wrapper */}
+                    <div 
+                      className="w-full h-full animate-float"
+                      style={{
+                        animationDelay: `${i * 0.4}s`,
+                      }}
+                    >
+                      <BubbleCard service={service} />
+                    </div>
+                  </div>
+                );
+              })}
+
             </div>
           </div>
         </div>
@@ -258,34 +334,28 @@ const AutomateBusiness = () => {
 // ═══════════════════════════════════════════════════
 // Bubble Card Component
 // ═══════════════════════════════════════════════════
-const BubbleCard = ({ service, mobile = false }: { service: any; mobile?: boolean }) => {
+const BubbleCard = ({ service }: { service: any }) => {
   return (
-    <div 
-      className={`relative ${mobile ? 'w-full aspect-square' : `${service.size} ${service.position}`} 
-        ${service.bgColor} ${service.hoverShadow}
-        rounded-full flex items-center justify-center
-        transition-all duration-500 cursor-pointer
-        hover:scale-105 hover:shadow-2xl
-        group flex-shrink-0`}
-    >
+    <div className={`relative w-full h-full rounded-full flex flex-col items-center justify-center text-center p-2 cursor-pointer transition-all duration-300 hover:scale-110 shadow-lg hover:shadow-2xl ${service.bgColor} ${service.hoverShadow} group overflow-hidden`}>
+      
       {/* Number badge */}
-      <div className="absolute -top-1 -right-1 w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center border-4 border-slate-900 shadow-lg">
-        <span className="text-white text-xs font-bold">{service.number}</span>
+      <div className="absolute -top-0.5 -right-0.5 w-6 h-6 md:w-8 md:h-8 bg-blue-500 rounded-full flex items-center justify-center border border-slate-900 md:border-4 shadow-md">
+        <span className="text-white text-[8px] md:text-[11px] font-extrabold">{service.number}</span>
       </div>
 
       {/* Content */}
-      <div className="flex flex-col items-center justify-center text-center px-4">
+      <div className="flex flex-col items-center justify-center text-center px-1 md:px-2">
         {/* Icon */}
-        <div className="mb-2 group-hover:scale-110 transition-transform">
-          <service.icon size={mobile ? 24 : 22} className="text-white" />
+        <div className="mb-0.5 md:mb-1.5 group-hover:scale-110 transition-transform text-white">
+          <service.icon className="w-4 h-4 md:w-6 md:h-6" />
         </div>
         
         {/* Title */}
-        <div className="text-white font-bold text-base md:text-lg leading-tight">
+        <div className="text-white font-extrabold text-[9px] md:text-sm leading-tight max-w-[95%]">
           {service.title}
         </div>
         {service.titleLine2 && (
-          <div className="text-white font-bold text-base md:text-lg leading-tight">
+          <div className="text-white font-semibold text-[8px] md:text-xs leading-none mt-0.5 opacity-90">
             {service.titleLine2}
           </div>
         )}
