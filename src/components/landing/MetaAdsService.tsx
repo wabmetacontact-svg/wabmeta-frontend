@@ -10,9 +10,11 @@ const MetaAdsService = () => {
   return (
     <section className="relative py-24 bg-gradient-to-br from-blue-50/40 via-white to-green-50/30 overflow-hidden">
       
-      {/* Decorative background */}
-      <div className="absolute top-20 right-20 w-96 h-96 bg-blue-100/40 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-20 left-20 w-96 h-96 bg-green-100/40 rounded-full blur-3xl pointer-events-none" />
+      {/* Decorative background blobs */}
+      <div className="absolute top-20 right-20 w-[500px] h-[500px] bg-blue-200/35 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-20 left-20 w-[500px] h-[500px] bg-green-200/35 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute top-1/2 left-1/3 w-96 h-96 bg-pink-100/30 rounded-full blur-[100px] pointer-events-none" />
+      <div className="absolute inset-0 backdrop-blur-[1px] pointer-events-none bg-white/[0.01]" />
 
       <div className="max-w-7xl mx-auto px-4 md:px-6 relative z-10">
         
@@ -363,12 +365,7 @@ const MetaAdsService = () => {
               </div>
             </div>
 
-            {/* Person illustration placeholder (Bottom) */}
-            <div className="absolute bottom-0 right-[15%] z-20 hidden lg:block">
-              <div className="text-center">
-                <div className="text-5xl">👨💼</div>
-              </div>
-            </div>
+
           </div>
         </div>
 
