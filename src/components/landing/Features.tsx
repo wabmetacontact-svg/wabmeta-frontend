@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import whatsappCampaign from '../../assets/images/Whatsapp campaign.png';
 import {
   Sparkles, ArrowRight, MessageCircle, Bot, Workflow,
   MessageSquare, Users, Instagram, BarChart3, Wallet,
@@ -101,34 +102,12 @@ const Features = () => {
               description="Send bulk messages, run targeted campaigns and track real-time results."
               arrowColor="text-green-500"
               preview={
-                <div className="bg-white border border-gray-100 rounded-xl p-3 shadow-sm">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-1.5">
-                      <Send size={12} className="text-green-500" />
-                      <span className="text-xs font-semibold text-gray-900">Summer Sale Campaign</span>
-                    </div>
-                    <span className="text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">
-                      Completed
-                    </span>
-                  </div>
-                  <div className="space-y-2">
-                    {[
-                      { label: 'Delivered', value: '45,000', percent: 98, color: 'bg-green-500' },
-                      { label: 'Read', value: '39,000', percent: 83, color: 'bg-green-400' },
-                      { label: 'Replies', value: '8,200', percent: 18, color: 'bg-green-300' },
-                    ].map((stat, i) => (
-                      <div key={i}>
-                        <div className="flex items-center justify-between text-[10px] mb-1">
-                          <span className="text-gray-500">{stat.label}</span>
-                          <span className="font-semibold text-gray-900">{stat.value}</span>
-                          <span className="text-gray-400">{stat.percent}%</span>
-                        </div>
-                        <div className="w-full h-1 bg-gray-100 rounded-full overflow-hidden">
-                          <div className={`h-full ${stat.color} rounded-full`} style={{ width: `${stat.percent}%` }} />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                <div className="relative rounded-xl overflow-hidden border border-gray-150/70 shadow-sm bg-gray-50 flex items-center justify-center h-[170px]">
+                  <img 
+                    src={whatsappCampaign} 
+                    alt="WhatsApp Campaign Preview" 
+                    className="w-full h-full object-cover rounded-xl transition-transform duration-500 group-hover:scale-105"
+                  />
                 </div>
               }
             />
