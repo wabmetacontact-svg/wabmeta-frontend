@@ -1,12 +1,21 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import whatsappCampaign from '../../assets/images/Whatsapp campaign.png';
 import {
   Sparkles, ArrowRight, MessageCircle, Bot, Workflow,
   MessageSquare, Users, Instagram, BarChart3, Wallet,
-  Zap, Send, Check, Megaphone
+  Zap, Send, Check, Megaphone, ShieldCheck, Headphones, BookOpen
 } from 'lucide-react';
 import Logo from '../common/Logo';
+
+// Import Campaign PNG Mockups
+import whatsappCampaign from '../../assets/images/Whatsapp campaign.png';
+import aiChatbot from '../../assets/images/AI chatbot.png';
+import automatedWorkflow from '../../assets/images/Automated workflow.png';
+import metaAdsCampaign from '../../assets/images/Meta Ads campaign.png';
+import crmAndLead from '../../assets/images/CRM and lead.png';
+import instagramAutomation from '../../assets/images/Instagram automation.png';
+import analyticsAndReports from '../../assets/images/Analytics & Reports.png';
+import sharedTeamInbox from '../../assets/images/Shared team inbox.png';
 
 const Features = () => {
   return (
@@ -121,33 +130,12 @@ const Features = () => {
               arrowColor="text-purple-500"
               cardBg="bg-purple-50/40"
               preview={
-                <div className="bg-white border border-gray-100 rounded-xl p-3 shadow-sm">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-1.5">
-                      <div className="w-5 h-5 bg-purple-100 rounded-md flex items-center justify-center">
-                        <Bot size={10} className="text-purple-600" />
-                      </div>
-                      <span className="text-xs font-semibold text-gray-900">AI Assistant</span>
-                    </div>
-                    <span className="text-gray-400">⋯</span>
-                  </div>
-                  <div className="space-y-2">
-                    <div className="bg-gray-50 rounded-lg p-2">
-                      <p className="text-[11px] text-gray-700">Hi there! 👋</p>
-                      <p className="text-[11px] text-gray-700">How can I help you today?</p>
-                    </div>
-                    <div className="bg-purple-100 rounded-lg p-2 ml-auto w-fit">
-                      <p className="text-[11px] text-purple-900">What is the price?</p>
-                    </div>
-                    <div className="bg-gray-50 rounded-lg p-2">
-                      <p className="text-[11px] text-gray-700">The price starts from ₹999. Would you like to see our catalog?</p>
-                      <div className="flex items-center justify-end gap-0.5 mt-1">
-                        <span className="text-[8px] text-gray-400">11:30 AM</span>
-                        <Check size={8} className="text-blue-500" />
-                        <Check size={8} className="text-blue-500 -ml-1.5" />
-                      </div>
-                    </div>
-                  </div>
+                <div className="relative flex items-center justify-center h-[210px] w-full">
+                  <img 
+                    src={aiChatbot} 
+                    alt="AI Chatbot Preview" 
+                    className="max-w-full max-h-full object-contain transition-transform duration-500 group-hover:scale-105"
+                  />
                 </div>
               }
             />
@@ -160,41 +148,16 @@ const Features = () => {
               description="Create powerful automation workflows with triggers, conditions, delays and actions."
               arrowColor="text-teal-500"
               preview={
-                <div className="bg-white border border-gray-100 rounded-xl p-3 shadow-sm space-y-2">
-                  <div className="flex items-center gap-2 p-2 bg-yellow-50 border border-yellow-200 rounded-lg">
-                    <div className="w-6 h-6 bg-yellow-400 rounded-md flex items-center justify-center flex-shrink-0">
-                      <Zap size={12} className="text-white" />
-                    </div>
-                    <div>
-                      <p className="text-[10px] text-gray-500">When User Sends</p>
-                      <p className="text-xs font-semibold text-gray-900">"Hi / Hello"</p>
-                    </div>
-                  </div>
-                  <div className="flex justify-center text-gray-300 text-xs">↓</div>
-                  <div className="flex items-center gap-2 p-2 bg-purple-50 border border-purple-200 rounded-lg">
-                    <div className="w-6 h-6 bg-purple-500 rounded-md flex items-center justify-center flex-shrink-0">
-                      <Bot size={12} className="text-white" />
-                    </div>
-                    <div>
-                      <p className="text-[10px] text-purple-600 font-medium">AI Reply</p>
-                      <p className="text-xs font-semibold text-gray-900">Welcome! How can I help you?</p>
-                    </div>
-                  </div>
-                  <div className="flex justify-center text-gray-300 text-xs">↓</div>
-                  <div className="flex items-center gap-2 p-2 bg-pink-50 border border-pink-200 rounded-lg">
-                    <div className="w-6 h-6 bg-pink-500 rounded-md flex items-center justify-center flex-shrink-0">
-                      <Users size={12} className="text-white" />
-                    </div>
-                    <div>
-                      <p className="text-[10px] text-pink-600 font-medium">Assign to Agent</p>
-                      <p className="text-xs font-semibold text-gray-900">Sales Team</p>
-                    </div>
-                  </div>
+                <div className="relative flex items-center justify-center h-[210px] w-full">
+                  <img 
+                    src={automatedWorkflow} 
+                    alt="Automated Workflow Preview" 
+                    className="max-w-full max-h-full object-contain transition-transform duration-500 group-hover:scale-105"
+                  />
                 </div>
               }
             />
 
-            {/* ━━━ Card 4: Shared Team Inbox ━━━ */}
             {/* ━━━ Card 4: Meta Ads Agency ━━━ */}
             <FeatureCard
               icon={<Megaphone size={24} className="text-white" />}
@@ -204,44 +167,12 @@ const Features = () => {
               arrowColor="text-blue-600"
               cardBg="bg-blue-50/20"
               preview={
-                <div className="bg-white border border-gray-100 rounded-xl p-3 shadow-sm">
-                  <div className="flex items-center justify-between mb-3 pb-2 border-b border-gray-100">
-                    <div className="flex items-center gap-1.5">
-                      <div className="w-5 h-5 bg-[#0064E0] rounded-full flex items-center justify-center text-white text-[10px] font-bold">
-                        f
-                      </div>
-                      <span className="text-xs font-semibold text-gray-900">Meta Ad Campaign</span>
-                    </div>
-                    <span className="text-[9px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full font-semibold">
-                      Active
-                    </span>
-                  </div>
-                  
-                  <div className="space-y-2 mb-3">
-                    <div className="flex items-center justify-between text-[10px]">
-                      <span className="text-gray-500">Campaign Name:</span>
-                      <span className="font-semibold text-gray-900 truncate max-w-[100px]">Sales - Lead Gen</span>
-                    </div>
-                    <div className="flex items-center justify-between text-[10px]">
-                      <span className="text-gray-500">Daily Budget:</span>
-                      <span className="font-semibold text-gray-900">₹1,500</span>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-3 gap-2 pt-2 border-t border-gray-100">
-                    <div>
-                      <p className="text-[9px] text-gray-500">Spend</p>
-                      <p className="text-[11px] font-bold text-gray-900">₹12.4K</p>
-                    </div>
-                    <div>
-                      <p className="text-[9px] text-gray-500">Leads</p>
-                      <p className="text-[11px] font-bold text-gray-900">342</p>
-                    </div>
-                    <div>
-                      <p className="text-[9px] text-gray-500">ROAS</p>
-                      <p className="text-[11px] font-bold text-green-600">4.8x</p>
-                    </div>
-                  </div>
+                <div className="relative flex items-center justify-center h-[210px] w-full">
+                  <img 
+                    src={metaAdsCampaign} 
+                    alt="Meta Ads Campaign Preview" 
+                    className="max-w-full max-h-full object-contain transition-transform duration-500 group-hover:scale-105"
+                  />
                 </div>
               }
             />
@@ -255,40 +186,12 @@ const Features = () => {
               arrowColor="text-orange-500"
               cardBg="bg-orange-50/40"
               preview={
-                <div className="bg-white border border-gray-100 rounded-xl p-3 shadow-sm">
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-semibold">
-                      New Lead
-                    </span>
-                    <span className="text-[10px] text-gray-400">2m ago</span>
-                  </div>
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center text-orange-600 text-xs font-bold">
-                      RS
-                    </div>
-                    <div>
-                      <p className="text-xs font-semibold text-gray-900">Rohit Sharma</p>
-                      <p className="text-[10px] text-gray-500">+91 98765 43210</p>
-                    </div>
-                  </div>
-                  <p className="text-[11px] text-gray-700 mb-3 pb-3 border-b border-gray-100">
-                    Interested in Gold Plan
-                  </p>
-                  <div className="flex items-center gap-2">
-                    {[
-                      { label: 'New', active: true, color: 'bg-orange-400' },
-                      { label: 'Contacted', active: true, color: 'bg-yellow-400' },
-                      { label: 'Qualified', active: true, color: 'bg-blue-400' },
-                      { label: 'Won', active: false, color: 'bg-gray-300' },
-                    ].map((stage, i) => (
-                      <div key={i} className="flex items-center gap-1">
-                        <div className={`w-1.5 h-1.5 ${stage.color} rounded-full`} />
-                        <span className={`text-[9px] ${stage.active ? 'text-gray-700 font-medium' : 'text-gray-400'}`}>
-                          {stage.label}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
+                <div className="relative flex items-center justify-center h-[210px] w-full">
+                  <img 
+                    src={crmAndLead} 
+                    alt="CRM and Lead Preview" 
+                    className="max-w-full max-h-full object-contain transition-transform duration-500 group-hover:scale-105"
+                  />
                 </div>
               }
             />
@@ -302,37 +205,12 @@ const Features = () => {
               arrowColor="text-pink-500"
               cardBg="bg-pink-50/40"
               preview={
-                <div className="bg-white border border-gray-100 rounded-xl p-3 shadow-sm">
-                  <div className="flex items-center justify-between mb-2 pb-2 border-b border-gray-100">
-                    <div className="flex items-center gap-1.5">
-                      <div className="w-5 h-5 bg-gradient-to-br from-purple-500 via-pink-500 to-orange-400 rounded-full" />
-                      <span className="text-xs font-semibold text-gray-900">krrish.store</span>
-                    </div>
-                    <span className="text-[10px] text-gray-400">2h</span>
-                  </div>
-                  <div className="space-y-2 mb-3">
-                    <p className="text-[11px] text-gray-700">
-                      <span className="font-semibold">Comment:</span> Price?
-                    </p>
-                    <p className="text-[11px] text-pink-600">
-                      <span className="font-semibold">✨ Auto-reply:</span> Check your DM 📩
-                    </p>
-                    <p className="text-[10px] text-gray-400">Just now</p>
-                  </div>
-                  <div className="grid grid-cols-3 gap-2 pt-2 border-t border-gray-100">
-                    <div>
-                      <p className="text-[9px] text-gray-500">Replies</p>
-                      <p className="text-sm font-bold text-gray-900">1,234</p>
-                    </div>
-                    <div>
-                      <p className="text-[9px] text-gray-500">Engagement</p>
-                      <p className="text-sm font-bold text-gray-900">18.7%</p>
-                    </div>
-                    <div>
-                      <p className="text-[9px] text-gray-500">New Leads</p>
-                      <p className="text-sm font-bold text-gray-900">342</p>
-                    </div>
-                  </div>
+                <div className="relative flex items-center justify-center h-[210px] w-full">
+                  <img 
+                    src={instagramAutomation} 
+                    alt="Instagram Automation Preview" 
+                    className="max-w-full max-h-full object-contain transition-transform duration-500 group-hover:scale-105"
+                  />
                 </div>
               }
             />
@@ -345,42 +223,12 @@ const Features = () => {
               description="Get detailed insights on delivery, reads, replies, conversions and more."
               arrowColor="text-blue-600"
               preview={
-                <div className="bg-white border border-gray-100 rounded-xl p-3 shadow-sm">
-                  <p className="text-[10px] text-gray-500 mb-2">Overview (This Month)</p>
-                  <div className="grid grid-cols-3 gap-2 mb-3">
-                    {[
-                      { label: 'Sent', value: '125K', change: '+12.5%' },
-                      { label: 'Delivered', value: '122K', change: '+11.8%' },
-                      { label: 'Read', value: '98K', change: '+18.3%' },
-                    ].map((stat, i) => (
-                      <div key={i}>
-                        <p className="text-[9px] text-gray-500">{stat.label}</p>
-                        <p className="text-xs font-bold text-gray-900">{stat.value}</p>
-                        <p className="text-[8px] text-green-500 font-semibold">↑ {stat.change}</p>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="grid grid-cols-2 gap-2 pb-2 border-t border-gray-100 pt-2">
-                    <div>
-                      <p className="text-[9px] text-gray-500">Replies</p>
-                      <p className="text-xs font-bold text-gray-900">24K</p>
-                      <p className="text-[8px] text-green-500 font-semibold">↑ +19.6%</p>
-                    </div>
-                    <div>
-                      <p className="text-[9px] text-gray-500">Conversions</p>
-                      <p className="text-xs font-bold text-gray-900">4.6K</p>
-                      <p className="text-[8px] text-green-500 font-semibold">↑ +13.7%</p>
-                    </div>
-                  </div>
-                  {/* Mini chart */}
-                  <svg className="w-full mt-2" height="30" viewBox="0 0 120 30">
-                    <polyline
-                      points="0,25 15,20 30,22 45,15 60,18 75,10 90,12 105,5 120,8"
-                      fill="none"
-                      stroke="#3b82f6"
-                      strokeWidth="1.5"
-                    />
-                  </svg>
+                <div className="relative flex items-center justify-center h-[210px] w-full">
+                  <img 
+                    src={analyticsAndReports} 
+                    alt="Analytics and Reports Preview" 
+                    className="max-w-full max-h-full object-contain transition-transform duration-500 group-hover:scale-105"
+                  />
                 </div>
               }
             />
@@ -393,42 +241,67 @@ const Features = () => {
               description="Manage all conversations in one place. Assign, reply and collaborate in real-time."
               arrowColor="text-blue-500"
               preview={
-                <div className="bg-white border border-gray-100 rounded-xl p-3 shadow-sm">
-                  <div className="flex items-center justify-between mb-3 pb-2 border-b border-gray-100">
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-xs font-semibold text-gray-900">All Conversations</span>
-                      <span className="text-[10px] bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded-full font-bold">12</span>
-                    </div>
-                  </div>
-                  <div className="flex gap-3 text-[10px] mb-3 pb-2 border-b border-gray-100">
-                    <span className="text-gray-900 font-semibold">Mine <span className="text-gray-400">8</span></span>
-                    <span className="text-gray-500">Unassigned <span className="text-gray-400">12</span></span>
-                    <span className="text-gray-500">Team <span className="text-gray-400">24</span></span>
-                  </div>
-                  <div className="space-y-2">
-                    {[
-                      { name: 'Rahul Verma', msg: 'Hi, I want to know...', time: '2m', color: 'bg-blue-500' },
-                      { name: 'Neha Singh', msg: 'Please share the price', time: '5m', color: 'bg-pink-500' },
-                      { name: 'Aman Khan', msg: 'Thank you!', time: '1h', color: 'bg-purple-500' },
-                    ].map((chat, i) => (
-                      <div key={i} className="flex items-center gap-2">
-                        <div className={`w-6 h-6 ${chat.color} rounded-full flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0`}>
-                          {chat.name.charAt(0)}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-[11px] font-semibold text-gray-900 truncate">{chat.name}</p>
-                          <p className="text-[10px] text-gray-500 truncate">{chat.msg}</p>
-                        </div>
-                        <span className="text-[9px] text-gray-400">{chat.time}</span>
-                      </div>
-                    ))}
-                  </div>
+                <div className="relative flex items-center justify-center h-[210px] w-full">
+                  <img 
+                    src={sharedTeamInbox} 
+                    alt="Shared Team Inbox Preview" 
+                    className="max-w-full max-h-full object-contain transition-transform duration-500 group-hover:scale-105"
+                  />
                 </div>
               }
             />
           </div>
         </div>
 
+        {/* ═══════ Bottom Trust Bar ═══════ */}
+        <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-6 md:p-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[
+              {
+                icon: ShieldCheck,
+                bg: 'bg-green-100',
+                color: 'text-green-600',
+                title: 'Secure & Reliable',
+                desc: 'Enterprise-grade security and 99.9% uptime',
+              },
+              {
+                icon: Zap,
+                bg: 'bg-blue-100',
+                color: 'text-blue-600',
+                title: 'No Coding Needed',
+                desc: 'Set up everything without any technical skills',
+              },
+              {
+                icon: Headphones,
+                bg: 'bg-purple-100',
+                color: 'text-purple-600',
+                title: '24/7 Support',
+                desc: 'Our support team is always here to help you',
+              },
+              {
+                icon: BookOpen,
+                bg: 'bg-pink-100',
+                color: 'text-pink-600',
+                title: 'Free Resources',
+                desc: 'Access guides, templates and video tutorials',
+              },
+            ].map((item, i) => (
+              <div key={i} className="flex items-start gap-3">
+                <div className={`w-12 h-12 ${item.bg} rounded-2xl flex items-center justify-center flex-shrink-0`}>
+                  <item.icon size={22} className={item.color} />
+                </div>
+                <div>
+                  <h4 className="font-heading font-bold text-sm text-gray-900 mb-1">
+                    {item.title}
+                  </h4>
+                  <p className="text-xs text-gray-600 leading-relaxed">
+                    {item.desc}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </section>
   );
