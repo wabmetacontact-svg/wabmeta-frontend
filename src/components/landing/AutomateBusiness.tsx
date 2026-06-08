@@ -33,16 +33,16 @@ const AutomateBusiness = () => {
       title: 'Capture',
       titleLine2: 'Leads',
       icon: Send,
-      bgColor: 'bg-orange-400',
-      hoverShadow: 'hover:shadow-orange-400/40',
+      bgColor: 'bg-orange-500',
+      hoverShadow: 'hover:shadow-orange-500/30',
     },
     {
       number: '02',
       title: 'Centralize',
       titleLine2: 'Data',
       icon: Database,
-      bgColor: 'bg-indigo-900',
-      hoverShadow: 'hover:shadow-indigo-900/40',
+      bgColor: 'bg-indigo-950',
+      hoverShadow: 'hover:shadow-indigo-950/30',
     },
     {
       number: '03',
@@ -50,23 +50,23 @@ const AutomateBusiness = () => {
       titleLine2: 'Automation',
       icon: Bot,
       bgColor: 'bg-teal-500',
-      hoverShadow: 'hover:shadow-teal-500/40',
+      hoverShadow: 'hover:shadow-teal-500/30',
     },
     {
       number: '04',
       title: 'Convert &',
       titleLine2: 'Close',
       icon: Handshake,
-      bgColor: 'bg-indigo-900',
-      hoverShadow: 'hover:shadow-indigo-900/40',
+      bgColor: 'bg-indigo-950',
+      hoverShadow: 'hover:shadow-indigo-950/30',
     },
     {
       number: '05',
       title: 'Bulk',
       titleLine2: 'Campaigns',
       icon: Send,
-      bgColor: 'bg-indigo-900',
-      hoverShadow: 'hover:shadow-indigo-900/40',
+      bgColor: 'bg-indigo-950',
+      hoverShadow: 'hover:shadow-indigo-950/30',
     },
     {
       number: '06',
@@ -74,15 +74,15 @@ const AutomateBusiness = () => {
       titleLine2: 'des & dev',
       icon: Code2,
       bgColor: 'bg-pink-500',
-      hoverShadow: 'hover:shadow-pink-500/40',
+      hoverShadow: 'hover:shadow-pink-500/30',
     },
     {
       number: '07',
       title: 'SEO',
       titleLine2: 'Optimization',
       icon: TrendingUp,
-      bgColor: 'bg-orange-400',
-      hoverShadow: 'hover:shadow-orange-400/40',
+      bgColor: 'bg-orange-500',
+      hoverShadow: 'hover:shadow-orange-500/30',
     },
     {
       number: '08',
@@ -90,52 +90,27 @@ const AutomateBusiness = () => {
       titleLine2: 'Marketing',
       icon: Megaphone,
       bgColor: 'bg-teal-500',
-      hoverShadow: 'hover:shadow-teal-500/40',
+      hoverShadow: 'hover:shadow-teal-500/30',
     },
   ];
 
   return (
     <section ref={sectionRef} className="relative py-20 lg:py-28 bg-slate-900 overflow-hidden">
       
-      {/* Inject custom styling and responsive variables directly */}
+      {/* Custom Keyframes for staggered entry animation */}
       <style dangerouslySetInnerHTML={{ __html: `
-        .orbit-container {
-          --radius: 110px;
-          --b-size: 80px;
-        }
-        @media (min-width: 768px) {
-          .orbit-container {
-            --radius: 220px;
-            --b-size: 144px;
-          }
-        }
-        
-        @keyframes orbit-entry {
-          0% {
+        @keyframes fadeInUp {
+          from {
             opacity: 0;
-            transform: translate(-50%, -50%) scale(0.2);
+            transform: translateY(24px);
           }
-          100% {
+          to {
             opacity: 1;
-            transform: translate(calc(-50% + var(--tx)), calc(-50% + var(--ty))) scale(1);
+            transform: translateY(0);
           }
         }
-        
-        .animate-orbit-entry {
-          animation: orbit-entry 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-        }
-        
-        @keyframes float-animation {
-          0%, 100% {
-            transform: translateY(0px);
-          }
-          50% {
-            transform: translateY(-8px);
-          }
-        }
-        
-        .animate-float {
-          animation: float-animation 6s ease-in-out infinite;
+        .animate-fade-in-up {
+          animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
       `}} />
 
@@ -156,7 +131,7 @@ const AutomateBusiness = () => {
 
       <div className="max-w-7xl mx-auto px-4 md:px-6 relative z-10">
         
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-center mb-16">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center mb-16">
           
           {/* ═══════ LEFT: Content (5 cols) ═══════ */}
           <div className="lg:col-span-5 space-y-6 relative">
@@ -237,59 +212,21 @@ const AutomateBusiness = () => {
             </div>
           </div>
 
-          {/* ═══════ RIGHT: Circular Orbit Layout (7 cols) ═══════ */}
-          <div className="lg:col-span-7 flex items-center justify-center relative min-h-[340px] md:min-h-[640px]">
-            
-            {/* The circular orbit container */}
-            <div className="relative w-[300px] h-[300px] md:w-[580px] md:h-[580px] flex items-center justify-center orbit-container">
-              
-              {/* Central Hub */}
-              <div 
-                className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20 w-24 h-24 md:w-36 md:h-36 rounded-full bg-slate-800 border border-slate-700/50 shadow-2xl flex flex-col items-center justify-center p-2 text-center"
-                style={{
-                  animation: isVisible ? 'orbit-entry 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards' : 'none',
-                  '--tx': '0px',
-                  '--ty': '0px',
-                } as React.CSSProperties}
-              >
-                <div className="absolute inset-0 rounded-full bg-blue-500/10 animate-ping opacity-60" style={{ animationDuration: '3s' }} />
-                <span className="text-white text-xs md:text-lg font-black font-heading tracking-wider uppercase bg-gradient-to-r from-blue-400 to-indigo-300 bg-clip-text text-transparent">WabMeta</span>
-                <span className="text-[8px] md:text-[11px] text-blue-400 font-extrabold uppercase tracking-widest mt-0.5 md:mt-1">Hub</span>
-              </div>
-
-              {/* Orbiting Service Bubbles */}
-              {services.map((service, i) => {
-                const angle = (i * 45 * Math.PI) / 180;
-                const cosVal = Math.cos(angle);
-                const sinVal = Math.sin(angle);
-                return (
-                  <div
-                    key={i}
-                    style={{
-                      position: 'absolute',
-                      left: '50%',
-                      top: '50%',
-                      width: 'var(--b-size)',
-                      height: 'var(--b-size)',
-                      '--tx': `calc(${cosVal.toFixed(4)} * var(--radius))`,
-                      '--ty': `calc(${sinVal.toFixed(4)} * var(--radius))`,
-                      animationDelay: `${i * 120}ms`,
-                    } as React.CSSProperties}
-                    className={`absolute pointer-events-auto ${isVisible ? 'animate-orbit-entry' : 'opacity-0'}`}
-                  >
-                    {/* Floating Inner Wrapper */}
-                    <div 
-                      className="w-full h-full animate-float"
-                      style={{
-                        animationDelay: `${i * 0.4}s`,
-                      }}
-                    >
-                      <BubbleCard service={service} />
-                    </div>
-                  </div>
-                );
-              })}
-
+          {/* ═══════ RIGHT: Grid of Cards (7 cols) ═══════ */}
+          <div className="lg:col-span-7">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              {services.map((service, i) => (
+                <div
+                  key={i}
+                  style={{
+                    animationDelay: `${i * 80}ms`,
+                    opacity: isVisible ? 1 : 0,
+                  } as React.CSSProperties}
+                  className={`${isVisible ? 'animate-fade-in-up' : 'opacity-0'} relative`}
+                >
+                  <ServiceCard service={service} />
+                </div>
+              ))}
             </div>
           </div>
         </div>
@@ -332,37 +269,36 @@ const AutomateBusiness = () => {
 };
 
 // ═══════════════════════════════════════════════════
-// Bubble Card Component
+// Service Card Component
 // ═══════════════════════════════════════════════════
-const BubbleCard = ({ service }: { service: any }) => {
+const ServiceCard = ({ service }: { service: any }) => {
   return (
-    <div className={`relative w-full h-full rounded-full flex flex-col items-center justify-center text-center p-2 cursor-pointer transition-all duration-300 hover:scale-110 shadow-lg hover:shadow-2xl ${service.bgColor} ${service.hoverShadow} group overflow-hidden`}>
+    <div className={`relative rounded-2xl p-5 border border-white/5 hover:border-white/15 hover:shadow-2xl hover:shadow-indigo-500/10 hover:-translate-y-1 transition-all duration-300 cursor-pointer overflow-hidden ${service.bgColor} ${service.hoverShadow} group flex flex-col justify-between min-h-[140px] md:min-h-[160px]`}>
       
-      {/* Number badge */}
-      <div className="absolute -top-0.5 -right-0.5 w-6 h-6 md:w-8 md:h-8 bg-blue-500 rounded-full flex items-center justify-center border border-slate-900 md:border-4 shadow-md">
-        <span className="text-white text-[8px] md:text-[11px] font-extrabold">{service.number}</span>
+      {/* Subtle overlay gradient */}
+      <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent pointer-events-none" />
+
+      <div className="flex justify-between items-start mb-4">
+        {/* Icon wrapper */}
+        <div className="p-2 bg-white/10 rounded-xl text-white group-hover:scale-110 transition-transform">
+          <service.icon size={20} />
+        </div>
+        {/* Number badge */}
+        <span className="text-white/40 font-mono text-xs font-bold">
+          {service.number}
+        </span>
       </div>
 
-      {/* Content */}
-      <div className="flex flex-col items-center justify-center text-center px-1 md:px-2">
-        {/* Icon */}
-        <div className="mb-0.5 md:mb-1.5 group-hover:scale-110 transition-transform text-white">
-          <service.icon className="w-4 h-4 md:w-6 md:h-6" />
-        </div>
-        
-        {/* Title */}
-        <div className="text-white font-extrabold text-[9px] md:text-sm leading-tight max-w-[95%]">
+      <div>
+        <h3 className="font-heading font-bold text-white text-sm md:text-base leading-tight">
           {service.title}
-        </div>
+        </h3>
         {service.titleLine2 && (
-          <div className="text-white font-semibold text-[8px] md:text-xs leading-none mt-0.5 opacity-90">
+          <h3 className="font-heading font-bold text-white text-sm md:text-base leading-tight mt-0.5">
             {service.titleLine2}
-          </div>
+          </h3>
         )}
       </div>
-
-      {/* Subtle inner shadow effect */}
-      <div className="absolute inset-0 rounded-full bg-gradient-to-br from-white/10 to-transparent pointer-events-none" />
     </div>
   );
 };
