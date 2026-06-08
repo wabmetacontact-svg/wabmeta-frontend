@@ -332,11 +332,11 @@ const Hero = () => {
 
       </div>
 
-      {/* ═══════ TRUSTED BY BRANDS ═══════ */}
+      {/* ═══════ PLATFORM FEATURES MARQUEE ═══════ */}
       <div className="mt-16 bg-gradient-to-r from-green-600 via-teal-500 to-blue-600 py-6 overflow-hidden shadow-2xl border-y border-white/10 relative z-10">
         <div className="max-w-7xl mx-auto px-4 md:px-6 mb-4 text-center">
           <p className="text-white/80 text-xs font-bold uppercase tracking-[0.2em]">
-            Trusted by growing businesses worldwide
+            ALL-IN-ONE AUTOMATION & MARKETING SOLUTIONS
           </p>
         </div>
         
@@ -347,10 +347,10 @@ const Hero = () => {
 
           {/* Marquee Group 1 */}
           <div className="flex shrink-0 gap-16 items-center min-w-full animate-marquee whitespace-nowrap group-hover:[animation-play-state:paused] py-1">
-            {['CERA', 'boAt', 'AJIO', 'OYO', 'HDFC BANK', 'Levis', 'lenskart', 'TATA'].map((brand, idx) => (
-              <div key={`brand-1-${idx}`} className="flex items-center gap-16">
+            {['CAMPAIGNS', 'AUTOMATION', 'AI CHATBOTS', 'REPORTS & ANALYTICS', 'META ADS', 'CUSTOMER CRM', 'WHATSAPP BROADCASTS', 'SHARED TEAM INBOX'].map((feature, idx) => (
+              <div key={`feature-1-${idx}`} className="flex items-center gap-16">
                 <span className="text-white/90 hover:text-white hover:scale-105 transition-all duration-300 font-extrabold text-xl md:text-2xl tracking-widest cursor-default select-none">
-                  {brand}
+                  {feature}
                 </span>
                 <span className="text-white/30 text-xl font-light select-none">✦</span>
               </div>
@@ -359,10 +359,10 @@ const Hero = () => {
           
           {/* Marquee Group 2 (Duplicate for Seamless Loop) */}
           <div className="flex shrink-0 gap-16 items-center min-w-full animate-marquee whitespace-nowrap group-hover:[animation-play-state:paused] py-1" aria-hidden="true">
-            {['CERA', 'boAt', 'AJIO', 'OYO', 'HDFC BANK', 'Levis', 'lenskart', 'TATA'].map((brand, idx) => (
-              <div key={`brand-2-${idx}`} className="flex items-center gap-16">
+            {['CAMPAIGNS', 'AUTOMATION', 'AI CHATBOTS', 'REPORTS & ANALYTICS', 'META ADS', 'CUSTOMER CRM', 'WHATSAPP BROADCASTS', 'SHARED TEAM INBOX'].map((feature, idx) => (
+              <div key={`feature-2-${idx}`} className="flex items-center gap-16">
                 <span className="text-white/90 hover:text-white hover:scale-105 transition-all duration-300 font-extrabold text-xl md:text-2xl tracking-widest cursor-default select-none">
-                  {brand}
+                  {feature}
                 </span>
                 <span className="text-white/30 text-xl font-light select-none">✦</span>
               </div>
