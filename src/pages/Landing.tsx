@@ -5,8 +5,7 @@ import Features from '../components/landing/Features';
 import HowItWorks from '../components/landing/HowItWorks';
 import Pricing from '../components/landing/Pricing';
 import Team from '../components/landing/Team';
-import Testimonials from '../components/landing/Testimonials';
-import FAQ from '../components/landing/FAQ';
+import WorkShowcase from '../components/landing/WorkShowcase';
 import CTA from '../components/landing/CTA';
 import Footer from '../components/landing/Footer';
 
@@ -19,8 +18,7 @@ const Landing: React.FC = () => {
       <HowItWorks />
       <Pricing />
       <Team />
-      <Testimonials />
-      <FAQ />
+      <WorkShowcase />
       <CTA />
       <Footer />
     </div>
