@@ -125,15 +125,13 @@ export default function WhatsAppSettings() {
   );
   const [lastSyncTime, setLastSyncTime] = useState<Date | null>(null);
 
-  // ✅ ADD THESE LINES
   const { organization } = useAuth();
   const organizationId = organization?.id || '';
   const { isReady: sdkReady, isLoading: sdkLoading } = useFacebookSDK();
 
-  // 🔍 DEBUG - Remove after testing
-  console.log('🔍 Organization:', organization);
-  console.log('🔍 Organization ID:', organizationId);
-  console.log('🔍 SDK Ready:', sdkReady);
+  // ✅ Declare early so handleConnect can safely reference it
+  const connectedAccounts = accounts.filter((a) => a.status === 'CONNECTED');
+  const hasConnectedAccount = connectedAccounts.length > 0;
 
   // ────────────────────────────────────────────
   // Fetch accounts
@@ -328,14 +326,14 @@ export default function WhatsAppSettings() {
   };
 
   // ✅ Separate async function for backend call
+  // Uses /meta/connect - the correct endpoint for FB.login Embedded Signup flow
   const handleEmbeddedSignupCode = async (code: string) => {
     try {
-      console.log('📤 Sending code to backend...');
+      console.log('📤 Sending code to /meta/connect...');
 
-      const { data } = await api.post('/meta/callback', {
+      const { data } = await api.post('/meta/connect', {
         code,
         organizationId,
-        // No state - this is Embedded Signup
       });
 
       if (data?.success !== false) {
@@ -375,7 +373,8 @@ export default function WhatsAppSettings() {
   // ────────────────────────────────────────────
   const handleSetDefault = async (accountId: string) => {
     try {
-      await api.post(`/meta/accounts/${accountId}/set-default`);
+      // ✅ Correct endpoint matching backend route
+      await api.post(`/meta/organizations/${organizationId}/accounts/${accountId}/default`);
       toast.success('Default account updated');
       fetchAccounts();
     } catch (error: any) {
@@ -395,8 +394,7 @@ export default function WhatsAppSettings() {
     );
   }
 
-  const connectedAccounts = accounts.filter((a) => a.status === 'CONNECTED');
-  const hasConnectedAccount = connectedAccounts.length > 0;
+  // ✅ connectedAccounts is already declared above (before handleConnect)
 
   // ────────────────────────────────────────────
   // RENDER
