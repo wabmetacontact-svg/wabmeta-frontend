@@ -34,7 +34,7 @@ const loadFacebookSDK = (): Promise<void> => {
         appId: appId,
         cookie: true,
         xfbml: true,
-        version: 'v22.0',
+        version: 'v23.0',
       });
       console.log('✅ Facebook SDK initialized with appId:', appId);
       resolve();

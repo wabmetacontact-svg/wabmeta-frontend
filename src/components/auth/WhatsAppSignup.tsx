@@ -31,7 +31,7 @@ const WhatsAppSignup = ({
         appId: import.meta.env.VITE_META_APP_ID || '881518987956566',
         autoLogAppEvents: true,
         xfbml: true,
-        version: 'v22.0',
+        version: 'v23.0',
       });
       console.log('✅ Facebook SDK initialized');
     };

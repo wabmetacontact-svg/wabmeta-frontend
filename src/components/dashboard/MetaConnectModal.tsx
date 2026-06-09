@@ -120,64 +120,39 @@ const MetaConnectModal: React.FC<MetaConnectModalProps> = ({
 
           if (response.authResponse) {
             const code = response.authResponse.code;
-            const accessToken = response.authResponse.accessToken;
-
-            console.log('📥 Auth response received:', {
-              hasCode: !!code,
-              hasToken: !!accessToken,
-              userID: response.authResponse.userID,
-            });
 
             if (code) {
-              // ✅ Code flow (preferred)
               handleCodeCallback(code);
-            } else if (accessToken) {
-              // ✅ Token flow (fallback)
-              handleTokenCallback(accessToken);
             } else {
               setLoading(false);
               setProgress('');
-              setError('Authentication failed - no code or token received.');
+              setError('No authorization code received. Please try again.');
               setShowInstructions(true);
             }
           } else {
-            // User cancelled or error
             setLoading(false);
             setProgress('');
             setShowInstructions(true);
-
-            console.log('❌ FB.login failed or cancelled:', response);
-
-            if (response.status === 'unknown' || response.status === 'not_authorized') {
-              setError(
-                '⚠️ Embedded Signup was not completed.\n\n' +
-                'You MUST complete ALL these steps:\n\n' +
-                '1️⃣ Login to Facebook\n' +
-                '2️⃣ Select or CREATE a Meta Business Account\n' +
-                '3️⃣ CREATE a NEW WhatsApp Business Account\n' +
-                '4️⃣ ADD your phone number\n' +
-                '5️⃣ VERIFY phone via SMS/Call\n' +
-                '6️⃣ Grant ALL permissions\n\n' +
-                '❗ Skipping ANY step will fail!'
-              );
-            } else {
-              setError('Login failed. Please try again.');
-            }
+            
+            setError(
+              '⚠️ Embedded Signup was not completed.\n\n' +
+              'Please complete ALL the wizard steps:\n' +
+              '• Create/Select Business Portfolio\n' +
+              '• Create WhatsApp Business Account\n' +
+              '• Add and VERIFY phone number\n' +
+              '• Click FINISH at the end'
+            );
           }
         },
         {
-          // ✅ CRITICAL: Embedded Signup Configuration
+          // ✅ CORRECT Embedded Signup Config (Meta v3)
           config_id: configId,
           response_type: 'code',
           override_default_response_type: true,
           extras: {
-            feature: 'whatsapp_embedded_signup',
+            setup: {},
+            featureType: '',
             sessionInfoVersion: '3',
-            ...(import.meta.env.VITE_META_SOLUTION_ID && {
-              setup: {
-                solutionID: import.meta.env.VITE_META_SOLUTION_ID,
-              },
-            }),
           },
         }
       );
@@ -197,7 +172,7 @@ const MetaConnectModal: React.FC<MetaConnectModalProps> = ({
 
       console.log('📤 Sending code to backend...');
 
-      const response = await metaApi.callback({
+      const response = await metaApi.connect({
         code,
         organizationId,
       });
