@@ -262,18 +262,11 @@ export default function WhatsAppSettings() {
       return;
     }
 
-    // ✅ STRONGER SDK check - check init flag too
     if (!sdkReady || !window.FB || !window.__FB_INITIALIZED__) {
       toast.error('Facebook SDK is still loading. Please wait a moment and try again.');
-      console.log('🔍 SDK Status:', {
-        sdkReady,
-        hasFB: !!window.FB,
-        isInitialized: !!window.__FB_INITIALIZED__,
-      });
       return;
     }
 
-    // Config ID check
     const configId = import.meta.env.VITE_META_CONFIG_ID;
     if (!configId) {
       toast.error('Meta configuration missing. Please contact support.');
@@ -287,20 +280,47 @@ export default function WhatsAppSettings() {
     }
 
     setConnecting(true);
+    console.log('🚀 Launching Embedded Signup:', { configId, organizationId });
 
-    console.log('🚀 Launching Embedded Signup with:', {
-      configId,
-      organizationId,
-      fbInitialized: window.__FB_INITIALIZED__,
-    });
+    // ✅ Capture WABA ID + Phone Number ID from Meta's message event
+    // Meta sends this via postMessage when wizard is completed
+    let sessionWabaId: string | null = null;
+    let sessionPhoneNumberId: string | null = null;
+
+    const messageHandler = (event: MessageEvent) => {
+      if (event.origin !== 'https://www.facebook.com' && event.origin !== 'https://web.facebook.com') return;
+      try {
+        const data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
+        if (data?.type === 'WA_EMBEDDED_SIGNUP') {
+          console.log('📨 WA_EMBEDDED_SIGNUP event:', data.event, data.data);
+          if (data.event === 'FINISH') {
+            sessionWabaId = data.data?.waba_id || null;
+            sessionPhoneNumberId = data.data?.phone_number_id || null;
+            console.log('✅ Session info captured:', { sessionWabaId, sessionPhoneNumberId });
+          } else if (data.event === 'CANCEL') {
+            console.warn('⚠️ User cancelled Embedded Signup at step:', data.data?.current_step);
+          } else if (data.event === 'ERROR') {
+            console.error('❌ Embedded Signup error:', data.data);
+          }
+        }
+      } catch (_) { /* non-JSON messages, ignore */ }
+    };
+
+    window.addEventListener('message', messageHandler);
 
     try {
       window.FB.login(
         function (response: any) {
+          window.removeEventListener('message', messageHandler);
           console.log('📥 FB.login response:', response);
+          console.log('📦 Session info at login callback:', { sessionWabaId, sessionPhoneNumberId });
 
           if (response.authResponse && response.authResponse.code) {
-            handleEmbeddedSignupCode(response.authResponse.code);
+            handleEmbeddedSignupCode(
+              response.authResponse.code,
+              sessionWabaId,
+              sessionPhoneNumberId
+            );
           } else {
             console.log('⚠️ User cancelled or did not complete wizard');
             toast.error('Setup was cancelled. Please complete all wizard steps.');
@@ -313,27 +333,37 @@ export default function WhatsAppSettings() {
           override_default_response_type: true,
           extras: {
             setup: {},
-            featureType: 'whatsapp_embedded_signup', // ✅ Correct value for WhatsApp Embedded Signup
-            sessionInfoVersion: '2',                 // ✅ v2 is standard; v3 had scope issues
+            featureType: 'whatsapp_embedded_signup',
+            sessionInfoVersion: '2',
           },
         }
       );
     } catch (err: any) {
+      window.removeEventListener('message', messageHandler);
       console.error('❌ FB.login error:', err);
       toast.error(`Failed to launch wizard: ${err.message}`);
       setConnecting(false);
     }
   };
 
-  // ✅ Separate async function for backend call
-  // Uses /meta/connect - the correct endpoint for FB.login Embedded Signup flow
-  const handleEmbeddedSignupCode = async (code: string) => {
+  // ✅ Send code + optional session info to /meta/connect
+  const handleEmbeddedSignupCode = async (
+    code: string,
+    wabaId?: string | null,
+    phoneNumberId?: string | null
+  ) => {
     try {
-      console.log('📤 Sending code to /meta/connect...');
+      console.log('📤 Sending to /meta/connect:', {
+        hasCode: !!code,
+        wabaId: wabaId || '(none — will be fetched from token)',
+        phoneNumberId: phoneNumberId || '(none — will be fetched from WABA)',
+      });
 
       const { data } = await api.post('/meta/connect', {
         code,
         organizationId,
+        wabaId: wabaId || undefined,
+        phoneNumberId: phoneNumberId || undefined,
       });
 
       if (data?.success !== false) {
