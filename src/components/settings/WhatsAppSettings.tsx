@@ -125,11 +125,15 @@ export default function WhatsAppSettings() {
   );
   const [lastSyncTime, setLastSyncTime] = useState<Date | null>(null);
 
+  // ✅ ADD THESE LINES
+  const { organization } = useAuth();
+  const organizationId = organization?.id || '';
   const { isReady: sdkReady, isLoading: sdkLoading } = useFacebookSDK();
 
-  // Organization ID nikalo (tumhare context se)
-  const { user } = useAuth();
-  const organizationId = user?.organizationId || '';
+  // 🔍 DEBUG - Remove after testing
+  console.log('🔍 Organization:', organization);
+  console.log('🔍 Organization ID:', organizationId);
+  console.log('🔍 SDK Ready:', sdkReady);
 
   // ────────────────────────────────────────────
   // Fetch accounts
