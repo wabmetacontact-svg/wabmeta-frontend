@@ -16,6 +16,8 @@ import {
 } from 'lucide-react';
 import api, { whatsapp } from '../../services/api';
 import toast from 'react-hot-toast';
+import { useFacebookSDK } from '../../hooks/useFacebookSDK';
+import { useAuth } from '../../context/AuthContext';
 
 // ============================================
 // TYPES
@@ -122,6 +124,12 @@ export default function WhatsAppSettings() {
     null
   );
   const [lastSyncTime, setLastSyncTime] = useState<Date | null>(null);
+
+  const { isReady: sdkReady, isLoading: sdkLoading } = useFacebookSDK();
+
+  // Organization ID nikalo (tumhare context se)
+  const { user } = useAuth();
+  const organizationId = user?.organizationId || '';
 
   // ────────────────────────────────────────────
   // Fetch accounts
@@ -243,72 +251,94 @@ export default function WhatsAppSettings() {
   }, [syncAllQuality]);
 
   // ────────────────────────────────────────────
-  // Connect handler
+  // Connect handler - EMBEDDED SIGNUP
   // ────────────────────────────────────────────
   const handleConnect = async () => {
-    // ✅ ADD: Already connected check
+    // Already connected check
     if (connectedAccounts.length > 0) {
       toast.error('Please disconnect the current account before connecting a new one.');
       return;
     }
 
+    // SDK check
+    if (!sdkReady || !window.FB) {
+      toast.error('Facebook SDK is still loading. Please wait a moment and try again.');
+      return;
+    }
+
+    // Config ID check
+    const configId = import.meta.env.VITE_META_CONFIG_ID;
+    if (!configId) {
+      toast.error('Meta configuration missing. Please contact support.');
+      console.error('❌ VITE_META_CONFIG_ID not set in .env');
+      return;
+    }
+
+    if (!organizationId) {
+      toast.error('Organization not found. Please refresh the page.');
+      return;
+    }
+
     setConnecting(true);
 
+    console.log('🚀 Launching Embedded Signup with:', {
+      configId,
+      organizationId,
+    });
+
     try {
-      const { data } = await api.get('/meta/oauth-url', {
-        params: { connectionType: 'CLOUD_API' },
-      });
+      // ✅ EMBEDDED SIGNUP - This opens the WhatsApp wizard
+      window.FB.login(
+        async (response: any) => {
+          console.log('📥 FB.login response:', response);
 
-      localStorage.setItem('wabmeta_connection_type', 'CLOUD_API');
+          if (response.authResponse && response.authResponse.code) {
+            const code = response.authResponse.code;
+            
+            try {
+              // Send code to backend
+              console.log('📤 Sending code to backend...');
+              
+              const { data } = await api.post('/meta/callback', {
+                code,
+                organizationId,
+                // No state - this is Embedded Signup
+              });
 
-      const popupWidth = 600;
-      const popupHeight = 700;
-      const left = window.screenX + (window.outerWidth - popupWidth) / 2;
-      const top = window.screenY + (window.outerHeight - popupHeight) / 2;
-      const popupFeatures = `width=${popupWidth},height=${popupHeight},left=${left},top=${top},scrollbars=yes,resizable=yes`;
-
-      const popup = window.open(
-        data.data.url,
-        'wabmeta_meta_connect',
-        popupFeatures
-      );
-
-      if (!popup || popup.closed) {
-        window.location.href = data.data.url;
-        return;
-      }
-
-      const handleMessage = (event: MessageEvent) => {
-        if (event.origin !== window.location.origin) return;
-
-        if (event.data?.type === 'META_CALLBACK_SUCCESS') {
-          window.removeEventListener('message', handleMessage);
-          popup.close();
-          setConnecting(false);
-          fetchAccounts().then(() => syncAllQuality(false));
-          toast.success('WhatsApp connected successfully!');
-        } else if (event.data?.type === 'META_CALLBACK_ERROR') {
-          window.removeEventListener('message', handleMessage);
-          popup.close();
-          setConnecting(false);
-          toast.error(event.data.error || 'Failed to connect');
+              if (data?.success !== false) {
+                toast.success('WhatsApp connected successfully! 🎉');
+                await fetchAccounts();
+                syncAllQuality(false);
+              } else {
+                throw new Error(data?.message || 'Connection failed');
+              }
+            } catch (err: any) {
+              console.error('❌ Backend error:', err);
+              const errorMsg = err.response?.data?.message || err.message || 'Connection failed';
+              toast.error(errorMsg);
+            } finally {
+              setConnecting(false);
+            }
+          } else {
+            console.log('⚠️ User cancelled or did not complete wizard');
+            toast.error('Setup was cancelled. Please complete all wizard steps.');
+            setConnecting(false);
+          }
+        },
+        {
+          config_id: configId,
+          response_type: 'code',
+          override_default_response_type: true,
+          extras: {
+            setup: {},
+            featureType: 'whatsapp_business_app_onboarding',
+            sessionInfoVersion: '3',
+          },
         }
-      };
-
-      window.addEventListener('message', handleMessage);
-
-      const pollPopup = setInterval(() => {
-        if (popup.closed) {
-          clearInterval(pollPopup);
-          window.removeEventListener('message', handleMessage);
-          setConnecting(false);
-          fetchAccounts().then(() => syncAllQuality(false));
-        }
-      }, 500);
-    } catch (error: any) {
-      toast.error(
-        error.response?.data?.message || 'Failed to start connection'
       );
+    } catch (err: any) {
+      console.error('❌ FB.login error:', err);
+      toast.error(`Failed to launch wizard: ${err.message}`);
       setConnecting(false);
     }
   };
@@ -616,17 +646,19 @@ export default function WhatsAppSettings() {
             </p>
             <button
               onClick={handleConnect}
-              disabled={connecting}
+              disabled={connecting || sdkLoading || !sdkReady}
               className="inline-flex items-center justify-center gap-2 px-6 py-3
                 bg-green-600 text-white rounded-xl hover:bg-green-700
                 disabled:opacity-50 font-semibold transition-colors"
             >
               {connecting ? (
                 <Loader2 className="w-5 h-5 animate-spin" />
+              ) : sdkLoading ? (
+                <Loader2 className="w-5 h-5 animate-spin" />
               ) : (
                 <Plus className="w-5 h-5" />
               )}
-              Connect with Meta
+              {connecting ? 'Connecting...' : sdkLoading ? 'Loading...' : 'Connect with Meta'}
             </button>
           </div>
         )}
