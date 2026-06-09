@@ -5,6 +5,7 @@ declare global {
   interface Window {
     FB: any;
     fbAsyncInit?: (() => void) | undefined;
+    __FB_INITIALIZED__?: boolean; // ✅ Track init status
   }
 }
 
@@ -14,9 +15,9 @@ const loadFacebookSDK = (): Promise<void> => {
   if (sdkLoadingPromise) return sdkLoadingPromise;
 
   sdkLoadingPromise = new Promise((resolve, reject) => {
-    // Already loaded?
-    if (window.FB) {
-      console.log('✅ Facebook SDK already loaded');
+    // ✅ Already initialized?
+    if (window.FB && window.__FB_INITIALIZED__) {
+      console.log('✅ Facebook SDK already initialized');
       resolve();
       return;
     }
@@ -28,16 +29,22 @@ const loadFacebookSDK = (): Promise<void> => {
       return;
     }
 
-    // Setup async init callback
+    // ✅ Setup async init callback BEFORE loading script
     window.fbAsyncInit = function () {
-      window.FB.init({
-        appId: appId,
-        cookie: true,
-        xfbml: true,
-        version: 'v23.0',
-      });
-      console.log('✅ Facebook SDK initialized with appId:', appId);
-      resolve();
+      try {
+        window.FB.init({
+          appId: appId,
+          cookie: true,
+          xfbml: true,
+          version: 'v23.0',
+        });
+        window.__FB_INITIALIZED__ = true; // ✅ Mark as initialized
+        console.log('✅ Facebook SDK initialized with appId:', appId);
+        resolve();
+      } catch (err: any) {
+        console.error('❌ FB.init failed:', err);
+        reject(err);
+      }
     };
 
     // Inject script if not already present
@@ -53,26 +60,35 @@ const loadFacebookSDK = (): Promise<void> => {
         reject(new Error('Failed to load Facebook SDK'));
       };
       document.body.appendChild(script);
+    } else if (window.FB && !window.__FB_INITIALIZED__) {
+      // Script loaded but init didn't run - trigger manually
+      window.fbAsyncInit();
     }
 
-    // Timeout after 10 seconds
+    // Timeout after 15 seconds
     setTimeout(() => {
-      if (!window.FB) {
-        reject(new Error('Facebook SDK load timeout'));
+      if (!window.__FB_INITIALIZED__) {
+        reject(new Error('Facebook SDK initialization timeout'));
       }
-    }, 10000);
+    }, 15000);
   });
 
   return sdkLoadingPromise;
 };
 
 export const useFacebookSDK = () => {
-  const [isReady, setIsReady] = useState(!!window.FB);
-  const [isLoading, setIsLoading] = useState(!window.FB);
+  // ✅ Check BOTH FB object AND initialization flag
+  const [isReady, setIsReady] = useState(
+    !!(window.FB && window.__FB_INITIALIZED__)
+  );
+  const [isLoading, setIsLoading] = useState(
+    !(window.FB && window.__FB_INITIALIZED__)
+  );
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (window.FB) {
+    // Already initialized
+    if (window.FB && window.__FB_INITIALIZED__) {
       setIsReady(true);
       setIsLoading(false);
       return;
@@ -83,11 +99,13 @@ export const useFacebookSDK = () => {
       .then(() => {
         setIsReady(true);
         setIsLoading(false);
+        setError(null);
       })
       .catch((err) => {
         console.error('SDK load error:', err);
         setError(err.message);
         setIsLoading(false);
+        setIsReady(false);
       });
   }, []);
 

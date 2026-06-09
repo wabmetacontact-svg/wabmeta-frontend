@@ -264,9 +264,14 @@ export default function WhatsAppSettings() {
       return;
     }
 
-    // SDK check
-    if (!sdkReady || !window.FB) {
+    // ✅ STRONGER SDK check - check init flag too
+    if (!sdkReady || !window.FB || !window.__FB_INITIALIZED__) {
       toast.error('Facebook SDK is still loading. Please wait a moment and try again.');
+      console.log('🔍 SDK Status:', {
+        sdkReady,
+        hasFB: !!window.FB,
+        isInitialized: !!window.__FB_INITIALIZED__,
+      });
       return;
     }
 
@@ -288,16 +293,15 @@ export default function WhatsAppSettings() {
     console.log('🚀 Launching Embedded Signup with:', {
       configId,
       organizationId,
+      fbInitialized: window.__FB_INITIALIZED__,
     });
 
     try {
-      // ✅ FB.login expects a SYNC callback (NOT async)
       window.FB.login(
-        function (response: any) {  // ✅ Plain function, NOT async
+        function (response: any) {
           console.log('📥 FB.login response:', response);
 
           if (response.authResponse && response.authResponse.code) {
-            // Handle code in separate async function
             handleEmbeddedSignupCode(response.authResponse.code);
           } else {
             console.log('⚠️ User cancelled or did not complete wizard');
