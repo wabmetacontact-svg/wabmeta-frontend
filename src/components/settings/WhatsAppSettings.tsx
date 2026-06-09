@@ -313,8 +313,8 @@ export default function WhatsAppSettings() {
           override_default_response_type: true,
           extras: {
             setup: {},
-            featureType: 'whatsapp_business_app_onboarding',
-            sessionInfoVersion: '3',
+            featureType: 'whatsapp_embedded_signup', // ✅ Correct value for WhatsApp Embedded Signup
+            sessionInfoVersion: '2',                 // ✅ v2 is standard; v3 had scope issues
           },
         }
       );
