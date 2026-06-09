@@ -6,7 +6,7 @@ import MetaAdsService from '../components/landing/MetaAdsService';
 import HowItWorks from '../components/landing/HowItWorks';
 import Pricing from '../components/landing/Pricing';
 import Team from '../components/landing/Team';
-import FAQ from '../components/landing/FAQ';
+import WorkShowcase from '../components/landing/WorkShowcase';
 import Footer from '../components/landing/Footer';
 
 const Landing = () => {
@@ -20,7 +20,7 @@ const Landing = () => {
       <HowItWorks />
       <Pricing />
       <Team />
-      <FAQ />
+      <WorkShowcase />
       <Footer />
     </div>
   );
