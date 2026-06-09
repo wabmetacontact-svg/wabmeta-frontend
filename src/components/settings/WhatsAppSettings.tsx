@@ -257,7 +257,7 @@ export default function WhatsAppSettings() {
   // ────────────────────────────────────────────
   // Connect handler - EMBEDDED SIGNUP
   // ────────────────────────────────────────────
-  const handleConnect = async () => {
+  const handleConnect = () => {
     // Already connected check
     if (connectedAccounts.length > 0) {
       toast.error('Please disconnect the current account before connecting a new one.');
@@ -291,38 +291,14 @@ export default function WhatsAppSettings() {
     });
 
     try {
-      // ✅ EMBEDDED SIGNUP - This opens the WhatsApp wizard
+      // ✅ FB.login expects a SYNC callback (NOT async)
       window.FB.login(
-        async (response: any) => {
+        function (response: any) {  // ✅ Plain function, NOT async
           console.log('📥 FB.login response:', response);
 
           if (response.authResponse && response.authResponse.code) {
-            const code = response.authResponse.code;
-            
-            try {
-              // Send code to backend
-              console.log('📤 Sending code to backend...');
-              
-              const { data } = await api.post('/meta/callback', {
-                code,
-                organizationId,
-                // No state - this is Embedded Signup
-              });
-
-              if (data?.success !== false) {
-                toast.success('WhatsApp connected successfully! 🎉');
-                await fetchAccounts();
-                syncAllQuality(false);
-              } else {
-                throw new Error(data?.message || 'Connection failed');
-              }
-            } catch (err: any) {
-              console.error('❌ Backend error:', err);
-              const errorMsg = err.response?.data?.message || err.message || 'Connection failed';
-              toast.error(errorMsg);
-            } finally {
-              setConnecting(false);
-            }
+            // Handle code in separate async function
+            handleEmbeddedSignupCode(response.authResponse.code);
           } else {
             console.log('⚠️ User cancelled or did not complete wizard');
             toast.error('Setup was cancelled. Please complete all wizard steps.');
@@ -343,6 +319,33 @@ export default function WhatsAppSettings() {
     } catch (err: any) {
       console.error('❌ FB.login error:', err);
       toast.error(`Failed to launch wizard: ${err.message}`);
+      setConnecting(false);
+    }
+  };
+
+  // ✅ Separate async function for backend call
+  const handleEmbeddedSignupCode = async (code: string) => {
+    try {
+      console.log('📤 Sending code to backend...');
+
+      const { data } = await api.post('/meta/callback', {
+        code,
+        organizationId,
+        // No state - this is Embedded Signup
+      });
+
+      if (data?.success !== false) {
+        toast.success('WhatsApp connected successfully! 🎉');
+        await fetchAccounts();
+        syncAllQuality(false);
+      } else {
+        throw new Error(data?.message || 'Connection failed');
+      }
+    } catch (err: any) {
+      console.error('❌ Backend error:', err);
+      const errorMsg = err.response?.data?.message || err.message || 'Connection failed';
+      toast.error(errorMsg);
+    } finally {
       setConnecting(false);
     }
   };
