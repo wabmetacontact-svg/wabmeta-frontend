@@ -5,79 +5,11 @@ declare global {
   interface Window {
     FB: any;
     fbAsyncInit?: (() => void) | undefined;
-    __FB_INITIALIZED__?: boolean; // ✅ Track init status
+    __FB_INITIALIZED__?: boolean;
   }
 }
 
-let sdkLoadingPromise: Promise<void> | null = null;
-
-const loadFacebookSDK = (): Promise<void> => {
-  if (sdkLoadingPromise) return sdkLoadingPromise;
-
-  sdkLoadingPromise = new Promise((resolve, reject) => {
-    // ✅ Already initialized?
-    if (window.FB && window.__FB_INITIALIZED__) {
-      console.log('✅ Facebook SDK already initialized');
-      resolve();
-      return;
-    }
-
-    const appId = import.meta.env.VITE_META_APP_ID;
-    if (!appId) {
-      console.error('❌ VITE_META_APP_ID not set in .env');
-      reject(new Error('Facebook App ID not configured'));
-      return;
-    }
-
-    // ✅ Setup async init callback BEFORE loading script
-    window.fbAsyncInit = function () {
-      try {
-        window.FB.init({
-          appId: appId,
-          cookie: true,
-          xfbml: true,
-          version: 'v23.0',
-        });
-        window.__FB_INITIALIZED__ = true; // ✅ Mark as initialized
-        console.log('✅ Facebook SDK initialized with appId:', appId);
-        resolve();
-      } catch (err: any) {
-        console.error('❌ FB.init failed:', err);
-        reject(err);
-      }
-    };
-
-    // Inject script if not already present
-    if (!document.getElementById('facebook-jssdk')) {
-      const script = document.createElement('script');
-      script.id = 'facebook-jssdk';
-      script.src = 'https://connect.facebook.net/en_US/sdk.js';
-      script.async = true;
-      script.defer = true;
-      script.crossOrigin = 'anonymous';
-      script.onerror = () => {
-        console.error('❌ Failed to load Facebook SDK');
-        reject(new Error('Failed to load Facebook SDK'));
-      };
-      document.body.appendChild(script);
-    } else if (window.FB && !window.__FB_INITIALIZED__) {
-      // Script loaded but init didn't run - trigger manually
-      window.fbAsyncInit();
-    }
-
-    // Timeout after 15 seconds
-    setTimeout(() => {
-      if (!window.__FB_INITIALIZED__) {
-        reject(new Error('Facebook SDK initialization timeout'));
-      }
-    }, 15000);
-  });
-
-  return sdkLoadingPromise;
-};
-
 export const useFacebookSDK = () => {
-  // ✅ Check BOTH FB object AND initialization flag
   const [isReady, setIsReady] = useState(
     !!(window.FB && window.__FB_INITIALIZED__)
   );
@@ -87,26 +19,49 @@ export const useFacebookSDK = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Already initialized
+    // ✅ Already initialized
     if (window.FB && window.__FB_INITIALIZED__) {
+      console.log('✅ SDK already ready');
       setIsReady(true);
       setIsLoading(false);
       return;
     }
 
-    setIsLoading(true);
-    loadFacebookSDK()
-      .then(() => {
+    // ✅ Listen for SDK ready event from HTML
+    const handleSDKReady = () => {
+      console.log('✅ Received fb-sdk-ready event');
+      setIsReady(true);
+      setIsLoading(false);
+      setError(null);
+    };
+
+    window.addEventListener('fb-sdk-ready', handleSDKReady);
+
+    // ✅ Polling fallback (check every 200ms)
+    const pollInterval = setInterval(() => {
+      if (window.FB && window.__FB_INITIALIZED__) {
+        console.log('✅ SDK detected via polling');
         setIsReady(true);
         setIsLoading(false);
-        setError(null);
-      })
-      .catch((err) => {
-        console.error('SDK load error:', err);
-        setError(err.message);
+        clearInterval(pollInterval);
+      }
+    }, 200);
+
+    // ✅ Timeout after 20 seconds
+    const timeout = setTimeout(() => {
+      clearInterval(pollInterval);
+      if (!window.__FB_INITIALIZED__) {
+        console.error('❌ SDK initialization timeout');
+        setError('Facebook SDK failed to load. Please refresh the page.');
         setIsLoading(false);
-        setIsReady(false);
-      });
+      }
+    }, 20000);
+
+    return () => {
+      window.removeEventListener('fb-sdk-ready', handleSDKReady);
+      clearInterval(pollInterval);
+      clearTimeout(timeout);
+    };
   }, []);
 
   return {

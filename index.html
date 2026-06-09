@@ -10,20 +10,36 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>WabMeta - WhatsApp Marketing & Automation</title>
     <meta name="description" content="Powerful WhatsApp Marketing and Automation Platform" />
+
+    <!-- ✅ Facebook SDK - LOAD EARLY -->
+    <script>
+      window.fbAsyncInit = function() {
+        FB.init({
+          appId: '1434968781548162',
+          cookie: true,
+          xfbml: true,
+          version: 'v23.0'
+        });
+        window.__FB_INITIALIZED__ = true;
+        console.log('✅ Facebook SDK initialized from HTML');
+        
+        // Dispatch event so React knows SDK is ready
+        window.dispatchEvent(new Event('fb-sdk-ready'));
+      };
+
+      (function(d, s, id) {
+        var js, fjs = d.getElementsByTagName(s)[0];
+        if (d.getElementById(id)) return;
+        js = d.createElement(s); js.id = id;
+        js.src = "https://connect.facebook.net/en_US/sdk.js";
+        fjs.parentNode.insertBefore(js, fjs);
+      }(document, 'script', 'facebook-jssdk'));
+    </script>
+    <!-- ✅ End Facebook SDK -->
+  </head>
   <body>
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
-    <script>
-      window.fbAsyncInit = function() {
-        FB.init({
-          appId      : 'YOUR_META_APP_ID',
-          cookie     : true,
-          xfbml      : true,
-          version    : 'v19.0'
-        });
-      };
-    </script>
-    <script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js"></script>
   </body>
 </html>
