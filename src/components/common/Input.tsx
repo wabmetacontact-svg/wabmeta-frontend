@@ -18,9 +18,9 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
     return (
       <div className="w-full">
         {label && (
-          <label className="mb-1.5 block text-sm font-medium text-secondary-700">
+          <label className="mb-1.5 block text-sm font-medium text-gray-700">
             {label}
-            {props.required && <span className="ml-1 text-error">*</span>}
+            {props.required && <span className="ml-1 text-red-500">*</span>}
           </label>
         )}
 
@@ -28,7 +28,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
           {icon && (
             <div
               className={`absolute left-3.5 top-1/2 -translate-y-1/2 z-10 transition-colors duration-150
-                ${error ? 'text-error' : 'text-secondary-400'}`}
+                ${error ? 'text-red-500' : 'text-gray-400'}`}
             >
               {icon}
             </div>
@@ -38,15 +38,15 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
             ref={ref}
             type={inputType}
             className={`
-              w-full rounded-xl bg-white text-secondary-900 placeholder:text-secondary-400
+              w-full rounded-xl bg-white text-gray-900 placeholder:text-gray-400
               border outline-none transition-colors duration-150
               ${icon ? 'pl-11' : 'pl-3.5'}
               ${isPassword ? 'pr-11' : 'pr-3.5'}
               h-11 text-sm
-              disabled:bg-secondary-50 disabled:text-secondary-400 disabled:cursor-not-allowed
+              disabled:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed
               ${error
-                ? 'border-error focus:border-error focus:ring-2 focus:ring-error/20'
-                : 'border-secondary-200 hover:border-secondary-300 focus:border-primary-600 focus:ring-2 focus:ring-primary-600/15'
+                ? 'border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-500/20'
+                : 'border-gray-200 hover:border-gray-300 focus:border-green-600 focus:ring-2 focus:ring-green-600/15'
               }
               ${className}
             `}
@@ -59,7 +59,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
               type="button"
               onClick={() => setShowPassword(!showPassword)}
               className="absolute right-3 top-1/2 -translate-y-1/2 z-10 rounded-lg p-1
-                text-secondary-400 hover:text-secondary-700 hover:bg-secondary-100 transition-colors"
+                text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
               tabIndex={-1}
               aria-label={showPassword ? 'Hide password' : 'Show password'}
             >
@@ -69,14 +69,14 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
         </div>
 
         {error && (
-          <p className="mt-1.5 flex items-center gap-1.5 text-sm text-error">
-            <span className="h-1 w-1 rounded-full bg-error" />
+          <p className="mt-1.5 flex items-center gap-1.5 text-sm text-red-500">
+            <span className="h-1 w-1 rounded-full bg-red-500" />
             {error}
           </p>
         )}
 
         {helperText && !error && (
-          <p className="mt-1.5 text-sm text-secondary-500">{helperText}</p>
+          <p className="mt-1.5 text-sm text-gray-500">{helperText}</p>
         )}
       </div>
     );

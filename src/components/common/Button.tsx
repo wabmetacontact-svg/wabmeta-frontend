@@ -29,7 +29,7 @@ const Button: React.FC<ButtonProps> = ({
     'transition-all duration-200',
     'select-none',
     'focus:outline-none',
-    'focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2',
+    'focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-2',
     'disabled:opacity-50 disabled:cursor-not-allowed',
     'disabled:hover:translate-y-0 disabled:hover:shadow-none',
     fullWidth ? 'w-full' : '',
@@ -44,8 +44,8 @@ const Button: React.FC<ButtonProps> = ({
 
   const variants = {
     primary: [
-      'bg-primary-500 text-white',
-      'hover:bg-primary-600',
+      'bg-green-500 text-white',
+      'hover:bg-green-600',
       'hover:-translate-y-0.5',
       'hover:shadow-md active:translate-y-0',
       'shadow-sm',

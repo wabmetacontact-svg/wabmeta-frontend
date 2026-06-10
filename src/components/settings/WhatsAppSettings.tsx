@@ -434,7 +434,7 @@ export default function WhatsAppSettings() {
       {/* ─── Header with Sync Button ──────────────────────────────────── */}
       <div className="flex items-start justify-between">
         <div>
-          <h2 className="text-xl font-bold text-slate-900 dark:text-white">
+          <h2 className="text-xl font-bold text-gray-900">
             WhatsApp Connection
           </h2>
           <p className="text-gray-500 mt-1">

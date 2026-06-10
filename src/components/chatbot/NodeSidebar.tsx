@@ -67,8 +67,8 @@ const NodeSidebar: React.FC = () => {
   };
 
   return (
-    <div className="w-52 bg-[#0a0e27] border-r border-white/[0.1] p-3 flex flex-col">
-      <h3 className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-3 px-1">
+    <div className="w-52 bg-white border-r border-gray-200 p-3 flex flex-col">
+      <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 px-1">
         Nodes — Drag to Add
       </h3>
       <div className="space-y-1.5 flex-1 overflow-y-auto">
@@ -77,23 +77,23 @@ const NodeSidebar: React.FC = () => {
             key={type}
             draggable
             onDragStart={(e) => onDragStart(e, type)}
-            className="flex items-center gap-2.5 p-2.5 bg-[#050816] dark:bg-gray-700/60 rounded-lg cursor-move hover:bg-[#0a0e27]/[0.04] dark:hover:bg-gray-600/80 transition-all hover:shadow-sm group"
+            className="flex items-center gap-2.5 p-2.5 bg-gray-50 rounded-lg cursor-move hover:bg-gray-100 hover:border-emerald-300 border border-transparent transition-all hover:shadow-sm group"
             title={`Drag to add: ${label}`}
           >
             <div className={`w-7 h-7 flex-shrink-0 ${color} rounded-md flex items-center justify-center shadow-sm`}>
               <Icon className="w-3.5 h-3.5 text-white" />
             </div>
             <div className="min-w-0">
-              <p className="font-medium text-gray-300 dark:text-gray-200 text-xs leading-tight">{label}</p>
-              <p className="text-[10px] text-gray-400 dark:text-gray-500 truncate">{desc}</p>
+              <p className="font-medium text-gray-800 text-xs leading-tight">{label}</p>
+              <p className="text-[10px] text-gray-500 truncate">{desc}</p>
             </div>
           </div>
         ))}
       </div>
 
       {/* Tip */}
-      <div className="mt-3 p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-        <p className="text-[10px] text-blue-500 dark:text-blue-400 text-center">
+      <div className="mt-3 p-2 bg-blue-50 border border-blue-100 rounded-lg">
+        <p className="text-[10px] text-blue-600 text-center">
           🖱️ Drag to canvas, then connect nodes
         </p>
       </div>

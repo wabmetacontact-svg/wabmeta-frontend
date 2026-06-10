@@ -3,19 +3,15 @@ import logo from '../../assets/logo.png';
 
 const LoadingScreen: React.FC = () => {
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-[#050816]">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-white">
       <div className="flex flex-col items-center">
-
-        {/* Logo with subtle pulse */}
         <img
           src={logo}
           alt="WabMeta"
           className="w-16 h-16 object-contain mb-8 animate-pulse"
           style={{ animationDuration: '1.8s' }}
         />
-
-        {/* Thin loading bar */}
-        <div className="w-32 h-[2px] bg-white/[0.06] rounded-full overflow-hidden">
+        <div className="w-32 h-[2px] bg-gray-200 rounded-full overflow-hidden">
           <div className="h-full bg-green-500 rounded-full animate-loading-bar" />
         </div>
       </div>
