@@ -139,7 +139,7 @@ const TemplateCard: React.FC<TemplateCardProps> = ({
   };
 
   return (
-    <div className="relative overflow-hidden rounded-2xl bg-white/[0.02] border border-white/[0.05] p-5 hover:bg-emerald-500/[0.02] hover:shadow-[inset_0_0_0_1px_rgba(16,185,129,0.4)] transition-all duration-200 group">
+    <div className="relative overflow-hidden rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 hover:bg-emerald-500/[0.02] hover:border-emerald-500 dark:hover:border-emerald-500 transition-all duration-200 group shadow-sm">
       {/* Header */}
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center space-x-3">
@@ -147,10 +147,10 @@ const TemplateCard: React.FC<TemplateCardProps> = ({
             <MessageSquare className="w-6 h-6 text-emerald-500" />
           </div>
           <div>
-            <h3 className="font-semibold text-white group-hover:text-emerald-500 transition-colors">
+            <h3 className="font-semibold text-slate-850 dark:text-white group-hover:text-emerald-500 transition-colors">
               {template.name}
             </h3>
-            <p className="text-sm text-gray-400">{template.language}</p>
+            <p className="text-sm text-slate-400 dark:text-slate-500">{template.language}</p>
           </div>
         </div>
 
@@ -169,20 +169,20 @@ const TemplateCard: React.FC<TemplateCardProps> = ({
                 className="fixed inset-0 z-10"
                 onClick={() => setShowMenu(false)}
               ></div>
-              <div className="absolute right-0 top-full mt-1 w-48 bg-[#0a0e27] rounded-xl shadow-xl border border-white/[0.1] py-1 z-20 animate-fade-in">
+              <div className="absolute right-0 top-full mt-1 w-48 bg-white dark:bg-slate-900 rounded-xl shadow-xl border border-slate-200 dark:border-slate-800 py-1 z-20 animate-fade-in">
                 <button
                   onClick={() => {
                     onPreview(template);
                     setShowMenu(false);
                   }}
-                  className="w-full flex items-center space-x-2 px-4 py-2 text-gray-300 hover:bg-white/[0.04]"
+                  className="w-full flex items-center space-x-2 px-4 py-2 text-slate-700 dark:text-slate-350 hover:bg-slate-50 dark:hover:bg-white/[0.04] text-left"
                 >
                   <Eye className="w-4 h-4" />
                   <span className="text-sm">Preview</span>
                 </button>
                 <Link
                   to={`/dashboard/templates/edit/${template.id}`}
-                  className="w-full flex items-center space-x-2 px-4 py-2 text-gray-300 hover:bg-white/[0.04]"
+                  className="w-full flex items-center space-x-2 px-4 py-2 text-slate-700 dark:text-slate-350 hover:bg-slate-50 dark:hover:bg-white/[0.04] text-left"
                 >
                   <Edit2 className="w-4 h-4" />
                   <span className="text-sm">Edit</span>
@@ -192,7 +192,7 @@ const TemplateCard: React.FC<TemplateCardProps> = ({
                     onDuplicate(template);
                     setShowMenu(false);
                   }}
-                  className="w-full flex items-center space-x-2 px-4 py-2 text-gray-300 hover:bg-white/[0.04]"
+                  className="w-full flex items-center space-x-2 px-4 py-2 text-slate-700 dark:text-slate-350 hover:bg-slate-50 dark:hover:bg-white/[0.04] text-left"
                 >
                   <Copy className="w-4 h-4" />
                   <span className="text-sm">Duplicate</span>
@@ -200,19 +200,19 @@ const TemplateCard: React.FC<TemplateCardProps> = ({
                 {template.status === 'approved' && (
                   <Link
                     to={`/dashboard/campaigns/new?template=${template.id}`}
-                    className="w-full flex items-center space-x-2 px-4 py-2 text-emerald-500 hover:bg-emerald-500/10"
+                    className="w-full flex items-center space-x-2 px-4 py-2 text-emerald-500 hover:bg-emerald-500/10 text-left"
                   >
                     <Send className="w-4 h-4" />
                     <span className="text-sm">Use in Campaign</span>
                   </Link>
                 )}
-                <hr className="my-1 border-white/[0.1]" />
+                <hr className="my-1 border-slate-100 dark:border-slate-800" />
                 <button
                   onClick={() => {
                     onDelete(template.id);
                     setShowMenu(false);
                   }}
-                  className="w-full flex items-center space-x-2 px-4 py-2 text-red-500 hover:bg-red-500/10"
+                  className="w-full flex items-center space-x-2 px-4 py-2 text-red-500 hover:bg-red-500/10 text-left"
                 >
                   <Trash2 className="w-4 h-4" />
                   <span className="text-sm">Delete</span>
@@ -233,7 +233,7 @@ const TemplateCard: React.FC<TemplateCardProps> = ({
           {categoryConfig.label}
         </span>
         {template.header.type !== 'none' && (
-          <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600 flex items-center space-x-1">
+          <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 flex items-center space-x-1">
             <HeaderIcon className="w-3 h-3" />
             <span className="capitalize">{template.header.type}</span>
           </span>
@@ -241,10 +241,10 @@ const TemplateCard: React.FC<TemplateCardProps> = ({
       </div>
 
       {/* Body Preview */}
-      <div className="bg-[#050816]/50 rounded-xl p-4 mb-4 border border-white/[0.05]">
+      <div className="bg-slate-50 dark:bg-slate-950 rounded-xl p-4 mb-4 border border-slate-100 dark:border-slate-800/80">
         {/* ✅ Media Preview for Card */}
         {template.header.type === 'image' && (template.header.cloudinaryUrl || template.header.mediaUrl) && (
-          <div className="mb-3 rounded-lg overflow-hidden h-32 bg-[#0a0e27] flex items-center justify-center">
+          <div className="mb-3 rounded-lg overflow-hidden h-32 bg-slate-100 dark:bg-slate-900 flex items-center justify-center">
             <img 
               src={template.header.cloudinaryUrl || template.header.mediaUrl} 
               alt="Preview"
@@ -258,7 +258,7 @@ const TemplateCard: React.FC<TemplateCardProps> = ({
         )}
         
         {template.header.type === 'video' && (template.header.cloudinaryUrl || template.header.mediaUrl) && (
-          <div className="mb-3 rounded-lg overflow-hidden h-32 bg-[#0a0e27] flex items-center justify-center relative">
+          <div className="mb-3 rounded-lg overflow-hidden h-32 bg-slate-100 dark:bg-slate-900 flex items-center justify-center relative">
             <video 
               src={template.header.cloudinaryUrl || template.header.mediaUrl}
               className="w-full h-full object-cover opacity-80"
@@ -271,13 +271,13 @@ const TemplateCard: React.FC<TemplateCardProps> = ({
         )}
 
         {template.header.type === 'text' && template.header.text && (
-          <p className="font-semibold text-white mb-2">{template.header.text}</p>
+          <p className="font-semibold text-slate-800 dark:text-white mb-2">{template.header.text}</p>
         )}
-        <p className="text-gray-400 text-sm leading-relaxed">
+        <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">
           {truncateBody(template.body)}
         </p>
         {template.footer && (
-          <p className="text-gray-500 text-xs mt-2">{template.footer}</p>
+          <p className="text-slate-400 dark:text-slate-500 text-xs mt-2">{template.footer}</p>
         )}
       </div>
 
@@ -296,14 +296,14 @@ const TemplateCard: React.FC<TemplateCardProps> = ({
       )}
 
       {/* Footer Stats */}
-      <div className="flex items-center justify-between pt-4 border-t border-white/[0.05]">
-        <div className="flex items-center space-x-4 text-sm text-gray-500">
+      <div className="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-slate-800/60">
+        <div className="flex items-center space-x-4 text-sm text-slate-500 dark:text-slate-400">
           <span className="flex items-center space-x-1">
             <Send className="w-4 h-4" />
             <span>{template.usageCount.toLocaleString()} uses</span>
           </span>
         </div>
-        <span className="text-xs text-gray-400">
+        <span className="text-xs text-slate-450 dark:text-slate-500">
           Updated {template.updatedAt}
         </span>
       </div>

@@ -84,13 +84,11 @@ const WalletStats: React.FC<Props> = ({
       {stats.map((stat, i) => (
         <div
           key={i}
-          className="bg-white dark:bg-gray-800 rounded-2xl p-4
-                        border border-gray-200 dark:border-gray-700
-                        shadow-sm hover:shadow-md transition-shadow"
+          className="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm hover:shadow-md transition-shadow"
         >
           {/* Icon */}
           <div
-            className={`w-9 h-9 ${stat.iconBg} rounded-xl
+            className={`w-9 h-9 ${stat.iconBg.split(' ')[0]} rounded-xl
                            flex items-center justify-center mb-3`}
           >
             <stat.icon className={`w-5 h-5 ${stat.iconColor}`} />
@@ -98,14 +96,14 @@ const WalletStats: React.FC<Props> = ({
 
           {/* Value */}
           <p
-            className={`font-bold ${stat.textColor}
+            className={`font-bold ${stat.textColor.split(' ')[0]}
                           ${stat.small ? "text-sm" : "text-base"} leading-tight`}
           >
             {stat.value}
           </p>
 
           {/* Label */}
-          <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+          <p className="text-xs text-slate-500 mt-1">
             {stat.label}
           </p>
         </div>

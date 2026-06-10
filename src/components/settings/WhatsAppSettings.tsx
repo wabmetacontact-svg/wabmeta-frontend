@@ -434,7 +434,7 @@ export default function WhatsAppSettings() {
       {/* ─── Header with Sync Button ──────────────────────────────────── */}
       <div className="flex items-start justify-between">
         <div>
-          <h2 className="text-xl font-bold text-white">
+          <h2 className="text-xl font-bold text-slate-900 dark:text-white">
             WhatsApp Connection
           </h2>
           <p className="text-gray-500 mt-1">
@@ -511,7 +511,7 @@ export default function WhatsAppSettings() {
               return (
                 <div
                   key={account.id}
-                  className="bg-white dark:bg-slate-900 rounded-xl border border-green-200 dark:border-green-800 overflow-hidden"
+                  className="bg-white rounded-xl border border-green-200 overflow-hidden shadow-sm"
                 >
                   {/* Account Header */}
                   <div className="p-4 border-b border-slate-100 dark:border-slate-800">
@@ -557,10 +557,10 @@ export default function WhatsAppSettings() {
                   </div>
 
                   {/* Stats Grid */}
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 p-4 bg-slate-50 dark:bg-slate-950/20">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 p-4 bg-slate-50/50 border-t border-slate-100">
                     {/* Quality Rating */}
-                    <div className="bg-white dark:bg-slate-900 p-3 rounded-lg border border-slate-100 dark:border-slate-800">
-                      <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 mb-1.5">
+                    <div className="bg-white p-3 rounded-lg border border-slate-100/70">
+                      <div className="flex items-center gap-1.5 text-xs text-slate-500 mb-1.5">
                         <TrendingUp className="w-3.5 h-3.5" />
                         Quality
                       </div>
@@ -575,27 +575,27 @@ export default function WhatsAppSettings() {
                     </div>
 
                     {/* Messaging Limit */}
-                    <div className="bg-white dark:bg-slate-900 p-3 rounded-lg border border-slate-100 dark:border-slate-800">
-                      <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 mb-1.5">
+                    <div className="bg-white p-3 rounded-lg border border-slate-100/70">
+                      <div className="flex items-center gap-1.5 text-xs text-slate-500 mb-1.5">
                         <Activity className="w-3.5 h-3.5" />
                         Tier Limit
                       </div>
-                      <p className="text-sm font-bold text-slate-950 dark:text-white">
+                      <p className="text-sm font-bold text-slate-850">
                         {getMessagingTierLabel(account.messagingLimit)}
                       </p>
                     </div>
 
                     {/* Verification Status */}
-                    <div className="bg-white dark:bg-slate-900 p-3 rounded-lg border border-slate-100 dark:border-slate-800">
-                      <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 mb-1.5">
+                    <div className="bg-white p-3 rounded-lg border border-slate-100/70">
+                      <div className="flex items-center gap-1.5 text-xs text-slate-500 mb-1.5">
                         <Shield className="w-3.5 h-3.5" />
                         Verification
                       </div>
                       <p
                         className={`text-sm font-bold ${
                           account.codeVerificationStatus === 'VERIFIED'
-                            ? 'text-green-600 dark:text-green-400'
-                            : 'text-yellow-600 dark:text-yellow-400'
+                            ? 'text-green-650'
+                            : 'text-yellow-600'
                         }`}
                       >
                         {account.codeVerificationStatus === 'VERIFIED'
@@ -605,19 +605,19 @@ export default function WhatsAppSettings() {
                     </div>
 
                     {/* Daily Usage */}
-                    <div className="bg-white dark:bg-slate-900 p-3 rounded-lg border border-slate-100 dark:border-slate-800">
-                      <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 mb-1.5">
+                    <div className="bg-white p-3 rounded-lg border border-slate-100/70">
+                      <div className="flex items-center gap-1.5 text-xs text-slate-500 mb-1.5">
                         <Activity className="w-3.5 h-3.5" />
                         Today's Usage
                       </div>
-                      <p className="text-sm font-bold text-slate-950 dark:text-white">
+                      <p className="text-sm font-bold text-slate-850">
                         {account.dailyMessagesUsed}
-                        <span className="text-slate-400 dark:text-slate-500 text-xs">
+                        <span className="text-slate-400 text-xs">
                           {' '}
                           / {account.dailyMessageLimit}
                         </span>
                       </p>
-                      <div className="mt-1.5 w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1">
+                      <div className="mt-1.5 w-full bg-slate-100 rounded-full h-1">
                         <div
                           className={`h-1 rounded-full transition-all ${
                             usagePercent > 80
@@ -635,7 +635,7 @@ export default function WhatsAppSettings() {
                   </div>
 
                   {/* Actions */}
-                  <div className="p-4 flex items-center justify-end gap-2 border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900">
+                  <div className="p-4 flex items-center justify-end gap-2 border-t border-slate-100 bg-white">
                     {!account.isDefault && connectedAccounts.length > 1 && (
                       <button
                         onClick={() => handleSetDefault(account.id)}
