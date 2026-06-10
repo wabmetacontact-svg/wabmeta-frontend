@@ -74,10 +74,10 @@ const getQualityConfig = (rating: string | null) => {
     default:
       return {
         label: 'Unknown',
-        color: 'text-gray-300',
-        bg: 'bg-[#0a0e27]/[0.04]',
-        dot: 'bg-gray-400',
-        ring: 'ring-gray-500/20',
+        color: 'text-slate-500 dark:text-slate-400',
+        bg: 'bg-slate-100 dark:bg-slate-800',
+        dot: 'bg-slate-400',
+        ring: 'ring-slate-500/20',
       };
   }
 };
@@ -385,9 +385,9 @@ export default function WhatsAppSettings() {
               onClick={() => syncAllQuality(true)}
               disabled={syncing}
               className="flex items-center gap-2 px-3 py-2 text-sm font-medium
-                text-gray-300 bg-[#0a0e27]
-                border border-white/[0.1] rounded-lg
-                hover:bg-[#0a0e27]/[0.04] transition-colors
+                text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-900
+                border border-slate-200 dark:border-slate-800 rounded-lg
+                hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors
                 disabled:opacity-50"
             >
               <RefreshCw
@@ -404,7 +404,7 @@ export default function WhatsAppSettings() {
         className={`p-6 rounded-2xl border-2 transition-all ${
           hasConnectedAccount
             ? 'border-green-300 bg-green-50/50 dark:border-green-700 dark:bg-green-900/10'
-            : 'border-white/[0.1] bg-[#0a0e27]'
+            : 'border-slate-200 bg-slate-50/50 dark:border-slate-800 dark:bg-slate-900/30'
         }`}
       >
         <div className="flex items-start justify-between mb-4">
@@ -413,10 +413,10 @@ export default function WhatsAppSettings() {
               <Cloud className="w-6 h-6 text-green-600" />
             </div>
             <div>
-              <h3 className="font-bold text-white">
+              <h3 className="font-bold text-slate-950 dark:text-white">
                 Meta WhatsApp Cloud API
               </h3>
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-slate-500 dark:text-slate-400">
                 Official WhatsApp Business API powered by Meta
               </p>
             </div>
@@ -442,10 +442,10 @@ export default function WhatsAppSettings() {
               return (
                 <div
                   key={account.id}
-                  className="bg-[#0a0e27] rounded-xl border border-white/[0.1] overflow-hidden"
+                  className="bg-white dark:bg-slate-900 rounded-xl border border-green-200 dark:border-green-800 overflow-hidden"
                 >
                   {/* Account Header */}
-                  <div className="p-4 border-b border-white/[0.08]">
+                  <div className="p-4 border-b border-slate-100 dark:border-slate-800">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 bg-green-100 dark:bg-green-900/40 rounded-full flex items-center justify-center">
@@ -453,7 +453,7 @@ export default function WhatsAppSettings() {
                         </div>
                         <div>
                           <div className="flex items-center gap-2">
-                            <span className="font-mono font-semibold text-white">
+                            <span className="font-mono font-semibold text-slate-950 dark:text-white">
                               {account.phoneNumber}
                             </span>
                             {account.isDefault && (
@@ -465,7 +465,7 @@ export default function WhatsAppSettings() {
                               </>
                             )}
                           </div>
-                          <p className="text-sm text-gray-500 mt-0.5">
+                          <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
                             {account.verifiedName ||
                               account.displayName ||
                               'Unnamed'}
@@ -488,10 +488,10 @@ export default function WhatsAppSettings() {
                   </div>
 
                   {/* Stats Grid */}
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 p-4 bg-[#050816]/30">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 p-4 bg-slate-50 dark:bg-slate-950/20">
                     {/* Quality Rating */}
-                    <div className="bg-[#0a0e27] p-3 rounded-lg border border-white/[0.08]">
-                      <div className="flex items-center gap-1.5 text-xs text-gray-500 mb-1.5">
+                    <div className="bg-white dark:bg-slate-900 p-3 rounded-lg border border-slate-100 dark:border-slate-800">
+                      <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 mb-1.5">
                         <TrendingUp className="w-3.5 h-3.5" />
                         Quality
                       </div>
@@ -506,19 +506,19 @@ export default function WhatsAppSettings() {
                     </div>
 
                     {/* Messaging Limit */}
-                    <div className="bg-[#0a0e27] p-3 rounded-lg border border-white/[0.08]">
-                      <div className="flex items-center gap-1.5 text-xs text-gray-500 mb-1.5">
+                    <div className="bg-white dark:bg-slate-900 p-3 rounded-lg border border-slate-100 dark:border-slate-800">
+                      <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 mb-1.5">
                         <Activity className="w-3.5 h-3.5" />
                         Tier Limit
                       </div>
-                      <p className="text-sm font-bold text-white">
+                      <p className="text-sm font-bold text-slate-950 dark:text-white">
                         {getMessagingTierLabel(account.messagingLimit)}
                       </p>
                     </div>
 
                     {/* Verification Status */}
-                    <div className="bg-[#0a0e27] p-3 rounded-lg border border-white/[0.08]">
-                      <div className="flex items-center gap-1.5 text-xs text-gray-500 mb-1.5">
+                    <div className="bg-white dark:bg-slate-900 p-3 rounded-lg border border-slate-100 dark:border-slate-800">
+                      <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 mb-1.5">
                         <Shield className="w-3.5 h-3.5" />
                         Verification
                       </div>
@@ -536,14 +536,14 @@ export default function WhatsAppSettings() {
                     </div>
 
                     {/* Daily Usage */}
-                    <div className="bg-[#0a0e27] p-3 rounded-lg border border-white/[0.08]">
-                      <div className="flex items-center gap-1.5 text-xs text-gray-500 mb-1.5">
+                    <div className="bg-white dark:bg-slate-900 p-3 rounded-lg border border-slate-100 dark:border-slate-800">
+                      <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 mb-1.5">
                         <Activity className="w-3.5 h-3.5" />
                         Today's Usage
                       </div>
-                      <p className="text-sm font-bold text-white">
+                      <p className="text-sm font-bold text-slate-950 dark:text-white">
                         {account.dailyMessagesUsed}
-                        <span className="text-gray-400 text-xs">
+                        <span className="text-slate-400 dark:text-slate-500 text-xs">
                           {' '}
                           / {account.dailyMessageLimit}
                         </span>
@@ -566,7 +566,7 @@ export default function WhatsAppSettings() {
                   </div>
 
                   {/* Actions */}
-                  <div className="p-4 flex items-center justify-end gap-2 border-t border-white/[0.08]">
+                  <div className="p-4 flex items-center justify-end gap-2 border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900">
                     {!account.isDefault && connectedAccounts.length > 1 && (
                       <button
                         onClick={() => handleSetDefault(account.id)}
@@ -604,13 +604,13 @@ export default function WhatsAppSettings() {
         ) : (
           /* ─── Empty State ──────────────────────────────────────────── */
           <div className="text-center py-8">
-            <div className="w-16 h-16 mx-auto mb-4 bg-[#0a0e27]/[0.04] dark:bg-gray-700 rounded-full flex items-center justify-center">
-              <AlertCircle className="w-8 h-8 text-gray-400" />
+            <div className="w-16 h-16 mx-auto mb-4 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center">
+              <AlertCircle className="w-8 h-8 text-slate-400" />
             </div>
-            <h4 className="font-semibold text-white mb-1">
+            <h4 className="font-semibold text-slate-950 dark:text-white mb-1">
               No WhatsApp Account Connected
             </h4>
-            <p className="text-sm text-gray-500 mb-6 max-w-md mx-auto">
+            <p className="text-sm text-slate-500 dark:text-slate-400 mb-6 max-w-md mx-auto">
               Connect your WhatsApp Business account through Meta's official
               Cloud API for high-volume messaging with advanced features.
             </p>

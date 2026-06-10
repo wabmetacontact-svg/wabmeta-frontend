@@ -97,7 +97,7 @@ const ForgotPassword: React.FC = () => {
 
           <div>
             <p className="text-gray-400 mb-2">We've sent a password reset link to</p>
-            <p className="font-semibold text-white bg-[#0a0e27]/[0.04] py-2 px-4 rounded-lg inline-block">
+            <p className="font-semibold text-slate-800 bg-slate-100 py-2 px-4 rounded-lg inline-block">
               {email}
             </p>
           </div>
@@ -109,9 +109,9 @@ const ForgotPassword: React.FC = () => {
             </p>
           </div>
 
-          <div className="bg-[#050816] rounded-xl p-4 text-sm text-gray-400">
-            <p className="font-medium mb-2">Didn't receive the email?</p>
-            <ul className="list-disc list-inside space-y-1 text-left">
+          <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 text-sm text-slate-650">
+            <p className="font-semibold text-slate-800 mb-2">Didn't receive the email?</p>
+            <ul className="list-disc list-inside space-y-1 text-left text-slate-550">
               <li>Check your spam or junk folder</li>
               <li>Make sure the email address is correct</li>
               <li>Wait a few minutes and check again</li>
@@ -152,7 +152,7 @@ const ForgotPassword: React.FC = () => {
           </div>
 
           <p className="text-center">
-            <Link to="/login" className="text-sm text-gray-400 hover:text-white flex items-center justify-center gap-1">
+            <Link to="/login" className="text-sm text-gray-500 hover:text-primary-600 flex items-center justify-center gap-1">
               <ArrowLeft className="w-4 h-4" />
               Back to login
             </Link>
@@ -202,7 +202,7 @@ const ForgotPassword: React.FC = () => {
         </Button>
 
         <p className="text-center">
-          <Link to="/login" className="text-sm text-gray-400 hover:text-white flex items-center justify-center gap-1">
+          <Link to="/login" className="text-sm text-gray-500 hover:text-primary-600 flex items-center justify-center gap-1">
             <ArrowLeft className="w-4 h-4" />
             Back to login
           </Link>
