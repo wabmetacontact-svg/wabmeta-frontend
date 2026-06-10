@@ -513,25 +513,25 @@ const CampaignDetails: React.FC = () => {
                 <li>Template quality score has dropped</li>
                 <li>Sending to too many inactive/cold contacts</li>
               </ul>
-              <div className="bg-[#0a0e27] rounded-lg p-3 border border-amber-200 dark:border-amber-800">
-                <p className="text-xs font-bold text-gray-300 mb-2">
+              <div className="bg-slate-50 dark:bg-slate-900 rounded-lg p-3 border border-amber-200 dark:border-amber-800">
+                <p className="text-xs font-bold text-slate-800 dark:text-slate-300 mb-2">
                   💡 How to fix:
                 </p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-gray-400">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-slate-600 dark:text-slate-400">
                   <div className="flex items-start gap-1.5">
-                    <span className="text-green-500 font-bold">1.</span>
+                    <span className="text-green-600 font-bold">1.</span>
                     <span>Only send to contacts who opted-in</span>
                   </div>
                   <div className="flex items-start gap-1.5">
-                    <span className="text-green-500 font-bold">2.</span>
+                    <span className="text-green-600 font-bold">2.</span>
                     <span>Send to smaller groups (50-100 at a time)</span>
                   </div>
                   <div className="flex items-start gap-1.5">
-                    <span className="text-green-500 font-bold">3.</span>
+                    <span className="text-green-600 font-bold">3.</span>
                     <span>Wait 24 hours before sending again</span>
                   </div>
                   <div className="flex items-start gap-1.5">
-                    <span className="text-green-500 font-bold">4.</span>
+                    <span className="text-green-600 font-bold">4.</span>
                     <span>Use a different template with better content</span>
                   </div>
                 </div>
