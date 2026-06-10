@@ -1,27 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import {
-  Phone,
-  CheckCircle,
-  Trash2,
-  Loader2,
-  Star,
-  Cloud,
-  Plus,
-  RefreshCw,
-  AlertCircle,
-  TrendingUp,
-  Activity,
-  Shield,
-  Clock,
+  Phone, CheckCircle, Trash2, Loader2, Star, Cloud, Plus,
+  RefreshCw, AlertCircle, TrendingUp, Activity, Shield, Clock,
 } from 'lucide-react';
 import api, { whatsapp } from '../../services/api';
 import toast from 'react-hot-toast';
-import { useFacebookSDK } from '../../hooks/useFacebookSDK';
-import { useAuth } from '../../context/AuthContext';
-
-// ============================================
-// TYPES
-// ============================================
 
 interface WhatsAppAccount {
   id: string;
@@ -40,46 +23,38 @@ interface WhatsAppAccount {
   updatedAt: string;
 }
 
-// ============================================
-// HELPERS
-// ============================================
-
 const getQualityConfig = (rating: string | null) => {
   switch (rating?.toUpperCase()) {
     case 'GREEN':
     case 'HIGH':
       return {
         label: 'High',
-        color: 'text-green-700 dark:text-green-300',
-        bg: 'bg-green-100 dark:bg-green-900/40',
+        color: 'text-green-700',
+        bg: 'bg-green-100',
         dot: 'bg-green-500',
-        ring: 'ring-green-500/20',
       };
     case 'YELLOW':
     case 'MEDIUM':
       return {
         label: 'Medium',
-        color: 'text-yellow-700 dark:text-yellow-300',
-        bg: 'bg-yellow-100 dark:bg-yellow-900/40',
+        color: 'text-yellow-700',
+        bg: 'bg-yellow-100',
         dot: 'bg-yellow-500',
-        ring: 'ring-yellow-500/20',
       };
     case 'RED':
     case 'LOW':
       return {
         label: 'Low',
-        color: 'text-red-700 dark:text-red-300',
-        bg: 'bg-red-100 dark:bg-red-900/40',
+        color: 'text-red-700',
+        bg: 'bg-red-100',
         dot: 'bg-red-500',
-        ring: 'ring-red-500/20',
       };
     default:
       return {
         label: 'Unknown',
-        color: 'text-slate-500 dark:text-slate-400',
-        bg: 'bg-slate-100 dark:bg-slate-800',
+        color: 'text-slate-500',
+        bg: 'bg-slate-100',
         dot: 'bg-slate-400',
-        ring: 'ring-slate-500/20',
       };
   }
 };
@@ -104,51 +79,30 @@ const formatLastSynced = (date: string) => {
   const diffSec = Math.floor(diffMs / 1000);
   const diffMin = Math.floor(diffSec / 60);
   const diffHr = Math.floor(diffMin / 60);
-
   if (diffSec < 60) return 'Just now';
   if (diffMin < 60) return `${diffMin}m ago`;
   if (diffHr < 24) return `${diffHr}h ago`;
   return synced.toLocaleDateString();
 };
 
-// ============================================
-// MAIN COMPONENT
-// ============================================
-
 export default function WhatsAppSettings() {
   const [accounts, setAccounts] = useState<WhatsAppAccount[]>([]);
   const [loading, setLoading] = useState(true);
   const [connecting, setConnecting] = useState(false);
   const [syncing, setSyncing] = useState(false);
-  const [syncingAccountId, setSyncingAccountId] = useState<string | null>(
-    null
-  );
+  const [syncingAccountId, setSyncingAccountId] = useState<string | null>(null);
   const [lastSyncTime, setLastSyncTime] = useState<Date | null>(null);
 
-  const { organization } = useAuth();
-  const organizationId = organization?.id || '';
-  const { isReady: sdkReady, isLoading: sdkLoading } = useFacebookSDK();
-
-  // ✅ Declare early so handleConnect can safely reference it
-  const connectedAccounts = accounts.filter((a) => a.status === 'CONNECTED');
-  const hasConnectedAccount = connectedAccounts.length > 0;
-
-  // ────────────────────────────────────────────
-  // Fetch accounts
-  // ────────────────────────────────────────────
   const fetchAccounts = useCallback(async (silent = false) => {
     try {
       if (!silent) setLoading(true);
       const { data } = await api.get('/meta/accounts');
-
-      // Handle different response structures
       let accountsList: WhatsAppAccount[] = [];
       if (Array.isArray(data?.data)) {
         accountsList = data.data;
       } else if (Array.isArray(data?.data?.accounts)) {
         accountsList = data.data.accounts;
       }
-
       setAccounts(accountsList);
     } catch (error) {
       console.error('Failed to fetch accounts:', error);
@@ -158,61 +112,40 @@ export default function WhatsAppSettings() {
     }
   }, []);
 
-  // ────────────────────────────────────────────
-  // Sync all quality ratings (background)
-  // ────────────────────────────────────────────
-  const syncAllQuality = useCallback(
-    async (showToast = false) => {
-      try {
-        setSyncing(true);
-        const response = await whatsapp.syncAllAccountsQuality();
-
-        const syncStats = response.data?.data?.syncStats;
-        const updatedAccounts = response.data?.data?.accounts;
-
-        if (updatedAccounts && Array.isArray(updatedAccounts)) {
-          setAccounts(updatedAccounts);
-        }
-
-        setLastSyncTime(new Date());
-
-        if (showToast && syncStats) {
-          if (syncStats.synced > 0) {
-            toast.success(
-              `✅ Synced ${syncStats.synced} account${
-                syncStats.synced > 1 ? 's' : ''
-              }`
-            );
-          } else if (syncStats.total === 0) {
-            toast('No connected accounts to sync', { icon: 'ℹ️' });
-          } else {
-            toast.error('Sync failed for all accounts');
-          }
-        }
-      } catch (error: any) {
-        console.error('Sync failed:', error);
-        if (showToast) {
-          toast.error(
-            error?.response?.data?.message || 'Failed to sync accounts'
-          );
-        }
-      } finally {
-        setSyncing(false);
+  const syncAllQuality = useCallback(async (showToast = false) => {
+    try {
+      setSyncing(true);
+      const response = await whatsapp.syncAllAccountsQuality();
+      const syncStats = response.data?.data?.syncStats;
+      const updatedAccounts = response.data?.data?.accounts;
+      if (updatedAccounts && Array.isArray(updatedAccounts)) {
+        setAccounts(updatedAccounts);
       }
-    },
-    []
-  );
+      setLastSyncTime(new Date());
+      if (showToast && syncStats) {
+        if (syncStats.synced > 0) {
+          toast.success(`✅ Synced ${syncStats.synced} account${syncStats.synced > 1 ? 's' : ''}`);
+        } else if (syncStats.total === 0) {
+          toast('No connected accounts to sync', { icon: 'ℹ️' });
+        } else {
+          toast.error('Sync failed for all accounts');
+        }
+      }
+    } catch (error: any) {
+      console.error('Sync failed:', error);
+      if (showToast) {
+        toast.error(error?.response?.data?.message || 'Failed to sync accounts');
+      }
+    } finally {
+      setSyncing(false);
+    }
+  }, []);
 
-  // ────────────────────────────────────────────
-  // Sync single account
-  // ────────────────────────────────────────────
   const syncSingleAccount = async (accountId: string) => {
     try {
       setSyncingAccountId(accountId);
-
       const response = await whatsapp.syncAccountQuality(accountId);
       const updated = response.data?.data;
-
       if (updated) {
         setAccounts((prev) =>
           prev.map((acc) => (acc.id === accountId ? { ...acc, ...updated } : acc))
@@ -227,168 +160,75 @@ export default function WhatsAppSettings() {
     }
   };
 
-  // ────────────────────────────────────────────
-  // Initial load + auto-sync
-  // ────────────────────────────────────────────
   useEffect(() => {
     const init = async () => {
       await fetchAccounts();
-      // Background sync after page load (silent)
-      setTimeout(() => {
-        syncAllQuality(false);
-      }, 1500);
+      setTimeout(() => { syncAllQuality(false); }, 1500);
     };
     init();
   }, [fetchAccounts, syncAllQuality]);
 
-  // ────────────────────────────────────────────
-  // Auto-refresh every 5 minutes
-  // ────────────────────────────────────────────
   useEffect(() => {
-    const interval = setInterval(() => {
-      syncAllQuality(false);
-    }, 5 * 60 * 1000); // 5 minutes
-
+    const interval = setInterval(() => { syncAllQuality(false); }, 5 * 60 * 1000);
     return () => clearInterval(interval);
   }, [syncAllQuality]);
 
-  // ────────────────────────────────────────────
-  // Connect handler - EMBEDDED SIGNUP
-  // ────────────────────────────────────────────
-  const handleConnect = () => {
-    // Already connected check
-    if (connectedAccounts.length > 0) {
+  const handleConnect = async () => {
+    if (connectedAccounts?.length > 0) {
       toast.error('Please disconnect the current account before connecting a new one.');
       return;
     }
-
-    if (!sdkReady || !window.FB || !window.__FB_INITIALIZED__) {
-      toast.error('Facebook SDK is still loading. Please wait a moment and try again.');
-      return;
-    }
-
-    const configId = import.meta.env.VITE_META_CONFIG_ID;
-    if (!configId) {
-      toast.error('Meta configuration missing. Please contact support.');
-      console.error('❌ VITE_META_CONFIG_ID not set in .env');
-      return;
-    }
-
-    if (!organizationId) {
-      toast.error('Organization not found. Please refresh the page.');
-      return;
-    }
-
     setConnecting(true);
-    console.log('🚀 Launching Embedded Signup:', { configId, organizationId });
-
-    // ✅ Capture WABA ID + Phone Number ID from Meta's message event
-    // Meta sends this via postMessage when wizard is completed
-    let sessionWabaId: string | null = null;
-    let sessionPhoneNumberId: string | null = null;
-
-    const messageHandler = (event: MessageEvent) => {
-      if (event.origin !== 'https://www.facebook.com' && event.origin !== 'https://web.facebook.com') return;
-      try {
-        const data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
-        if (data?.type === 'WA_EMBEDDED_SIGNUP') {
-          console.log('📨 WA_EMBEDDED_SIGNUP event:', data.event, data.data);
-          if (data.event === 'FINISH') {
-            sessionWabaId = data.data?.waba_id || null;
-            sessionPhoneNumberId = data.data?.phone_number_id || null;
-            console.log('✅ Session info captured:', { sessionWabaId, sessionPhoneNumberId });
-          } else if (data.event === 'CANCEL') {
-            console.warn('⚠️ User cancelled Embedded Signup at step:', data.data?.current_step);
-          } else if (data.event === 'ERROR') {
-            console.error('❌ Embedded Signup error:', data.data);
-          }
-        }
-      } catch (_) { /* non-JSON messages, ignore */ }
-    };
-
-    window.addEventListener('message', messageHandler);
-
     try {
-      window.FB.login(
-        function (response: any) {
-          window.removeEventListener('message', messageHandler);
-          console.log('📥 FB.login response:', response);
-          console.log('📦 Session info at login callback:', { sessionWabaId, sessionPhoneNumberId });
-
-          if (response.authResponse && response.authResponse.code) {
-            handleEmbeddedSignupCode(
-              response.authResponse.code,
-              sessionWabaId,
-              sessionPhoneNumberId
-            );
-          } else {
-            console.log('⚠️ User cancelled or did not complete wizard');
-            toast.error('Setup was cancelled. Please complete all wizard steps.');
-            setConnecting(false);
-          }
-        },
-        {
-          config_id: configId,
-          response_type: 'code',
-          override_default_response_type: true,
-          extras: {
-            setup: {},
-            featureType: 'whatsapp_embedded_signup',
-            sessionInfoVersion: '2',
-          },
-        }
+      const { data } = await api.get('/meta/oauth-url', {
+        params: { connectionType: 'CLOUD_API' },
+      });
+      localStorage.setItem('wabmeta_connection_type', 'CLOUD_API');
+      const popupWidth = 600;
+      const popupHeight = 700;
+      const left = window.screenX + (window.outerWidth - popupWidth) / 2;
+      const top = window.screenY + (window.outerHeight - popupHeight) / 2;
+      const popup = window.open(
+        data.data.url,
+        'wabmeta_meta_connect',
+        `width=${popupWidth},height=${popupHeight},left=${left},top=${top},scrollbars=yes,resizable=yes`
       );
-    } catch (err: any) {
-      window.removeEventListener('message', messageHandler);
-      console.error('❌ FB.login error:', err);
-      toast.error(`Failed to launch wizard: ${err.message}`);
-      setConnecting(false);
-    }
-  };
-
-  // ✅ Send code + optional session info to /meta/connect
-  const handleEmbeddedSignupCode = async (
-    code: string,
-    wabaId?: string | null,
-    phoneNumberId?: string | null
-  ) => {
-    try {
-      console.log('📤 Sending to /meta/connect:', {
-        hasCode: !!code,
-        wabaId: wabaId || '(none — will be fetched from token)',
-        phoneNumberId: phoneNumberId || '(none — will be fetched from WABA)',
-      });
-
-      const { data } = await api.post('/meta/connect', {
-        code,
-        organizationId,
-        wabaId: wabaId || undefined,
-        phoneNumberId: phoneNumberId || undefined,
-      });
-
-      if (data?.success !== false) {
-        toast.success('WhatsApp connected successfully! 🎉');
-        await fetchAccounts();
-        syncAllQuality(false);
-      } else {
-        throw new Error(data?.message || 'Connection failed');
+      if (!popup || popup.closed) {
+        window.location.href = data.data.url;
+        return;
       }
-    } catch (err: any) {
-      console.error('❌ Backend error:', err);
-      const errorMsg = err.response?.data?.message || err.message || 'Connection failed';
-      toast.error(errorMsg);
-    } finally {
+      const handleMessage = (event: MessageEvent) => {
+        if (event.origin !== window.location.origin) return;
+        if (event.data?.type === 'META_CALLBACK_SUCCESS') {
+          window.removeEventListener('message', handleMessage);
+          popup.close();
+          setConnecting(false);
+          fetchAccounts().then(() => syncAllQuality(false));
+          toast.success('WhatsApp connected successfully!');
+        } else if (event.data?.type === 'META_CALLBACK_ERROR') {
+          window.removeEventListener('message', handleMessage);
+          popup.close();
+          setConnecting(false);
+          toast.error(event.data.error || 'Failed to connect');
+        }
+      };
+      window.addEventListener('message', handleMessage);
+      const pollPopup = setInterval(() => {
+        if (popup.closed) {
+          clearInterval(pollPopup);
+          window.removeEventListener('message', handleMessage);
+          setConnecting(false);
+          fetchAccounts().then(() => syncAllQuality(false));
+        }
+      }, 500);
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Failed to start connection');
       setConnecting(false);
     }
   };
 
-  // ────────────────────────────────────────────
-  // Disconnect handler
-  // ────────────────────────────────────────────
   const handleDisconnect = async (accountId: string) => {
-    if (!confirm('Are you sure you want to disconnect this account?'))
-      return;
-
+    if (!confirm('Are you sure you want to disconnect this account?')) return;
     try {
       await api.post(`/meta/accounts/${accountId}/disconnect`);
       toast.success('Account disconnected');
@@ -398,13 +238,9 @@ export default function WhatsAppSettings() {
     }
   };
 
-  // ────────────────────────────────────────────
-  // Set default handler
-  // ────────────────────────────────────────────
   const handleSetDefault = async (accountId: string) => {
     try {
-      // ✅ Correct endpoint matching backend route
-      await api.post(`/meta/organizations/${organizationId}/accounts/${accountId}/default`);
+      await api.post(`/meta/accounts/${accountId}/set-default`);
       toast.success('Default account updated');
       fetchAccounts();
     } catch (error: any) {
@@ -412,32 +248,27 @@ export default function WhatsAppSettings() {
     }
   };
 
-  // ────────────────────────────────────────────
-  // Loading state
-  // ────────────────────────────────────────────
   if (loading) {
     return (
       <div className="flex flex-col justify-center items-center h-64 space-y-3">
         <Loader2 className="w-8 h-8 animate-spin text-green-600" />
-        <p className="text-sm text-gray-500">Loading accounts...</p>
+        <p className="text-sm text-slate-500">Loading accounts...</p>
       </div>
     );
   }
 
-  // ✅ connectedAccounts is already declared above (before handleConnect)
+  const connectedAccounts = accounts.filter((a) => a.status === 'CONNECTED');
+  const hasConnectedAccount = connectedAccounts.length > 0;
 
-  // ────────────────────────────────────────────
-  // RENDER
-  // ────────────────────────────────────────────
   return (
     <div className="space-y-6">
-      {/* ─── Header with Sync Button ──────────────────────────────────── */}
+      {/* ── Header ── */}
       <div className="flex items-start justify-between">
         <div>
-          <h2 className="text-xl font-bold text-gray-900">
+          <h2 className="text-xl font-bold text-slate-900">
             WhatsApp Connection
           </h2>
-          <p className="text-gray-500 mt-1">
+          <p className="text-slate-500 mt-1">
             Connect and manage your WhatsApp Business accounts
           </p>
         </div>
@@ -445,7 +276,7 @@ export default function WhatsAppSettings() {
         {hasConnectedAccount && (
           <div className="flex items-center gap-3">
             {lastSyncTime && (
-              <div className="flex items-center gap-1.5 text-xs text-gray-500">
+              <div className="flex items-center gap-1.5 text-xs text-slate-500">
                 <Clock className="w-3.5 h-3.5" />
                 <span>Updated {formatLastSynced(lastSyncTime.toISOString())}</span>
               </div>
@@ -454,51 +285,47 @@ export default function WhatsAppSettings() {
               onClick={() => syncAllQuality(true)}
               disabled={syncing}
               className="flex items-center gap-2 px-3 py-2 text-sm font-medium
-                text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-900
-                border border-slate-200 dark:border-slate-800 rounded-lg
-                hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors
-                disabled:opacity-50"
+                text-slate-700 bg-white border border-slate-200 rounded-lg
+                hover:bg-slate-50 transition-colors disabled:opacity-50"
             >
-              <RefreshCw
-                className={`w-4 h-4 ${syncing ? 'animate-spin' : ''}`}
-              />
+              <RefreshCw className={`w-4 h-4 ${syncing ? 'animate-spin' : ''}`} />
               {syncing ? 'Syncing...' : 'Refresh'}
             </button>
           </div>
         )}
       </div>
 
-      {/* ─── Main Card ────────────────────────────────────────────────── */}
+      {/* ── Main Card ── */}
       <div
         className={`p-6 rounded-2xl border-2 transition-all ${
           hasConnectedAccount
-            ? 'border-green-300 bg-green-50/50 dark:border-green-700 dark:bg-green-900/10'
-            : 'border-slate-200 bg-slate-50/50 dark:border-slate-800 dark:bg-slate-900/30'
+            ? 'border-green-300 bg-green-50/50'
+            : 'border-slate-200 bg-slate-50/50'
         }`}
       >
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-green-100 dark:bg-green-900/50 rounded-xl flex items-center justify-center">
+            <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
               <Cloud className="w-6 h-6 text-green-600" />
             </div>
             <div>
-              <h3 className="font-bold text-slate-950 dark:text-white">
+              <h3 className="font-bold text-slate-900">
                 Meta WhatsApp Cloud API
               </h3>
-              <p className="text-sm text-slate-500 dark:text-slate-400">
+              <p className="text-sm text-slate-500">
                 Official WhatsApp Business API powered by Meta
               </p>
             </div>
           </div>
           {hasConnectedAccount && (
-            <span className="px-3 py-1 bg-green-200 text-green-800 dark:bg-green-900/50 dark:text-green-300 text-xs font-semibold rounded-full flex items-center gap-1.5">
+            <span className="px-3 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded-full flex items-center gap-1.5">
               <CheckCircle className="w-3.5 h-3.5" />
               Connected
             </span>
           )}
         </div>
 
-        {/* ─── Connected Accounts List ──────────────────────────────── */}
+        {/* ── Connected Accounts ── */}
         {hasConnectedAccount ? (
           <div className="space-y-4 mt-6">
             {connectedAccounts.map((account) => {
@@ -514,90 +341,78 @@ export default function WhatsAppSettings() {
                   className="bg-white rounded-xl border border-green-200 overflow-hidden shadow-sm"
                 >
                   {/* Account Header */}
-                  <div className="p-4 border-b border-slate-100 dark:border-slate-800">
+                  <div className="p-4 border-b border-slate-100">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-green-100 dark:bg-green-900/40 rounded-full flex items-center justify-center">
+                        <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
                           <Phone className="w-5 h-5 text-green-600" />
                         </div>
                         <div>
                           <div className="flex items-center gap-2">
-                            <span className="font-mono font-semibold text-slate-950 dark:text-white">
+                            <span className="font-mono font-semibold text-slate-900">
                               {account.phoneNumber}
                             </span>
                             {account.isDefault && (
                               <>
                                 <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
-                                <span className="px-2 py-0.5 bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-300 text-xs font-medium rounded-full">
+                                <span className="px-2 py-0.5 bg-yellow-100 text-yellow-700 text-xs font-medium rounded-full">
                                   Default
                                 </span>
                               </>
                             )}
                           </div>
-                          <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
-                            {account.verifiedName ||
-                              account.displayName ||
-                              'Unnamed'}
+                          <p className="text-sm text-slate-500 mt-0.5">
+                            {account.verifiedName || account.displayName || 'Unnamed'}
                           </p>
                         </div>
                       </div>
-
-                      {/* Refresh single account */}
                       <button
                         onClick={() => syncSingleAccount(account.id)}
                         disabled={isSyncingThis || syncing}
                         title="Refresh this account"
-                        className="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-colors disabled:opacity-50"
+                        className="p-2 text-slate-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors disabled:opacity-50"
                       >
-                        <RefreshCw
-                          className={`w-4 h-4 ${isSyncingThis ? 'animate-spin' : ''}`}
-                        />
+                        <RefreshCw className={`w-4 h-4 ${isSyncingThis ? 'animate-spin' : ''}`} />
                       </button>
                     </div>
                   </div>
 
                   {/* Stats Grid */}
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 p-4 bg-slate-50/50 border-t border-slate-100">
-                    {/* Quality Rating */}
-                    <div className="bg-white p-3 rounded-lg border border-slate-100/70">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 p-4 bg-slate-50">
+                    {/* Quality */}
+                    <div className="bg-white p-3 rounded-lg border border-slate-100 shadow-sm">
                       <div className="flex items-center gap-1.5 text-xs text-slate-500 mb-1.5">
                         <TrendingUp className="w-3.5 h-3.5" />
                         Quality
                       </div>
-                      <div
-                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${quality.bg} ${quality.color}`}
-                      >
-                        <span
-                          className={`w-2 h-2 rounded-full ${quality.dot}`}
-                        />
+                      <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${quality.bg} ${quality.color}`}>
+                        <span className={`w-2 h-2 rounded-full ${quality.dot}`} />
                         {quality.label}
                       </div>
                     </div>
 
-                    {/* Messaging Limit */}
-                    <div className="bg-white p-3 rounded-lg border border-slate-100/70">
+                    {/* Tier Limit */}
+                    <div className="bg-white p-3 rounded-lg border border-slate-100 shadow-sm">
                       <div className="flex items-center gap-1.5 text-xs text-slate-500 mb-1.5">
                         <Activity className="w-3.5 h-3.5" />
                         Tier Limit
                       </div>
-                      <p className="text-sm font-bold text-slate-850">
+                      <p className="text-sm font-bold text-slate-900">
                         {getMessagingTierLabel(account.messagingLimit)}
                       </p>
                     </div>
 
-                    {/* Verification Status */}
-                    <div className="bg-white p-3 rounded-lg border border-slate-100/70">
+                    {/* Verification */}
+                    <div className="bg-white p-3 rounded-lg border border-slate-100 shadow-sm">
                       <div className="flex items-center gap-1.5 text-xs text-slate-500 mb-1.5">
                         <Shield className="w-3.5 h-3.5" />
                         Verification
                       </div>
-                      <p
-                        className={`text-sm font-bold ${
-                          account.codeVerificationStatus === 'VERIFIED'
-                            ? 'text-green-650'
-                            : 'text-yellow-600'
-                        }`}
-                      >
+                      <p className={`text-sm font-bold ${
+                        account.codeVerificationStatus === 'VERIFIED'
+                          ? 'text-green-600'
+                          : 'text-yellow-600'
+                      }`}>
                         {account.codeVerificationStatus === 'VERIFIED'
                           ? '✓ Verified'
                           : account.codeVerificationStatus || 'Pending'}
@@ -605,30 +420,23 @@ export default function WhatsAppSettings() {
                     </div>
 
                     {/* Daily Usage */}
-                    <div className="bg-white p-3 rounded-lg border border-slate-100/70">
+                    <div className="bg-white p-3 rounded-lg border border-slate-100 shadow-sm">
                       <div className="flex items-center gap-1.5 text-xs text-slate-500 mb-1.5">
                         <Activity className="w-3.5 h-3.5" />
                         Today's Usage
                       </div>
-                      <p className="text-sm font-bold text-slate-850">
+                      <p className="text-sm font-bold text-slate-900">
                         {account.dailyMessagesUsed}
-                        <span className="text-slate-400 text-xs">
-                          {' '}
-                          / {account.dailyMessageLimit}
-                        </span>
+                        <span className="text-slate-400 text-xs"> / {account.dailyMessageLimit}</span>
                       </p>
-                      <div className="mt-1.5 w-full bg-slate-100 rounded-full h-1">
+                      <div className="mt-1.5 w-full bg-slate-200 rounded-full h-1">
                         <div
                           className={`h-1 rounded-full transition-all ${
-                            usagePercent > 80
-                              ? 'bg-red-500'
-                              : usagePercent > 50
-                              ? 'bg-yellow-500'
-                              : 'bg-green-500'
+                            usagePercent > 80 ? 'bg-red-500'
+                            : usagePercent > 50 ? 'bg-yellow-500'
+                            : 'bg-green-500'
                           }`}
-                          style={{
-                            width: `${Math.min(usagePercent, 100)}%`,
-                          }}
+                          style={{ width: `${Math.min(usagePercent, 100)}%` }}
                         />
                       </div>
                     </div>
@@ -640,8 +448,8 @@ export default function WhatsAppSettings() {
                       <button
                         onClick={() => handleSetDefault(account.id)}
                         className="flex items-center gap-1.5 px-3 py-1.5 text-blue-600
-                          bg-blue-50 dark:bg-blue-900/20 rounded-lg
-                          hover:bg-blue-100 dark:hover:bg-blue-900/40 text-sm font-medium transition-colors"
+                          bg-blue-50 rounded-lg hover:bg-blue-100
+                          text-sm font-medium transition-colors"
                       >
                         <Star className="w-3.5 h-3.5" />
                         Set as Default
@@ -650,8 +458,8 @@ export default function WhatsAppSettings() {
                     <button
                       onClick={() => handleDisconnect(account.id)}
                       className="flex items-center gap-1.5 px-3 py-1.5 text-red-600
-                        bg-red-50 dark:bg-red-900/20 rounded-lg
-                        hover:bg-red-100 dark:hover:bg-red-900/40 text-sm font-medium transition-colors"
+                        bg-red-50 rounded-lg hover:bg-red-100
+                        text-sm font-medium transition-colors"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                       Disconnect
@@ -661,65 +469,60 @@ export default function WhatsAppSettings() {
               );
             })}
 
-            {/* ✅ ONE ACCOUNT ONLY - Already connected info */}
-            <div className="flex items-center gap-3 p-3 bg-green-50 dark:bg-green-900/20 
-              border border-green-200 dark:border-green-800 rounded-xl">
+            <div className="flex items-center gap-3 p-3 bg-green-50 border border-green-200 rounded-xl">
               <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
-              <p className="text-sm text-green-700 dark:text-green-300">
+              <p className="text-sm text-green-700">
                 WhatsApp account is connected. Disconnect current account to connect a different one.
               </p>
             </div>
           </div>
         ) : (
-          /* ─── Empty State ──────────────────────────────────────────── */
+          /* ── Empty State ── */
           <div className="text-center py-8">
-            <div className="w-16 h-16 mx-auto mb-4 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center">
+            <div className="w-16 h-16 mx-auto mb-4 bg-slate-100 rounded-full flex items-center justify-center">
               <AlertCircle className="w-8 h-8 text-slate-400" />
             </div>
-            <h4 className="font-semibold text-slate-950 dark:text-white mb-1">
+            <h4 className="font-semibold text-slate-900 mb-1">
               No WhatsApp Account Connected
             </h4>
-            <p className="text-sm text-slate-500 dark:text-slate-400 mb-6 max-w-md mx-auto">
+            <p className="text-sm text-slate-500 mb-6 max-w-md mx-auto">
               Connect your WhatsApp Business account through Meta's official
               Cloud API for high-volume messaging with advanced features.
             </p>
             <button
               onClick={handleConnect}
-              disabled={connecting || sdkLoading || !sdkReady}
+              disabled={connecting}
               className="inline-flex items-center justify-center gap-2 px-6 py-3
                 bg-green-600 text-white rounded-xl hover:bg-green-700
                 disabled:opacity-50 font-semibold transition-colors"
             >
               {connecting ? (
                 <Loader2 className="w-5 h-5 animate-spin" />
-              ) : sdkLoading ? (
-                <Loader2 className="w-5 h-5 animate-spin" />
               ) : (
                 <Plus className="w-5 h-5" />
               )}
-              {connecting ? 'Connecting...' : sdkLoading ? 'Loading...' : 'Connect with Meta'}
+              Connect with Meta
             </button>
           </div>
         )}
       </div>
 
-      {/* ─── Info Card ────────────────────────────────────────────────── */}
+      {/* ── Info Card ── */}
       {hasConnectedAccount && (
-        <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl">
+        <div className="p-4 bg-blue-50 border border-blue-200 rounded-xl">
           <div className="flex items-start gap-3">
-            <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/40 rounded-lg flex items-center justify-center flex-shrink-0">
+            <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
               <TrendingUp className="w-4 h-4 text-blue-600" />
             </div>
             <div className="flex-1">
-              <p className="text-sm font-semibold text-blue-900 dark:text-blue-200">
+              <p className="text-sm font-semibold text-blue-900">
                 About Quality Rating
               </p>
-              <p className="text-xs text-blue-700 dark:text-blue-300 mt-1 leading-relaxed">
-                <strong>High (Green):</strong> Excellent quality, no
-                restrictions. <strong>Medium (Yellow):</strong> Some
-                user complaints, monitor activity. <strong>Low (Red):</strong>{' '}
-                Many complaints, may face restrictions. Quality is calculated
-                by Meta based on user feedback.
+              <p className="text-xs text-blue-700 mt-1 leading-relaxed">
+                <strong>High (Green):</strong> Excellent quality, no restrictions.{' '}
+                <strong>Medium (Yellow):</strong> Some user complaints, monitor activity.{' '}
+                <strong>Low (Red):</strong> Many complaints, may face restrictions.
+                Quality is calculated by Meta based on user feedback.
               </p>
             </div>
           </div>
