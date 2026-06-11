@@ -7,63 +7,85 @@ import { AuthContext, type User, type Organization } from './AuthContext';
 import api, { auth, setAuthToken, removeAuthToken } from '../services/api';
 import toast from 'react-hot-toast';
 
-// ✅ NEW: ForceLogout Popup Component
+// ============================================
+// ✅ PROFESSIONAL SESSION EXPIRED POPUP
+// ============================================
 interface ForceLogoutPopupProps {
+  title: string;
   message: string;
   countdown: number;
 }
 
-const ForceLogoutPopup: React.FC<ForceLogoutPopupProps> = ({ message, countdown }) => (
-  <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm">
-    <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4 text-center border-2 border-red-100">
-      {/* Icon */}
-      <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+const ForceLogoutPopup: React.FC<ForceLogoutPopupProps> = ({
+  title,
+  message,
+  countdown,
+}) => (
+  <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
+    <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-sm w-full mx-4 animate-in zoom-in-95 duration-200">
+      {/* Icon - Lock instead of warning */}
+      <div className="w-14 h-14 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-5">
         <svg
-          className="w-8 h-8 text-red-600"
+          className="w-7 h-7 text-blue-600"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
+          strokeWidth={2}
         >
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
-            strokeWidth={2}
-            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+            d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
           />
         </svg>
       </div>
 
       {/* Title */}
-      <h2 className="text-xl font-bold text-slate-900 mb-3">
-        Security Notice
+      <h2 className="text-lg font-semibold text-slate-900 text-center mb-2">
+        {title}
       </h2>
 
       {/* Message */}
-      <p className="text-slate-600 text-sm mb-6 leading-relaxed">
+      <p className="text-slate-500 text-sm text-center mb-6 leading-relaxed">
         {message}
       </p>
 
-      {/* Countdown */}
-      <div className="flex items-center justify-center gap-3 mb-6">
-        <div className="w-14 h-14 bg-red-50 border-2 border-red-200 rounded-full flex items-center justify-center">
-          <span className="text-2xl font-bold text-red-600">{countdown}</span>
+      {/* Countdown - subtle */}
+      <div className="bg-slate-50 rounded-xl p-4 mb-4">
+        <div className="flex items-center justify-center gap-2 mb-2">
+          <svg
+            className="w-4 h-4 text-slate-400"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2}
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
+          <p className="text-xs text-slate-500">
+            Redirecting in{' '}
+            <span className="font-semibold text-slate-700">
+              {countdown}s
+            </span>
+          </p>
         </div>
-        <p className="text-slate-500 text-sm">
-          Logging out in<br />
-          <span className="font-semibold">{countdown} second{countdown !== 1 ? 's' : ''}</span>
-        </p>
+
+        {/* Subtle progress bar */}
+        <div className="w-full bg-slate-200 rounded-full h-1 overflow-hidden">
+          <div
+            className="h-full bg-blue-500 rounded-full transition-all duration-1000 ease-linear"
+            style={{ width: `${((5 - countdown) / 5) * 100}%` }}
+          />
+        </div>
       </div>
 
-      {/* Progress bar */}
-      <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
-        <div
-          className="h-full bg-red-500 rounded-full transition-all duration-1000"
-          style={{ width: `${(countdown / 5) * 100}%` }}
-        />
-      </div>
-
-      <p className="text-xs text-slate-400 mt-3">
-        Please login again to continue using WabMeta
+      {/* Subtle footer */}
+      <p className="text-xs text-slate-400 text-center">
+        You will be redirected to the sign in page
       </p>
     </div>
   </div>
@@ -103,13 +125,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     error: null,
   });
 
-  // ✅ NEW: Force logout popup state
+  // ✅ State me title bhi add karo
   const [forceLogoutState, setForceLogoutState] = useState<{
     show: boolean;
+    title: string;
     message: string;
     countdown: number;
   }>({
     show: false,
+    title: '',
     message: '',
     countdown: 5,
   });
@@ -182,60 +206,69 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     navigate('/login', { replace: true });
   }, [navigate, clearAuthData]);
 
-  // ✅ NEW: Force logout function - socket event pe call hoga
-  const triggerForceLogout = useCallback((message: string) => {
-    console.log('🔒 Force logout triggered:', message);
+  // ✅ triggerForceLogout function update karo
+  const triggerForceLogout = useCallback(
+    (title: string, message: string) => {
+      console.log('🔒 Session expired:', message);
 
-    // Countdown 5 se shuru karo
-    setForceLogoutState({
-      show: true,
-      message,
-      countdown: 5,
-    });
+      setForceLogoutState({
+        show: true,
+        title,
+        message,
+        countdown: 5,
+      });
 
-    // Countdown timer
-    let remaining = 5;
-    countdownTimer.current = setInterval(() => {
-      remaining -= 1;
-      setForceLogoutState(prev => ({
-        ...prev,
-        countdown: remaining,
-      }));
+      let remaining = 5;
+      countdownTimer.current = setInterval(() => {
+        remaining -= 1;
+        setForceLogoutState((prev) => ({
+          ...prev,
+          countdown: remaining,
+        }));
 
-      if (remaining <= 0) {
-        if (countdownTimer.current) {
-          clearInterval(countdownTimer.current);
+        if (remaining <= 0) {
+          if (countdownTimer.current) {
+            clearInterval(countdownTimer.current);
+          }
         }
-      }
-    }, 1000);
+      }, 1000);
 
-    // 5 second baad actual logout
-    forceLogoutTimer.current = setTimeout(async () => {
-      // Popup hide karo
-      setForceLogoutState({ show: false, message: '', countdown: 5 });
+      forceLogoutTimer.current = setTimeout(async () => {
+        setForceLogoutState({
+          show: false,
+          title: '',
+          message: '',
+          countdown: 5,
+        });
 
-      // Auth data clear karo
-      clearAuthData();
-      removeAuthToken();
+        clearAuthData();
+        removeAuthToken();
 
-      setState({
-        user: null,
-        organization: null,
-        isAuthenticated: false,
-        isLoading: false,
-        error: null,
-      });
+        setState({
+          user: null,
+          organization: null,
+          isAuthenticated: false,
+          isLoading: false,
+          error: null,
+        });
 
-      // Login page pe redirect karo
-      navigate('/login', { replace: true });
+        navigate('/login', { replace: true });
 
-      // Toast show karo
-      toast.error('You have been logged out. Please login again.', {
-        duration: 5000,
-        icon: '🔒',
-      });
-    }, 5000);
-  }, [clearAuthData, navigate]);
+        // ✅ Subtle toast - no admin reference
+        toast('Please sign in to continue', {
+          duration: 4000,
+          icon: '🔐',
+          style: {
+            background: '#1e293b',
+            color: '#fff',
+            borderRadius: '12px',
+            padding: '12px 16px',
+          },
+        });
+      }, 5000);
+    },
+    [clearAuthData, navigate]
+  );
 
   // ✅ Cleanup timers on unmount
   useEffect(() => {
@@ -245,17 +278,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
   }, []);
 
-  // ✅ NEW: Socket force_logout event listener
-  // Window custom event use karenge (SocketProvider se AuthProvider communicate karega)
+  // ✅ Event listener bhi update karo
   useEffect(() => {
     const handleForceLogout = (event: CustomEvent) => {
-      const { message } = event.detail || {};
+      const { title, message } = event.detail || {};
       triggerForceLogout(
-        message || 'Your account credentials have been changed. Please login again.'
+        title || 'Session Expired',
+        message || 'Your session has expired. Please sign in to continue.'
       );
     };
 
-    // ✅ Custom event listen karo
     window.addEventListener('force_logout', handleForceLogout as EventListener);
 
     return () => {
@@ -561,9 +593,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   return (
     <AuthContext.Provider value={value}>
-      {/* ✅ Force logout popup - sabse upar render hoga */}
+      {/* ✅ Professional session expired popup */}
       {forceLogoutState.show && (
         <ForceLogoutPopup
+          title={forceLogoutState.title}
           message={forceLogoutState.message}
           countdown={forceLogoutState.countdown}
         />

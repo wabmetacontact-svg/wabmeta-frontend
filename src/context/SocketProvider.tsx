@@ -127,19 +127,21 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       }
     });
 
-    // ✅ NEW: Force logout event handle karo
+    // ✅ Force logout event handler
     newSocket.on('force_logout', (data: {
       reason: string;
+      title?: string;        // ✅ NEW
       message: string;
       timestamp: string;
     }) => {
-      console.log('🔒 Force logout event received:', data);
+      console.log('🔒 Session expired event received');
 
-      // ✅ Window custom event dispatch karo → AuthProvider sunega
+      // ✅ Custom event dispatch with title
       window.dispatchEvent(
         new CustomEvent('force_logout', {
           detail: {
             reason: data.reason,
+            title: data.title || 'Session Expired',
             message: data.message,
           },
         })
