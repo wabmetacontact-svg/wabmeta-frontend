@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import MetaConnectModal from '../dashboard/MetaConnectModal';
 import {
   Phone, CheckCircle, Trash2, Loader2, Star, Cloud, Plus,
   RefreshCw, AlertCircle, TrendingUp, Activity, Shield, Clock,
@@ -88,7 +89,18 @@ const formatLastSynced = (date: string) => {
 export default function WhatsAppSettings() {
   const [accounts, setAccounts] = useState<WhatsAppAccount[]>([]);
   const [loading, setLoading] = useState(true);
-  const [connecting, setConnecting] = useState(false);
+  const [showConnectModal, setShowConnectModal] = useState(false);
+
+  // orgId localStorage se (api.ts wala hi pattern)
+  const getOrgId = (): string => {
+    try {
+      const raw = localStorage.getItem('wabmeta_org');
+      const org = raw ? JSON.parse(raw) : null;
+      return org?.id || localStorage.getItem('currentOrganizationId') || '';
+    } catch {
+      return localStorage.getItem('currentOrganizationId') || '';
+    }
+  };
   const [syncing, setSyncing] = useState(false);
   const [syncingAccountId, setSyncingAccountId] = useState<string | null>(null);
   const [lastSyncTime, setLastSyncTime] = useState<Date | null>(null);
@@ -173,58 +185,12 @@ export default function WhatsAppSettings() {
     return () => clearInterval(interval);
   }, [syncAllQuality]);
 
-  const handleConnect = async () => {
+  const handleConnect = () => {
     if (connectedAccounts?.length > 0) {
       toast.error('Please disconnect the current account before connecting a new one.');
       return;
     }
-    setConnecting(true);
-    try {
-      const { data } = await api.get('/meta/oauth-url', {
-        params: { connectionType: 'CLOUD_API' },
-      });
-      localStorage.setItem('wabmeta_connection_type', 'CLOUD_API');
-      const popupWidth = 600;
-      const popupHeight = 700;
-      const left = window.screenX + (window.outerWidth - popupWidth) / 2;
-      const top = window.screenY + (window.outerHeight - popupHeight) / 2;
-      const popup = window.open(
-        data.data.url,
-        'wabmeta_meta_connect',
-        `width=${popupWidth},height=${popupHeight},left=${left},top=${top},scrollbars=yes,resizable=yes`
-      );
-      if (!popup || popup.closed) {
-        window.location.href = data.data.url;
-        return;
-      }
-      const handleMessage = (event: MessageEvent) => {
-        if (event.origin !== window.location.origin) return;
-        if (event.data?.type === 'META_CALLBACK_SUCCESS') {
-          window.removeEventListener('message', handleMessage);
-          popup.close();
-          setConnecting(false);
-          fetchAccounts().then(() => syncAllQuality(false));
-          toast.success('WhatsApp connected successfully!');
-        } else if (event.data?.type === 'META_CALLBACK_ERROR') {
-          window.removeEventListener('message', handleMessage);
-          popup.close();
-          setConnecting(false);
-          toast.error(event.data.error || 'Failed to connect');
-        }
-      };
-      window.addEventListener('message', handleMessage);
-      const pollPopup = setInterval(() => {
-        if (popup.closed) {
-          clearInterval(pollPopup);
-          window.removeEventListener('message', handleMessage);
-          setConnecting(false);
-          fetchAccounts().then(() => syncAllQuality(false));
-        }
-      }, 500);
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Failed to start connection');
-      setConnecting(false);
-    }
+    setShowConnectModal(true);
   };
 
   const handleDisconnect = async (accountId: string) => {
@@ -491,16 +457,11 @@ export default function WhatsAppSettings() {
             </p>
             <button
               onClick={handleConnect}
-              disabled={connecting}
               className="inline-flex items-center justify-center gap-2 px-6 py-3
                 bg-green-600 text-white rounded-xl hover:bg-green-700
-                disabled:opacity-50 font-semibold transition-colors"
+                font-semibold transition-colors"
             >
-              {connecting ? (
-                <Loader2 className="w-5 h-5 animate-spin" />
-              ) : (
-                <Plus className="w-5 h-5" />
-              )}
+              <Plus className="w-5 h-5" />
               Connect with Meta
             </button>
           </div>
@@ -527,6 +488,18 @@ export default function WhatsAppSettings() {
             </div>
           </div>
         </div>
+      )}
+
+      {showConnectModal && (
+        <MetaConnectModal
+          isOpen={showConnectModal}
+          organizationId={getOrgId()}
+          onClose={() => setShowConnectModal(false)}
+          onConnected={() => {
+            setShowConnectModal(false);
+            fetchAccounts().then(() => syncAllQuality(false));
+          }}
+        />
       )}
     </div>
   );

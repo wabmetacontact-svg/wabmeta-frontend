@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   X,
   Loader2,
@@ -24,6 +24,7 @@ const MetaConnectModal: React.FC<MetaConnectModalProps> = ({
   organizationId,
   onConnected,
 }) => {
+  const sessionInfoRef = useRef<{ wabaId?: string; phoneNumberId?: string }>({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [progress, setProgress] = useState<string>('');
@@ -47,9 +48,9 @@ const MetaConnectModal: React.FC<MetaConnectModalProps> = ({
           console.log('📱 Embedded Signup Event:', data);
           
           if (data.event === 'FINISH') {
-            console.log('✅ Embedded Signup completed:', data.data);
-            // The data contains: phone_number_id, waba_id, business_id
-            // FB.login callback will handle the actual connection
+            const { phone_number_id, waba_id } = data.data || {};
+            sessionInfoRef.current = { wabaId: waba_id, phoneNumberId: phone_number_id };
+            console.log('✅ Session captured:', sessionInfoRef.current);
             setProgress('Setup complete! Verifying...');
           } else if (data.event === 'CANCEL') {
             console.log('❌ User cancelled Embedded Signup');
@@ -175,6 +176,8 @@ const MetaConnectModal: React.FC<MetaConnectModalProps> = ({
       const response = await metaApi.connect({
         code,
         organizationId,
+        wabaId: sessionInfoRef.current.wabaId,
+        phoneNumberId: sessionInfoRef.current.phoneNumberId,
       });
 
       const data = response.data;

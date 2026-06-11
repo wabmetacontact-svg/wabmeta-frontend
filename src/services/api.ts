@@ -891,7 +891,12 @@ export const meta = {
     }),
   callback: (data: { code: string; organizationId: string }) =>
     api.post<ApiResponse<{ account: any }>>('/meta/callback', data),
-  connect: (data: { code: string; organizationId: string }) =>
+  connect: (data: {
+    code: string;
+    organizationId: string;
+    wabaId?: string;
+    phoneNumberId?: string;
+  }) =>
     api.post<ApiResponse<{ account: any }>>('/meta/connect', data),
   getOrgStatus: (organizationId: string) =>
     api.get<ApiResponse<{ status: 'CONNECTED' | 'DISCONNECTED'; connectedCount: number }>>(
