@@ -167,7 +167,7 @@ const CTA: React.FC = () => {
 
                   <span className="relative z-10 flex items-center gap-2">
                     <Zap className="w-4 h-4" />
-                    Start free, no card
+                    Start free
                     <ArrowUpRight className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
                   </span>
                 </Link>
