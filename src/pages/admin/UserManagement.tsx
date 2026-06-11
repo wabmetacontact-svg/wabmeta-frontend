@@ -354,18 +354,52 @@ interface PasswordModalProps {
   onUpdate: (userId: string, newPassword: string, logoutDevices: boolean) => Promise<void>;
 }
 
-const PasswordModal: React.FC<PasswordModalProps> = ({ isOpen, user, onClose, onUpdate }) => {
+const PasswordModal: React.FC<PasswordModalProps> = ({
+  isOpen,
+  user,
+  onClose,
+  onUpdate,
+}) => {
   const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [logoutDevices, setLogoutDevices] = useState(true);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [strength, setStrength] = useState(0);
+
+  // Password strength calculator
+  useEffect(() => {
+    let score = 0;
+    if (newPassword.length >= 8) score++;
+    if (/[A-Z]/.test(newPassword)) score++;
+    if (/[0-9]/.test(newPassword)) score++;
+    if (/[^A-Za-z0-9]/.test(newPassword)) score++;
+    setStrength(score);
+  }, [newPassword]);
+
+  const strengthConfig = [
+    { label: 'Weak', color: 'bg-red-500', textColor: 'text-red-600' },
+    { label: 'Fair', color: 'bg-orange-500', textColor: 'text-orange-600' },
+    { label: 'Good', color: 'bg-yellow-500', textColor: 'text-yellow-600' },
+    { label: 'Strong', color: 'bg-green-500', textColor: 'text-green-600' },
+    { label: 'Very Strong', color: 'bg-emerald-500', textColor: 'text-emerald-600' },
+  ];
+
+  const currentStrength = strengthConfig[Math.min(strength, 4)];
 
   if (!isOpen || !user) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (newPassword.length < 4) {
-      toast.error('Password must be at least 4 characters');
+
+    if (newPassword.length < 6) {
+      toast.error('Password must be at least 6 characters');
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      toast.error('Passwords do not match');
       return;
     }
 
@@ -373,101 +407,185 @@ const PasswordModal: React.FC<PasswordModalProps> = ({ isOpen, user, onClose, on
     try {
       await onUpdate(user.id, newPassword, logoutDevices);
       setNewPassword('');
+      setConfirmPassword('');
       setLogoutDevices(true);
       onClose();
-    } catch (error) {
-      // toast handled in parent
     } finally {
       setLoading(false);
     }
   };
 
+  const handleClose = () => {
+    if (!loading) {
+      setNewPassword('');
+      setConfirmPassword('');
+      setLogoutDevices(true);
+      onClose();
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      <div className="relative bg-[#0a0e27] rounded-2xl shadow-xl max-w-md w-full p-6">
-        <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-          <ShieldCheck className="w-5 h-5 text-primary-500" />
-          Manage Password
-        </h2>
-        
-        <p className="text-gray-400 text-sm mb-6">
-          Set a new password for <strong>{user.email}</strong>.
-        </p>
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={handleClose} />
 
-        <div className="space-y-4">
-          {user.password && (
-            <div className="p-3 bg-[#0a0e27] rounded-lg border border-white/[0.08]">
-              <p className="text-xs text-gray-500 mb-1">Current Password Hash (Database):</p>
-              <p className="text-xs font-mono text-gray-400 break-all bg-[#0a0e27] p-2 rounded">
-                {user.password}
-              </p>
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">
-                New Password
-              </label>
-              <div className="relative">
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  placeholder="Enter new password"
-                  className="w-full px-4 py-2 bg-[#0a0e27] border border-white/[0.1] rounded-xl focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none"
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-400"
-                >
-                  <Eye className="w-4 h-4" />
-                </button>
+      <div className="relative bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden">
+        {/* Header */}
+        <div className="bg-gradient-to-r from-slate-800 to-slate-900 px-6 py-5">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center">
+                <Key className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h2 className="text-lg font-bold text-white">Change Password</h2>
+                <p className="text-slate-400 text-xs mt-0.5">
+                  Admin override for user account
+                </p>
               </div>
             </div>
+            <button
+              onClick={handleClose}
+              disabled={loading}
+              className="p-1.5 text-slate-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
 
-            {/* Logout all devices beautiful toggle switch */}
-            <div className="flex items-center space-x-3 bg-white/[0.02] border border-white/[0.05] p-3.5 rounded-xl transition-all hover:bg-white/[0.04] mt-4">
-              <label className="relative flex items-center cursor-pointer select-none w-full">
-                <div className="flex-1 pr-2">
-                  <div className="text-sm font-semibold text-white">Logout all active devices</div>
-                  <div className="text-xs text-gray-500 mt-0.5">User will be prompted to log in again on all devices</div>
-                </div>
-                <div className="relative shrink-0">
-                  <input
-                    type="checkbox"
-                    id="logoutDevices"
-                    checked={logoutDevices}
-                    onChange={(e) => setLogoutDevices(e.target.checked)}
-                    className="sr-only peer"
-                  />
-                  <div className="w-11 h-6 bg-white/[0.08] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-gray-400 after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600 peer-checked:after:bg-white peer-checked:after:border-transparent transition-all"></div>
-                </div>
-              </label>
-            </div>
+        {/* User info banner */}
+        <div className="px-6 py-3 bg-blue-50 border-b border-blue-100 flex items-center gap-2">
+          <div className="w-7 h-7 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0">
+            {getUserInitials(user)}
+          </div>
+          <div className="min-w-0">
+            <p className="text-sm font-semibold text-blue-900 truncate">
+              {getUserDisplayName(user)}
+            </p>
+            <p className="text-xs text-blue-600 truncate">{user.email}</p>
+          </div>
+          <StatusBadge status={user.status} />
+        </div>
 
-            <div className="flex gap-3 justify-end mt-6">
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          {/* New Password */}
+          <div>
+            <label className="block text-sm font-semibold text-slate-700 mb-1.5">
+              New Password
+            </label>
+            <div className="relative">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="Enter new password"
+                className="w-full px-4 py-2.5 pr-10 border border-slate-200 rounded-xl
+                  bg-white text-slate-900 placeholder:text-slate-400
+                  focus:outline-none focus:ring-2 focus:ring-slate-900/20 focus:border-slate-900
+                  transition-colors"
+                required
+                autoFocus
+              />
               <button
                 type="button"
-                onClick={onClose}
-                className="px-4 py-2 text-gray-300 bg-[#0a0e27]/[0.04] rounded-xl hover:bg-gray-200"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
               >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={loading || !newPassword}
-                className="px-4 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700 flex items-center gap-2 disabled:opacity-50 transition-all font-medium"
-              >
-                {loading && <Loader2 className="w-4 h-4 animate-spin" />}
-                Update Password
+                <Eye className="w-4 h-4" />
               </button>
             </div>
-          </form>
-        </div>
+
+            {/* Password strength */}
+            {newPassword.length > 0 && (
+              <div className="mt-2">
+                <div className="flex gap-1 mb-1">
+                  {[0, 1, 2, 3].map((i) => (
+                    <div
+                      key={i}
+                      className={`h-1 flex-1 rounded-full transition-all ${
+                        i < strength ? currentStrength.color : 'bg-slate-200'
+                      }`}
+                    />
+                  ))}
+                </div>
+                <p className={`text-xs font-medium ${currentStrength.textColor}`}>
+                  {currentStrength.label}
+                </p>
+              </div>
+            )}
+          </div>
+
+          {/* Confirm Password */}
+          <div>
+            <label className="block text-sm font-semibold text-slate-700 mb-1.5">
+              Confirm Password
+            </label>
+            <div className="relative">
+              <input
+                type={showConfirm ? 'text' : 'password'}
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Confirm new password"
+                className={`w-full px-4 py-2.5 pr-10 border rounded-xl
+                  bg-white text-slate-900 placeholder:text-slate-400
+                  focus:outline-none focus:ring-2 focus:ring-slate-900/20 focus:border-slate-900
+                  transition-colors ${
+                    confirmPassword && newPassword !== confirmPassword
+                      ? 'border-red-300 focus:border-red-500 focus:ring-red-500/20'
+                      : 'border-slate-200'
+                  }`}
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirm(!showConfirm)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+              >
+                <Eye className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+
+          {/* Logout all devices beautiful toggle switch */}
+          <div className="flex items-center space-x-3 bg-slate-50 border border-slate-100 p-3.5 rounded-xl transition-all hover:bg-slate-100 mt-4">
+            <label className="relative flex items-center cursor-pointer select-none w-full">
+              <div className="flex-1 pr-2">
+                <div className="text-sm font-semibold text-slate-900">Logout all active devices</div>
+                <div className="text-xs text-slate-500 mt-0.5">User will be prompted to log in again on all devices</div>
+              </div>
+              <div className="relative shrink-0">
+                <input
+                  type="checkbox"
+                  id="logoutDevices"
+                  checked={logoutDevices}
+                  onChange={(e) => setLogoutDevices(e.target.checked)}
+                  className="sr-only peer"
+                />
+                <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-slate-900 transition-all"></div>
+              </div>
+            </label>
+          </div>
+
+          <div className="flex gap-3 justify-end mt-6">
+            <button
+              type="button"
+              onClick={handleClose}
+              disabled={loading}
+              className="px-4 py-2 text-slate-700 bg-slate-100 rounded-xl hover:bg-slate-200 transition-colors disabled:opacity-50"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={loading || !newPassword || newPassword !== confirmPassword}
+              className="px-4 py-2 bg-slate-900 text-white rounded-xl hover:bg-slate-800 flex items-center gap-2 disabled:opacity-50 transition-all font-semibold"
+            >
+              {loading && <Loader2 className="w-4 h-4 animate-spin" />}
+              Update Password
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );

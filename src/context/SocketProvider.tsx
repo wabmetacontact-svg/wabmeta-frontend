@@ -2,7 +2,7 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { SocketContext } from './SocketContext';
-import { useAuth } from './AuthContext'; // ✅ ADD
+import { useAuth } from './AuthContext';
 
 const getSocketUrl = (): string => {
   const envUrl = import.meta.env.VITE_API_URL;
@@ -37,21 +37,32 @@ const getToken = (): string | null => {
   );
 };
 
+// ✅ NEW: User ID get karo localStorage se
+const getUserId = (): string | null => {
+  try {
+    const userData = localStorage.getItem('wabmeta_user');
+    if (userData) {
+      const parsed = JSON.parse(userData);
+      if (parsed?.id) return parsed.id;
+    }
+  } catch {}
+  return null;
+};
+
 export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
 
   const socketRef = useRef<Socket | null>(null);
   const orgIdRef = useRef<string | null>(null);
+  const userIdRef = useRef<string | null>(null);
 
-  // ✅ Auth state se trigger karo
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, user } = useAuth();
 
   useEffect(() => {
-    // ✅ Auth check
     if (isLoading) return;
+
     if (!isAuthenticated) {
-      // Logout hua - socket close karo
       if (socketRef.current) {
         console.log('🔌 Logout detected, closing socket');
         socketRef.current.disconnect();
@@ -68,17 +79,19 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       return;
     }
 
-    // ✅ Already connected? Skip
     if (socketRef.current?.connected) {
       console.log('⚡ Socket already connected, skipping');
       return;
     }
 
     const organizationId = getOrgId();
+    const userId = user?.id || getUserId(); // ✅ User ID get karo
+
     orgIdRef.current = organizationId;
+    userIdRef.current = userId;
 
     const SOCKET_URL = getSocketUrl();
-    console.log('🔌 Socket connecting to:', SOCKET_URL, '| Org:', organizationId);
+    console.log('🔌 Socket connecting to:', SOCKET_URL, '| Org:', organizationId, '| User:', userId);
 
     const newSocket = io(SOCKET_URL, {
       auth: { token, organizationId },
@@ -99,11 +112,38 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       console.log('✅ Socket connected:', newSocket.id);
       setIsConnected(true);
 
+      // ✅ Org room join
       const orgId = orgIdRef.current;
       if (orgId) {
         newSocket.emit('org:join', orgId);
         console.log('📂 Joined org room:', orgId);
       }
+
+      // ✅ NEW: User room join (force logout ke liye)
+      const uId = userIdRef.current;
+      if (uId) {
+        newSocket.emit('user:join', uId);
+        console.log('👤 Joined user room:', uId);
+      }
+    });
+
+    // ✅ NEW: Force logout event handle karo
+    newSocket.on('force_logout', (data: {
+      reason: string;
+      message: string;
+      timestamp: string;
+    }) => {
+      console.log('🔒 Force logout event received:', data);
+
+      // ✅ Window custom event dispatch karo → AuthProvider sunega
+      window.dispatchEvent(
+        new CustomEvent('force_logout', {
+          detail: {
+            reason: data.reason,
+            message: data.message,
+          },
+        })
+      );
     });
 
     newSocket.on('disconnect', (reason) => {
@@ -118,24 +158,29 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
     newSocket.on('reconnect', (attempt) => {
       console.log(`🔄 Socket reconnected after ${attempt} attempts`);
+
       const orgId = orgIdRef.current;
-      if (orgId) {
-        newSocket.emit('org:join', orgId);
-      }
+      if (orgId) newSocket.emit('org:join', orgId);
+
+      // ✅ Reconnect pe bhi user room rejoin karo
+      const uId = userIdRef.current;
+      if (uId) newSocket.emit('user:join', uId);
     });
 
     setSocket(newSocket);
 
     return () => {
-      console.log('🔌 Socket cleanup (deps changed)');
+      console.log('🔌 Socket cleanup');
       if (socketRef.current) {
+        // ✅ force_logout listener remove karo
+        socketRef.current.off('force_logout');
         socketRef.current.disconnect();
         socketRef.current = null;
       }
       setSocket(null);
       setIsConnected(false);
     };
-  }, [isAuthenticated, isLoading]); // ✅ Auth state pe react karo
+  }, [isAuthenticated, isLoading, user?.id]);
 
   const joinConversation = useCallback((conversationId: string) => {
     if (socketRef.current?.connected && conversationId) {
