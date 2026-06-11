@@ -92,17 +92,6 @@ const CTA: React.FC = () => {
             </div>
           </div>
 
-          <div className="hidden lg:block absolute bottom-12 left-12 animate-float"
-            style={{ animationDelay: '3s' }}>
-            <div className="bg-white/80 backdrop-blur-xl border border-gray-200 
-              rounded-2xl p-3 shadow-lg transform -rotate-3">
-              <div className="flex items-center gap-2">
-                <Sparkles className="w-3 h-3 text-amber-500" />
-                <span className="text-xs text-gray-900 font-mono font-medium">No card required</span>
-              </div>
-            </div>
-          </div>
-
           {/* ✅ MAIN CONTENT */}
           <div className="relative grid grid-cols-12 gap-8 items-center">
 
