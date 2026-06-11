@@ -15,10 +15,10 @@ const Navbar = () => {
 
   const navLinks = [
     { label: 'Features', id: 'features' },
-    { label: 'How It Works', id: 'how-it-works' },
     { label: 'Services', id: 'services' },
+    { label: 'About Us', id: 'about' },
+    { label: 'How It Works', id: 'how-it-works' },
     { label: 'Pricing', id: 'pricing' },
-    { label: 'Team', id: 'team' },
   ];
 
   const scrollToSection = (id: string) => {

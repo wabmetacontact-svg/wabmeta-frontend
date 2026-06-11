@@ -7,6 +7,7 @@ import HowItWorks from '../components/landing/HowItWorks';
 import Pricing from '../components/landing/Pricing';
 import Team from '../components/landing/Team';
 import WorkShowcase from '../components/landing/WorkShowcase';
+import About from '../components/landing/About';
 import Footer from '../components/landing/Footer';
 
 const Landing = () => {
@@ -15,12 +16,13 @@ const Landing = () => {
       <Navbar />
       <Hero />
       <Features />
+      <WorkShowcase />
+      <About />
       <AutomateBusiness />
       <MetaAdsService />
       <HowItWorks />
       <Pricing />
       <Team />
-      <WorkShowcase />
       <Footer />
     </div>
   );
