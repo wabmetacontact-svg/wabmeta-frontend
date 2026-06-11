@@ -1,4 +1,3 @@
-// src/components/landing/Team.tsx
 import React from 'react';
 import { Linkedin, Twitter, Mail, Github, Code, Briefcase } from 'lucide-react';
 
@@ -39,7 +38,7 @@ const teamMembers: TeamMember[] = [
       email: 'ankit@wabmeta.com',
     },
     icon: Briefcase,
-    accentColor: '#2883CF',
+    accentColor: '#1b8b4b',
     initials: 'AV',
   },
   {
@@ -70,7 +69,7 @@ const Team: React.FC = () => {
         <div className="absolute inset-0"
           style={{
             background: `
-              radial-gradient(ellipse 60% 50% at 25% 30%, rgba(40, 131, 207, 0.05) 0%, transparent 60%),
+              radial-gradient(ellipse 60% 50% at 25% 30%, rgba(27, 139, 75, 0.05) 0%, transparent 60%),
               radial-gradient(ellipse 60% 50% at 75% 70%, rgba(168, 85, 247, 0.05) 0%, transparent 60%)
             `,
           }}
@@ -102,7 +101,7 @@ const Team: React.FC = () => {
                 One product.
               </span>
               <br />
-              <span className="bg-gradient-to-r from-[#2883CF] to-sky-500 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-green-700 via-emerald-600 to-green-700 bg-clip-text text-transparent">
                 No middle layer.
               </span>
             </h2>
@@ -282,7 +281,7 @@ const Team: React.FC = () => {
                       {member.social.email && (
                         <a href={`mailto:${member.social.email}`}
                           className="w-10 h-10 rounded-full bg-gray-50 border border-gray-200
-                            hover:bg-blue-500/10 hover:border-blue-400/40 hover:text-[#2883CF]
+                            hover:bg-green-500/10 hover:border-green-400/40 hover:text-[#1b8b4b]
                             text-gray-500 flex items-center justify-center
                             transition-all duration-300">
                           <Mail className="w-4 h-4" />

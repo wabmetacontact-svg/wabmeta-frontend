@@ -283,46 +283,74 @@ const Footer: React.FC = () => {
           {/* Nexron Premium Card */}
           <div className="relative group">
             {/* Animated Border Gradient */}
-            <div className="absolute -inset-[1px] bg-gradient-to-r from-gray-800 via-emerald-500/20 to-gray-800 rounded-[2rem] opacity-50 group-hover:opacity-100 transition-all duration-700" />
+            <div className="absolute -inset-[1px] bg-gradient-to-r from-gray-800 via-blue-500/20 to-gray-800 rounded-[2rem] opacity-50 group-hover:opacity-100 transition-all duration-700" />
             
             {/* Background Glow */}
-            <div className="absolute inset-0 bg-emerald-500/5 blur-[100px] rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
+            <div className="absolute inset-0 bg-blue-500/5 blur-[100px] rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
 
-            <div className="relative bg-[#050505]/60 backdrop-blur-2xl rounded-[1.9rem] p-6 lg:p-10 border border-white/5 overflow-hidden">
+            <div className="relative bg-[#050505]/75 backdrop-blur-2xl rounded-[1.9rem] p-6 lg:p-10 border border-white/5 overflow-hidden">
               {/* Decorative Corner */}
-              <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-full blur-3xl -mr-16 -mt-16 group-hover:bg-emerald-500/10 transition-colors duration-700" />
+              <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-full blur-3xl -mr-16 -mt-16 group-hover:bg-blue-500/10 transition-colors duration-700" />
 
               <div className="flex flex-col lg:flex-row lg:items-center gap-10">
                 {/* Left: Company High-Profile */}
                 <div className="flex-1 space-y-6">
-                  <div className="flex items-start gap-5">
-                    <div className="relative flex-shrink-0">
-                      <div className="absolute inset-0 bg-emerald-500/20 blur-xl rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
-                      <div className="relative p-4 bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl border border-white/10 shadow-2xl group-hover:border-emerald-500/30 transition-colors duration-500">
-                        <Building2 className="w-6 h-6 text-emerald-400" />
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-6">
+                    {/* Nexron Custom SVG Logo */}
+                    <div className="relative flex-shrink-0 w-16 h-16">
+                      <div className="absolute inset-0 bg-blue-500/20 blur-xl rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
+                      <div className="relative p-2 bg-gradient-to-br from-gray-950 to-gray-900 rounded-2xl border border-white/10 shadow-2xl group-hover:border-blue-500/30 transition-colors duration-500">
+                        <svg viewBox="0 0 120 120" className="w-12 h-12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <defs>
+                            <linearGradient id="metalGrad" x1="0" y1="0" x2="120" y2="120" gradientUnits="userSpaceOnUse">
+                              <stop offset="0%" stopColor="#E2E8F0" />
+                              <stop offset="35%" stopColor="#94A3B8" />
+                              <stop offset="50%" stopColor="#F8FAFC" />
+                              <stop offset="75%" stopColor="#475569" />
+                              <stop offset="100%" stopColor="#CBD5E1" />
+                            </linearGradient>
+                            <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+                              <feGaussianBlur stdDeviation="3" result="blur" />
+                              <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                            </filter>
+                          </defs>
+                          {/* N Shape */}
+                          <path d="M30 30 L48 30 L60 85 L42 85 Z" fill="url(#metalGrad)" />
+                          <path d="M62 30 L80 30 L68 85 L50 85 Z" fill="url(#metalGrad)" />
+                          <path d="M30 30 L80 30 L60 55 L10 55 Z" fill="url(#metalGrad)" opacity="0.6" />
+                          
+                          {/* Orbit Ring */}
+                          <path d="M12 60 C 8 45, 112 30, 108 65 C 104 80, 16 85, 12 60 Z" stroke="url(#metalGrad)" strokeWidth="3.5" strokeLinecap="round" />
+                          
+                          {/* Glowing Dot */}
+                          <circle cx="88" cy="38" r="4.5" fill="#60A5FA" filter="url(#glow)" />
+                          <circle cx="88" cy="38" r="2" fill="#FFFFFF" />
+                        </svg>
                       </div>
                     </div>
                     
                     <div>
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="h-px w-4 bg-emerald-500/50" />
-                        <p className="text-[10px] text-emerald-500 uppercase tracking-[0.3em] font-black">
+                      <div className="flex items-center gap-2 mb-1.5">
+                        <span className="h-px w-4 bg-blue-500/50" />
+                        <p className="text-[10px] text-blue-400 uppercase tracking-[0.3em] font-black">
                           Corporate Headquarters
                         </p>
                       </div>
-                      <h4 className="text-xl lg:text-3xl font-black text-white tracking-tight group-hover:text-emerald-50 transition-colors">
-                        Nexron Group <span className="text-emerald-500">Private Limited</span>
+                      <h4 className="text-2xl lg:text-3xl font-extrabold text-white tracking-tight group-hover:text-blue-50 transition-colors">
+                        NEXRON GROUP <span className="text-blue-500 font-light">PRIVATE LIMITED</span>
                       </h4>
-                      <p className="text-gray-400 text-sm mt-1 font-medium italic">
-                        Leading the future of digital communication.
+                      <p className="text-gray-400 text-sm mt-1.5 font-medium tracking-wide flex items-center gap-1.5">
+                        <span>One Vision.</span>
+                        <span className="w-1.5 h-1.5 bg-blue-500 rounded-full" />
+                        <span className="text-blue-400">Infinite Possibilities.</span>
                       </p>
                     </div>
                   </div>
 
-                  <div className="pt-6 border-t border-white/5">
-                    <div className="space-y-1">
-                      <p className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">Director</p>
-                      <p className="text-gray-200 font-semibold text-lg">Mirtunjay Thakur</p>
+                  <div className="pt-6 border-t border-white/5 flex items-center justify-between">
+                    <div>
+                      <p className="text-[10px] text-gray-500 uppercase tracking-widest font-bold mb-1">Director</p>
+                      <p className="text-gray-100 font-bold text-lg tracking-wide">Mirtunjay Thakur</p>
                     </div>
                   </div>
                 </div>
@@ -330,18 +358,18 @@ const Footer: React.FC = () => {
                 {/* Vertical Divider - Desktop Only */}
                 <div className="hidden lg:block w-px h-32 bg-gradient-to-b from-transparent via-white/10 to-transparent" />
 
-                {/* Right: Connect Card */}
+                {/* Right: Direct Contact */}
                 <div className="lg:w-80 space-y-4">
-                  <p className="text-[10px] text-gray-500 uppercase tracking-widest font-bold mb-4">Direct Contact</p>
+                  <p className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">Direct Contact</p>
                   
                   <div className="space-y-3">
-                    <div className="flex items-center gap-4 p-3 rounded-2xl bg-white/5 border border-white/5 group-hover:border-white/10 transition-colors">
-                      <div className="p-2 bg-blue-500/10 rounded-xl">
+                    <div className="flex items-center gap-4 p-4 rounded-2xl bg-white/5 border border-white/5 group-hover:border-blue-500/20 transition-all duration-300">
+                      <div className="p-2.5 bg-blue-500/10 rounded-xl">
                         <MessageCircle className="w-4 h-4 text-blue-400" />
                       </div>
                       <div>
-                        <p className="text-[9px] text-gray-500 uppercase font-black tracking-tighter">Availability</p>
-                        <p className="text-xs text-gray-300 font-medium">24/7 Priority Assistance</p>
+                        <p className="text-[9px] text-gray-500 uppercase font-black tracking-widest">Availability</p>
+                        <p className="text-sm text-gray-200 font-semibold">24/7 Priority Assistance</p>
                       </div>
                     </div>
                   </div>

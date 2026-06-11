@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en" class="light">
   <head>
     <meta charset="UTF-8" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
@@ -10,22 +10,53 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>WabMeta - WhatsApp Marketing & Automation</title>
     <meta name="description" content="Powerful WhatsApp Marketing and Automation Platform" />
-  <script type="module" crossorigin src="/assets/index-BeCbRkFG.js"></script>
-  <link rel="stylesheet" crossorigin href="/assets/index-D0aU3y2v.css">
 
-  <body>
-    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-    <div id="root"></div>
+    <!-- ════════════════════════════════════════════════ -->
+    <!-- ✅ Google Analytics 4 (GA4) - Added 2026-01-15  -->
+    <!-- ════════════════════════════════════════════════ -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-PLS05L36HW"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-PLS05L36HW', {
+        page_path: window.location.pathname,
+        cookie_flags: 'SameSite=None;Secure'
+      });
+    </script>
+    <!-- ════════════════════════════════════════════════ -->
+
+    <!-- ✅ Facebook SDK - LOAD EARLY -->
     <script>
       window.fbAsyncInit = function() {
         FB.init({
-          appId      : 'YOUR_META_APP_ID',
-          cookie     : true,
-          xfbml      : true,
-          version    : 'v19.0'
+          appId: '1434968781548162',
+          cookie: true,
+          xfbml: true,
+          version: 'v23.0'
         });
+        window.__FB_INITIALIZED__ = true;
+        console.log('✅ Facebook SDK initialized from HTML');
+        
+        // Dispatch event so React knows SDK is ready
+        window.dispatchEvent(new Event('fb-sdk-ready'));
       };
+
+      (function(d, s, id) {
+        var js, fjs = d.getElementsByTagName(s)[0];
+        if (d.getElementById(id)) return;
+        js = d.createElement(s); js.id = id;
+        js.src = "https://connect.facebook.net/en_US/sdk.js";
+        fjs.parentNode.insertBefore(js, fjs);
+      }(document, 'script', 'facebook-jssdk'));
     </script>
-    <script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js"></script>
+    <!-- ✅ End Facebook SDK -->
+    <script type="module" crossorigin src="/assets/index-BBrWobPS.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-BJoYo99O.css">
+  </head>
+  <body>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <div id="root"></div>
   </body>
 </html>
