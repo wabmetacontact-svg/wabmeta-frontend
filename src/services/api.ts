@@ -881,16 +881,6 @@ export const whatsapp = {
 
 // ---------- META ----------
 export const meta = {
-  getOAuthUrl: (organizationId: string) =>
-    api.get<ApiResponse<{ url: string; state: string }>>('/meta/oauth-url', {
-      params: { organizationId },
-    }),
-  getAuthUrl: (organizationId: string) =>
-    api.get<ApiResponse<{ url: string; state: string }>>('/meta/auth/url', {
-      params: { organizationId },
-    }),
-  callback: (data: { code: string; organizationId: string }) =>
-    api.post<ApiResponse<{ account: any }>>('/meta/callback', data),
   connect: (data: {
     code: string;
     organizationId: string;

@@ -39,8 +39,7 @@ const ResetPassword = lazy(() => import('./pages/ResetPassword'));
 const VerifyEmail = lazy(() => import('./pages/VerifyEmail'));
 const VerifyOTP = lazy(() => import('./pages/VerifyOTP'));
 
-// OAuth
-const MetaCallback = lazy(() => import('./pages/MetaCallback'));
+
 
 // Dashboard
 const Dashboard = lazy(() => import('./pages/Dashboard'));
@@ -196,7 +195,7 @@ const PageTitleUpdater: React.FC = () => {
       '/reset-password': 'Reset Password | WabMeta',
       '/verify-email': 'Verify Email | WabMeta',
       '/verify-otp': 'Verify OTP | WabMeta',
-      '/meta/callback': 'Connecting... | WabMeta',
+
       '/dashboard': 'Dashboard | WabMeta',
       '/dashboard/inbox': 'Inbox | WabMeta',
       '/dashboard/contacts': 'Contacts | WabMeta',
@@ -299,10 +298,7 @@ const AppRoutes: React.FC = () => {
         <Route path="/verify-email" element={<VerifyEmail />} />
         <Route path="/verify-otp" element={<VerifyOTP />} />
 
-        {/* ============================== */}
-        {/* OAUTH CALLBACKS */}
-        {/* ============================== */}
-        <Route path="/meta/callback" element={<MetaCallback />} />
+
 
         {/* ============================== */}
         {/* PROTECTED DASHBOARD ROUTES */}

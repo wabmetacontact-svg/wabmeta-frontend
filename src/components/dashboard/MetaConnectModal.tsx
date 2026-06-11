@@ -219,36 +219,6 @@ const MetaConnectModal: React.FC<MetaConnectModalProps> = ({
     }
   };
 
-  const handleTokenCallback = async (accessToken: string) => {
-    try {
-      setProgress('Connecting to your WhatsApp Business Account...');
-
-      const response = await metaApi.connect({
-        code: accessToken,
-        organizationId,
-      });
-
-      const data = response.data;
-
-      if (data?.success !== false) {
-        setProgress('✅ Successfully connected!');
-        setSuccess(true);
-
-        setTimeout(() => {
-          onConnected?.();
-          onClose();
-        }, 2000);
-      } else {
-        throw new Error(data?.message || 'Connection failed');
-      }
-    } catch (err: any) {
-      const errorMsg = err.response?.data?.message || err.message || 'Connection failed';
-      setError(errorMsg);
-      setLoading(false);
-      setProgress('');
-      setShowInstructions(true);
-    }
-  };
 
   return (
     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
