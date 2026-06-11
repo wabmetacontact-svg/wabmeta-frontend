@@ -1,555 +1,83 @@
-// WorkShowcase.tsx - Complete Redesign
-// Matches WabMeta landing page theme exactly
+// WorkShowcase.tsx
+// Premium services showcase — Bento Grid style
+// Matches WabMeta landing page theme
 
-import { useEffect, useRef, useState } from 'react';
 import { 
-  ChevronLeft, ChevronRight, ArrowRight,
-  MessageCircle, Bot, Instagram, TrendingUp,
-  ShoppingBag, Cpu, Zap, Cloud
+  MessageCircle, Instagram, Code2, Target,
+  ArrowRight, Check, TrendingUp, Zap,
+  Globe, Smartphone, ShoppingBag, Sparkles,
+  BarChart3, Users, Send, Bot
 } from 'lucide-react';
 
-interface ShowcaseItem {
-  id: number;
-  title: string;
-  description: string;
-  tag: string;
-  tagBg: string;
-  tagText: string;
-  tagDot: string;
-  cardBg: string;
-  cardBorder: string;
-  cardHover: string;
-  titleColor: string;
-  descColor: string;
-  icon: React.ElementType;
-  iconBg: string;
-  iconColor: string;
-  visual: React.ReactNode;
-}
-
-// ─── Mini Visual Components ───────────────────────────────────────────────
-
-const WAVisual = () => (
-  <div className="relative h-full flex items-end justify-center pb-2">
-    {/* Background stacked cards */}
-    <div className="absolute bottom-8 left-2 w-36 bg-white rounded-2xl p-2.5 shadow-md rotate-[-6deg] border border-gray-100">
-      <div className="bg-green-50 rounded-xl p-2 mb-1.5 flex items-center gap-2">
-        <span className="text-lg">📢</span>
-        <div>
-          <div className="text-[9px] font-bold text-gray-800">Flash Sale!</div>
-          <div className="text-[8px] text-gray-500">50% off today</div>
-        </div>
-      </div>
-      <div className="flex items-center gap-1">
-        <div className="w-1.5 h-2.5 bg-green-500 rounded-full" />
-        <span className="text-[8px] text-gray-500 flex-1">Delivered</span>
-        <span className="text-[8px] font-bold text-gray-800">44K</span>
-      </div>
-    </div>
-
-    {/* Middle card */}
-    <div className="absolute bottom-16 left-6 w-36 bg-white rounded-2xl p-2.5 shadow-lg rotate-[4deg] border border-gray-100 z-10">
-      <div className="text-[9px] text-gray-500 mb-0.5">Open Rate</div>
-      <div className="font-heading font-bold text-xl text-gray-900">87%</div>
-      <svg className="w-full mt-1" height="18" viewBox="0 0 80 18">
-        <path d="M0,14 Q20,10 40,6 T80,2" stroke="#1b8b4b" strokeWidth="1.5" fill="none" />
-      </svg>
-    </div>
-
-    {/* Front card */}
-    <div className="absolute bottom-4 left-10 w-40 bg-white rounded-2xl p-3 shadow-xl border border-green-100 z-20">
-      <div className="flex items-center gap-2 mb-2">
-        <div className="w-7 h-7 bg-green-500 rounded-full flex items-center justify-center">
-          <MessageCircle size={13} className="text-white fill-white" />
-        </div>
-        <div>
-          <div className="text-[10px] font-bold text-gray-900">Campaign Live</div>
-          <div className="text-[8px] text-green-600 font-semibold">5.2x ROI</div>
-        </div>
-      </div>
-      <div className="w-full h-1 bg-gray-100 rounded-full overflow-hidden">
-        <div className="h-full w-[87%] bg-green-500 rounded-full" />
-      </div>
-    </div>
-  </div>
-);
-
-const AIVisual = () => (
-  <div className="mt-auto">
-    <div className="bg-white rounded-2xl p-3 shadow-lg border border-pink-100">
-      <div className="flex items-center gap-2 mb-2.5 pb-2 border-b border-gray-100">
-        <div className="w-7 h-7 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
-          <Bot size={13} className="text-white" />
-        </div>
-        <div>
-          <div className="text-[10px] font-bold text-gray-900">AI Assistant</div>
-          <div className="flex items-center gap-1">
-            <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
-            <span className="text-[8px] text-green-600">Online</span>
-          </div>
-        </div>
-      </div>
-      <div className="space-y-1.5">
-        <div className="bg-gray-50 rounded-xl p-2 max-w-[85%]">
-          <p className="text-[10px] text-gray-700">Hi! How can I help? 👋</p>
-        </div>
-        <div className="bg-pink-100 rounded-xl p-2 ml-auto max-w-[80%]">
-          <p className="text-[10px] text-pink-900">What's the price?</p>
-        </div>
-        <div className="bg-gray-50 rounded-xl p-2 max-w-[85%]">
-          <p className="text-[10px] text-gray-700">Starts ₹899/mo 🚀</p>
-        </div>
-      </div>
-    </div>
-  </div>
-);
-
-const IGVisual = () => (
-  <div className="mt-auto">
-    <div className="bg-white rounded-2xl p-3 shadow-lg border border-orange-100">
-      <div className="flex items-center gap-2 mb-2">
-        <div className="w-7 h-7 bg-gradient-to-br from-purple-500 via-pink-500 to-orange-400 rounded-lg flex items-center justify-center">
-          <Instagram size={13} className="text-white" />
-        </div>
-        <span className="text-[10px] font-bold text-gray-900">@user_123</span>
-      </div>
-      <p className="text-[10px] text-gray-600 mb-2">"What's the price?"</p>
-      <div className="flex items-center gap-1.5 bg-orange-50 rounded-lg p-1.5">
-        <Zap size={9} className="text-orange-500" />
-        <span className="text-[9px] text-orange-700 font-semibold">
-          Auto-replied in DM ✨
-        </span>
-      </div>
-    </div>
-  </div>
-);
-
-const CRMVisual = () => (
-  <div className="mt-auto space-y-1.5">
-    {[
-      { stage: 'New', count: '24', color: 'bg-yellow-400' },
-      { stage: 'Contacted', count: '18', color: 'bg-blue-400' },
-      { stage: 'Won', count: '8', color: 'bg-green-500' },
-    ].map((s, i) => (
-      <div key={i} className="bg-white rounded-xl p-2 shadow-sm border border-gray-100 flex items-center gap-2">
-        <div className={`w-1.5 h-6 ${s.color} rounded-full`} />
-        <span className="text-[10px] text-gray-600 flex-1">{s.stage}</span>
-        <span className="text-[11px] font-bold text-gray-900">{s.count}</span>
-      </div>
-    ))}
-  </div>
-);
-
-const AutomationVisual = () => (
-  <div className="mt-auto space-y-1.5">
-    {[
-      { label: 'Trigger', sub: 'User sends "Hi"', icon: Zap, color: 'bg-yellow-400', border: 'border-yellow-200' },
-      { label: 'AI Reply', sub: 'Welcome message', icon: Bot, color: 'bg-purple-500', border: 'border-purple-200' },
-      { label: 'Assign', sub: 'Sales Team', icon: TrendingUp, color: 'bg-green-500', border: 'border-green-200' },
-    ].map((node, i) => (
-      <div key={i}>
-        <div className={`bg-white border ${node.border} rounded-xl p-2 shadow-sm flex items-center gap-2`}>
-          <div className={`w-6 h-6 ${node.color} rounded-lg flex items-center justify-center flex-shrink-0`}>
-            <node.icon size={11} className="text-white" />
-          </div>
-          <div className="min-w-0">
-            <div className="text-[9px] text-gray-500">{node.label}</div>
-            <div className="text-[10px] font-bold text-gray-900 truncate">{node.sub}</div>
-          </div>
-        </div>
-        {i < 2 && (
-          <div className="flex justify-center my-0.5">
-            <div className="w-px h-2 bg-violet-300" />
-          </div>
-        )}
-      </div>
-    ))}
-  </div>
-);
-
-const EcomVisual = () => (
-  <div className="mt-auto bg-white rounded-2xl p-3 shadow-lg border border-purple-100">
-    {[
-      { name: 'Sneakers', price: '₹1,299', emoji: '👟', sold: 142 },
-      { name: 'Smart Watch', price: '₹2,999', emoji: '⌚', sold: 89 },
-    ].map((p, i) => (
-      <div key={i} className={`flex items-center gap-2 ${i > 0 ? 'mt-2 pt-2 border-t border-gray-100' : ''}`}>
-        <div className="w-10 h-10 bg-purple-50 rounded-xl flex items-center justify-center text-xl">
-          {p.emoji}
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="text-[10px] font-bold text-gray-900 truncate">{p.name}</div>
-          <div className="text-[9px] text-gray-500">{p.price}</div>
-        </div>
-        <div className="text-right">
-          <div className="text-[10px] font-bold text-purple-700">{p.sold}</div>
-          <div className="text-[8px] text-gray-400">sold</div>
-        </div>
-      </div>
-    ))}
-  </div>
-);
-
-const MetaVisual = () => (
-  <div className="mt-auto bg-white rounded-2xl p-3 shadow-lg border border-blue-100">
-    <div className="grid grid-cols-2 gap-2 mb-2">
-      {[
-        { label: 'API Calls', val: '2.4M', color: 'text-blue-600' },
-        { label: 'Webhooks', val: '98K', color: 'text-indigo-600' },
-      ].map((s, i) => (
-        <div key={i} className="bg-blue-50 rounded-xl p-2 text-center">
-          <div className={`font-heading font-bold text-sm ${s.color}`}>{s.val}</div>
-          <div className="text-[8px] text-gray-500">{s.label}</div>
-        </div>
-      ))}
-    </div>
-    <div className="flex items-center gap-1.5 bg-green-50 rounded-lg p-1.5">
-      <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
-      <span className="text-[9px] text-green-700 font-semibold">All systems operational</span>
-    </div>
-  </div>
-);
-
-const JewelVisual = () => (
-  <div className="mt-auto bg-white rounded-2xl p-3 shadow-lg border border-amber-100">
-    <div className="flex items-center gap-2 mb-2">
-      <div className="w-8 h-8 bg-gradient-to-br from-amber-400 to-yellow-300 rounded-full flex items-center justify-center text-base">
-        💎
-      </div>
-      <div>
-        <div className="text-[10px] font-bold text-gray-900">Diamond Tracker</div>
-        <div className="text-[8px] text-amber-600 font-semibold">148 items</div>
-      </div>
-    </div>
-    <div className="flex items-center gap-1 bg-amber-50 rounded-lg p-1.5">
-      <span className="text-[9px] text-amber-700 font-semibold">
-        ✦ Coming Soon — Q3 2026
-      </span>
-    </div>
-  </div>
-);
-
-// ─── Showcase Data ───────────────────────────────────────────────────────
-
-const showcaseItems: Omit<ShowcaseItem, 'visual'>[] = [
-  {
-    id: 1,
-    title: 'WhatsApp Campaigns',
-    description: 'Bulk broadcasts, smart templates & real-time delivery tracking.',
-    tag: 'Active Now',
-    tagBg: 'bg-green-50 border-green-200',
-    tagText: 'text-green-700',
-    tagDot: 'bg-green-500',
-    cardBg: 'bg-purple-200',
-    cardBorder: 'border-transparent',
-    cardHover: 'hover:shadow-xl hover:shadow-purple-200/60 hover:scale-[1.02]',
-    titleColor: 'text-purple-900',
-    descColor: 'text-purple-800',
-    icon: MessageCircle,
-    iconBg: 'bg-green-500',
-    iconColor: 'text-white',
-  },
-  {
-    id: 2,
-    title: 'AI Chatbot Builder',
-    description: 'Drag & drop canvas. Answer FAQs and close sales 24/7.',
-    tag: 'AI Powered',
-    tagBg: 'bg-pink-50 border-pink-200',
-    tagText: 'text-pink-700',
-    tagDot: 'bg-pink-500',
-    cardBg: 'bg-pink-300',
-    cardBorder: 'border-transparent',
-    cardHover: 'hover:shadow-xl hover:shadow-pink-200/60 hover:scale-[1.02]',
-    titleColor: 'text-pink-900',
-    descColor: 'text-pink-800',
-    icon: Bot,
-    iconBg: 'bg-gradient-to-br from-purple-500 to-pink-500',
-    iconColor: 'text-white',
-  },
-  {
-    id: 3,
-    title: 'Instagram Automation',
-    description: 'Auto-reply to DMs, comments & story mentions instantly.',
-    tag: 'Active Now',
-    tagBg: 'bg-orange-50 border-orange-200',
-    tagText: 'text-orange-700',
-    tagDot: 'bg-orange-500',
-    cardBg: 'bg-gradient-to-br from-yellow-200 to-orange-200',
-    cardBorder: 'border-transparent',
-    cardHover: 'hover:shadow-xl hover:shadow-orange-200/60 hover:scale-[1.02]',
-    titleColor: 'text-orange-900',
-    descColor: 'text-orange-800',
-    icon: Instagram,
-    iconBg: 'bg-gradient-to-br from-purple-500 via-pink-500 to-orange-400',
-    iconColor: 'text-white',
-  },
-  {
-    id: 4,
-    title: 'CRM & Lead Pipeline',
-    description: 'Track leads, manage pipeline & convert prospects automatically.',
-    tag: 'Verified',
-    tagBg: 'bg-blue-50 border-blue-200',
-    tagText: 'text-blue-700',
-    tagDot: 'bg-blue-500',
-    cardBg: 'bg-orange-300',
-    cardBorder: 'border-transparent',
-    cardHover: 'hover:shadow-xl hover:shadow-orange-200/60 hover:scale-[1.02]',
-    titleColor: 'text-orange-955',
-    descColor: 'text-orange-900',
-    icon: TrendingUp,
-    iconBg: 'bg-orange-500',
-    iconColor: 'text-white',
-  },
-  {
-    id: 5,
-    title: 'Automation Flows',
-    description: 'Triggers, conditions, delays & actions — all in one canvas.',
-    tag: 'High Yield',
-    tagBg: 'bg-violet-50 border-violet-200',
-    tagText: 'text-violet-700',
-    tagDot: 'bg-violet-500',
-    cardBg: 'bg-violet-200',
-    cardBorder: 'border-transparent',
-    cardHover: 'hover:shadow-xl hover:shadow-violet-200/60 hover:scale-[1.02]',
-    titleColor: 'text-violet-900',
-    descColor: 'text-violet-800',
-    icon: Zap,
-    iconBg: 'bg-violet-500',
-    iconColor: 'text-white',
-  },
-  {
-    id: 6,
-    title: 'Ecommerce Platform',
-    description: 'High-converting storefronts with built-in analytics dashboard.',
-    tag: 'Verified',
-    tagBg: 'bg-purple-50 border-purple-200',
-    tagText: 'text-purple-700',
-    tagDot: 'bg-purple-500',
-    cardBg: 'bg-purple-300',
-    cardBorder: 'border-transparent',
-    cardHover: 'hover:shadow-xl hover:shadow-purple-200/60 hover:scale-[1.02]',
-    titleColor: 'text-purple-900',
-    descColor: 'text-purple-800',
-    icon: ShoppingBag,
-    iconBg: 'bg-purple-600',
-    iconColor: 'text-white',
-  },
-  {
-    id: 7,
-    title: 'Meta Cloud API',
-    description: 'Seamless integration with the entire Meta developer ecosystem.',
-    tag: 'Stable Core',
-    tagBg: 'bg-blue-50 border-blue-200',
-    tagText: 'text-blue-700',
-    tagDot: 'bg-blue-500',
-    cardBg: 'bg-blue-200',
-    cardBorder: 'border-transparent',
-    cardHover: 'hover:shadow-xl hover:shadow-blue-200/60 hover:scale-[1.02]',
-    titleColor: 'text-blue-900',
-    descColor: 'text-blue-800',
-    icon: Cloud,
-    iconBg: 'bg-blue-600',
-    iconColor: 'text-white',
-  },
-  {
-    id: 8,
-    title: 'Jewellery CRM',
-    description: 'Luxury CRM with diamond inventory & customer relationship tools.',
-    tag: 'Coming Soon',
-    tagBg: 'bg-amber-50 border-amber-200',
-    tagText: 'text-amber-700',
-    tagDot: 'bg-amber-500',
-    cardBg: 'bg-gradient-to-br from-amber-200 to-yellow-200',
-    cardBorder: 'border-transparent',
-    cardHover: 'hover:shadow-xl hover:shadow-amber-200/60 hover:scale-[1.02]',
-    titleColor: 'text-amber-900',
-    descColor: 'text-amber-800',
-    icon: Cpu,
-    iconBg: 'bg-amber-500',
-    iconColor: 'text-white',
-  },
-];
-
-// Map visuals to items
-const visualMap: Record<number, React.ReactNode> = {
-  1: <WAVisual />,
-  2: <AIVisual />,
-  3: <IGVisual />,
-  4: <CRMVisual />,
-  5: <AutomationVisual />,
-  6: <EcomVisual />,
-  7: <MetaVisual />,
-  8: <JewelVisual />,
-};
-
-const items: ShowcaseItem[] = showcaseItems.map((item) => ({
-  ...item,
-  visual: visualMap[item.id],
-}));
-
-// Triple for seamless loop
-const duplicated = [...items, ...items, ...items];
-
-// ─── Main Component ───────────────────────────────────────────────────────
-
 const WorkShowcase = () => {
-  const [isPaused, setIsPaused] = useState(false);
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const positionRef = useRef(0);
-  const animationRef = useRef<number | null>(null);
-
-  const CARD_WIDTH = 316; // 292px card + 24px gap
-  const TOTAL_WIDTH = items.length * CARD_WIDTH;
-  const SPEED = 0.45;
-
-  useEffect(() => {
-    const el = scrollRef.current;
-    if (!el) return;
-
-    const animate = () => {
-      if (!isPaused && el) {
-        positionRef.current += SPEED;
-        if (positionRef.current >= TOTAL_WIDTH) {
-          positionRef.current = 0;
-        }
-        el.style.transform = `translateX(-${positionRef.current}px)`;
-      }
-      animationRef.current = requestAnimationFrame(animate);
-    };
-
-    animationRef.current = requestAnimationFrame(animate);
-    return () => {
-      if (animationRef.current) cancelAnimationFrame(animationRef.current);
-    };
-  }, [isPaused]);
-
-  const nudge = (dir: 'left' | 'right') => {
-    const el = scrollRef.current;
-    if (!el) return;
-    positionRef.current = dir === 'left'
-      ? Math.max(0, positionRef.current - CARD_WIDTH)
-      : positionRef.current + CARD_WIDTH;
-    el.style.transform = `translateX(-${positionRef.current}px)`;
-  };
-
   return (
     <section className="relative py-24 bg-gradient-to-b from-white via-gray-50/40 to-white overflow-hidden">
-
-      {/* ── Background Blobs (match Hero style) ── */}
+      
+      {/* Background decorative blobs */}
       <div className="absolute top-20 right-0 w-96 h-96 bg-green-100/30 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-20 left-0 w-80 h-80 bg-purple-100/30 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute top-1/2 left-1/3 w-72 h-72 bg-pink-100/20 rounded-full blur-3xl pointer-events-none" />
 
-      {/* ── Section Header ── */}
-      <div className="max-w-7xl mx-auto px-4 md:px-6 mb-14">
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
-
-          {/* Left: Badge + Heading + Sub */}
-          <div className="max-w-2xl">
-
-            {/* Badge - exact Pricing/Features style */}
+      <div className="max-w-7xl mx-auto px-4 md:px-6 relative z-10">
+        
+        {/* ═══════ Section Header ═══════ */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-14">
+          <div className="lg:col-span-8">
             <div className="inline-flex items-center gap-2 bg-white border border-gray-200 rounded-full px-4 py-2 mb-6 shadow-sm">
-              <Zap size={14} className="text-orange-500" />
+              <Sparkles size={14} className="text-orange-500" />
               <span className="text-gray-700 text-sm font-semibold tracking-wide">
-                PLATFORM SHOWCASE
+                OUR SERVICES
               </span>
             </div>
 
-            <h2 className="font-heading text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-[1.1] tracking-tight mb-4">
-              Everything that powers{' '}
-              <span className="text-green-500">your growth</span>{' '}
-              <br className="hidden md:block" />
-              <span className="bg-gradient-to-r from-pink-500 to-purple-500 bg-clip-text text-transparent">
-                in one place
-              </span>
+            <h2 className="font-heading text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-[1.05] tracking-tight">
+              What We{' '}
+              <span className="bg-gradient-to-r from-green-500 via-emerald-500 to-green-600 bg-clip-text text-transparent italic font-light">
+                Build
+              </span>{' '}
+              & <br className="hidden md:block" />
+              <span>Manage For You</span>
             </h2>
+          </div>
 
-            <p className="text-gray-600 text-lg leading-relaxed max-w-xl">
-              From WhatsApp campaigns to AI chatbots — every tool your business 
-              needs to automate, engage, and scale beautifully.
+          <div className="lg:col-span-4 lg:pt-10">
+            <p className="text-gray-600 text-base md:text-lg leading-relaxed">
+              From WhatsApp APIs to high-converting Meta Ads, Instagram automation, 
+              and custom websites — everything your business needs under one roof.
             </p>
           </div>
-
-          {/* Right: Nav buttons — match Hero CTA style */}
-          <div className="flex items-center gap-3 flex-shrink-0">
-            <button
-              onClick={() => nudge('left')}
-              aria-label="Scroll Left"
-              className="
-                w-11 h-11 rounded-full border-2 border-gray-200 bg-white 
-                flex items-center justify-center text-gray-700
-                hover:border-green-500 hover:text-green-600 hover:shadow-lg hover:shadow-green-500/20
-                transition-all duration-200 hover:-translate-y-0.5 active:scale-95
-              "
-            >
-              <ChevronLeft className="w-5 h-5" />
-            </button>
-            <button
-              onClick={() => nudge('right')}
-              aria-label="Scroll Right"
-              className="
-                w-11 h-11 rounded-full bg-green-500 hover:bg-green-600 border-2 border-green-500
-                flex items-center justify-center text-white
-                hover:shadow-lg hover:shadow-green-500/30
-                transition-all duration-200 hover:-translate-y-0.5 active:scale-95
-              "
-            >
-              <ChevronRight className="w-5 h-5" />
-            </button>
-          </div>
         </div>
-      </div>
 
-      {/* ── Carousel Track ── */}
-      <div
-        className="relative w-full overflow-hidden px-4"
-        onMouseEnter={() => setIsPaused(true)}
-        onMouseLeave={() => setIsPaused(false)}
-      >
-        {/* Edge fade - white to match section bg */}
-        <div className="absolute left-0 top-0 bottom-0 w-20 md:w-32 bg-gradient-to-r from-white to-transparent z-20 pointer-events-none" />
-        <div className="absolute right-0 top-0 bottom-0 w-20 md:w-32 bg-gradient-to-l from-white to-transparent z-20 pointer-events-none" />
+        {/* ═══════ Bento Grid Layout ═══════ */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          
+          {/* ━━━━━━ CARD 1: WhatsApp SaaS API (TALL HERO - 1 col x 2 rows) ━━━━━━ */}
+          <WhatsAppCard />
 
-        {/* Cards */}
-        <div
-          ref={scrollRef}
-          className="flex gap-6 will-change-transform py-4"
-          style={{ width: 'max-content', transition: 'transform 0.5s ease-out' }}
-        >
-          {duplicated.map((item, index) => (
-            <ShowcaseCard key={`${item.id}-${index}`} item={item} />
-          ))}
+          {/* ━━━━━━ Right column cards ━━━━━━ */}
+          <MetaAdsCard />
+          <InstagramCard />
+          <WebDevCard />
+          <AnalyticsCard />
         </div>
-      </div>
 
-      {/* ── Bottom CTA strip (matches Features marquee style) ── */}
-      <div className="max-w-7xl mx-auto px-4 md:px-6 mt-14">
-        <div className="bg-gradient-to-r from-green-500 via-green-600 to-green-500 rounded-3xl p-8 md:p-10 flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl shadow-green-500/20">
+        {/* ═══════ Bottom CTA Bar ═══════ */}
+        <div className="mt-12 bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 rounded-3xl p-8 md:p-10 flex flex-col md:flex-row items-center justify-between gap-6 shadow-2xl">
           <div>
-            <h3 className="font-heading font-bold text-2xl md:text-3xl text-white mb-1">
-              Ready to automate your business?
+            <h3 className="font-heading font-bold text-2xl md:text-3xl text-white mb-2">
+              Let's build something{' '}
+              <span className="text-green-400">extraordinary</span>
             </h3>
-            <p className="text-green-100 text-sm md:text-base">
-              Join 10,000+ businesses already growing with WabMeta.
+            <p className="text-gray-400 text-sm md:text-base">
+              Trusted by 10,000+ businesses across India for digital growth.
             </p>
           </div>
           <div className="flex items-center gap-3 flex-shrink-0">
-            <button className="
-              inline-flex items-center gap-2 bg-white text-green-700 
-              font-semibold px-6 py-3 rounded-xl 
-              hover:bg-green-50 hover:shadow-lg 
-              transition-all duration-200 hover:-translate-y-0.5
-            ">
-              Start Free Trial
-              <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+            <button className="inline-flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white font-semibold px-6 py-3 rounded-xl transition-all duration-200 hover:shadow-xl hover:shadow-green-500/30 hover:-translate-y-0.5">
+              Start a Project
+              <ArrowRight size={16} />
             </button>
-            <button className="
-              inline-flex items-center gap-2 border-2 border-white/40 text-white 
-              font-semibold px-6 py-3 rounded-xl 
-              hover:bg-white/10 hover:border-white/60
-              transition-all duration-200 hover:-translate-y-0.5
-            ">
-              Book a Demo
+            <button className="inline-flex items-center gap-2 border-2 border-gray-700 hover:border-gray-500 text-white font-semibold px-6 py-3 rounded-xl transition-all duration-200">
+              View Pricing
             </button>
           </div>
         </div>
@@ -558,71 +86,355 @@ const WorkShowcase = () => {
   );
 };
 
-// ─── Card Component ───────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════
+// CARD 1: WhatsApp SaaS API (Hero Card - Tall)
+// ═══════════════════════════════════════════════════════════════
+const WhatsAppCard = () => (
+  <div className="md:col-span-1 lg:row-span-2 bg-gradient-to-br from-green-500 via-green-600 to-emerald-700 rounded-3xl p-7 lg:p-8 relative overflow-hidden group hover:scale-[1.01] transition-all duration-500 min-h-[500px] lg:min-h-[640px] flex flex-col shadow-xl shadow-green-500/20">
+    
+    {/* Decorative pattern */}
+    <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.15),transparent_50%)] pointer-events-none" />
+    <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-3xl pointer-events-none" />
 
-const ShowcaseCard = ({ item }: { item: ShowcaseItem }) => {
-  return (
-    <div
-      className={`
-        group relative w-[292px] h-[420px] flex-shrink-0 
-        rounded-3xl p-6 flex flex-col
-        border border-white/60
-        ${item.cardBg} ${item.cardHover}
-        transition-all duration-500 cursor-pointer
-        overflow-hidden
-      `}
-    >
-      {/* ── Top Row: Icon + Tag + Arrow ── */}
-      <div className="flex items-start justify-between mb-4">
-
-        {/* Icon */}
-        <div className={`w-11 h-11 ${item.iconBg} rounded-2xl flex items-center justify-center shadow-md flex-shrink-0`}>
-          <item.icon size={20} className={item.iconColor} />
-        </div>
-
-        {/* Arrow button - exact style from Features hover */}
-        <div className="
-          w-9 h-9 rounded-xl bg-white/70 border border-white/80
-          flex items-center justify-center text-gray-700 shadow-sm
-          transition-all duration-300
-          group-hover:bg-green-500 group-hover:border-green-500 
-          group-hover:text-white group-hover:shadow-green-500/30
-          group-hover:shadow-md group-hover:rotate-45 group-hover:scale-110
-        ">
-          <ArrowRight size={16} className="transition-transform duration-300" />
-        </div>
-      </div>
-
-      {/* ── Status Tag ── */}
-      <div className={`
-        inline-flex items-center gap-1.5 self-start
-        px-3 py-1 rounded-full border text-[10px] font-bold tracking-wide uppercase
-        bg-white/60 border-white/80 mb-4
-        ${item.tagText}
-      `}>
+    {/* Top: Badge + Arrow */}
+    <div className="flex items-start justify-between mb-5 relative z-10">
+      <div className="inline-flex items-center gap-1.5 bg-white/20 backdrop-blur-md border border-white/30 rounded-full px-3 py-1.5">
         <span className="relative flex h-1.5 w-1.5">
-          <span className={`animate-ping absolute inline-flex h-full w-full rounded-full ${item.tagDot} opacity-60`} />
-          <span className={`relative inline-flex h-1.5 w-1.5 rounded-full ${item.tagDot}`} />
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75" />
+          <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-white" />
         </span>
-        {item.tag}
+        <span className="text-[10px] font-bold text-white tracking-wider uppercase">
+          Official Partner
+        </span>
       </div>
 
-      {/* ── Visual Area (flexible height) ── */}
-      <div className="flex-1 flex flex-col justify-end">
-        {item.visual}
-      </div>
-
-      {/* ── Title + Description ── */}
-      <div className="mt-5 pt-4 border-t border-white/40">
-        <h3 className={`font-heading font-bold text-lg mb-1 leading-snug ${item.titleColor} group-hover:opacity-90 transition-opacity`}>
-          {item.title}
-        </h3>
-        <p className={`text-xs leading-relaxed ${item.descColor} opacity-80`}>
-          {item.description}
-        </p>
+      <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center text-white shadow-lg transition-all duration-300 group-hover:bg-white group-hover:text-green-600 group-hover:rotate-45 group-hover:scale-110">
+        <ArrowRight size={18} />
       </div>
     </div>
-  );
-};
+
+    {/* Heading */}
+    <h3 className="font-heading font-bold text-3xl lg:text-4xl text-white leading-tight mb-3 relative z-10">
+      WhatsApp<br />Business API
+    </h3>
+    <p className="text-green-50 text-sm leading-relaxed mb-6 relative z-10 max-w-[280px]">
+      Full SaaS platform with bulk campaigns, AI chatbots, shared inbox, 
+      automation flows & real-time analytics.
+    </p>
+
+    {/* Visual Stack - Mockup Cards */}
+    <div className="flex-1 relative my-2">
+      
+      {/* Background card - Stats */}
+      <div className="absolute top-2 right-2 w-48 bg-white rounded-2xl p-3 shadow-2xl rotate-[6deg] border border-white/50">
+        <div className="flex items-center gap-2 mb-2">
+          <BarChart3 size={14} className="text-green-600" />
+          <span className="text-[10px] font-bold text-gray-900">Campaign Stats</span>
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          <div>
+            <div className="text-[9px] text-gray-500">Sent</div>
+            <div className="font-heading font-bold text-base text-gray-900">45K</div>
+          </div>
+          <div>
+            <div className="text-[9px] text-gray-500">Read</div>
+            <div className="font-heading font-bold text-base text-green-600">87%</div>
+          </div>
+        </div>
+        <svg className="w-full mt-1" height="20" viewBox="0 0 100 20">
+          <path d="M0,16 Q25,10 50,8 T100,3" stroke="#1b8b4b" strokeWidth="2" fill="none"/>
+        </svg>
+      </div>
+
+      {/* Middle card - Chat */}
+      <div className="absolute top-16 left-2 w-52 bg-white rounded-2xl p-3 shadow-2xl rotate-[-4deg] border border-white/50 z-10">
+        <div className="flex items-center gap-2 mb-2 pb-2 border-b border-gray-100">
+          <div className="w-7 h-7 bg-green-500 rounded-full flex items-center justify-center">
+            <MessageCircle size={13} className="text-white fill-white" />
+          </div>
+          <div>
+            <div className="text-[10px] font-bold text-gray-900">WabMeta Store</div>
+            <div className="text-[8px] text-green-600">● Online</div>
+          </div>
+        </div>
+        <div className="bg-green-50 rounded-xl p-2 mb-1.5">
+          <p className="text-[10px] text-gray-800">Hi! 50% off today 🎉</p>
+        </div>
+        <div className="bg-gray-100 rounded-xl p-2 ml-6">
+          <p className="text-[10px] text-gray-800">Interested! 🛍️</p>
+        </div>
+      </div>
+
+      {/* Front card - API */}
+      <div className="absolute bottom-2 right-0 w-52 bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-3 shadow-2xl rotate-[3deg] z-20 border border-gray-700">
+        <div className="flex items-center gap-2 mb-2">
+          <div className="w-7 h-7 bg-green-500/20 border border-green-500/40 rounded-lg flex items-center justify-center">
+            <Code2 size={13} className="text-green-400" />
+          </div>
+          <span className="text-[10px] font-bold text-white">Cloud API</span>
+          <span className="ml-auto text-[8px] bg-green-500/20 text-green-400 px-1.5 py-0.5 rounded-full font-bold">LIVE</span>
+        </div>
+        <div className="bg-black/40 rounded-lg p-2 font-mono">
+          <p className="text-[8px] text-green-400">POST /messages</p>
+          <p className="text-[8px] text-gray-500">200 OK · 124ms</p>
+        </div>
+      </div>
+    </div>
+
+    {/* Features list */}
+    <div className="space-y-2 mt-4 relative z-10">
+      {[
+        'Unlimited Campaigns & Broadcasts',
+        'AI Chatbot Flow Builder',
+        'Multi-Agent Team Inbox',
+      ].map((feat) => (
+        <div key={feat} className="flex items-center gap-2">
+          <div className="w-4 h-4 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center flex-shrink-0">
+            <Check size={10} className="text-white" strokeWidth={3} />
+          </div>
+          <span className="text-xs text-white/95">{feat}</span>
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
+// ═══════════════════════════════════════════════════════════════
+// CARD 2: Meta Ads Management
+// ═══════════════════════════════════════════════════════════════
+const MetaAdsCard = () => (
+  <div className="md:col-span-1 bg-gradient-to-br from-blue-50 to-indigo-100 border border-blue-200/60 rounded-3xl p-6 lg:p-7 relative overflow-hidden group hover:scale-[1.02] hover:shadow-xl hover:shadow-blue-200/60 transition-all duration-500 min-h-[300px] flex flex-col">
+    
+    {/* Top: Icon + Arrow */}
+    <div className="flex items-start justify-between mb-4">
+      <div className="w-11 h-11 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/30">
+        <Target size={20} className="text-white" />
+      </div>
+      <div className="w-9 h-9 rounded-xl bg-white/70 border border-blue-200 flex items-center justify-center text-blue-600 transition-all duration-300 group-hover:bg-blue-600 group-hover:text-white group-hover:rotate-45 group-hover:scale-110">
+        <ArrowRight size={15} />
+      </div>
+    </div>
+
+    {/* Title + Desc */}
+    <h3 className="font-heading font-bold text-xl lg:text-2xl text-blue-950 mb-2">
+      Meta Ads<br />Management
+    </h3>
+    <p className="text-sm text-blue-800/80 leading-relaxed mb-4">
+      Performance-driven Facebook & Instagram ad campaigns with conversion tracking.
+    </p>
+
+    {/* Mini visual: Ad performance */}
+    <div className="mt-auto bg-white rounded-2xl p-3 shadow-md border border-blue-100">
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-[10px] font-bold text-gray-900">Lead Campaign</span>
+        <span className="text-[9px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full font-bold">↑ 142%</span>
+      </div>
+      <div className="grid grid-cols-3 gap-2 mb-2">
+        <div>
+          <div className="text-[8px] text-gray-500">Reach</div>
+          <div className="font-heading font-bold text-xs text-gray-900">2.4M</div>
+        </div>
+        <div>
+          <div className="text-[8px] text-gray-500">CTR</div>
+          <div className="font-heading font-bold text-xs text-blue-600">8.7%</div>
+        </div>
+        <div>
+          <div className="text-[8px] text-gray-500">Leads</div>
+          <div className="font-heading font-bold text-xs text-green-600">3.2K</div>
+        </div>
+      </div>
+      <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+        <div className="h-full w-[78%] bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full" />
+      </div>
+    </div>
+  </div>
+);
+
+// ═══════════════════════════════════════════════════════════════
+// CARD 3: Instagram Automation
+// ═══════════════════════════════════════════════════════════════
+const InstagramCard = () => (
+  <div className="md:col-span-1 bg-gradient-to-br from-pink-50 via-rose-50 to-orange-50 border border-pink-200/60 rounded-3xl p-6 lg:p-7 relative overflow-hidden group hover:scale-[1.02] hover:shadow-xl hover:shadow-pink-200/60 transition-all duration-500 min-h-[300px] flex flex-col">
+    
+    {/* Top: Icon + Arrow */}
+    <div className="flex items-start justify-between mb-4">
+      <div className="w-11 h-11 bg-gradient-to-br from-purple-500 via-pink-500 to-orange-400 rounded-2xl flex items-center justify-center shadow-lg shadow-pink-500/30">
+        <Instagram size={20} className="text-white" />
+      </div>
+      <div className="w-9 h-9 rounded-xl bg-white/70 border border-pink-200 flex items-center justify-center text-pink-600 transition-all duration-300 group-hover:bg-pink-500 group-hover:text-white group-hover:rotate-45 group-hover:scale-110">
+        <ArrowRight size={15} />
+      </div>
+    </div>
+
+    {/* Title + Desc */}
+    <h3 className="font-heading font-bold text-xl lg:text-2xl text-pink-955 mb-2">
+      Instagram<br />Automation
+    </h3>
+    <p className="text-sm text-pink-800/80 leading-relaxed mb-4">
+      Auto-reply DMs, comments & story mentions. Convert followers into customers.
+    </p>
+
+    {/* Mini visual: IG comment */}
+    <div className="mt-auto bg-white rounded-2xl p-3 shadow-md border border-pink-100">
+      <div className="flex items-center gap-2 mb-2">
+        <div className="w-6 h-6 bg-gradient-to-br from-purple-500 via-pink-500 to-orange-400 rounded-full flex items-center justify-center text-[10px] font-bold text-white">
+          R
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="text-[10px] font-bold text-gray-900">@rohit_sharma</div>
+          <div className="text-[9px] text-gray-500">commented on your post</div>
+        </div>
+        <Instagram size={11} className="text-pink-500" />
+      </div>
+      <div className="bg-gray-50 rounded-lg p-2 mb-2">
+        <p className="text-[10px] text-gray-700">"Price please? 🛍️"</p>
+      </div>
+      <div className="flex items-center gap-1.5 bg-gradient-to-r from-pink-50 to-orange-50 rounded-lg p-1.5 border border-pink-100">
+        <Zap size={10} className="text-pink-600" />
+        <span className="text-[9px] text-pink-700 font-semibold">
+          Auto-replied in DM ✨
+        </span>
+      </div>
+    </div>
+  </div>
+);
+
+// ═══════════════════════════════════════════════════════════════
+// CARD 4: Web Development
+// ═══════════════════════════════════════════════════════════════
+const WebDevCard = () => (
+  <div className="md:col-span-1 bg-gradient-to-br from-purple-50 to-violet-100 border border-purple-200/60 rounded-3xl p-6 lg:p-7 relative overflow-hidden group hover:scale-[1.02] hover:shadow-xl hover:shadow-purple-200/60 transition-all duration-500 min-h-[300px] flex flex-col">
+    
+    {/* Top: Icon + Arrow */}
+    <div className="flex items-start justify-between mb-4">
+      <div className="w-11 h-11 bg-gradient-to-br from-purple-500 to-violet-600 rounded-2xl flex items-center justify-center shadow-lg shadow-purple-500/30">
+        <Code2 size={20} className="text-white" />
+      </div>
+      <div className="w-9 h-9 rounded-xl bg-white/70 border border-purple-200 flex items-center justify-center text-purple-600 transition-all duration-300 group-hover:bg-purple-600 group-hover:text-white group-hover:rotate-45 group-hover:scale-110">
+        <ArrowRight size={15} />
+      </div>
+    </div>
+
+    {/* Title + Desc */}
+    <h3 className="font-heading font-bold text-xl lg:text-2xl text-purple-950 mb-2">
+      Web & App<br />Development
+    </h3>
+    <p className="text-sm text-purple-800/80 leading-relaxed mb-4">
+      Custom websites, ecommerce stores & mobile apps tailored for your brand.
+    </p>
+
+    {/* Mini visual: Browser mockup */}
+    <div className="mt-auto bg-white rounded-2xl shadow-md border border-purple-100 overflow-hidden">
+      {/* Browser bar */}
+      <div className="flex items-center gap-1 p-1.5 bg-gray-50 border-b border-gray-100">
+        <div className="w-1.5 h-1.5 rounded-full bg-red-400" />
+        <div className="w-1.5 h-1.5 rounded-full bg-yellow-400" />
+        <div className="w-1.5 h-1.5 rounded-full bg-green-400" />
+        <div className="ml-2 flex-1 bg-white rounded px-2 py-0.5 text-[8px] text-gray-500 flex items-center gap-1">
+          <Globe size={8} />
+          yourbrand.com
+        </div>
+      </div>
+      {/* Content */}
+      <div className="p-2.5 grid grid-cols-3 gap-1.5">
+        <div className="col-span-3 h-2 bg-gradient-to-r from-purple-200 to-violet-200 rounded" />
+        <div className="h-8 bg-purple-100 rounded flex items-center justify-center">
+          <Smartphone size={12} className="text-purple-600" />
+        </div>
+        <div className="h-8 bg-violet-100 rounded flex items-center justify-center">
+          <ShoppingBag size={12} className="text-violet-600" />
+        </div>
+        <div className="h-8 bg-purple-100 rounded flex items-center justify-center">
+          <Globe size={12} className="text-purple-600" />
+        </div>
+        <div className="col-span-2 h-1.5 bg-gray-100 rounded" />
+        <div className="h-1.5 bg-purple-300 rounded" />
+      </div>
+    </div>
+  </div>
+);
+
+// ═══════════════════════════════════════════════════════════════
+// CARD 5: Analytics & Growth (Wide card - spans 2 cols)
+// ═══════════════════════════════════════════════════════════════
+const AnalyticsCard = () => (
+  <div className="md:col-span-2 bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 border border-orange-200/60 rounded-3xl p-6 lg:p-7 relative overflow-hidden group hover:scale-[1.01] hover:shadow-xl hover:shadow-orange-200/60 transition-all duration-500 min-h-[280px] flex flex-col md:flex-row gap-6">
+    
+    {/* Left: Content */}
+    <div className="flex-1 flex flex-col">
+      <div className="flex items-start justify-between mb-4">
+        <div className="w-11 h-11 bg-gradient-to-br from-orange-500 to-amber-600 rounded-2xl flex items-center justify-center shadow-lg shadow-orange-500/30">
+          <TrendingUp size={20} className="text-white" />
+        </div>
+        <div className="w-9 h-9 rounded-xl bg-white/70 border border-orange-200 flex items-center justify-center text-orange-600 transition-all duration-300 group-hover:bg-orange-500 group-hover:text-white group-hover:rotate-45 group-hover:scale-110 md:hidden">
+          <ArrowRight size={15} />
+        </div>
+      </div>
+
+      <h3 className="font-heading font-bold text-2xl lg:text-3xl text-orange-950 mb-2 leading-tight">
+        Lead Generation<br />& Analytics
+      </h3>
+      <p className="text-sm text-orange-900/80 leading-relaxed mb-4 max-w-sm">
+        Capture leads from all channels, track every interaction, and turn data into 
+        revenue with our unified CRM dashboard.
+      </p>
+
+      <div className="mt-auto flex flex-wrap gap-2">
+        {['Multi-Channel', 'Real-time Sync', 'AI Insights'].map((tag) => (
+          <span key={tag} className="text-[10px] font-semibold text-orange-700 bg-white/70 border border-orange-200 px-2.5 py-1 rounded-full">
+            {tag}
+          </span>
+        ))}
+      </div>
+    </div>
+
+    {/* Right: Dashboard visual */}
+    <div className="flex-shrink-0 w-full md:w-64 lg:w-72 relative">
+      <div className="bg-white rounded-2xl p-4 shadow-xl border border-orange-100">
+        <div className="flex items-center justify-between mb-3 pb-2 border-b border-gray-100">
+          <span className="text-xs font-bold text-gray-900">Lead Pipeline</span>
+          <Users size={13} className="text-orange-500" />
+        </div>
+
+        {/* Pipeline stages */}
+        <div className="space-y-2 mb-3">
+          {[
+            { label: 'Meta Ads', count: 142, color: 'bg-blue-500', width: 'w-full' },
+            { label: 'WhatsApp', count: 98, color: 'bg-green-500', width: 'w-[70%]' },
+            { label: 'Instagram', count: 67, color: 'bg-pink-500', width: 'w-[48%]' },
+            { label: 'Website', count: 45, color: 'bg-purple-500', width: 'w-[32%]' },
+          ].map((row, i) => (
+            <div key={i} className="flex items-center gap-2">
+              <span className="text-[9px] text-gray-600 w-14 flex-shrink-0">{row.label}</span>
+              <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+                <div className={`h-full ${row.width} ${row.color} rounded-full transition-all`} />
+              </div>
+              <span className="text-[10px] font-bold text-gray-900 w-8 text-right">{row.count}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* Total */}
+        <div className="bg-gradient-to-r from-orange-50 to-amber-50 rounded-xl p-2.5 border border-orange-100">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="text-[9px] text-gray-500">Total Leads</div>
+              <div className="font-heading font-bold text-lg text-orange-700">352</div>
+            </div>
+            <div className="text-right">
+              <div className="text-[9px] text-green-600 font-bold">↑ 24.5%</div>
+              <div className="text-[8px] text-gray-500">vs last month</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Hide arrow on mobile, show on desktop top right */}
+      <div className="hidden md:flex absolute -top-2 -right-2 w-9 h-9 rounded-xl bg-white border border-orange-200 items-center justify-center text-orange-600 shadow-md transition-all duration-300 group-hover:bg-orange-500 group-hover:text-white group-hover:rotate-45 group-hover:scale-110">
+        <ArrowRight size={15} />
+      </div>
+    </div>
+  </div>
+);
 
 export default WorkShowcase;
