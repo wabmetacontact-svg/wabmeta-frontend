@@ -34,7 +34,7 @@ const WorkShowcase = () => {
       
       {/* Background blobs */}
       <div className="absolute top-20 right-0 w-96 h-96 bg-green-100/30 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-20 left-0 w-80 h-80 bg-orange-100/30 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-20 left-0 w-80 h-80 bg-green-100/20 rounded-full blur-3xl pointer-events-none" />
 
       <div className="max-w-6xl mx-auto px-4 md:px-6 relative z-10">
         
@@ -44,18 +44,18 @@ const WorkShowcase = () => {
           <div className="lg:col-span-7">
             {/* Mini label with line */}
             <div className="flex items-center gap-3 mb-4">
-              <div className="h-px w-10 bg-orange-500" />
-              <span className="text-orange-500 text-sm font-semibold tracking-wide uppercase">
+              <div className="h-px w-10 bg-green-500" />
+              <span className="text-green-600 text-sm font-semibold tracking-wide uppercase">
                 Our Specialization
               </span>
             </div>
 
             <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-[1.05] tracking-tight text-gray-955">
-              <span className="bg-gradient-to-r from-orange-400 to-amber-500 bg-clip-text text-transparent italic font-light">
+              <span className="bg-gradient-to-r from-green-700 via-emerald-600 to-green-700 bg-clip-text text-transparent">
                 Services
               </span>{' '}
               <span>| We</span>{' '}
-              <span className="bg-gradient-to-r from-green-700 via-emerald-600 to-green-700 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-gray-400 to-gray-500 bg-clip-text text-transparent italic font-light">
                 Provide
               </span>
             </h2>
@@ -85,7 +85,7 @@ const WorkShowcase = () => {
         <div className="flex justify-center mt-10">
           <button className="group inline-flex items-center gap-3 bg-gray-900 hover:bg-gray-800 text-white font-semibold pl-6 pr-2 py-2 rounded-full transition-all duration-300 hover:shadow-xl hover:shadow-gray-900/20 hover:-translate-y-0.5">
             <span className="text-sm">View All Services</span>
-            <span className="w-9 h-9 bg-orange-500 group-hover:bg-orange-600 rounded-full flex items-center justify-center transition-colors">
+            <span className="w-9 h-9 bg-green-500 group-hover:bg-green-600 rounded-full flex items-center justify-center transition-colors">
               <ArrowRight size={16} className="text-white group-hover:translate-x-0.5 transition-transform" />
             </span>
           </button>
@@ -175,11 +175,15 @@ const ServiceAccordion = ({
 
       {/* ━━━ Expanded Content (Smooth slide) ━━━ */}
       <div className={`
-        grid transition-all duration-500 ease-out
+        grid transition-all duration-500 ease-in-out
         ${isOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}
       `}>
         <div className="overflow-hidden">
-          <div className="px-5 md:px-6 pb-6 md:pb-8 pt-2">
+          <div className={`
+            px-5 md:px-6 pb-6 md:pb-8 pt-2
+            transform transition-all duration-500 ease-out
+            ${isOpen ? 'translate-y-0 opacity-100 scale-100' : '-translate-y-4 opacity-0 scale-95'}
+          `}>
             <div className="md:pl-[88px]"> {/* Align with title (40px icon + 24px gap + 24px number) */}
               
               {/* Tags */}
