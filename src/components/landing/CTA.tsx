@@ -189,26 +189,6 @@ const CTA: React.FC = () => {
                   </span>
                 </Link>
               </div>
-
-              {/* Trust line - editorial */}
-              <div className="mt-10 pt-8 border-t border-gray-200">
-                <div className="grid grid-cols-3 gap-6 lg:gap-8">
-                  {[
-                    { stat: '2 days', label: 'Free trial' },
-                    { stat: '~6 min', label: 'To first send' },
-                    { stat: 'Anytime', label: 'Cancel' },
-                  ].map((item, i) => (
-                    <div key={i}>
-                      <div className="text-xl lg:text-2xl font-bold text-gray-950">
-                        {item.stat}
-                      </div>
-                      <div className="text-xs text-gray-500 uppercase tracking-wider font-bold mt-1">
-                        {item.label}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
             </div>
 
             {/* Right: Animated chat preview */}
