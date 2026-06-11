@@ -50,7 +50,7 @@ const HowItWorks = () => {
   ];
 
   return (
-    <section className="relative pt-12 pb-24 bg-gradient-to-b from-gray-50/50 via-white to-gray-50/30 overflow-hidden">
+    <section id="how-it-works" className="relative pt-12 pb-24 bg-gradient-to-b from-gray-50/50 via-white to-gray-50/30 overflow-hidden">
       
       {/* Decorative dots pattern */}
       <div 

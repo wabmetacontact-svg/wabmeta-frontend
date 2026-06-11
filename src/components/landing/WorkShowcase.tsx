@@ -11,7 +11,7 @@ import {
 
 const WorkShowcase = () => {
   return (
-    <section className="relative py-24 bg-gradient-to-b from-white via-gray-50/40 to-white overflow-hidden">
+    <section id="services" className="relative py-24 bg-gradient-to-b from-white via-gray-50/40 to-white overflow-hidden">
       
       {/* Background decorative blobs */}
       <div className="absolute top-20 right-0 w-96 h-96 bg-green-100/30 rounded-full blur-3xl pointer-events-none" />

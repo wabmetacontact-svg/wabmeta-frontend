@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronDown, Menu, X } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 import Logo from '../common/Logo';
 
 const Navbar = () => {
@@ -14,12 +14,28 @@ const Navbar = () => {
   }, []);
 
   const navLinks = [
-    { label: 'Features', hasDropdown: true },
-    { label: 'Solutions', hasDropdown: true },
-    { label: 'Resources', hasDropdown: true },
-    { label: 'Pricing', hasDropdown: false },
-    { label: 'Company', hasDropdown: true },
+    { label: 'Features', id: 'features' },
+    { label: 'How It Works', id: 'how-it-works' },
+    { label: 'Services', id: 'services' },
+    { label: 'Pricing', id: 'pricing' },
+    { label: 'Team', id: 'team' },
   ];
+
+  const scrollToSection = (id: string) => {
+    const element = document.getElementById(id);
+    if (element) {
+      const offset = 90; // height of the navbar plus some spacing
+      const bodyRect = document.body.getBoundingClientRect().top;
+      const elementRect = element.getBoundingClientRect().top;
+      const elementPosition = elementRect - bodyRect;
+      const offsetPosition = elementPosition - offset;
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
+      });
+    }
+  };
 
   return (
     <nav className="fixed top-4 left-0 right-0 z-50 px-4">
@@ -44,10 +60,10 @@ const Navbar = () => {
             {navLinks.map((link) => (
               <button
                 key={link.label}
-                className="flex items-center gap-1 px-4 py-2 text-gray-700 hover:text-gray-900 hover:bg-gray-100/80 text-sm font-medium rounded-full transition-all duration-200"
+                onClick={() => scrollToSection(link.id)}
+                className="flex items-center gap-1 px-4 py-2 text-gray-700 hover:text-gray-955 hover:bg-gray-100/80 text-sm font-medium rounded-full transition-all duration-200 cursor-pointer"
               >
                 {link.label}
-                {link.hasDropdown && <ChevronDown size={14} className="opacity-60" />}
               </button>
             ))}
           </div>
@@ -56,7 +72,7 @@ const Navbar = () => {
           <div className="hidden lg:flex items-center gap-2">
             <Link
               to="/login"
-              className="px-4 py-2 text-gray-700 hover:text-gray-900 text-sm font-medium transition-colors"
+              className="px-5 py-2.5 text-gray-700 hover:text-green-600 hover:bg-green-50/60 border border-transparent hover:border-green-200/50 text-sm font-semibold rounded-full transition-all duration-300 hover:shadow-md hover:shadow-green-500/10 hover:scale-105 active:scale-95 flex items-center justify-center"
             >
               Login
             </Link>
@@ -72,7 +88,7 @@ const Navbar = () => {
           {/* Mobile Toggle */}
           <button
             onClick={() => setMobileOpen(!mobileOpen)}
-            className="lg:hidden p-2 text-gray-700 hover:bg-gray-100 rounded-full transition-colors"
+            className="lg:hidden p-2 text-gray-700 hover:bg-gray-100 rounded-full transition-colors cursor-pointer"
             aria-label="Toggle menu"
           >
             {mobileOpen ? <X size={20} /> : <Menu size={20} />}
@@ -86,11 +102,13 @@ const Navbar = () => {
               {navLinks.map((link) => (
                 <button
                   key={link.label}
-                  onClick={() => setMobileOpen(false)}
-                  className="w-full flex items-center justify-between px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-2xl text-sm font-medium transition-colors"
+                  onClick={() => {
+                    setMobileOpen(false);
+                    setTimeout(() => scrollToSection(link.id), 100);
+                  }}
+                  className="w-full flex items-center justify-between px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-2xl text-sm font-medium transition-colors text-left cursor-pointer"
                 >
                   {link.label}
-                  {link.hasDropdown && <ChevronDown size={14} />}
                 </button>
               ))}
             </div>
@@ -99,7 +117,7 @@ const Navbar = () => {
               <Link 
                 to="/login" 
                 onClick={() => setMobileOpen(false)}
-                className="text-center py-3 text-sm font-medium text-gray-700 border border-gray-200 rounded-full hover:bg-gray-50"
+                className="text-center py-3 text-sm font-semibold text-gray-700 border border-gray-200 rounded-full hover:bg-gray-50 transition-colors"
               >
                 Login
               </Link>

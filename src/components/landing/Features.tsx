@@ -7,7 +7,7 @@ import {
 
 const Features = () => {
   return (
-    <section className="relative py-24 bg-gradient-to-b from-amber-50/30 via-white to-amber-50/30 overflow-hidden">
+    <section id="features" className="relative py-24 bg-gradient-to-b from-amber-50/30 via-white to-amber-50/30 overflow-hidden">
       
       <div className="max-w-7xl mx-auto px-4 md:px-6">
         

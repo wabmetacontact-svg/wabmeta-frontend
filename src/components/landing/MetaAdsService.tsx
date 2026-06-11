@@ -3,7 +3,7 @@ import {
   ArrowRight, Megaphone, Target, TrendingUp, RefreshCw,
   Search, PenTool, Rocket, BarChart3, ArrowUp, Star,
   Home, Send, LayoutGrid, MonitorPlay, Users, FileBarChart,
-  CreditCard, Settings, Plant
+  CreditCard, Settings
 } from 'lucide-react';
 
 const MetaAdsService = () => {

@@ -100,7 +100,7 @@ const Pricing = () => {
   ];
 
   return (
-    <section className="relative py-24 bg-gradient-to-b from-white via-gray-50/30 to-white overflow-hidden">
+    <section id="pricing" className="relative py-24 bg-gradient-to-b from-white via-gray-50/30 to-white overflow-hidden">
       
       {/* Decorative background */}
       <div className="absolute top-40 right-20 w-72 h-72 bg-green-100/30 rounded-full blur-3xl pointer-events-none" />
