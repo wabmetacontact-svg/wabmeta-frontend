@@ -50,12 +50,14 @@ const WorkShowcase = () => {
               </span>
             </div>
 
-            <h2 className="font-heading text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-[1.05] tracking-tight">
-              <span className="bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 bg-clip-text text-transparent italic">
+            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-[1.05] tracking-tight text-gray-955">
+              <span className="bg-gradient-to-r from-orange-400 to-amber-500 bg-clip-text text-transparent italic font-light">
                 Services
               </span>{' '}
-              <span className="text-gray-900">| We Provide</span>
-              <span className="inline-block ml-1 text-orange-500 text-2xl align-top">✦</span>
+              <span>| We</span>{' '}
+              <span className="bg-gradient-to-r from-green-700 via-emerald-600 to-green-700 bg-clip-text text-transparent">
+                Provide
+              </span>
             </h2>
           </div>
 

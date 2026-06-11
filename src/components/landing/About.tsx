@@ -26,9 +26,14 @@ const About = () => {
             </span>
           </div>
 
-          <h2 className="font-heading text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-[1.1] tracking-tight mb-4">
-            Built for businesses that{' '}
-            <span className="text-green-500">refuse to settle</span>
+          <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-[1.05] tracking-tight text-gray-955 mb-6">
+            <span>Built for businesses</span>{' '}
+            <span className="bg-gradient-to-r from-gray-400 to-gray-500 bg-clip-text text-transparent italic font-light">
+              that
+            </span>{' '}
+            <span className="bg-gradient-to-r from-green-700 via-emerald-600 to-green-700 bg-clip-text text-transparent">
+              refuse to settle
+            </span>
           </h2>
           <p className="text-gray-600 text-lg max-w-2xl mx-auto leading-relaxed">
             We're on a mission to automate every business conversation — 

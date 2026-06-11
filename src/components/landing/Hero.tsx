@@ -31,14 +31,20 @@ const Hero = () => {
             </div>
 
             {/* Heading */}
-            <h1 className="font-heading text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-[1.15] tracking-tight">
-              One Platform for{' '}
-              <span className="text-green-500">WhatsApp</span>{' '}
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-[1.05] tracking-tight text-gray-950">
+              <span>One Platform for</span>{' '}
+              <span className="bg-gradient-to-r from-green-700 via-emerald-600 to-green-700 bg-clip-text text-transparent">
+                WhatsApp
+              </span>{' '}
               &{' '}
               <span className="bg-gradient-to-r from-pink-500 to-purple-500 bg-clip-text text-transparent">
                 Instagram
               </span>{' '}
-              Automation Powered by AI
+              <br className="hidden sm:inline" />
+              <span className="bg-gradient-to-r from-gray-400 to-gray-500 bg-clip-text text-transparent italic font-light">
+                Automation
+              </span>{' '}
+              <span>Powered by AI</span>
             </h1>
 
             {/* Subheading */}

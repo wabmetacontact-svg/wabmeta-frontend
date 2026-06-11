@@ -164,8 +164,14 @@ const AutomateBusiness = () => {
               </div>
 
               {/* Heading */}
-              <h2 className="font-heading text-4xl md:text-5xl lg:text-[3.25rem] font-bold text-white leading-[1.15] tracking-tight">
-                Automate Your Business in 8 Simple Steps
+              <h2 className="text-4xl sm:text-5xl lg:text-[3.25rem] font-bold leading-[1.05] tracking-tight text-white">
+                <span>Automate Your Business in</span>{' '}
+                <span className="bg-gradient-to-r from-gray-300 to-gray-400 bg-clip-text text-transparent italic font-light">
+                  8 Simple
+                </span>{' '}
+                <span className="text-[#FBB03B]">
+                  Steps
+                </span>
               </h2>
 
               {/* Subheading */}

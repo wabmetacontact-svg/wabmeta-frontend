@@ -19,9 +19,15 @@ const Features = () => {
               POWERFUL FEATURES
             </span>
           </div>
-          <h2 className="font-heading text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-[1.1] tracking-tight mb-4">
-            Everything you need to{' '}
-            <span className="text-green-500">grow</span>
+          <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-[1.05] tracking-tight text-gray-950 mb-6">
+            <span>Everything you</span>{' '}
+            <span className="bg-gradient-to-r from-gray-400 to-gray-500 bg-clip-text text-transparent italic font-light">
+              need
+            </span>{' '}
+            <span>to</span>{' '}
+            <span className="bg-gradient-to-r from-green-700 via-emerald-600 to-green-700 bg-clip-text text-transparent">
+              grow
+            </span>
           </h2>
           <p className="text-gray-600 text-lg max-w-2xl mx-auto">
             From WhatsApp campaigns to AI chatbots — all the tools you need 
