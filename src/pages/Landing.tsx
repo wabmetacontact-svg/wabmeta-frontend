@@ -7,7 +7,6 @@ import HowItWorks from '../components/landing/HowItWorks';
 import Pricing from '../components/landing/Pricing';
 import Team from '../components/landing/Team';
 import WorkShowcase from '../components/landing/WorkShowcase';
-import CTA from '../components/landing/CTA';
 import Footer from '../components/landing/Footer';
 
 const Landing = () => {
@@ -22,7 +21,6 @@ const Landing = () => {
       <Pricing />
       <Team />
       <WorkShowcase />
-      <CTA />
       <Footer />
     </div>
   );
