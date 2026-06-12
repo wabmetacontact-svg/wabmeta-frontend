@@ -323,7 +323,7 @@ export default function WhatsAppSettings() {
                         <div>
                           <div className="flex items-center gap-2">
                             <span className="font-mono font-semibold text-slate-900">
-                              {account.phoneNumber}
+                              {account.phoneNumber?.startsWith('+') ? account.phoneNumber : `+${account.phoneNumber}`}
                             </span>
                             {account.isDefault && (
                               <>
