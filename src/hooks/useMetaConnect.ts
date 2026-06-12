@@ -169,8 +169,8 @@ export const useMetaConnect = ({
           override_default_response_type: true,
           extras: {
             featureType: '',
-            sessionInfoVersion: '3',
-            version: 'v3',
+            sessionInfoVersion: '2',
+            version: 'v2',
           },
         }
       );
