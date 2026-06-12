@@ -168,7 +168,7 @@ export const useMetaConnect = ({
           response_type: 'code',
           override_default_response_type: true,
           extras: {
-            featureType: 'whatsapp_business_app_onboarding',
+            featureType: '',
             sessionInfoVersion: '3',
             version: 'v3',
           },
