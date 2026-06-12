@@ -160,8 +160,9 @@ const MetaConnectModal: React.FC<MetaConnectModalProps> = ({
 
     try {
       window.FB.login(
-        async (response: any) => {
-          console.log('📥 FB.login response:', {
+        (response: any) => {
+          const handleResponse = async () => {
+            console.log('📥 FB.login response:', {
             status: response.status,
             hasAuthResponse: !!response.authResponse,
             authResponseKeys: response.authResponse ? Object.keys(response.authResponse) : [],
@@ -217,6 +218,8 @@ const MetaConnectModal: React.FC<MetaConnectModalProps> = ({
               );
             }
           }
+          }; // End handleResponse async function
+          handleResponse(); // Execute it synchronously
         },
         {
           // ✅ CORRECT Embedded Signup config
