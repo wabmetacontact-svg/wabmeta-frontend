@@ -95,10 +95,10 @@ export const useWhatsAppConnection = (): UseWhatsAppConnectionReturn => {
   );
 
   return {
-    // ✅ Force-disable gating across app
-    isConnected: true,
+    // ✅ Use real connection status
+    isConnected: connectedAccounts.length > 0,
 
-    // ✅ Never show "Checking WhatsApp connection..."
+    // ✅ Real loading state (can be managed if needed, keeping false for silent load unless we add a state)
     isLoading: false,
 
     error,

@@ -813,11 +813,11 @@ export const whatsapp = {
     }
   },
 
-  getAccount: (id: string) => api.get<ApiResponse>(`/whatsapp/accounts/${id}`),
+  getAccount: (id: string) => api.get<ApiResponse>(`/meta/accounts/${id}`),
   connect: (data: { code: string; state?: string }) =>
-    api.post<ApiResponse>('/whatsapp/connect', data),
-  disconnect: (id: string) => api.delete<ApiResponse>(`/whatsapp/accounts/${id}`),
-  setDefault: (id: string) => api.post<ApiResponse>(`/whatsapp/accounts/${id}/default`),
+    api.post<ApiResponse>('/meta/connect', data),
+  disconnect: (id: string) => api.delete<ApiResponse>(`/meta/accounts/${id}`),
+  setDefault: (id: string) => api.post<ApiResponse>(`/meta/accounts/${id}/set-default`),
   sendText: async (data: {
     whatsappAccountId: string;
     to: string;
