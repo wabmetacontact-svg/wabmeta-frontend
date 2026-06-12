@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import MetaConnectModal from '../dashboard/MetaConnectModal';
+import { useMetaConnect } from '../../hooks/useMetaConnect';
 import {
   Phone, CheckCircle, Trash2, Loader2, Star, Cloud, Plus,
   RefreshCw, AlertCircle, TrendingUp, Activity, Shield, Clock,
@@ -89,7 +89,6 @@ const formatLastSynced = (date: string) => {
 export default function WhatsAppSettings() {
   const [accounts, setAccounts] = useState<WhatsAppAccount[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showConnectModal, setShowConnectModal] = useState(false);
 
   // orgId localStorage se (api.ts wala hi pattern)
   const getOrgId = (): string => {
@@ -185,12 +184,20 @@ export default function WhatsAppSettings() {
     return () => clearInterval(interval);
   }, [syncAllQuality]);
 
+  const { connect, loading: connectLoading, progress, sdkReady, sdkLoading } = useMetaConnect({
+    organizationId: getOrgId(),
+    onSuccess: () => {
+      fetchAccounts().then(() => syncAllQuality(false));
+    },
+  });
+
   const handleConnect = () => {
-    if (connectedAccounts?.length > 0) {
+    // Note: connectedAccounts is computed below, we can filter accounts directly here:
+    if (accounts.some(a => a.status === 'CONNECTED')) {
       toast.error('Please disconnect the current account before connecting a new one.');
       return;
     }
-    setShowConnectModal(true);
+    connect();
   };
 
   const handleDisconnect = async (accountId: string) => {
@@ -457,12 +464,27 @@ export default function WhatsAppSettings() {
             </p>
             <button
               onClick={handleConnect}
+              disabled={connectLoading || sdkLoading || !sdkReady}
               className="inline-flex items-center justify-center gap-2 px-6 py-3
                 bg-green-600 text-white rounded-xl hover:bg-green-700
-                font-semibold transition-colors"
+                font-semibold transition-colors disabled:opacity-50"
             >
-              <Plus className="w-5 h-5" />
-              Connect with Meta
+              {connectLoading ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  {progress || 'Connecting...'}
+                </>
+              ) : sdkLoading ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  Loading...
+                </>
+              ) : (
+                <>
+                  <Plus className="w-5 h-5" />
+                  Connect with Meta
+                </>
+              )}
             </button>
           </div>
         )}
@@ -490,17 +512,6 @@ export default function WhatsAppSettings() {
         </div>
       )}
 
-      {showConnectModal && (
-        <MetaConnectModal
-          isOpen={showConnectModal}
-          organizationId={getOrgId()}
-          onClose={() => setShowConnectModal(false)}
-          onConnected={() => {
-            setShowConnectModal(false);
-            fetchAccounts().then(() => syncAllQuality(false));
-          }}
-        />
-      )}
     </div>
   );
 }
