@@ -227,13 +227,10 @@ const MetaConnectModal: React.FC<MetaConnectModalProps> = ({
           response_type: 'code',
           override_default_response_type: true,
           extras: {
-            // ✅ FIX 1: Pre-fill business name so existing WABA can be found
-            setup: {
-              business: organizationName ? { name: organizationName } : undefined,
-            },
-            featureType: '',
-            // ✅ FIX 2: Use version 2 — version 3 has known issues with existing WABA detection
-            sessionInfoVersion: '2',
+            // ✅ MATCH Meta's official extras exactly
+            featureType: 'whatsapp_business_app_onboarding',
+            sessionInfoVersion: '3',
+            version: 'v3',  // ✅ Match your config (change to 'v4' if needed)
           },
         }
       );
