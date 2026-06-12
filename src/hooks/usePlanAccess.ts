@@ -23,7 +23,6 @@ const FEATURES_MATRIX = {
   reports: ['monthly', '3month', '6month', 'yearly'],
   
   // Settings & Utils
-  whatsappMetaConnect: ['6month', 'yearly'],
   webhooks: ['monthly', '3month', '6month', 'yearly'],
   campaignRetry: ['6month', 'yearly'],
   mobileApiSameNumber: ['6month', 'yearly'],
