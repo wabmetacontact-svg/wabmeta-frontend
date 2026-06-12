@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useMetaConnect } from '../../hooks/useMetaConnect';
+import { usePlanAccess } from '../../hooks/usePlanAccess';
 import {
   Phone, CheckCircle, Trash2, Loader2, Star, Cloud, Plus,
   RefreshCw, AlertCircle, TrendingUp, Activity, Shield, Clock,
@@ -87,6 +88,7 @@ const formatLastSynced = (date: string) => {
 };
 
 export default function WhatsAppSettings() {
+  const { hasAccess } = usePlanAccess();
   const [accounts, setAccounts] = useState<WhatsAppAccount[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -453,39 +455,61 @@ export default function WhatsAppSettings() {
           /* ── Empty State ── */
           <div className="text-center py-8">
             <div className="w-16 h-16 mx-auto mb-4 bg-slate-100 rounded-full flex items-center justify-center">
-              <AlertCircle className="w-8 h-8 text-slate-400" />
-            </div>
-            <h4 className="font-semibold text-slate-900 mb-1">
-              No WhatsApp Account Connected
-            </h4>
-            <p className="text-sm text-slate-500 mb-6 max-w-md mx-auto">
-              Connect your WhatsApp Business account through Meta's official
-              Cloud API for high-volume messaging with advanced features.
-            </p>
-            <button
-              onClick={handleConnect}
-              disabled={connectLoading || sdkLoading || !sdkReady}
-              className="inline-flex items-center justify-center gap-2 px-6 py-3
-                bg-green-600 text-white rounded-xl hover:bg-green-700
-                font-semibold transition-colors disabled:opacity-50"
-            >
-              {connectLoading ? (
-                <>
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  {progress || 'Connecting...'}
-                </>
-              ) : sdkLoading ? (
-                <>
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  Loading...
-                </>
+              {hasAccess('whatsappMetaConnect') ? (
+                <AlertCircle className="w-8 h-8 text-slate-400" />
               ) : (
-                <>
-                  <Plus className="w-5 h-5" />
-                  Connect with Meta
-                </>
+                <Shield className="w-8 h-8 text-slate-400" />
               )}
-            </button>
+            </div>
+            
+            <h4 className="font-semibold text-slate-900 mb-1">
+              {hasAccess('whatsappMetaConnect') 
+                ? 'No WhatsApp Account Connected' 
+                : 'Premium Feature Locked'}
+            </h4>
+            
+            <p className="text-sm text-slate-500 mb-6 max-w-md mx-auto">
+              {hasAccess('whatsappMetaConnect') 
+                ? "Connect your WhatsApp Business account through Meta's official Cloud API for high-volume messaging with advanced features."
+                : "Meta Cloud API connection is available for 6-Month and Annual plans. Upgrade your plan to connect your WhatsApp Business account."}
+            </p>
+            
+            {hasAccess('whatsappMetaConnect') ? (
+              <button
+                onClick={handleConnect}
+                disabled={connectLoading || sdkLoading || !sdkReady}
+                className="inline-flex items-center justify-center gap-2 px-6 py-3
+                  bg-green-600 text-white rounded-xl hover:bg-green-700
+                  font-semibold transition-colors disabled:opacity-50"
+              >
+                {connectLoading ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    {progress || 'Connecting...'}
+                  </>
+                ) : sdkLoading ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    Loading...
+                  </>
+                ) : (
+                  <>
+                    <Plus className="w-5 h-5" />
+                    Connect with Meta
+                  </>
+                )}
+              </button>
+            ) : (
+              <a
+                href="/dashboard/billing"
+                className="inline-flex items-center justify-center gap-2 px-6 py-3
+                  bg-blue-600 text-white rounded-xl hover:bg-blue-700
+                  font-semibold transition-colors"
+              >
+                <Star className="w-5 h-5" />
+                Upgrade Plan
+              </a>
+            )}
           </div>
         )}
       </div>
