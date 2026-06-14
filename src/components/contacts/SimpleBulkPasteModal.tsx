@@ -26,7 +26,6 @@ export default function SimpleBulkPasteModal({ isOpen, onClose, onSuccess, group
     const [loading, setLoading] = useState(false);
     const [result, setResult] = useState<any>(null);
 
-    // ✅ Create Group States
     const [showCreateGroup, setShowCreateGroup] = useState(false);
     const [newGroupName, setNewGroupName] = useState('');
     const [creatingGroup, setCreatingGroup] = useState(false);
@@ -46,8 +45,8 @@ export default function SimpleBulkPasteModal({ isOpen, onClose, onSuccess, group
 
     const getPreviewCount = () => {
         if (!phoneNumbers.trim()) return 0;
-        
-        let preprocessed = phoneNumbers.replace(/\s*[\-\(\)\.]\s*/g, ''); 
+
+        let preprocessed = phoneNumbers.replace(/\s*[\-\(\)\.]\s*/g, '');
         preprocessed = preprocessed.replace(/(\d)\s+(\d)/g, '$1$2');
         preprocessed = preprocessed.replace(/(\+)\s+(\d)/g, '$1$2');
 
@@ -58,7 +57,6 @@ export default function SimpleBulkPasteModal({ isOpen, onClose, onSuccess, group
             .length;
     };
 
-    // ✅ CREATE NEW GROUP
     const handleCreateGroup = async () => {
         if (!newGroupName.trim()) {
             toast.error('Please enter group name');
@@ -73,7 +71,6 @@ export default function SimpleBulkPasteModal({ isOpen, onClose, onSuccess, group
 
             const newGroup = response.data.data;
 
-            // Add to local list and select it
             setLocalGroups(prev => [...prev, newGroup]);
             setSelectedGroup(newGroup.id);
             setNewGroupName('');
@@ -105,7 +102,6 @@ export default function SimpleBulkPasteModal({ isOpen, onClose, onSuccess, group
         try {
             const response = await api.post('/contacts/bulk-paste', {
                 phoneNumbers,
-                // ❌ No countryCode - auto detect on backend
                 groupId: selectedGroup || undefined,
                 tags: tags.split(',').map(t => t.trim()).filter(t => t)
             });
@@ -134,20 +130,20 @@ export default function SimpleBulkPasteModal({ isOpen, onClose, onSuccess, group
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div className="absolute inset-0 bg-black/50" onClick={handleClose} />
+            <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={handleClose} />
 
-            <div className="relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden">
+            <div className="relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden border border-gray-200 dark:border-gray-700">
                 {/* Header */}
                 <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20">
                     <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/50 rounded-xl flex items-center justify-center">
-                            <Upload className="w-6 h-6 text-blue-600" />
+                        <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/50 rounded-xl flex items-center justify-center shadow-sm">
+                            <Upload className="w-6 h-6 text-blue-600 dark:text-blue-400" />
                         </div>
                         <div>
                             <h2 className="text-xl font-bold text-gray-900 dark:text-white">
                                 Simple Bulk Paste
                             </h2>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">
+                            <p className="text-sm text-gray-600 dark:text-gray-400">
                                 Paste phone numbers with country code
                             </p>
                         </div>
@@ -156,21 +152,21 @@ export default function SimpleBulkPasteModal({ isOpen, onClose, onSuccess, group
                         onClick={handleClose}
                         className="p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition-colors"
                     >
-                        <X className="w-5 h-5 text-gray-500" />
+                        <X className="w-5 h-5 text-gray-600 dark:text-gray-300" />
                     </button>
                 </div>
 
                 {/* Body */}
-                <div className="p-6 space-y-5 overflow-y-auto max-h-[60vh]">
+                <div className="p-6 space-y-5 overflow-y-auto max-h-[60vh] bg-white dark:bg-gray-800">
 
-                    {/* ✅ Auto Detect Notice */}
+                    {/* Auto Detect Notice */}
                     <div className="flex items-start gap-3 p-4 bg-green-50 dark:bg-green-900/20 rounded-xl border border-green-200 dark:border-green-800">
-                        <Phone className="w-5 h-5 text-green-600 shrink-0 mt-0.5" />
+                        <Phone className="w-5 h-5 text-green-600 dark:text-green-400 shrink-0 mt-0.5" />
                         <div>
-                            <p className="font-medium text-green-800 dark:text-green-300">
+                            <p className="font-semibold text-green-800 dark:text-green-300">
                                 Auto Country Detection
                             </p>
-                            <p className="text-sm text-green-600 dark:text-green-400 mt-1">
+                            <p className="text-sm text-green-700 dark:text-green-400 mt-1">
                                 Include country code with each number (e.g., +919876543210 or +91 98765 43210).
                                 Numbers will be automatically validated.
                             </p>
@@ -179,7 +175,7 @@ export default function SimpleBulkPasteModal({ isOpen, onClose, onSuccess, group
 
                     {/* Phone Numbers Input */}
                     <div>
-                        <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                        <label className="flex items-center gap-2 text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2">
                             <Phone className="w-4 h-4" />
                             Phone Numbers <span className="text-red-500">*</span>
                         </label>
@@ -194,21 +190,21 @@ Examples:
 +14155551234
 +447911123456
 +971501234567`}
-                            className="w-full h-52 px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-sm resize-none"
+                            className="w-full h-52 px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-sm resize-none"
                         />
                         <div className="flex items-center justify-between mt-2">
-                            <p className="text-xs text-gray-500">
+                            <p className="text-xs text-gray-600 dark:text-gray-400">
                                 💡 One number per line or comma separated
                             </p>
-                            <span className="text-xs font-medium text-gray-600 dark:text-gray-400">
+                            <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
                                 Max: 5,000
                             </span>
                         </div>
                     </div>
 
-                    {/* ✅ Group Selection with Create Option */}
+                    {/* Group Selection with Create Option */}
                     <div>
-                        <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                        <label className="block text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2">
                             Add to Group (Optional)
                         </label>
 
@@ -217,7 +213,7 @@ Examples:
                                 <select
                                     value={selectedGroup}
                                     onChange={(e) => setSelectedGroup(e.target.value)}
-                                    className="flex-1 px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    className="flex-1 px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 >
                                     <option value="">No group</option>
                                     {localGroups.map(group => (
@@ -225,25 +221,23 @@ Examples:
                                     ))}
                                 </select>
 
-                                {/* ✅ Create Group Button */}
                                 <button
                                     type="button"
                                     onClick={() => setShowCreateGroup(true)}
-                                    className="flex items-center gap-2 px-4 py-2.5 bg-green-50 dark:bg-green-900/20 text-green-600 border border-green-200 dark:border-green-800 rounded-xl hover:bg-green-100 dark:hover:bg-green-900/40 transition-colors"
+                                    className="flex items-center gap-2 px-4 py-2.5 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800 rounded-xl hover:bg-green-100 dark:hover:bg-green-900/40 transition-colors font-medium"
                                 >
                                     <FolderPlus className="w-4 h-4" />
                                     <span className="hidden sm:inline">New Group</span>
                                 </button>
                             </div>
                         ) : (
-                            // ✅ Create Group Form
                             <div className="flex gap-2">
                                 <input
                                     type="text"
                                     value={newGroupName}
                                     onChange={(e) => setNewGroupName(e.target.value)}
                                     placeholder="Enter group name..."
-                                    className="flex-1 px-4 py-2.5 border border-green-300 dark:border-green-700 rounded-xl bg-white dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500"
+                                    className="flex-1 px-4 py-2.5 border border-green-300 dark:border-green-700 rounded-xl bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500"
                                     autoFocus
                                     onKeyDown={(e) => {
                                         if (e.key === 'Enter') handleCreateGroup();
@@ -254,7 +248,7 @@ Examples:
                                     type="button"
                                     onClick={handleCreateGroup}
                                     disabled={creatingGroup || !newGroupName.trim()}
-                                    className="flex items-center gap-2 px-4 py-2.5 bg-green-600 text-white rounded-xl hover:bg-green-700 disabled:opacity-50 transition-colors"
+                                    className="flex items-center gap-2 px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium shadow-sm"
                                 >
                                     {creatingGroup ? (
                                         <Loader2 className="w-4 h-4 animate-spin" />
@@ -269,7 +263,7 @@ Examples:
                                         setShowCreateGroup(false);
                                         setNewGroupName('');
                                     }}
-                                    className="px-3 py-2.5 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl transition-colors"
+                                    className="px-3 py-2.5 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl transition-colors border border-gray-300 dark:border-gray-600"
                                 >
                                     <X className="w-4 h-4" />
                                 </button>
@@ -279,7 +273,7 @@ Examples:
 
                     {/* Tags */}
                     <div>
-                        <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                        <label className="block text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2">
                             Tags (Optional)
                         </label>
                         <input
@@ -287,24 +281,24 @@ Examples:
                             value={tags}
                             onChange={(e) => setTags(e.target.value)}
                             placeholder="e.g., lead, marketing, 2024"
-                            className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
-                        <p className="text-xs text-gray-500 mt-1">
+                        <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
                             Separate multiple tags with commas
                         </p>
                     </div>
 
                     {/* Preview Count */}
                     {phoneNumbers.trim() && (
-                        <div className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-gray-900/50 rounded-xl">
+                        <div className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-gray-900/50 rounded-xl border border-gray-200 dark:border-gray-700">
                             <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/50 rounded-full flex items-center justify-center">
-                                <Phone className="w-5 h-5 text-blue-600" />
+                                <Phone className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                             </div>
                             <div>
                                 <p className="font-semibold text-gray-900 dark:text-white">
                                     {getPreviewCount().toLocaleString()} numbers detected
                                 </p>
-                                <p className="text-sm text-gray-500">
+                                <p className="text-sm text-gray-600 dark:text-gray-400">
                                     Ready to upload
                                 </p>
                             </div>
@@ -315,34 +309,34 @@ Examples:
                     {result && (
                         <div className="p-5 bg-green-50 dark:bg-green-900/20 rounded-xl border border-green-200 dark:border-green-800">
                             <div className="flex items-center gap-2 mb-4">
-                                <CheckCircle className="w-6 h-6 text-green-600" />
+                                <CheckCircle className="w-6 h-6 text-green-600 dark:text-green-400" />
                                 <span className="font-bold text-green-800 dark:text-green-400 text-lg">
                                     Upload Complete!
                                 </span>
                             </div>
 
                             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                                <div className="text-center p-3 bg-white dark:bg-gray-800 rounded-lg">
+                                <div className="text-center p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
                                     <p className="text-2xl font-bold text-gray-900 dark:text-white">{result.totalInput || 0}</p>
-                                    <p className="text-xs text-gray-500">Total</p>
+                                    <p className="text-xs text-gray-600 dark:text-gray-400">Total</p>
                                 </div>
-                                <div className="text-center p-3 bg-white dark:bg-gray-800 rounded-lg">
-                                    <p className="text-2xl font-bold text-green-600">{result.created || 0}</p>
-                                    <p className="text-xs text-gray-500">Created</p>
+                                <div className="text-center p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                                    <p className="text-2xl font-bold text-green-600 dark:text-green-400">{result.created || 0}</p>
+                                    <p className="text-xs text-gray-600 dark:text-gray-400">Created</p>
                                 </div>
-                                <div className="text-center p-3 bg-white dark:bg-gray-800 rounded-lg">
-                                    <p className="text-2xl font-bold text-yellow-600">{result.duplicatesSkipped || 0}</p>
-                                    <p className="text-xs text-gray-500">Duplicates</p>
+                                <div className="text-center p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                                    <p className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">{result.duplicatesSkipped || 0}</p>
+                                    <p className="text-xs text-gray-600 dark:text-gray-400">Duplicates</p>
                                 </div>
-                                <div className="text-center p-3 bg-white dark:bg-gray-800 rounded-lg">
-                                    <p className="text-2xl font-bold text-red-600">{result.invalidNumbers || 0}</p>
-                                    <p className="text-xs text-gray-500">Invalid</p>
+                                <div className="text-center p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                                    <p className="text-2xl font-bold text-red-600 dark:text-red-400">{result.invalidNumbers || 0}</p>
+                                    <p className="text-xs text-gray-600 dark:text-gray-400">Invalid</p>
                                 </div>
                             </div>
 
                             {result.invalidDetails && result.invalidDetails.length > 0 && (
-                                <div className="mt-4 p-3 bg-red-50 dark:bg-red-900/20 rounded-lg">
-                                    <p className="text-sm font-medium text-red-700 dark:text-red-400 mb-2">
+                                <div className="mt-4 p-3 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
+                                    <p className="text-sm font-semibold text-red-700 dark:text-red-400 mb-2">
                                         Invalid numbers:
                                     </p>
                                     <div className="text-xs text-red-600 dark:text-red-400 font-mono space-y-1 max-h-24 overflow-y-auto">
@@ -360,7 +354,7 @@ Examples:
                 <div className="flex items-center justify-end gap-3 p-6 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
                     <button
                         onClick={handleClose}
-                        className="px-5 py-2.5 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-xl font-medium transition-colors"
+                        className="px-5 py-2.5 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-xl font-medium transition-colors border border-gray-300 dark:border-gray-600"
                     >
                         {result ? 'Close' : 'Cancel'}
                     </button>
@@ -368,7 +362,7 @@ Examples:
                         <button
                             onClick={handleSubmit}
                             disabled={loading || !phoneNumbers.trim()}
-                            className="flex items-center gap-2 px-6 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed font-semibold transition-colors"
+                            className="flex items-center gap-2 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl disabled:opacity-50 disabled:cursor-not-allowed font-semibold transition-colors shadow-sm"
                         >
                             {loading ? (
                                 <>
