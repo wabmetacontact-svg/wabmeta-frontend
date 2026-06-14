@@ -27,7 +27,7 @@ const Loader: React.FC<LoaderProps> = ({
       <div className="relative mb-4">
 
         {/* Glow */}
-        <div className="absolute inset-0 bg-green-500/20 rounded-full blur-xl animate-pulse" />
+        <div className="absolute inset-0 bg-emerald-400/20 rounded-full blur-xl animate-pulse" />
 
         {/* Spinner */}
         <svg
@@ -47,7 +47,7 @@ const Loader: React.FC<LoaderProps> = ({
             cy={config.spinner / 2}
             r={config.spinner / 2 - 3}
             fill="none"
-            stroke="rgba(255,255,255,0.08)"
+            stroke="rgba(16,185,129,0.1)"
             strokeWidth={config.stroke}
           />
           <circle
@@ -65,14 +65,14 @@ const Loader: React.FC<LoaderProps> = ({
 
         {/* Logo container */}
         <div className={`relative ${config.container} rounded-xl
-          bg-white/[0.06] backdrop-blur-xl
-          border border-white/[0.1]
+          bg-white
+          border border-gray-200
+          shadow-sm
           flex items-center justify-center`}>
           <img
             src={logo}
             alt="WabMeta"
-            className={`${config.logo} object-contain
-              drop-shadow-[0_0_8px_rgba(16,185,129,0.5)]`}
+            className={`${config.logo} object-contain`}
           />
         </div>
       </div>
@@ -80,12 +80,12 @@ const Loader: React.FC<LoaderProps> = ({
       {/* Text */}
       {text && (
         <div className="flex items-center gap-2">
-          <p className="text-sm text-gray-300 font-medium">{text}</p>
+          <p className="text-sm text-gray-700 font-medium">{text}</p>
           <span className="flex items-center gap-0.5">
             {[0, 1, 2].map((i) => (
               <span
                 key={i}
-                className="w-1 h-1 rounded-full bg-green-400 animate-bounce"
+                className="w-1 h-1 rounded-full bg-emerald-500 animate-bounce"
                 style={{
                   animationDelay: `${i * 150}ms`,
                   animationDuration: '1.4s',
@@ -107,23 +107,25 @@ const Loader: React.FC<LoaderProps> = ({
   if (fullScreen) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center 
-        bg-[#050816]/90 backdrop-blur-md">
+        bg-white/80 backdrop-blur-md">
         {/* Subtle gradient */}
-        <div className="absolute inset-0"
+        <div
+          className="absolute inset-0"
           style={{
-            background: 'radial-gradient(ellipse 50% 40% at 50% 50%, rgba(16, 185, 129, 0.1) 0%, transparent 70%)',
+            background: 'radial-gradient(ellipse 50% 40% at 50% 50%, rgba(16, 185, 129, 0.08) 0%, transparent 70%)',
           }}
         />
 
         {/* Glass card */}
         <div className="relative rounded-2xl overflow-hidden
-          bg-white/[0.04] backdrop-blur-2xl
-          border border-white/[0.1]
-          shadow-[0_20px_60px_rgba(0,0,0,0.3)]
+          bg-white
+          border border-gray-200
+          shadow-[0_20px_60px_rgba(16,185,129,0.12)]
           p-8">
-          <div className="absolute inset-0 pointer-events-none"
+          <div
+            className="absolute inset-0 pointer-events-none"
             style={{
-              background: 'linear-gradient(135deg, rgba(255,255,255,0.06) 0%, transparent 50%)',
+              background: 'linear-gradient(135deg, rgba(16,185,129,0.04) 0%, transparent 50%)',
             }}
           />
           <div className="relative">

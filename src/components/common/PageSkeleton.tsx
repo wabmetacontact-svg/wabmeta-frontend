@@ -19,17 +19,18 @@ const PageSkeleton: React.FC = () => {
           <div
             key={i}
             className="relative h-32 rounded-2xl overflow-hidden
-              bg-white/[0.02] backdrop-blur-xl
-              border border-white/[0.05]
-              p-5 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.02)]"
+              bg-white
+              border border-gray-200
+              p-5 shadow-sm"
             style={{
               animation: `pulse 2s ease-in-out ${i * 100}ms infinite`,
             }}
           >
             {/* Shimmer overlay */}
-            <div className="absolute inset-0 pointer-events-none"
+            <div
+              className="absolute inset-0 pointer-events-none"
               style={{
-                background: 'linear-gradient(135deg, rgba(255,255,255,0.04) 0%, transparent 50%)',
+                background: 'linear-gradient(135deg, rgba(16,185,129,0.03) 0%, transparent 50%)',
               }}
             />
 
@@ -45,7 +46,7 @@ const PageSkeleton: React.FC = () => {
             {/* Sliding shimmer */}
             <div className="absolute inset-0 pointer-events-none overflow-hidden">
               <div className="absolute inset-y-0 -inset-x-full
-                bg-gradient-to-r from-transparent via-emerald-500/[0.08] to-transparent
+                bg-gradient-to-r from-transparent via-emerald-500/[0.06] to-transparent
                 animate-skeleton-shimmer" />
             </div>
           </div>
@@ -57,13 +58,14 @@ const PageSkeleton: React.FC = () => {
 
         {/* Big card - left */}
         <div className="lg:col-span-2 relative h-[400px] rounded-2xl overflow-hidden
-          bg-white/[0.02] backdrop-blur-xl
-          border border-white/[0.05]
-          p-6 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.02)]">
+          bg-white
+          border border-gray-200
+          p-6 shadow-sm">
 
-          <div className="absolute inset-0 pointer-events-none"
+          <div
+            className="absolute inset-0 pointer-events-none"
             style={{
-              background: 'linear-gradient(135deg, rgba(255,255,255,0.04) 0%, transparent 50%)',
+              background: 'linear-gradient(135deg, rgba(16,185,129,0.03) 0%, transparent 50%)',
             }}
           />
 
@@ -87,7 +89,7 @@ const PageSkeleton: React.FC = () => {
               ))}
             </div>
 
-            <div className="flex items-center justify-between pt-4 border-t border-white/[0.05]">
+            <div className="flex items-center justify-between pt-4 border-t border-gray-200">
               <SkeletonBox className="h-4 w-32" />
               <SkeletonBox className="h-4 w-20" />
             </div>
@@ -96,20 +98,21 @@ const PageSkeleton: React.FC = () => {
           {/* Sliding shimmer */}
           <div className="absolute inset-0 pointer-events-none overflow-hidden">
             <div className="absolute inset-y-0 -inset-x-full
-              bg-gradient-to-r from-transparent via-emerald-500/[0.08] to-transparent
+              bg-gradient-to-r from-transparent via-emerald-500/[0.06] to-transparent
               animate-skeleton-shimmer" />
           </div>
         </div>
 
         {/* Right card */}
         <div className="relative h-[400px] rounded-2xl overflow-hidden
-          bg-white/[0.02] backdrop-blur-xl
-          border border-white/[0.05]
-          p-6 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.02)]">
+          bg-white
+          border border-gray-200
+          p-6 shadow-sm">
 
-          <div className="absolute inset-0 pointer-events-none"
+          <div
+            className="absolute inset-0 pointer-events-none"
             style={{
-              background: 'linear-gradient(135deg, rgba(255,255,255,0.04) 0%, transparent 50%)',
+              background: 'linear-gradient(135deg, rgba(16,185,129,0.03) 0%, transparent 50%)',
             }}
           />
 
@@ -137,7 +140,7 @@ const PageSkeleton: React.FC = () => {
           {/* Sliding shimmer */}
           <div className="absolute inset-0 pointer-events-none overflow-hidden">
             <div className="absolute inset-y-0 -inset-x-full
-              bg-gradient-to-r from-transparent via-emerald-500/[0.08] to-transparent
+              bg-gradient-to-r from-transparent via-emerald-500/[0.06] to-transparent
               animate-skeleton-shimmer" />
           </div>
         </div>
@@ -145,18 +148,19 @@ const PageSkeleton: React.FC = () => {
 
       {/* ✅ List/Table Area */}
       <div className="relative rounded-2xl overflow-hidden
-        bg-white/[0.02] backdrop-blur-xl
-        border border-white/[0.05]
-        p-6 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.02)]">
+        bg-white
+        border border-gray-200
+        p-6 shadow-sm">
 
-      <div className="absolute inset-0 pointer-events-none"
-        style={{
-          background: 'linear-gradient(135deg, rgba(255,255,255,0.04) 0%, transparent 50%)',
-        }}
-      />
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background: 'linear-gradient(135deg, rgba(16,185,129,0.03) 0%, transparent 50%)',
+          }}
+        />
 
         <div className="relative space-y-4">
-          <div className="flex items-center justify-between pb-4 border-b border-white/[0.05]">
+          <div className="flex items-center justify-between pb-4 border-b border-gray-200">
             <SkeletonBox className="h-5 w-32" />
             <SkeletonBox className="h-8 w-24 rounded-lg" />
           </div>
@@ -181,7 +185,7 @@ const PageSkeleton: React.FC = () => {
         {/* Sliding shimmer */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
           <div className="absolute inset-y-0 -inset-x-full
-            bg-gradient-to-r from-transparent via-emerald-500/[0.08] to-transparent
+            bg-gradient-to-r from-transparent via-emerald-500/[0.06] to-transparent
             animate-skeleton-shimmer" />
         </div>
       </div>
@@ -196,20 +200,20 @@ const PageSkeleton: React.FC = () => {
         }
         @keyframes pulse {
           0%, 100% { opacity: 1; }
-          50% { opacity: 0.7; }
+          50% { opacity: 0.6; }
         }
       `}</style>
     </div>
   );
 };
 
-// ✅ Reusable skeleton box
-const SkeletonBox: React.FC<{ 
-  className?: string; 
+// ✅ Reusable skeleton box - LIGHT MODE
+const SkeletonBox: React.FC<{
+  className?: string;
   style?: React.CSSProperties;
 }> = ({ className = '', style }) => (
   <div
-    className={`bg-white/[0.04] rounded-md border border-white/[0.02] ${className}`}
+    className={`bg-gray-200 rounded-md ${className}`}
     style={{
       animation: 'pulse 2s ease-in-out infinite',
       ...style,
