@@ -610,16 +610,29 @@ const CreateTemplate: React.FC = () => {
       // Clean name
       const cleanName = formData.name.replace(/_+$/, '');
 
-      // Map buttons
       const mappedButtons = formData.buttons
         .filter((btn) => btn.text.trim())
         .map((btn) => {
           if (btn.type === 'quick_reply') {
-            return { type: 'QUICK_REPLY' as const, text: btn.text.trim() };
+            return { 
+              type: 'QUICK_REPLY' as const, 
+              text: btn.text.trim() 
+            };
           } else if (btn.type === 'url') {
-            return { type: 'URL' as const, text: btn.text.trim(), url: btn.url?.trim() || '' };
+            return { 
+              type: 'URL' as const, 
+              text: btn.text.trim(), 
+              url: btn.url?.trim() || '' 
+            };
           } else if (btn.type === 'phone') {
-            return { type: 'PHONE_NUMBER' as const, text: btn.text.trim(), phoneNumber: btn.phoneNumber?.trim() || '' };
+            return { 
+              type: 'PHONE_NUMBER' as const, 
+              text: btn.text.trim(), 
+              // ✅ Backend expect karta hai 'phoneNumber' (camelCase)
+              // service.ts normalize karega 'phone_number' mein Meta ke liye
+              phoneNumber: btn.phoneNumber?.trim() || '',
+              phone_number: btn.phoneNumber?.trim() || '', // ✅ Extra safety
+            };
           }
           return null;
         })
