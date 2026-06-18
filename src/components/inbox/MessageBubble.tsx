@@ -154,7 +154,12 @@ function parseTemplateContent(content: string, meta: any): {
     };
   }
 
-  return { isTemplate: false, bodyText: content, buttons: normalizeButtons(meta?.buttons || []) };
+  return { 
+    isTemplate: false, 
+    templateName: meta?.templateName || meta?.template_name || undefined,
+    bodyText: content, 
+    buttons: normalizeButtons(meta?.buttons || []) 
+  };
 }
 
 function normalizeButtons(raw: any[]): Array<{ type: string; text: string; url?: string; phone?: string }> {
