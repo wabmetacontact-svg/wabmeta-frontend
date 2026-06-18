@@ -656,44 +656,185 @@ const MessageBubble: React.FC<Props> = ({
 
   // ── Interactive (button reply) ──────────────────────────────────────────
   const renderInteractive = () => {
-    const body = meta?.body?.text || meta?.text || message.content || '';
-    const buttonReply = meta?.button_reply || meta?.buttonReply;
-    const listReply = meta?.list_reply || meta?.listReply;
+    // ✅ mediaUrl mein stored JSON parse karo
+    let interactiveData: any = {};
+    try {
+      if (message.mediaUrl?.startsWith('{')) {
+        interactiveData = JSON.parse(message.mediaUrl);
+      }
+    } catch {}
 
-    if (buttonReply || listReply) {
-      const reply = buttonReply || listReply;
+    // ✅ Metadata se bhi try karo
+    const metaInteractive = meta?.interactive || {};
+    const merged = { ...metaInteractive, ...interactiveData };
+
+    const iType = merged?.type || 
+      (merged?.button_reply ? 'button_reply' : null) ||
+      (merged?.list_reply ? 'list_reply' : null);
+
+    // ── CASE 1: User ne button click kiya (inbound button reply) ──
+    if (iType === 'button_reply' || merged?.button_reply) {
+      const reply = merged?.button_reply || {};
       return (
-        <div className="space-y-1.5">
-          <div className={`flex items-center gap-1.5 text-[10px] uppercase tracking-wider font-medium ${isOutbound ? 'text-white/60' : 'text-gray-500'}`}>
-            <ChevronRight className="w-3 h-3" />
+        <div className="space-y-1">
+          {/* Badge */}
+          <div className={`flex items-center gap-1 text-[10px] font-medium uppercase tracking-wider ${
+            isOutbound ? 'text-white/50' : 'text-emerald-600'
+          }`}>
+            <MessageSquare className="w-3 h-3" />
             Button Reply
           </div>
-          <div className={`px-3 py-2 ${isOutbound ? 'bg-black/10 border-white/15 text-white' : 'bg-gray-50 border-gray-200 text-gray-900'} rounded-lg border text-sm font-medium`}>
-            {reply.title || reply.text || body}
+          {/* Selected button */}
+          <div className={`
+            flex items-center gap-2 px-3 py-2 rounded-lg
+            ${isOutbound 
+              ? 'bg-black/15 border border-white/15 text-white' 
+              : 'bg-emerald-50 border border-emerald-200 text-emerald-800'
+            }
+          `}>
+            <ChevronRight className="w-4 h-4 flex-shrink-0" />
+            <span className="text-sm font-medium">
+              {reply.title || message.content || 'Button clicked'}
+            </span>
           </div>
         </div>
       );
     }
 
-    const btns = normalizeButtons(meta?.action?.buttons || meta?.buttons || []);
-    return (
-      <div className="space-y-2">
-        {body && <p className="text-sm whitespace-pre-wrap break-words">{body}</p>}
-        {btns.length > 0 && (
-          <div className={`pt-2 border-t ${isOutbound ? 'border-white/10' : 'border-gray-200'} space-y-1`}>
-            {btns.map((btn, i) => (
-              <div
-                key={i}
-                className={`flex items-center justify-center gap-1.5 p-2 ${isOutbound ? 'bg-black/10 hover:bg-black/15 border-white/15 text-white' : 'bg-gray-50 hover:bg-gray-100 border-gray-200 text-gray-800'} rounded-lg border text-xs font-semibold cursor-default transition-colors`}
-              >
-                {btn.type === 'URL' && <ExternalLink className="w-3 h-3" />}
-                {btn.type === 'PHONE_NUMBER' && <Phone className="w-3 h-3" />}
-                {btn.text}
-              </div>
-            ))}
+    // ── CASE 2: User ne list item select kiya ──
+    if (iType === 'list_reply' || merged?.list_reply) {
+      const reply = merged?.list_reply || {};
+      return (
+        <div className="space-y-1">
+          <div className={`flex items-center gap-1 text-[10px] font-medium uppercase tracking-wider ${
+            isOutbound ? 'text-white/50' : 'text-blue-600'
+          }`}>
+            <ChevronRight className="w-3 h-3" />
+            List Reply
           </div>
-        )}
-      </div>
+          <div className={`
+            px-3 py-2 rounded-lg
+            ${isOutbound 
+              ? 'bg-black/15 border border-white/15 text-white' 
+              : 'bg-blue-50 border border-blue-200 text-blue-800'
+            }
+          `}>
+            <p className="text-sm font-medium">
+              {reply.title || message.content || 'Option selected'}
+            </p>
+            {reply.description && (
+              <p className={`text-xs mt-0.5 ${isOutbound ? 'text-white/60' : 'text-blue-600'}`}>
+                {reply.description}
+              </p>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    // ── CASE 3: Outbound button message (bot/agent ne bheja) ──
+    if (iType === 'button' || merged?.action?.buttons) {
+      const bodyText = merged?.body?.text || message.content || '';
+      const buttons = normalizeButtons(
+        merged?.action?.buttons || 
+        merged?.buttons || 
+        meta?.action?.buttons || 
+        []
+      );
+      const header = merged?.header;
+      const footer = merged?.footer?.text;
+
+      return (
+        <div className="space-y-2 min-w-[240px]">
+          {/* Header */}
+          {header?.type === 'text' && header?.text && (
+            <p className={`text-sm font-bold ${isOutbound ? 'text-white/90' : 'text-gray-900'}`}>
+              {header.text}
+            </p>
+          )}
+          
+          {/* Body */}
+          {bodyText && (
+            <p className="text-sm whitespace-pre-wrap break-words leading-relaxed">
+              {bodyText}
+            </p>
+          )}
+          
+          {/* Footer */}
+          {footer && (
+            <p className={`text-xs italic ${isOutbound ? 'text-white/50' : 'text-gray-500'}`}>
+              {footer}
+            </p>
+          )}
+
+          {/* Buttons */}
+          {buttons.length > 0 && (
+            <div className={`pt-2 border-t ${isOutbound ? 'border-white/10' : 'border-gray-200'} space-y-1`}>
+              {buttons.map((btn, i) => (
+                <div
+                  key={i}
+                  className={`
+                    flex items-center justify-center gap-1.5 px-3 py-2
+                    rounded-lg border text-xs font-semibold
+                    ${isOutbound 
+                      ? 'bg-black/10 border-white/15 text-white hover:bg-black/20' 
+                      : 'bg-gray-50 border-gray-200 text-gray-800 hover:bg-gray-100'
+                    }
+                    transition-colors cursor-default
+                  `}
+                >
+                  {btn.type === 'URL' && <ExternalLink className="w-3 h-3" />}
+                  {btn.type === 'PHONE_NUMBER' && <Phone className="w-3 h-3" />}
+                  {btn.type === 'QUICK_REPLY' && <MessageSquare className="w-3 h-3" />}
+                  {btn.text}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    // ── CASE 4: List message (outbound) ──
+    if (iType === 'list' || merged?.action?.sections) {
+      const bodyText = merged?.body?.text || message.content || '';
+      const buttonText = merged?.action?.button || 'View Options';
+      const sections = merged?.action?.sections || [];
+      
+      return (
+        <div className="space-y-2 min-w-[240px]">
+          {bodyText && (
+            <p className="text-sm whitespace-pre-wrap break-words leading-relaxed">
+              {bodyText}
+            </p>
+          )}
+          
+          {/* List button indicator */}
+          <div className={`
+            flex items-center justify-center gap-2 px-3 py-2
+            rounded-lg border text-xs font-semibold
+            ${isOutbound 
+              ? 'bg-black/10 border-white/15 text-white' 
+              : 'bg-gray-50 border-gray-200 text-gray-700'
+            }
+          `}>
+            <ChevronRight className="w-3 h-3" />
+            {buttonText}
+            {sections.length > 0 && (
+              <span className={`ml-1 ${isOutbound ? 'text-white/50' : 'text-gray-400'}`}>
+                ({sections.reduce((acc: number, s: any) => acc + (s.rows?.length || 0), 0)} options)
+              </span>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    // ── CASE 5: Fallback - basic content show karo ──
+    return (
+      <p className="text-sm whitespace-pre-wrap break-words leading-relaxed">
+        {message.content || '[Interactive message]'}
+      </p>
     );
   };
 
@@ -761,48 +902,88 @@ const MessageBubble: React.FC<Props> = ({
   const renderContent = () => {
     if (isDeleted) {
       return (
-        <div className={`flex items-center gap-2 italic text-sm ${isOutbound ? 'text-white/50' : 'text-gray-400'}`}>
+        <div className={`flex items-center gap-2 italic text-sm ${
+          isOutbound ? 'text-white/50' : 'text-gray-400'
+        }`}>
           <AlertCircle className="w-4 h-4" />
           This message was deleted
         </div>
       );
     }
 
+    // ✅ Template check first
     if (msgType === 'template') {
       const parsed = parseTemplateContent(message.content, meta);
       parsed.isTemplate = true;
       return renderTemplateBubble(parsed);
     }
 
+    // ✅ Interactive types
     if (msgType === 'interactive') return renderInteractive();
+    
+    // ✅ ADD: 'button' type (template button reply from user)
+    if (msgType === 'button') {
+      return (
+        <div className="space-y-1">
+          <div className={`flex items-center gap-1 text-[10px] font-medium uppercase tracking-wider ${
+            isOutbound ? 'text-white/50' : 'text-emerald-600'
+          }`}>
+            <MessageSquare className="w-3 h-3" />
+            Quick Reply
+          </div>
+          <div className={`
+            flex items-center gap-2 px-3 py-2 rounded-lg
+            ${isOutbound 
+              ? 'bg-black/15 border border-white/15 text-white' 
+              : 'bg-emerald-50 border border-emerald-200 text-emerald-800'
+            }
+          `}>
+            <ChevronRight className="w-4 h-4 flex-shrink-0" />
+            <span className="text-sm font-medium">
+              {message.content || 'Button clicked'}
+            </span>
+          </div>
+        </div>
+      );
+    }
 
+    // ✅ Content-based template detection
     if (message.content) {
       const parsed = parseTemplateContent(message.content, meta);
       if (parsed.isTemplate) return renderTemplateBubble(parsed);
     }
 
     switch (msgType) {
-      case 'image':
-        return renderImage();
-      case 'video':
-        return renderVideo();
+      case 'image': return renderImage();
+      case 'video': return renderVideo();
       case 'audio':
       case 'voice':
-      case 'ptt':
-        return renderAudio();
-      case 'document':
-        return renderDocument();
-      case 'sticker':
-        return renderImage();
-      case 'location':
-        return renderLocation();
+      case 'ptt': return renderAudio();
+      case 'document': return renderDocument();
+      case 'sticker': return renderImage();
+      case 'location': return renderLocation();
       case 'contact':
-      case 'contacts':
-        return renderContact();
+      case 'contacts': return renderContact();
+      
+      // ✅ ADD: OTP/System messages
+      case 'system': {
+        return (
+          <div className={`flex items-center gap-2 text-sm italic ${
+            isOutbound ? 'text-white/70' : 'text-gray-500'
+          }`}>
+            <AlertCircle className="w-4 h-4" />
+            {message.content || 'System message'}
+          </div>
+        );
+      }
+
       default:
         return (
           <p className="text-sm whitespace-pre-wrap break-words leading-relaxed">
-            <HighlightedText text={message.content || ''} query={searchQuery} />
+            <HighlightedText 
+              text={message.content || ''} 
+              query={searchQuery} 
+            />
           </p>
         );
     }
