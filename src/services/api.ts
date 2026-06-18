@@ -987,6 +987,7 @@ export const crm = {
 
   // Leads
   getLeads: (params?: any) => api.get<ApiResponse>('/crm/leads', { params }),
+  getInterestedLeads: (params?: any) => api.get<ApiResponse>('/crm/leads/interested', { params }),
   getLeadById: (id: string) => api.get<ApiResponse>(`/crm/leads/${id}`),
   createLead: (data: any) => api.post<ApiResponse>('/crm/leads', data),
   updateLead: (id: string, data: any) => api.put<ApiResponse>(`/crm/leads/${id}`, data),
