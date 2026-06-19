@@ -31,6 +31,7 @@ import {
   ShieldCheck,
   ShieldOff,
   Activity,
+  Eye,
 } from 'lucide-react';
 import { admin } from '../../services/api';
 import toast from 'react-hot-toast';
@@ -67,17 +68,38 @@ interface Contact {
   organization: { id: string; name: string };
 }
 
+interface TemplateButton {
+  type: 'QUICK_REPLY' | 'URL' | 'PHONE_NUMBER' | 'COPY_CODE';
+  text: string;
+  url?: string;
+  phone_number?: string;
+}
+
 interface Template {
   id: string;
   name: string;
   language: string;
   category: string;
   headerType?: string | null;
+  headerContent?: string | null;       // ✅ NEW
   bodyText: string;
+  footerText?: string | null;
+  buttons?: TemplateButton[] | any;     // ✅ NEW
+  variables?: any[];                    // ✅ NEW
   status: string;
   rejectionReason?: string | null;
+  qualityScore?: string | null;         // ✅ NEW
+  headerMediaId?: string | null;        // ✅ NEW
+  metaTemplateId?: string | null;       // ✅ NEW
+  wabaId?: string | null;               // ✅ NEW
   createdAt: string;
+  updatedAt?: string;                   // ✅ NEW
   organization: { id: string; name: string };
+  whatsappAccount?: {                   // ✅ NEW
+    id: string;
+    phoneNumber: string;
+    displayName: string;
+  } | null;
   _count: { campaigns: number };
 }
 
@@ -591,6 +613,392 @@ const ContactsTab: React.FC<{ userId: string }> = ({ userId }) => {
 };
 
 // ============================================
+// TEMPLATE PREVIEW MODAL (WhatsApp style)
+// ============================================
+
+const TemplatePreviewModal: React.FC<{
+  template: Template | null;
+  onClose: () => void;
+}> = ({ template, onClose }) => {
+  if (!template) return null;
+
+  // Parse buttons safely
+  const buttons: TemplateButton[] = Array.isArray(template.buttons)
+    ? template.buttons
+    : [];
+
+  // Parse variables safely
+  const variables: any[] = Array.isArray(template.variables)
+    ? template.variables
+    : [];
+
+  // Format body text with variable highlighting
+  const formatBodyText = (text: string) => {
+    return text.split(/(\{\{\d+\}\})/g).map((part, i) => {
+      if (/\{\{\d+\}\}/.test(part)) {
+        return (
+          <span
+            key={i}
+            className="bg-yellow-200 text-yellow-900 px-1 rounded font-mono text-xs"
+          >
+            {part}
+          </span>
+        );
+      }
+      return <span key={i}>{part}</span>;
+    });
+  };
+
+  // Get button icon
+  const getButtonIcon = (type: string) => {
+    switch (type) {
+      case 'URL':
+        return '🔗';
+      case 'PHONE_NUMBER':
+        return '📞';
+      case 'COPY_CODE':
+        return '📋';
+      case 'QUICK_REPLY':
+      default:
+        return '💬';
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
+
+      <div className="relative bg-[#0a0e27] rounded-2xl shadow-2xl
+        max-w-3xl w-full max-h-[90vh] overflow-hidden border border-white/[0.1]
+        flex flex-col">
+
+        {/* Header */}
+        <div className="px-6 py-4 border-b border-white/[0.08]
+          flex items-center justify-between shrink-0 bg-[#050816]">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-10 h-10 bg-gradient-to-br from-primary-500
+              to-primary-700 rounded-xl flex items-center justify-center shrink-0">
+              <FileText className="w-5 h-5 text-white" />
+            </div>
+            <div className="min-w-0">
+              <h2 className="text-lg font-bold text-white truncate">
+                {template.name}
+              </h2>
+              <div className="flex items-center gap-2 mt-0.5">
+                <StatusBadge status={template.status} small />
+                <span className="text-xs text-gray-500">·</span>
+                <span className="text-xs text-gray-500">{template.language}</span>
+                <span className="text-xs text-gray-500">·</span>
+                <span className="text-xs text-gray-500">{template.category}</span>
+              </div>
+            </div>
+          </div>
+
+          <button
+            onClick={onClose}
+            className="p-2 text-gray-400 hover:bg-white/[0.06]
+              rounded-lg transition-colors shrink-0"
+          >
+            <XCircle className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Body - 2 column layout */}
+        <div className="flex-1 overflow-y-auto">
+          <div className="grid md:grid-cols-2 gap-0">
+
+            {/* LEFT: WhatsApp Preview */}
+            <div className="p-6 bg-gradient-to-br from-[#0a1929] to-[#0a0e27]
+              border-r border-white/[0.06]">
+              <p className="text-xs font-semibold text-gray-400 uppercase
+                tracking-wider mb-4 flex items-center gap-2">
+                <MessageSquare className="w-3.5 h-3.5" />
+                Live Preview
+              </p>
+
+              {/* WhatsApp chat bubble container */}
+              <div className="bg-[#0b141a] rounded-xl p-3 max-w-sm mx-auto
+                border border-white/[0.05]"
+                style={{
+                  backgroundImage: 'url("data:image/svg+xml,%3Csvg width=\'40\' height=\'40\' viewBox=\'0 0 40 40\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'0.02\' fill-rule=\'evenodd\'%3E%3Cpath d=\'M0 40L40 0H20L0 20M40 40V20L20 40\'/%3E%3C/g%3E%3C/svg%3E")',
+                }}
+              >
+                {/* WhatsApp message bubble */}
+                <div className="bg-[#005c4b] rounded-lg overflow-hidden shadow-lg
+                  ml-auto max-w-[280px] relative">
+
+                  {/* Header */}
+                  {template.headerType && template.headerType !== 'NONE' && (
+                    <div className="bg-[#004a3d] p-2">
+                      {template.headerType === 'TEXT' && template.headerContent && (
+                        <p className="text-white font-bold text-sm break-words">
+                          {template.headerContent}
+                        </p>
+                      )}
+                      {template.headerType === 'IMAGE' && (
+                        <div className="bg-gray-700 rounded h-32 flex items-center
+                          justify-center">
+                          <div className="text-center">
+                            <FileText className="w-8 h-8 text-gray-400 mx-auto mb-1" />
+                            <p className="text-xs text-gray-400">Image Header</p>
+                          </div>
+                        </div>
+                      )}
+                      {template.headerType === 'VIDEO' && (
+                        <div className="bg-gray-700 rounded h-32 flex items-center
+                          justify-center">
+                          <div className="text-center">
+                            <span className="text-3xl">🎥</span>
+                            <p className="text-xs text-gray-400 mt-1">Video Header</p>
+                          </div>
+                        </div>
+                      )}
+                      {template.headerType === 'DOCUMENT' && (
+                        <div className="bg-gray-700 rounded p-3 flex items-center gap-2">
+                          <span className="text-2xl">📄</span>
+                          <span className="text-xs text-gray-300">Document</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Body */}
+                  <div className="p-3">
+                    <p className="text-white text-sm whitespace-pre-wrap break-words
+                      leading-relaxed">
+                      {formatBodyText(template.bodyText)}
+                    </p>
+
+                    {/* Footer */}
+                    {template.footerText && (
+                      <p className="text-gray-400 text-xs mt-2 italic break-words">
+                        {template.footerText}
+                      </p>
+                    )}
+
+                    {/* Timestamp */}
+                    <div className="flex items-center justify-end gap-1 mt-2">
+                      <span className="text-[10px] text-gray-400">
+                        {new Date().toLocaleTimeString('en-IN', {
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })}
+                      </span>
+                      <CheckCircle className="w-3 h-3 text-blue-400" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Buttons (separate bubbles in WhatsApp style) */}
+                {buttons.length > 0 && (
+                  <div className="ml-auto max-w-[280px] mt-1 space-y-1">
+                    {buttons.map((btn, i) => (
+                      <button
+                        key={i}
+                        className="w-full bg-[#005c4b] hover:bg-[#004a3d]
+                          text-blue-300 text-sm font-medium py-2.5 px-3
+                          rounded-lg transition-colors text-center flex
+                          items-center justify-center gap-2"
+                      >
+                        <span>{getButtonIcon(btn.type)}</span>
+                        <span className="truncate">{btn.text}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <p className="text-[10px] text-gray-600 text-center mt-3">
+                This is how it appears to recipients
+              </p>
+            </div>
+
+            {/* RIGHT: Template Details */}
+            <div className="p-6 space-y-5">
+              <p className="text-xs font-semibold text-gray-400 uppercase
+                tracking-wider flex items-center gap-2">
+                <Activity className="w-3.5 h-3.5" />
+                Template Details
+              </p>
+
+              {/* Rejection reason */}
+              {template.status === 'REJECTED' && template.rejectionReason && (
+                <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-xl">
+                  <p className="text-xs font-semibold text-red-400 mb-1">
+                    ❌ Rejection Reason
+                  </p>
+                  <p className="text-sm text-red-300">{template.rejectionReason}</p>
+                </div>
+              )}
+
+              {/* Quality Score */}
+              {template.qualityScore && (
+                <div className="p-3 bg-green-500/10 border border-green-500/20 rounded-xl">
+                  <p className="text-xs font-semibold text-green-400 mb-1">
+                    ⭐ Quality Score
+                  </p>
+                  <p className="text-sm text-green-300 font-mono">
+                    {template.qualityScore}
+                  </p>
+                </div>
+              )}
+
+              {/* Meta Info Grid */}
+              <div className="space-y-2.5">
+                <DetailRow label="Template ID" value={template.id} mono />
+                {template.metaTemplateId && (
+                  <DetailRow
+                    label="Meta Template ID"
+                    value={template.metaTemplateId}
+                    mono
+                  />
+                )}
+                {template.wabaId && (
+                  <DetailRow label="WABA ID" value={template.wabaId} mono />
+                )}
+                <DetailRow label="Header Type" value={template.headerType || 'NONE'} />
+                <DetailRow label="Buttons Count" value={String(buttons.length)} />
+                <DetailRow
+                  label="Variables Count"
+                  value={String(variables.length)}
+                />
+                <DetailRow
+                  label="Used In"
+                  value={`${template._count?.campaigns || 0} campaigns`}
+                />
+                <DetailRow
+                  label="Organization"
+                  value={template.organization?.name || 'N/A'}
+                />
+                {template.whatsappAccount && (
+                  <DetailRow
+                    label="WhatsApp Number"
+                    value={`${template.whatsappAccount.displayName} (${template.whatsappAccount.phoneNumber})`}
+                  />
+                )}
+                <DetailRow
+                  label="Created"
+                  value={formatDateTime(template.createdAt)}
+                />
+                {template.updatedAt && (
+                  <DetailRow
+                    label="Last Updated"
+                    value={formatDateTime(template.updatedAt)}
+                  />
+                )}
+              </div>
+
+              {/* Variables list */}
+              {variables.length > 0 && (
+                <div>
+                  <p className="text-xs font-semibold text-gray-400 mb-2">
+                    Variables
+                  </p>
+                  <div className="space-y-1.5">
+                    {variables.map((v, i) => (
+                      <div
+                        key={i}
+                        className="flex items-center gap-2 p-2 bg-white/[0.03]
+                          rounded-lg border border-white/[0.05]"
+                      >
+                        <span className="bg-yellow-500/20 text-yellow-400 px-2 py-0.5
+                          rounded text-xs font-mono">
+                          {`{{${i + 1}}}`}
+                        </span>
+                        <span className="text-xs text-gray-400 truncate">
+                          {typeof v === 'string' ? v : v.name || v.type || `Variable ${i + 1}`}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Buttons details */}
+              {buttons.length > 0 && (
+                <div>
+                  <p className="text-xs font-semibold text-gray-400 mb-2">
+                    Buttons Details
+                  </p>
+                  <div className="space-y-2">
+                    {buttons.map((btn, i) => (
+                      <div
+                        key={i}
+                        className="p-2.5 bg-white/[0.03] rounded-lg
+                          border border-white/[0.05]"
+                      >
+                        <div className="flex items-center gap-2 mb-1">
+                          <span>{getButtonIcon(btn.type)}</span>
+                          <span className="text-sm font-medium text-white">
+                            {btn.text}
+                          </span>
+                          <span className="ml-auto text-[10px] text-gray-500 uppercase
+                            bg-white/[0.05] px-1.5 py-0.5 rounded">
+                            {btn.type}
+                          </span>
+                        </div>
+                        {btn.url && (
+                          <p className="text-xs text-blue-400 font-mono truncate
+                            pl-6">
+                            {btn.url}
+                          </p>
+                        )}
+                        {btn.phone_number && (
+                          <p className="text-xs text-green-400 font-mono truncate
+                            pl-6">
+                            {btn.phone_number}
+                          </p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="px-6 py-3 border-t border-white/[0.08] bg-[#050816]
+          flex items-center justify-between shrink-0">
+          <p className="text-xs text-gray-500">
+            Created by user · Admin read-only view
+          </p>
+          <button
+            onClick={onClose}
+            className="px-4 py-1.5 bg-primary-600 hover:bg-primary-700
+              text-white text-sm font-medium rounded-lg transition-colors"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ============================================
+// DETAIL ROW HELPER
+// ============================================
+
+const DetailRow: React.FC<{
+  label: string;
+  value: string;
+  mono?: boolean;
+}> = ({ label, value, mono }) => (
+  <div className="flex items-start justify-between gap-3 py-1.5
+    border-b border-white/[0.04] last:border-0">
+    <span className="text-xs text-gray-500 shrink-0 pt-0.5">{label}</span>
+    <span
+      className={`text-xs text-right break-all text-gray-200
+        ${mono ? 'font-mono' : 'font-medium'}`}
+    >
+      {value}
+    </span>
+  </div>
+);
+
+// ============================================
 // TEMPLATES TAB
 // ============================================
 
@@ -601,6 +1009,7 @@ const TemplatesTab: React.FC<{ userId: string }> = ({ userId }) => {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [page, setPage] = useState(1);
+  const [previewTemplate, setPreviewTemplate] = useState<Template | null>(null); // ✅ NEW
   const limit = 20;
 
   const fetchTemplates = useCallback(async () => {
@@ -637,6 +1046,12 @@ const TemplatesTab: React.FC<{ userId: string }> = ({ userId }) => {
 
   return (
     <div className="space-y-4">
+      {/* ✅ Preview Modal */}
+      <TemplatePreviewModal
+        template={previewTemplate}
+        onClose={() => setPreviewTemplate(null)}
+      />
+
       {/* Toolbar */}
       <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
         <div className="flex items-center gap-3 flex-wrap">
@@ -707,6 +1122,7 @@ const TemplatesTab: React.FC<{ userId: string }> = ({ userId }) => {
                       'Used In',
                       'Organization',
                       'Created',
+                      'Actions', // ✅ NEW
                     ].map((h) => (
                       <th
                         key={h}
@@ -724,17 +1140,40 @@ const TemplatesTab: React.FC<{ userId: string }> = ({ userId }) => {
                       key={t.id}
                       className="hover:bg-white/[0.02] transition-colors"
                     >
-                      <td className="px-4 py-3">
+                      <td className="px-4 py-3 max-w-md">
                         <div>
                           <p className="text-sm font-semibold text-white">
                             {t.name}
                           </p>
-                          <p className="text-xs text-gray-500 mt-0.5 line-clamp-1 max-w-[200px]">
+                          {/* ✅ Body text - 2 lines max with full preview hint */}
+                          <p className="text-xs text-gray-500 mt-1 line-clamp-2
+                            leading-relaxed whitespace-pre-wrap break-words">
                             {t.bodyText}
                           </p>
+                          {/* Header type indicator */}
+                          {t.headerType && t.headerType !== 'NONE' && (
+                            <div className="flex items-center gap-1 mt-1.5">
+                              <span className="text-[10px] bg-primary-500/10
+                                text-primary-400 px-1.5 py-0.5 rounded font-medium">
+                                {t.headerType} HEADER
+                              </span>
+                              {t.footerText && (
+                                <span className="text-[10px] bg-gray-500/10
+                                  text-gray-400 px-1.5 py-0.5 rounded font-medium">
+                                  FOOTER
+                                </span>
+                              )}
+                              {Array.isArray(t.buttons) && t.buttons.length > 0 && (
+                                <span className="text-[10px] bg-green-500/10
+                                  text-green-400 px-1.5 py-0.5 rounded font-medium">
+                                  {t.buttons.length} BTN
+                                </span>
+                              )}
+                            </div>
+                          )}
                           {t.status === 'REJECTED' && t.rejectionReason && (
-                            <p className="text-xs text-red-400 mt-0.5">
-                              Reason: {t.rejectionReason}
+                            <p className="text-xs text-red-400 mt-1">
+                              ❌ {t.rejectionReason}
                             </p>
                           )}
                         </div>
@@ -771,6 +1210,20 @@ const TemplatesTab: React.FC<{ userId: string }> = ({ userId }) => {
                       </td>
                       <td className="px-4 py-3 text-xs text-gray-500">
                         {formatDate(t.createdAt)}
+                      </td>
+                      {/* ✅ NEW: View button */}
+                      <td className="px-4 py-3">
+                        <button
+                          onClick={() => setPreviewTemplate(t)}
+                          className="flex items-center gap-1.5 px-3 py-1.5
+                            bg-primary-500/10 hover:bg-primary-500/20
+                            text-primary-400 text-xs font-medium rounded-lg
+                            transition-colors"
+                          title="View full template"
+                        >
+                          <Eye className="w-3.5 h-3.5" />
+                          View
+                        </button>
                       </td>
                     </tr>
                   ))}
