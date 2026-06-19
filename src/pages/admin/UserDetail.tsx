@@ -522,7 +522,7 @@ const ContactsTab: React.FC<{ userId: string }> = ({ userId }) => {
                         <div className="flex items-center gap-1.5">
                           <Phone className="w-3.5 h-3.5 text-gray-500" />
                           <span className="text-sm text-gray-300 font-mono">
-                            {c.countryCode}{c.phone}
+                            {c.phone?.startsWith('+') ? c.phone : `${c.countryCode || ''}${c.phone}`}
                           </span>
                         </div>
                       </td>
