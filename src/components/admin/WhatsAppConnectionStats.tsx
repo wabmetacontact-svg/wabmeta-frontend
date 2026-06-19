@@ -57,68 +57,68 @@ const WhatsAppConnectionStats: React.FC = () => {
 
       <div className="space-y-4">
         {/* Cloud API */}
-        <div className="flex items-center justify-between p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
+        <div className="flex items-center justify-between p-4 bg-green-500/10 rounded-lg border border-green-500/20">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-green-100 dark:bg-green-900/40 rounded-lg">
-              <Cloud className="w-5 h-5 text-green-600 dark:text-green-500" />
+            <div className="p-2 bg-green-500/20 rounded-lg">
+              <Cloud className="w-5 h-5 text-green-400" />
             </div>
             <div>
               <p className="font-semibold text-white">Cloud API</p>
-              <p className="text-xs text-green-600 dark:text-green-400">
+              <p className="text-xs text-green-400">
                 {stats?.cloudApi?.active || 0} active
               </p>
             </div>
           </div>
           <div className="text-right">
-            <p className="text-2xl font-bold text-green-700 dark:text-green-300">
+            <p className="text-2xl font-bold text-green-300">
               {stats?.cloudApi?.total || 0}
             </p>
-            <p className="text-xs text-green-600 dark:text-green-400">
+            <p className="text-xs text-green-400">
               {cloudApiPercentage}% of total
             </p>
           </div>
         </div>
 
         {/* Business App */}
-        <div className="flex items-center justify-between p-4 bg-orange-50 dark:bg-orange-900/20 rounded-lg border border-orange-200 dark:border-orange-800">
+        <div className="flex items-center justify-between p-4 bg-orange-500/10 rounded-lg border border-orange-500/20">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-orange-100 dark:bg-orange-900/40 rounded-lg">
-              <Smartphone className="w-5 h-5 text-orange-600 dark:text-orange-500" />
+            <div className="p-2 bg-orange-500/20 rounded-lg">
+              <Smartphone className="w-5 h-5 text-orange-400" />
             </div>
             <div>
               <p className="font-semibold text-white">Business App</p>
-              <p className="text-xs text-orange-600 dark:text-orange-400">
+              <p className="text-xs text-orange-400">
                 {stats?.businessApp?.active || 0} active
               </p>
             </div>
           </div>
           <div className="text-right">
-            <p className="text-2xl font-bold text-orange-700 dark:text-orange-300">
+            <p className="text-2xl font-bold text-orange-300">
               {stats?.businessApp?.total || 0}
             </p>
-            <p className="text-xs text-orange-600 dark:text-orange-400">Legacy</p>
+            <p className="text-xs text-orange-400">Legacy</p>
           </div>
         </div>
 
         {/* On-Premise (if any) */}
         {stats && stats.onPremise.total > 0 && (
-          <div className="flex items-center justify-between p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+          <div className="flex items-center justify-between p-4 bg-blue-500/10 rounded-lg border border-blue-500/20">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-blue-100 dark:bg-blue-900/40 rounded-lg">
-                <Server className="w-5 h-5 text-blue-600 dark:text-blue-500" />
+              <div className="p-2 bg-blue-500/20 rounded-lg">
+                <Server className="w-5 h-5 text-blue-400" />
               </div>
               <div>
                 <p className="font-semibold text-white">On-Premise</p>
-                <p className="text-xs text-blue-600 dark:text-blue-400">
+                <p className="text-xs text-blue-400">
                   {stats.onPremise?.active || 0} active
                 </p>
               </div>
             </div>
             <div className="text-right">
-              <p className="text-2xl font-bold text-blue-700 dark:text-blue-300">
+              <p className="text-2xl font-bold text-blue-300">
                 {stats.onPremise?.total || 0}
               </p>
-              <p className="text-xs text-blue-600 dark:text-blue-400">Enterprise</p>
+              <p className="text-xs text-blue-400">Enterprise</p>
             </div>
           </div>
         )}

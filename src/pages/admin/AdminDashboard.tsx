@@ -23,7 +23,7 @@ import { admin } from '../../services/api';
 import { formatINR } from '../../utils/currency';
 import { Link } from 'react-router-dom';
 import WhatsAppConnectionStats from '../../components/admin/WhatsAppConnectionStats';
-import PageSkeleton from '../../components/common/PageSkeleton';
+
 
 // ============================================
 // TYPES
@@ -620,7 +620,11 @@ const AdminDashboard: React.FC = () => {
 
   // Loading State
   if (loading) {
-    return <PageSkeleton />;
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="w-8 h-8 text-primary-400 animate-spin" />
+      </div>
+    );
   }
 
   // Error State
