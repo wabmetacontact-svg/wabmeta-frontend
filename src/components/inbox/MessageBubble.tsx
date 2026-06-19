@@ -206,6 +206,42 @@ function HighlightedText({ text, query }: { text: string; query?: string }) {
   );
 }
 
+function TextWithLinks({ text, query, isOutbound }: { text: string; query?: string; isOutbound?: boolean }) {
+  if (!text) return null;
+
+  const urlRegex = /(https?:\/\/[^\s]+)/g;
+  const parts = text.split(urlRegex);
+
+  if (parts.length === 1) {
+    return <HighlightedText text={text} query={query} />;
+  }
+
+  const linkClass = isOutbound 
+    ? "text-sky-300 hover:text-sky-100 underline break-all font-medium transition-colors" 
+    : "text-blue-400 hover:text-blue-300 underline break-all font-medium transition-colors";
+
+  return (
+    <>
+      {parts.map((part, i) => {
+        if (/^https?:\/\/[^\s]+$/.test(part)) {
+          return (
+            <a
+              key={i}
+              href={part}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={linkClass}
+            >
+              {part}
+            </a>
+          );
+        }
+        return <HighlightedText key={i} text={part} query={query} />;
+      })}
+    </>
+  );
+}
+
 // ─── Main Component ───────────────────────────────────────────────────────────
 const MessageBubble: React.FC<Props> = ({
   message,
@@ -871,7 +907,7 @@ const MessageBubble: React.FC<Props> = ({
 
         {bodyText && (
           <p className="px-3 py-2 text-sm whitespace-pre-wrap break-words leading-relaxed">
-            {bodyText}
+            <TextWithLinks text={bodyText} isOutbound={isOutbound} />
           </p>
         )}
 
@@ -985,9 +1021,10 @@ const MessageBubble: React.FC<Props> = ({
       default:
         return (
           <p className="text-sm whitespace-pre-wrap break-words leading-relaxed">
-            <HighlightedText 
+            <TextWithLinks 
               text={message.content || ''} 
               query={searchQuery} 
+              isOutbound={isOutbound}
             />
           </p>
         );
