@@ -4,11 +4,12 @@ import React, { useState, useEffect, useCallback } from 'react';
 import {
   Search, Ban, Trash2, CheckCircle, RefreshCw,
   Loader2, AlertCircle, Users,
-  UserX, Eye, X, Key, ShieldCheck, UserCheck
+  UserX, Eye, X, Key, ShieldCheck, UserCheck, ExternalLink
 } from 'lucide-react';
 import api, { admin } from '../../services/api';
 import toast from 'react-hot-toast';
 import WhatsAppConnectionBadge from '../../components/admin/WhatsAppConnectionBadge';
+import { useNavigate } from 'react-router-dom';
 
 // ============================================
 // TYPES
@@ -595,6 +596,7 @@ const PasswordModal: React.FC<PasswordModalProps> = ({
 // MAIN COMPONENT
 // ============================================
 const UserManagement: React.FC = () => {
+  const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
@@ -896,7 +898,14 @@ const UserManagement: React.FC = () => {
                   <td className="px-6 py-4 text-sm text-gray-500">{formatDate(user.createdAt)}</td>
                   <td className="px-6 py-4 text-right">
                     <div className="flex items-center justify-end space-x-2">
-                      <button onClick={() => setDetailsModalUser(user)} className="p-2 text-gray-400 hover:text-primary-600"><Eye className="w-4 h-4" /></button>
+                      <button onClick={() => setDetailsModalUser(user)} className="p-2 text-gray-400 hover:text-primary-600" title="Quick View"><Eye className="w-4 h-4" /></button>
+                      <button 
+                        onClick={() => navigate(`/manage-wabmeta-admin/users/${user.id}`)}
+                        className="p-2 text-gray-400 hover:text-blue-500"
+                        title="View Full Details"
+                      >
+                        <ExternalLink className="w-4 h-4" />
+                      </button>
                       <button onClick={() => setPasswordModalUser(user)} className="p-2 text-gray-400 hover:text-purple-600" title="Check/Manage Password"><Key className="w-4 h-4" /></button>
                       
                       {user.status === 'ACTIVE' ? (

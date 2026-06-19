@@ -1344,6 +1344,53 @@ export const admin = {
     `/admin/wallets/${organizationId}/toggle`,
     data
   ),
+
+  // ============================================
+  // USER DETAIL VIEW APIs
+  // ============================================
+
+  // User ke contacts (deleted bhi)
+  getUserContacts: (
+    userId: string,
+    params?: {
+      page?: number;
+      limit?: number;
+      search?: string;
+      includeDeleted?: boolean;
+    }
+  ) => api.get<ApiResponse>(`/admin/users/${userId}/contacts`, { params }),
+
+  // Contacts export (CSV) - blob response
+  exportUserContacts: (userId: string) =>
+    api.get(`/admin/users/${userId}/contacts/export`, {
+      responseType: 'blob',
+    }),
+
+  // User ke templates
+  getUserTemplates: (
+    userId: string,
+    params?: {
+      page?: number;
+      limit?: number;
+      search?: string;
+      status?: string;
+      category?: string;
+    }
+  ) => api.get<ApiResponse>(`/admin/users/${userId}/templates`, { params }),
+
+  // User ka analytics
+  getUserAnalytics: (userId: string) =>
+    api.get<ApiResponse>(`/admin/users/${userId}/analytics`),
+
+  // User ka wallet + transactions
+  getUserWallet: (
+    userId: string,
+    params?: {
+      page?: number;
+      limit?: number;
+      type?: string;
+    }
+  ) => api.get<ApiResponse>(`/admin/users/${userId}/wallet`, { params }),
 };
 
 // ============================================

@@ -88,6 +88,7 @@ const InstagramSettings  = lazy(() => import('./pages/instagram/InstagramSetting
 const AdminLogin = lazy(() => import('./pages/admin/AdminLogin'));
 const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
 const UserManagement = lazy(() => import('./pages/admin/UserManagement'));
+const UserDetail = lazy(() => import('./pages/admin/UserDetail'));
 const SubscriptionManagement = lazy(() => import('./pages/admin/SubscriptionManagement'));
 const SystemSettings = lazy(() => import('./pages/admin/SystemSettings'));
 const WhatsAppConnections = lazy(() => import('./pages/admin/WhatsAppConnections'));
@@ -416,6 +417,7 @@ const AppRoutes: React.FC = () => {
           <Route path="/manage-wabmeta-admin" element={<Navigate to="/manage-wabmeta-admin/dashboard" replace />} />
           <Route path="/manage-wabmeta-admin/dashboard" element={<AdminDashboard />} />
           <Route path="/manage-wabmeta-admin/users" element={<UserManagement />} />
+          <Route path="/manage-wabmeta-admin/users/:userId" element={<UserDetail />} />
           <Route path="/manage-wabmeta-admin/subscriptions" element={<SubscriptionManagement />} />
           <Route path="/manage-wabmeta-admin/settings" element={<SystemSettings />} />
           <Route path="/manage-wabmeta-admin/whatsapp" element={<WhatsAppConnections />} />
