@@ -63,6 +63,7 @@ interface Contact {
   messageCount: number;
   lastMessageAt?: string | null;
   createdAt: string;
+  deletedAt?: string | null;  // ✅ NEW
   organization: { id: string; name: string };
 }
 
@@ -230,6 +231,7 @@ const StatusBadge: React.FC<{ status: string; small?: boolean }> = ({
     ACTIVE: { bg: 'bg-green-100', text: 'text-green-700' },
     BLOCKED: { bg: 'bg-red-100', text: 'text-red-700' },
     UNSUBSCRIBED: { bg: 'bg-gray-100', text: 'text-gray-600' },
+    DELETED: { bg: 'bg-red-500/20', text: 'text-red-400' }, // ✅ NEW
     APPROVED: { bg: 'bg-green-100', text: 'text-green-700' },
     PENDING: { bg: 'bg-yellow-100', text: 'text-yellow-700' },
     REJECTED: { bg: 'bg-red-100', text: 'text-red-700' },
@@ -456,7 +458,8 @@ const ContactsTab: React.FC<{ userId: string }> = ({ userId }) => {
         border border-blue-500/20 rounded-xl">
         <AlertCircle className="w-4 h-4 text-blue-400 shrink-0" />
         <p className="text-xs text-blue-300">
-          Admin view includes all contacts (including deleted/blocked ones from user's account).
+          Admin view shows ALL contacts including those deleted by user.
+          Deleted contacts appear with <strong>DELETED</strong> status badge.
           Total: <strong>{total}</strong> contacts
         </p>
       </div>
@@ -543,6 +546,11 @@ const ContactsTab: React.FC<{ userId: string }> = ({ userId }) => {
                       </td>
                       <td className="px-4 py-3">
                         <StatusBadge status={c.status} small />
+                        {c.status === 'DELETED' && c.deletedAt && (
+                          <p className="text-[10px] text-red-400 mt-1">
+                            {formatDate(c.deletedAt)}
+                          </p>
+                        )}
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-1">
