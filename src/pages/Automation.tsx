@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   Zap, Plus, Search, Play, Pause, Trash2,
-  Clock, MessageSquare, Users, Webhook, Loader2
+  Clock, MessageSquare, Users, Webhook
 } from 'lucide-react';
 import { automations as automationsApi } from '../services/api';
 import type { Automation } from '../types/automation';
