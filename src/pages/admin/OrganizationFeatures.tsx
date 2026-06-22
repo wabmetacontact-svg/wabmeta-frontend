@@ -16,6 +16,7 @@ import {
   Bot,
   Zap,
   AlertTriangle,
+  Link2Off,
 } from 'lucide-react';
 import { admin } from '../../services/api';
 import toast from 'react-hot-toast';
@@ -143,6 +144,7 @@ export default function OrganizationFeatures() {
     campaignsLocked: false,
     chatbotLocked: false,
     automationLocked: false,
+    connectionLocked: false,
   });
 
   useEffect(() => {
@@ -174,6 +176,7 @@ export default function OrganizationFeatures() {
         campaignsLocked: features.campaignsLocked,
         chatbotLocked: features.chatbotLocked,
         automationLocked: features.automationLocked,
+        connectionLocked: features.connectionLocked,
       });
       toast.success('Features updated successfully');
     } catch (error: any) {
@@ -413,6 +416,67 @@ export default function OrganizationFeatures() {
                 onChange={(val) =>
                   setFeatures((prev) => ({ ...prev, automationLocked: val }))
                 }
+              />
+            </div>
+          </div>
+
+          {/* ────────── CONNECTION LOCK (INDEPENDENT) ────────── */}
+          <div className="pt-6 mt-2 border-t border-white/[0.06]">
+            <div className="flex items-center gap-2 mb-1">
+              <Link2Off className="w-4 h-4 text-orange-400" />
+              <h3 className="text-white font-semibold text-sm">
+                Connection Lock
+              </h3>
+              <span className="ml-1 text-[10px] font-medium px-1.5 py-0.5 rounded
+                bg-orange-500/10 text-orange-300 border border-orange-500/20">
+                Independent
+              </span>
+            </div>
+            <p className="text-xs text-gray-500 mb-3">
+              Prevent this organization from connecting or disconnecting
+              WhatsApp / Meta / Instagram accounts
+            </p>
+
+            <div
+              className={`p-4 rounded-xl border-2 flex items-center justify-between transition-all
+                ${
+                  features.connectionLocked
+                    ? 'border-orange-500/40 bg-orange-500/5'
+                    : 'border-white/[0.08] bg-[#050816]'
+                }`}
+            >
+              <div className="flex items-center gap-3 min-w-0">
+                <div
+                  className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${
+                    features.connectionLocked
+                      ? 'bg-orange-500/20 border border-orange-500/30'
+                      : 'bg-white/[0.04]'
+                  }`}
+                >
+                  <Link2Off
+                    className={`w-5 h-5 ${
+                      features.connectionLocked ? 'text-orange-400' : 'text-gray-400'
+                    }`}
+                  />
+                </div>
+                <div className="min-w-0">
+                  <p className="font-bold text-white text-sm">
+                    Lock Account Connection / Disconnection
+                  </p>
+                  <p className="text-xs text-gray-400 mt-0.5">
+                    {features.connectionLocked
+                      ? '🔒 Locked — user cannot connect or disconnect any account'
+                      : 'Allow user to connect/disconnect WhatsApp, Meta, Instagram'}
+                  </p>
+                </div>
+              </div>
+              <ToggleSwitch
+                checked={features.connectionLocked}
+                onChange={(val) =>
+                  setFeatures((prev) => ({ ...prev, connectionLocked: val }))
+                }
+                color="red"
+                size="md"
               />
             </div>
           </div>
