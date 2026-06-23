@@ -46,14 +46,15 @@ export default function SimpleBulkPasteModal({ isOpen, onClose, onSuccess, group
     const getPreviewCount = () => {
         if (!phoneNumbers.trim()) return 0;
 
-        let preprocessed = phoneNumbers.replace(/\s*[\-\(\)\.]\s*/g, '');
-        preprocessed = preprocessed.replace(/(\d)\s+(\d)/g, '$1$2');
-        preprocessed = preprocessed.replace(/(\+)\s+(\d)/g, '$1$2');
+        let preprocessed = phoneNumbers
+            .replace(/[ \t]*[\-\(\)\.][ \t]*/g, '')
+            .replace(/(\d)[ \t]+(\d)/g, '$1$2')
+            .replace(/(\+)[ \t]+(\d)/g, '$1$2');
 
         return preprocessed
             .split(/[\n,;\s]+/)
             .map((n: string) => n.trim())
-            .filter((n: string) => n.length > 0)
+            .filter((n: string) => n.length >= 7)
             .length;
     };
 
