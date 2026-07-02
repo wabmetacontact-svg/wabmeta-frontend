@@ -1,10 +1,13 @@
-// src/context/AuthProvider.tsx
-// ✅ Existing file me ye changes karo
+// src/context/AuthProvider.tsx - FIXED VERSION
+// ✅ FIX 1: refreshAccessToken now uses shared performTokenRefresh() from api.ts
+//    (removed local isRefreshing mutex — no more racing refresh calls)
+// ✅ FIX 2: verifySession no longer force-logs-out a VALID session just because
+//    /organizations/current failed transiently (cold start / network blip)
 
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext, type User, type Organization } from './AuthContext';
-import api, { auth, setAuthToken, removeAuthToken } from '../services/api';
+import api, { auth, setAuthToken, removeAuthToken, performTokenRefresh } from '../services/api'; // ✅ FIX: import performTokenRefresh
 import toast from 'react-hot-toast';
 
 // ============================================
@@ -23,7 +26,6 @@ const ForceLogoutPopup: React.FC<ForceLogoutPopupProps> = ({
 }) => (
   <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
     <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-sm w-full mx-4 animate-in zoom-in-95 duration-200">
-      {/* Icon - Lock instead of warning */}
       <div className="w-14 h-14 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-5">
         <svg
           className="w-7 h-7 text-blue-600"
@@ -40,17 +42,14 @@ const ForceLogoutPopup: React.FC<ForceLogoutPopupProps> = ({
         </svg>
       </div>
 
-      {/* Title */}
       <h2 className="text-lg font-semibold text-slate-900 text-center mb-2">
         {title}
       </h2>
 
-      {/* Message */}
       <p className="text-slate-500 text-sm text-center mb-6 leading-relaxed">
         {message}
       </p>
 
-      {/* Countdown - subtle */}
       <div className="bg-slate-50 rounded-xl p-4 mb-4">
         <div className="flex items-center justify-center gap-2 mb-2">
           <svg
@@ -74,7 +73,6 @@ const ForceLogoutPopup: React.FC<ForceLogoutPopupProps> = ({
           </p>
         </div>
 
-        {/* Subtle progress bar */}
         <div className="w-full bg-slate-200 rounded-full h-1 overflow-hidden">
           <div
             className="h-full bg-blue-500 rounded-full transition-all duration-1000 ease-linear"
@@ -83,15 +81,12 @@ const ForceLogoutPopup: React.FC<ForceLogoutPopupProps> = ({
         </div>
       </div>
 
-      {/* Subtle footer */}
       <p className="text-xs text-slate-400 text-center">
         You will be redirected to the sign in page
       </p>
     </div>
   </div>
 );
-
-// ... TOKEN_KEYS same as before ...
 
 const TOKEN_KEYS = {
   ACCESS: 'accessToken',
@@ -125,7 +120,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     error: null,
   });
 
-  // ✅ State me title bhi add karo
   const [forceLogoutState, setForceLogoutState] = useState<{
     show: boolean;
     title: string;
@@ -139,11 +133,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   });
 
   const initialCheckDone = useRef(false);
-  const isRefreshing = useRef(false);
+  // ❌ REMOVED: isRefreshing ref — performTokenRefresh() in api.ts is now the
+  // single source of truth for in-flight refresh dedup (was causing race conditions)
   const forceLogoutTimer = useRef<NodeJS.Timeout | null>(null);
   const countdownTimer = useRef<NodeJS.Timeout | null>(null);
 
-  // ✅ Token helpers
   const getAccessToken = useCallback((): string | null => {
     const token =
       localStorage.getItem(TOKEN_KEYS.ACCESS) ||
@@ -183,7 +177,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.removeItem('currentOrganizationId');
   }, []);
 
-  // ✅ Logout function
   const logout = useCallback(async () => {
     console.log('👋 Logging out...');
     try {
@@ -206,7 +199,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     navigate('/login', { replace: true });
   }, [navigate, clearAuthData]);
 
-  // ✅ triggerForceLogout function update karo
   const triggerForceLogout = useCallback(
     (title: string, message: string) => {
       console.log('🔒 Session expired:', message);
@@ -254,7 +246,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         navigate('/login', { replace: true });
 
-        // ✅ Subtle toast - no admin reference
         toast('Please sign in to continue', {
           duration: 4000,
           icon: '🔐',
@@ -270,7 +261,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     [clearAuthData, navigate]
   );
 
-  // ✅ Cleanup timers on unmount
   useEffect(() => {
     return () => {
       if (forceLogoutTimer.current) clearTimeout(forceLogoutTimer.current);
@@ -278,7 +268,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
   }, []);
 
-  // ✅ Event listener bhi update karo
   useEffect(() => {
     const handleForceLogout = (event: CustomEvent) => {
       const { title, message } = event.detail || {};
@@ -295,31 +284,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
   }, [triggerForceLogout]);
 
-  // ✅ Refresh token
+  // ✅ FIX: now delegates to the shared single-flight performTokenRefresh() in api.ts.
+  // This guarantees only ONE /auth/refresh request is ever in flight across the
+  // whole app (this provider + the axios response interceptor), eliminating the
+  // race that could trigger the backend's "refresh token reused" mass session revoke.
   const refreshAccessToken = useCallback(async (): Promise<boolean> => {
-    if (isRefreshing.current) return false;
-
     const refreshToken = getRefreshToken();
     if (!refreshToken) return false;
 
     try {
-      isRefreshing.current = true;
-      const response = await auth.refresh(refreshToken);
-
-      if (response.data?.success && response.data?.data?.accessToken) {
-        const { accessToken, refreshToken: newRefreshToken } = response.data.data;
-        setAuthToken(accessToken, newRefreshToken || refreshToken);
-        return true;
-      }
-      return false;
+      await performTokenRefresh();
+      return true;
     } catch {
       return false;
-    } finally {
-      isRefreshing.current = false;
     }
   }, [getRefreshToken]);
 
-  // ✅ Verify session
   const verifySession = useCallback(async (): Promise<boolean> => {
     const accessToken = getAccessToken();
     if (!accessToken) return false;
@@ -331,19 +311,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const user = userResponse.data.data;
 
         let org: Organization | null = null;
+        let orgFetchFailed = false; // ✅ NEW: distinguish "no org" from "couldn't check"
+
         try {
           const orgResponse = await api.get('/organizations/current');
           if (orgResponse.data?.success && orgResponse.data?.data) {
             org = orgResponse.data.data;
           }
         } catch {
+          orgFetchFailed = true; // ✅ NEW
           const saved = loadSavedData();
           org = saved.org;
         }
 
         saveToStorage(user, org);
 
-        if (!org) return false;
+        // ✅ FIX: only treat the session as invalid if the backend actually
+        // confirmed there's no organization. A transient org-fetch failure
+        // (cold start, timeout, flaky network) must NOT force-logout a user
+        // whose access token is otherwise valid (auth.me() already succeeded).
+        if (!org && !orgFetchFailed) {
+          return false;
+        }
 
         setState({
           user,
@@ -365,7 +354,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [getAccessToken, loadSavedData, saveToStorage, refreshAccessToken]);
 
-  // ✅ Initial auth check
   useEffect(() => {
     let isMounted = true;
 
@@ -421,7 +409,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => { isMounted = false; };
   }, []);
 
-  // ✅ Login
   const login = useCallback(async (
     email: string,
     password: string
@@ -461,7 +448,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [saveToStorage]);
 
-  // ✅ Register
   const register = useCallback(async (
     data: any
   ): Promise<{ success: boolean; error?: string }> => {
@@ -504,7 +490,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [saveToStorage]);
 
-  // ✅ Google login
   const googleLogin = useCallback(async (
     credential: string
   ): Promise<{ success: boolean; error?: string }> => {
@@ -543,7 +528,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [saveToStorage]);
 
-  // ✅ Update user
   const updateUser = useCallback((updatedUser: Partial<User>) => {
     setState(prev => {
       if (!prev.user) return prev;
@@ -553,7 +537,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
   }, [saveToStorage]);
 
-  // ✅ Update organization
   const updateOrganization = useCallback((updatedOrg: Partial<Organization>) => {
     setState(prev => {
       if (!prev.organization) return prev;
@@ -593,7 +576,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   return (
     <AuthContext.Provider value={value}>
-      {/* ✅ Professional session expired popup */}
       {forceLogoutState.show && (
         <ForceLogoutPopup
           title={forceLogoutState.title}

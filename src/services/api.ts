@@ -1,4 +1,8 @@
-// src/services/api.ts
+// src/services/api.ts - FIXED VERSION
+// ✅ FIX: exported performTokenRefresh() as a single-flight function so that
+// AuthProvider.tsx and this interceptor share ONE in-flight refresh call instead of
+// two independent mutexes. Previously, two parallel refresh calls could race,
+// causing the backend's reuse-detection to revoke ALL sessions for a valid user.
 
 import axios, {
   AxiosError,
@@ -77,11 +81,10 @@ export interface RegisterResponse {
 
 const getApiBaseUrl = (): string => {
   const envUrl = import.meta.env.VITE_API_URL;
-  
-  console.log('VITE_API_URL:', envUrl); // ← Ye check karo
-  
+
+  console.log('VITE_API_URL:', envUrl);
+
   if (envUrl) {
-    // ✅ /v1 remove karo
     return envUrl.replace(/\/+$/, '').replace(/\/v1$/, '');
   }
 
@@ -242,6 +245,54 @@ api.interceptors.request.use(
 );
 
 // ============================================
+// ✅ SINGLE-FLIGHT TOKEN REFRESH
+// Shared by this interceptor AND AuthProvider.tsx so only ONE
+// /auth/refresh request is ever in flight at a time.
+// ============================================
+
+let refreshPromise: Promise<string> | null = null;
+
+export const performTokenRefresh = async (): Promise<string> => {
+  if (refreshPromise) {
+    // A refresh is already in flight — piggyback on it instead of firing another.
+    return refreshPromise;
+  }
+
+  const refreshToken = getRefreshToken();
+  if (!refreshToken) {
+    throw new Error('No refresh token available');
+  }
+
+  refreshPromise = (async () => {
+    try {
+      const response = await axios.post<ApiResponse<RefreshTokenResponse>>(
+        `${API_BASE_URL}/auth/refresh`,
+        { refreshToken },
+        {
+          withCredentials: true,
+          headers: { 'Content-Type': 'application/json' },
+        }
+      );
+
+      const newAccessToken = response.data?.data?.accessToken;
+      const newRefreshToken = response.data?.data?.refreshToken;
+
+      if (!newAccessToken || !isValidJWT(newAccessToken)) {
+        throw new Error('Invalid access token received from refresh');
+      }
+
+      setAuthTokens(newAccessToken, newRefreshToken);
+      return newAccessToken;
+    } finally {
+      // Reset so the NEXT expiry triggers a fresh refresh
+      refreshPromise = null;
+    }
+  })();
+
+  return refreshPromise;
+};
+
+// ============================================
 // RESPONSE INTERCEPTOR
 // ============================================
 
@@ -267,7 +318,6 @@ api.interceptors.response.use(
     const status = response.status;
     const url = response.config.url || '';
 
-    // 🔄 SYNC: If backend did a silent refresh (auto-healing)
     const newAccessToken = response.headers['x-new-access-token'];
     if (newAccessToken && isValidJWT(newAccessToken)) {
       console.log('🛡️ Auto-healing SYNC: Updating local storage with new session token');
@@ -307,11 +357,9 @@ api.interceptors.response.use(
       });
     }
 
-    // Handle payment required (plan limit exceeded)
     if (status === 402) {
       const errorData = error.response?.data as any;
 
-      // Dispatch custom event for upgrade modal
       window.dispatchEvent(new CustomEvent('planLimitExceeded', {
         detail: {
           limitType: errorData?.data?.limitType,
@@ -378,27 +426,12 @@ api.interceptors.response.use(
       try {
         console.log('🔄 Attempting token refresh...');
 
-        const response = await axios.post<ApiResponse<RefreshTokenResponse>>(
-          `${API_BASE_URL}/auth/refresh`,
-          { refreshToken },
-          {
-            withCredentials: true,
-            headers: {
-              'Content-Type': 'application/json',
-            }
-          }
-        );
-
-        const newAccessToken = response.data?.data?.accessToken;
-        const newRefreshToken = response.data?.data?.refreshToken;
-
-        if (!newAccessToken || !isValidJWT(newAccessToken)) {
-          throw new Error('Invalid access token received from refresh');
-        }
+        // ✅ FIX: use the shared single-flight refresh instead of a local axios.post,
+        // so this interceptor and AuthProvider.tsx never race on the same refresh token.
+        const newAccessToken = await performTokenRefresh();
 
         console.log('✅ Token refreshed successfully');
 
-        setAuthTokens(newAccessToken, newRefreshToken);
         processQueue(null, newAccessToken);
 
         if (originalRequest.headers) {
@@ -475,14 +508,12 @@ export const auth = {
       data
     ),
 
-  // Email OTP (existing)
   sendOTP: (data: { email: string }) =>
     api.post<ApiResponse<{ message: string }>>('/auth/send-otp', data),
 
   verifyOTP: (data: { email: string; otp: string }) =>
     api.post<ApiResponse<AuthResponseData>>('/auth/verify-otp', data),
 
-  // ✅ NEW: Phone OTP (WhatsApp based signup)
   sendPhoneOTP: (data: { phone: string }) =>
     api.post<ApiResponse<{ message: string }>>(
       '/auth/send-phone-otp',
@@ -527,9 +558,7 @@ export const auth = {
 
 // ---------- USERS ----------
 export const users = {
-
   getProfile: () => api.get<ApiResponse>('/users/profile'),
-
 
   updateProfile: (data: {
     firstName?: string;
@@ -551,7 +580,6 @@ export const users = {
   deleteAccount: (data: { password: string; reason?: string }) =>
     api.delete<ApiResponse>('/users/account', { data }),
 
-  // ✅ NEW: Add phone number (for Google login users)
   addPhone: (data: { phone: string }) =>
     api.post<ApiResponse<{
       message: string;
@@ -605,28 +633,27 @@ export const contacts = {
 // ---------- TEMPLATES ----------
 export const templates = {
   getAll: (params?: any) => api.get<ApiResponse>('/templates', { params }),
-  
+
   create: (data: any) => api.post<ApiResponse>('/templates', data),
-  
+
   getById: (id: string) => api.get<ApiResponse>(`/templates/${id}`),
-  
+
   update: (id: string, data: any) => api.put<ApiResponse>(`/templates/${id}`, data),
-  
+
   delete: (id: string) => api.delete<ApiResponse>(`/templates/${id}`),
-  
+
   sync: (whatsappAccountId: string) =>
     api.post<ApiResponse>('/templates/sync', { whatsappAccountId }),
-  
-  submitForApproval: (id: string) => 
+
+  submitForApproval: (id: string) =>
     api.post<ApiResponse>(`/templates/${id}/submit`),
-  
+
   stats: () => api.get<ApiResponse>('/templates/stats'),
 
-  // ✅ NEW: Upload media for template header
   uploadMedia: (file: File, whatsappAccountId?: string) => {
     const formData = new FormData();
     formData.append('file', file);
-    
+
     if (whatsappAccountId) {
       formData.append('whatsappAccountId', whatsappAccountId);
     }
@@ -639,24 +666,17 @@ export const templates = {
     });
 
     return api.post<ApiResponse<{
-      // ✅ Permanent fields (DB mein store karo)
-      cloudinaryUrl: string;     // "https://res.cloudinary.com/..." PERMANENT ✅
-      permanentUrl?: string;     // Same as cloudinaryUrl
-      
-      // ✅ Template creation ke liye (sirf ek baar use hota hai)
-      mediaHandle?: string;      // "4:V2hh..." expires in 10 min
-      metaNumericId?: string;    // "12345..." numeric ID (rare)
-      
-      // ✅ Meta info
-      mediaId: string;           // Could be handle or numeric
+      cloudinaryUrl: string;
+      permanentUrl?: string;
+      mediaHandle?: string;
+      metaNumericId?: string;
+      mediaId: string;
       filename: string;
       mimeType: string;
       size: number;
       whatsappAccountId?: string;
       wabaId?: string;
-      
-      // ✅ Preview ke liye
-      url: string;               // Blob ya cloudinary URL
+      url: string;
     }>>('/templates/upload-media', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
       timeout: 120000,
@@ -670,7 +690,6 @@ export const campaigns = {
 
   create: (data: any) => api.post<ApiResponse>('/campaigns', data),
 
-  // ✅ NEW: Upload CSV contacts
   uploadContacts: (file: File) => {
     const formData = new FormData();
     formData.append('file', file);
@@ -682,10 +701,8 @@ export const campaigns = {
     });
   },
 
-  // ✅ NEW: Get CSV upload template
   getUploadTemplate: () => api.get<ApiResponse>('/campaigns/upload-template'),
 
-  // ✅ NEW: Validate CSV file
   validateCsv: (file: File) => {
     const formData = new FormData();
     formData.append('file', file);
@@ -711,7 +728,6 @@ export const campaigns = {
 
   cancel: (id: string) => api.post<ApiResponse>(`/campaigns/${id}/cancel`),
 
-
   duplicate: (id: string, name: string) =>
     api.post<ApiResponse>(`/campaigns/${id}/duplicate`, { name }),
 
@@ -723,20 +739,15 @@ export const campaigns = {
 
   stats: () => api.get<ApiResponse>('/campaigns/stats'),
 
-  // Get failed contacts
   getFailedContacts: (campaignId: string, page = 1, limit = 100) =>
     api.get<ApiResponse>(`/campaigns/${campaignId}/failed`, { params: { page, limit } }),
 
-  // Export failed contacts as CSV
   exportFailedContacts: (campaignId: string) =>
     api.get(`/campaigns/${campaignId}/failed/export`, { responseType: 'blob' }),
 
-
-  // Get all recipients with status
   getRecipients: (campaignId: string, params?: { page?: number; limit?: number; status?: string; search?: string }) =>
     api.get<ApiResponse>(`/campaigns/${campaignId}/recipients`, { params }),
 
-  // Export recipients as CSV
   exportRecipients: (campaignId: string, status?: string) =>
     api.get(`/campaigns/${campaignId}/recipients/export`, {
       params: { status },
@@ -785,7 +796,6 @@ export const whatsapp = {
     try {
       const response = await api.get('/meta/accounts');
 
-      // ✅ CRITICAL FIX: Normalize response structure
       let accounts = [];
 
       if (Array.isArray(response.data?.data)) {
@@ -826,7 +836,6 @@ export const whatsapp = {
   }) => {
     const response = await api.post<ApiResponse>('/whatsapp/send/text', data);
 
-    // ✅ CRITICAL: Normalize response with guaranteed timestamps
     const now = new Date().toISOString();
 
     if (response.data?.data) {
@@ -845,7 +854,6 @@ export const whatsapp = {
   sendTemplate: async (data: any) => {
     const response = await api.post<ApiResponse>('/whatsapp/send/template', data);
 
-    // ✅ CRITICAL: Normalize response with guaranteed timestamps
     const now = new Date().toISOString();
 
     if (response.data?.data) {
@@ -862,7 +870,6 @@ export const whatsapp = {
     return response;
   },
 
-  // ✅ NEW: Quality Rating Sync
   syncAccountQuality: (accountId: string) =>
     api.post<ApiResponse>(
       `/whatsapp/accounts/${accountId}/sync-quality`
@@ -906,7 +913,6 @@ export const inbox = {
       data
     );
 
-    // ✅ CRITICAL: Normalize response with guaranteed timestamps
     const now = new Date().toISOString();
 
     if (response.data?.data) {
@@ -932,7 +938,6 @@ export const inbox = {
     });
   },
   stats: () => api.get<ApiResponse>('/inbox/stats'),
-  // ✅ NEW: Template media resolve
   resolveTemplateMedia: (templateId: string) =>
     api.post('/inbox/template/resolve-media', { templateId }),
   getLabels: () => api.get<ApiResponse>('/inbox/labels'),
@@ -941,7 +946,7 @@ export const inbox = {
   addLabels: (id: string, labels: string[]) => api.post<ApiResponse>(`/inbox/conversations/${id}/labels`, { labels }),
   removeLabel: (id: string, label: string) => api.delete<ApiResponse>(`/inbox/conversations/${id}/labels/${label}`),
   deleteAllConversations: () => api.delete<ApiResponse>('/inbox/delete-all'),
-  bulkUpdate: (data: { conversationIds: string[]; [key: string]: any }) => api.post<ApiResponse>('/inbox/bulk', data),
+  bulkUpdate: (data: { conversationIds: string[];[key: string]: any }) => api.post<ApiResponse>('/inbox/bulk', data),
   bulkDeleteConversations: (conversationIds: string[]) => api.post<ApiResponse>('/inbox/bulk-delete', { conversationIds }),
 };
 
@@ -981,11 +986,9 @@ export const crm = {
   getStats: () => api.get<ApiResponse>('/crm/stats'),
   syncFromContacts: () => api.post<ApiResponse>('/crm/sync-from-contacts'),
 
-  // Pipelines
   getPipelines: () => api.get<ApiResponse>('/crm/pipelines'),
   createPipeline: (data: any) => api.post<ApiResponse>('/crm/pipelines', data),
 
-  // Leads
   getLeads: (params?: any) => api.get<ApiResponse>('/crm/leads', { params }),
   getInterestedLeads: (params?: any) => api.get<ApiResponse>('/crm/leads/interested', { params }),
   getLeadById: (id: string) => api.get<ApiResponse>(`/crm/leads/${id}`),
@@ -993,15 +996,12 @@ export const crm = {
   updateLead: (id: string, data: any) => api.put<ApiResponse>(`/crm/leads/${id}`, data),
   deleteLead: (id: string) => api.delete<ApiResponse>(`/crm/leads/${id}`),
 
-  // Lead Notes
   getLeadNotes: (leadId: string) => api.get<ApiResponse>(`/crm/leads/${leadId}/notes`),
   addLeadNote: (leadId: string, content: string) => api.post<ApiResponse>(`/crm/leads/${leadId}/notes`, { content }),
 
-  // Lead Tasks
   addLeadTask: (leadId: string, data: any) => api.post<ApiResponse>(`/crm/leads/${leadId}/tasks`, data),
   completeTask: (taskId: string) => api.put<ApiResponse>(`/crm/tasks/${taskId}/complete`),
 
-  // Contact Notes
   getContactNotes: (contactId: string) => api.get<ApiResponse>(`/crm/contacts/${contactId}/notes`),
   addContactNote: (contactId: string, content: string) => api.post<ApiResponse>(`/crm/contacts/${contactId}/notes`, { content }),
 };
@@ -1036,7 +1036,6 @@ export const billing = {
 
 // ---------- WALLET ----------
 export const wallet = {
-  // User endpoints
   getWallet: () => api.get<ApiResponse>('/wallet'),
 
   requestAccess: (data: { reason: string; additionalInfo?: string }) =>
@@ -1062,7 +1061,6 @@ export const wallet = {
 
   getAnalytics: () => api.get<ApiResponse>('/wallet/analytics'),
 
-  // Admin endpoints
   adminGetAllWallets: (params?: {
     page?: number;
     limit?: number;
@@ -1142,16 +1140,13 @@ export const dashboard = {
 
 // ---------- ADMIN ----------
 export const admin = {
-  // Auth
   login: (data: { email: string; password: string }) =>
     api.post<ApiResponse<{ token: string; admin: any }>>('/admin/login', data),
 
   getProfile: () => api.get<ApiResponse>('/admin/profile'),
 
-  // Dashboard
   getDashboard: () => api.get<ApiResponse>('/admin/dashboard'),
 
-  // Users Management
   getUsers: (params?: {
     search?: string;
     page?: number;
@@ -1182,7 +1177,6 @@ export const admin = {
   deleteUser: (id: string) =>
     api.delete<ApiResponse>(`/admin/users/${id}`),
 
-  // Organizations
   getOrganizations: (params?: {
     search?: string;
     page?: number;
@@ -1210,11 +1204,6 @@ export const admin = {
   updateOrganizationFeatures: (id: string, data: any) =>
     api.put<ApiResponse>(`/admin/organizations/${id}/features`, data),
 
-  // ============================================
-  // SUBSCRIPTION MANAGEMENT
-  // ============================================
-
-  // Get all subscriptions
   getSubscriptions: (params?: {
     page?: number;
     limit?: number;
@@ -1224,11 +1213,9 @@ export const admin = {
     search?: string;
   }) => api.get<ApiResponse>('/admin/subscriptions', { params }),
 
-  // Get subscription stats
   getSubscriptionStats: () =>
     api.get<ApiResponse>('/admin/subscriptions/stats'),
 
-  // Assign plan to organization
   assignPlan: (data: {
     organizationId: string;
     planSlug: string;
@@ -1237,19 +1224,16 @@ export const admin = {
     reason?: string;
   }) => api.post<ApiResponse>('/admin/subscriptions/assign', data),
 
-  // Extend subscription
   extendSubscription: (organizationId: string, data: {
     additionalDays: number;
     reason?: string;
   }) => api.post<ApiResponse>(`/admin/subscriptions/${organizationId}/extend`, data),
 
-  // Revoke subscription
   revokeSubscription: (organizationId: string, data: {
     reason?: string;
     immediate?: boolean;
   }) => api.post<ApiResponse>(`/admin/subscriptions/${organizationId}/revoke`, data),
 
-  // Plans
   getPlans: () => api.get<ApiResponse>('/admin/plans'),
 
   createPlan: (data: any) =>
@@ -1261,7 +1245,6 @@ export const admin = {
   deletePlan: (id: string) =>
     api.delete<ApiResponse>(`/admin/plans/${id}`),
 
-  // Admin Management
   getAdmins: () => api.get<ApiResponse>('/admin/admins'),
 
   createAdmin: (data: any) =>
@@ -1273,17 +1256,14 @@ export const admin = {
   deleteAdmin: (id: string) =>
     api.delete<ApiResponse>(`/admin/admins/${id}`),
 
-  // Activity Logs
   getActivityLogs: (params?: any) =>
     api.get<ApiResponse>('/admin/activity-logs', { params }),
 
-  // System Settings
   getSettings: () => api.get<ApiResponse>('/admin/settings'),
 
   updateSettings: (data: any) =>
     api.put<ApiResponse>('/admin/settings', data),
 
-  // WhatsApp Connections
   getWhatsAppConnections: () => api.get<ApiResponse>('/admin/whatsapp-connections'),
   getWhatsAppStats: () => api.get<ApiResponse>('/admin/whatsapp-stats'),
   updateWhatsAppConnectionType: (accountId: string, connectionType: string) =>
@@ -1291,7 +1271,6 @@ export const admin = {
   disconnectWhatsApp: (accountId: string) =>
     api.post<ApiResponse>(`/admin/whatsapp-connections/${accountId}/disconnect`),
 
-  // ✅ ADD: Wallet Management
   getWalletRequests: (params?: {
     status?: string;
     page?: number;
@@ -1345,11 +1324,6 @@ export const admin = {
     data
   ),
 
-  // ============================================
-  // USER DETAIL VIEW APIs
-  // ============================================
-
-  // User ke contacts (deleted bhi)
   getUserContacts: (
     userId: string,
     params?: {
@@ -1360,13 +1334,11 @@ export const admin = {
     }
   ) => api.get<ApiResponse>(`/admin/users/${userId}/contacts`, { params }),
 
-  // Contacts export (CSV) - blob response
   exportUserContacts: (userId: string) =>
     api.get(`/admin/users/${userId}/contacts/export`, {
       responseType: 'blob',
     }),
 
-  // User ke templates
   getUserTemplates: (
     userId: string,
     params?: {
@@ -1378,11 +1350,9 @@ export const admin = {
     }
   ) => api.get<ApiResponse>(`/admin/users/${userId}/templates`, { params }),
 
-  // User ka analytics
   getUserAnalytics: (userId: string) =>
     api.get<ApiResponse>(`/admin/users/${userId}/analytics`),
 
-  // User ka wallet + transactions
   getUserWallet: (
     userId: string,
     params?: {
