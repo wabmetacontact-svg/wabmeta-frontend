@@ -184,11 +184,24 @@ export default function WhatsAppSettings() {
     return () => clearInterval(interval);
   }, [syncAllQuality]);
 
-  const { connect, loading: connectLoading, progress, sdkReady, sdkLoading } = useMetaConnect({
+  const { 
+    connect, 
+    loading: connectLoading, 
+    progress, 
+    sdkReady, 
+    sdkLoading 
+  } = useMetaConnect({
     organizationId: getOrgId(),
-    onSuccess: () => {
-      fetchAccounts().then(() => syncAllQuality(false));
+    onSuccess: async () => {
+      // ✅ Local refresh
+      await fetchAccounts();
+      // ✅ Quality sync bhi karo
+      setTimeout(() => syncAllQuality(false), 1000);
+      // Note: Global refresh already useMetaConnect ke andar ho raha hai
     },
+    onError: (err) => {
+      toast.error(err);
+    }
   });
 
   const handleConnect = () => {

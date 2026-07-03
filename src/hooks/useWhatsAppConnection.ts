@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { whatsapp } from '../services/api';
 
-export type WhatsAppAccountStatus = 'PENDING' | 'CONNECTED' | 'DISCONNECTED' | 'BANNED';
+export type WhatsAppAccountStatus = 
+  'PENDING' | 'CONNECTED' | 'DISCONNECTED' | 'BANNED';
 
 export interface WhatsAppAccount {
   id: string;
@@ -16,24 +17,30 @@ export interface WhatsAppAccount {
   updatedAt: string;
 }
 
+// ✅ FIX: Global refresh registry
+// Ye ek shared Set hai jisme saare hooks apne
+// refresh functions register karte hain.
+// Jab koi bhi ek jagah se refreshAll() call kare,
+// sabhi instances simultaneously refresh ho jaate hain.
+type RefreshFn = () => Promise<void>;
+const globalRefreshRegistry = new Set<RefreshFn>();
+
+export const refreshAllWhatsAppConnections = async (): Promise<void> => {
+  console.log(
+    `🔄 Refreshing all WhatsApp connections 
+     (${globalRefreshRegistry.size} instances)`
+  );
+  await Promise.allSettled(
+    Array.from(globalRefreshRegistry).map((fn) => fn())
+  );
+};
+
 interface UseWhatsAppConnectionReturn {
-  /**
-   * IMPORTANT:
-   * We keep this always true to DISABLE gating UI across the app.
-   * (So pages won't show "No WhatsApp connected" screen)
-   */
   isConnected: boolean;
-
-  /**
-   * IMPORTANT:
-   * Always false to avoid showing "Checking WhatsApp connection..." loader UI
-   */
   isLoading: boolean;
-
   error: string | null;
   accounts: WhatsAppAccount[];
   defaultAccount: WhatsAppAccount | null;
-
   refresh: () => Promise<void>;
   disconnect: (accountId: string) => Promise<void>;
   setDefault: (accountId: string) => Promise<void>;
@@ -42,27 +49,42 @@ interface UseWhatsAppConnectionReturn {
 export const useWhatsAppConnection = (): UseWhatsAppConnectionReturn => {
   const [accounts, setAccounts] = useState<WhatsAppAccount[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const fetchAccounts = useCallback(async () => {
     try {
+      setIsLoading(true);
       const res = await whatsapp.accounts();
       setError(null);
 
-      // api.ts patterns: sometimes res.data.data.accounts, sometimes res.data.data, sometimes res.data
       const data = res.data?.data || res.data;
-      const list = (data?.accounts || (Array.isArray(data) ? data : [])) as any;
+      const list = (
+        data?.accounts || 
+        (Array.isArray(data) ? data : [])
+      ) as WhatsAppAccount[];
 
       setAccounts(Array.isArray(list) ? list : []);
     } catch (e: any) {
-      // Silent fail (no UI gating wanted)
       setAccounts([]);
-      setError(e?.response?.data?.message || e?.message || null);
+      setError(
+        e?.response?.data?.message || 
+        e?.message || 
+        null
+      );
+    } finally {
+      setIsLoading(false);
     }
   }, []);
 
+  // ✅ FIX: Global registry mein register karo
   useEffect(() => {
-    // Silent load (does not block UI)
-    fetchAccounts();
+    globalRefreshRegistry.add(fetchAccounts);
+    fetchAccounts(); // Initial load
+
+    return () => {
+      // Cleanup: unmount pe registry se remove karo
+      globalRefreshRegistry.delete(fetchAccounts);
+    };
   }, [fetchAccounts]);
 
   const connectedAccounts = useMemo(
@@ -82,6 +104,8 @@ export const useWhatsAppConnection = (): UseWhatsAppConnectionReturn => {
     async (accountId: string) => {
       await whatsapp.disconnect(accountId);
       await fetchAccounts();
+      // ✅ Baaki saare instances bhi refresh karo
+      await refreshAllWhatsAppConnections();
     },
     [fetchAccounts]
   );
@@ -95,12 +119,8 @@ export const useWhatsAppConnection = (): UseWhatsAppConnectionReturn => {
   );
 
   return {
-    // ✅ Use real connection status
     isConnected: connectedAccounts.length > 0,
-
-    // ✅ Real loading state (can be managed if needed, keeping false for silent load unless we add a state)
-    isLoading: false,
-
+    isLoading,
     error,
     accounts,
     defaultAccount,

@@ -81,16 +81,38 @@ const CreateTemplate: React.FC = () => {
   const [sampleVariables, setSampleVariables] = useState<Record<string, string>>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // Extract variables from body and header
+  // ✅ FIX: Variables ko body aur header alag-alag track karo
+
+  // Existing extractedVariables ko replace karo:
   const extractedVariables = useMemo(() => {
     const bodyMatches = formData.body.match(/{{(\d+)}}/g) || [];
     const headerMatches =
-      (formData.header.type === 'text' ? formData.header.text?.match(/{{(\d+)}}/g) : null) || [];
+      (formData.header.type === 'text'
+        ? formData.header.text?.match(/{{(\d+)}}/g)
+        : null) || [];
 
     const allMatches = [...bodyMatches, ...headerMatches];
     const variables = allMatches.map((m) => m.replace(/{{|}}/g, ''));
-    return Array.from(new Set(variables)).sort((a, b) => parseInt(a) - parseInt(b));
+    return Array.from(new Set(variables)).sort(
+      (a, b) => parseInt(a) - parseInt(b)
+    );
   }, [formData.body, formData.header]);
+
+  // ✅ ADD: Body aur header variables ALAG track karo
+  const bodyVariables = useMemo(() => {
+    const matches = formData.body.match(/{{(\d+)}}/g) || [];
+    return Array.from(
+      new Set(matches.map((m) => m.replace(/{{|}}/g, '')))
+    ).sort((a, b) => parseInt(a) - parseInt(b));
+  }, [formData.body]);
+
+  const headerVariables = useMemo(() => {
+    if (formData.header.type !== 'text') return [];
+    const matches = formData.header.text?.match(/{{(\d+)}}/g) || [];
+    return Array.from(
+      new Set(matches.map((m) => m.replace(/{{|}}/g, '')))
+    ).sort((a, b) => parseInt(a) - parseInt(b));
+  }, [formData.header]);
 
   // ==========================================
   // ✅ ROBUST LOAD WHATSAPP ACCOUNTS
@@ -638,12 +660,24 @@ const CreateTemplate: React.FC = () => {
         })
         .filter(Boolean);
 
-      // Map variables with examples
-      const mappedVariables = extractedVariables.map((v: string) => ({
+      // ✅ FIX A2: Header variables alag map karo
+      const mappedBodyVariables = bodyVariables.map((v: string) => ({
         index: parseInt(v),
         type: 'text' as const,
         example: sampleVariables[v]?.trim() || 'example',
       }));
+
+      const mappedHeaderVariables = headerVariables.map((v: string) => ({
+        index: parseInt(v),
+        type: 'header' as const,   // ✅ type 'header' mark karo
+        example: sampleVariables[v]?.trim() || 'example',
+      }));
+
+      // ✅ Combined variables (backend ko dono chahiye)
+      const mappedVariables = [
+        ...mappedBodyVariables, 
+        ...mappedHeaderVariables
+      ];
 
       // Build payload
       const payload: Record<string, any> = {
@@ -711,6 +745,17 @@ const CreateTemplate: React.FC = () => {
       // Variables
       if (mappedVariables.length > 0) {
         payload.variables = mappedVariables;
+      }
+
+      // ✅ FIX A2: Header variables SEPARATELY bhi bhejo
+      // Backend templates.service.ts mein header example build karne ke liye
+      if (mappedHeaderVariables.length > 0) {
+        payload.headerVariables = Object.fromEntries(
+          headerVariables.map((v) => [
+            v,
+            sampleVariables[v]?.trim() || 'Example'
+          ])
+        );
       }
 
       console.log('📤 Submitting template:', JSON.stringify(payload, null, 2));

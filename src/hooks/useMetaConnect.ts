@@ -3,6 +3,7 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 import { meta as metaApi } from '../services/api';
 import { useFacebookSDK } from './useFacebookSDK';
 import toast from 'react-hot-toast';
+import { refreshAllWhatsAppConnections } from './useWhatsAppConnection';
 
 interface UseMetaConnectOptions {
   organizationId: string;
@@ -89,7 +90,15 @@ export const useMetaConnect = ({
         toast.success('✅ WhatsApp connected successfully!');
         setProgress('');
         setLoading(false);
+
+        // ✅ FIX B1 + B2: 
+        // Pehle local callback chalao (WhatsAppSettings refresh)
+        // Phir GLOBAL refresh karo (poori app ke saare hooks)
         onSuccess?.();
+
+        // Thoda delay do taaki backend DB commit ho jaye
+        await new Promise((resolve) => setTimeout(resolve, 500));
+        await refreshAllWhatsAppConnections();
       } else {
         throw new Error(data?.message || 'Connection failed');
       }
