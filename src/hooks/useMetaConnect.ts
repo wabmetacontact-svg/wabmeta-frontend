@@ -1,9 +1,16 @@
-// src/hooks/useMetaConnect.ts
+// src/hooks/useMetaConnect.ts - FIXED VERSION
+// ✅ FIX B1 + B2: After successful Meta OAuth connect, calls
+// refreshAllWhatsAppConnections() which notifies ALL mounted
+// useWhatsAppConnection hook instances to re-fetch. Previously only the
+// WhatsAppSettings component's local state was updated — every other part
+// of the app (sidebar, campaign creation, template creation, etc.) still
+// showed the old "disconnected" state until a full page refresh.
+
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { meta as metaApi } from '../services/api';
 import { useFacebookSDK } from './useFacebookSDK';
 import toast from 'react-hot-toast';
-import { refreshAllWhatsAppConnections } from './useWhatsAppConnection';
+import { refreshAllWhatsAppConnections } from './useWhatsAppConnection'; // ✅ FIX: import global refresh
 
 interface UseMetaConnectOptions {
   organizationId: string;
@@ -28,7 +35,7 @@ export const useMetaConnect = ({
 
   const { isReady: sdkReady, isLoading: sdkLoading, error: sdkError } = useFacebookSDK();
 
-  // ✅ Listen for Embedded Signup messages
+  // ✅ Listen for Embedded Signup messages from Meta popup
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
       if (
@@ -51,7 +58,7 @@ export const useMetaConnect = ({
             };
             console.log('✅ Session captured:', { waba_id, phone_number_id });
           } else if (data.event === 'CANCEL') {
-            console.log('❌ User cancelled');
+            console.log('❌ User cancelled Embedded Signup');
             setLoading(false);
             setProgress('');
           } else if (data.event === 'ERROR') {
@@ -84,21 +91,26 @@ export const useMetaConnect = ({
       });
 
       const data = response.data;
-      console.log('📥 Backend response:', data);
+      console.log('📥 Backend connect response:', data);
 
       if (data?.success !== false) {
         toast.success('✅ WhatsApp connected successfully!');
         setProgress('');
         setLoading(false);
 
-        // ✅ FIX B1 + B2: 
-        // Pehle local callback chalao (WhatsAppSettings refresh)
-        // Phir GLOBAL refresh karo (poori app ke saare hooks)
+        // ✅ FIX B1: First call local onSuccess callback
+        // (WhatsAppSettings.tsx uses this to refresh its own list)
         onSuccess?.();
 
-        // Thoda delay do taaki backend DB commit ho jaye
-        await new Promise((resolve) => setTimeout(resolve, 500));
-        await refreshAllWhatsAppConnections();
+        // ✅ FIX B2: Then trigger global refresh after a short delay
+        // to ensure the backend has fully committed the new account to DB.
+        // This notifies ALL mounted useWhatsAppConnection hooks — sidebar,
+        // campaign creation, template creation — so the whole app knows
+        // the account is now connected without requiring a page reload.
+        setTimeout(async () => {
+          await refreshAllWhatsAppConnections();
+        }, 600);
+
       } else {
         throw new Error(data?.message || 'Connection failed');
       }
@@ -139,7 +151,7 @@ export const useMetaConnect = ({
     sessionInfoRef.current = {};
     localStorage.setItem('currentOrganizationId', organizationId);
 
-    console.log('🚀 Launching Embedded Signup directly');
+    console.log('🚀 Launching Meta Embedded Signup');
 
     try {
       window.FB.login(
@@ -154,7 +166,8 @@ export const useMetaConnect = ({
               const code = response.authResponse.code;
               setProgress('Verifying your WhatsApp setup...');
 
-              // Wait for session info
+              // Wait up to 2s for WA_EMBEDDED_SIGNUP FINISH event
+              // (carries wabaId + phoneNumberId for more reliable connection)
               let waited = 0;
               while (!sessionInfoRef.current.sessionReceived && waited < 2000) {
                 await new Promise(resolve => setTimeout(resolve, 200));

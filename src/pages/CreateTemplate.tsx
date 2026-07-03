@@ -442,7 +442,12 @@ const CreateTemplate: React.FC = () => {
         const vars: Record<string, string> = {};
         if (Array.isArray(t.variables)) {
           t.variables.forEach((v: any) => {
-            if (v.example) vars[String(v.index)] = String(v.example);
+            if (v.example) {
+              const strIndex = String(v.index);
+              vars[strIndex] = String(v.example);
+              vars[`body_${strIndex}`] = String(v.example);
+              vars[`header_${strIndex}`] = String(v.example);
+            }
           });
         }
 
@@ -582,10 +587,12 @@ const CreateTemplate: React.FC = () => {
     });
 
     // Variable samples validation
-    if (extractedVariables.length > 0) {
-      const missingSamples = extractedVariables.filter((v: string) => !sampleVariables[v]?.trim());
+    if (bodyVariables.length > 0 || headerVariables.length > 0) {
+      const missingBodySamples = bodyVariables.filter((v: string) => !sampleVariables[`body_${v}`]?.trim() && !sampleVariables[v]?.trim());
+      const missingHeaderSamples = headerVariables.filter((v: string) => !sampleVariables[`header_${v}`]?.trim() && !sampleVariables[v]?.trim());
+      const missingSamples = [...missingBodySamples.map(v => `body {{${v}}}`), ...missingHeaderSamples.map(v => `header {{${v}}}`)];
       if (missingSamples.length > 0) {
-        newErrors.variables = `Please provide sample values for variables: {{${missingSamples.join('}}, {{')}}}`;
+        newErrors.variables = `Please provide sample values for: ${missingSamples.join(', ')}`;
       }
     }
 
@@ -660,24 +667,20 @@ const CreateTemplate: React.FC = () => {
         })
         .filter(Boolean);
 
-      // ✅ FIX A2: Header variables alag map karo
-      const mappedBodyVariables = bodyVariables.map((v: string) => ({
-        index: parseInt(v),
+      // ✅ FIX A1: Body variables with examples (format Meta expects)
+      const variables = bodyVariables.map((varIndex) => ({
+        index: parseInt(varIndex),
         type: 'text' as const,
-        example: sampleVariables[v]?.trim() || 'example',
+        example: sampleVariables[`body_${varIndex}`] || sampleVariables[varIndex] || `Sample${varIndex}`,
       }));
 
-      const mappedHeaderVariables = headerVariables.map((v: string) => ({
-        index: parseInt(v),
-        type: 'header' as const,   // ✅ type 'header' mark karo
-        example: sampleVariables[v]?.trim() || 'example',
-      }));
-
-      // ✅ Combined variables (backend ko dono chahiye)
-      const mappedVariables = [
-        ...mappedBodyVariables, 
-        ...mappedHeaderVariables
-      ];
+      // ✅ FIX A2: Header variables separately as a map
+      const headerVariablesMap: Record<string, string> = {};
+      if (formData.header.type === 'text') {
+        headerVariables.forEach((varIndex) => {
+          headerVariablesMap[varIndex] = sampleVariables[`header_${varIndex}`] || sampleVariables[varIndex] || `HeaderSample${varIndex}`;
+        });
+      }
 
       // Build payload
       const payload: Record<string, any> = {
@@ -687,6 +690,8 @@ const CreateTemplate: React.FC = () => {
         headerType: formData.header.type.toUpperCase(),
         bodyText: formData.body.trim(),
         whatsappAccountId: selectedAccountId,
+        variables,
+        headerVariables: Object.keys(headerVariablesMap).length > 0 ? headerVariablesMap : undefined,
       };
 
       // ✅ Handle header content based on type
@@ -742,21 +747,7 @@ const CreateTemplate: React.FC = () => {
         payload.buttons = mappedButtons;
       }
 
-      // Variables
-      if (mappedVariables.length > 0) {
-        payload.variables = mappedVariables;
-      }
-
-      // ✅ FIX A2: Header variables SEPARATELY bhi bhejo
-      // Backend templates.service.ts mein header example build karne ke liye
-      if (mappedHeaderVariables.length > 0) {
-        payload.headerVariables = Object.fromEntries(
-          headerVariables.map((v) => [
-            v,
-            sampleVariables[v]?.trim() || 'Example'
-          ])
-        );
-      }
+      // Variables are already set in payload initialization
 
       console.log('📤 Submitting template:', JSON.stringify(payload, null, 2));
 
@@ -1305,32 +1296,68 @@ const CreateTemplate: React.FC = () => {
                     </div>
 
                     {/* Variables */}
-                    {extractedVariables.length > 0 && (
+                    {(bodyVariables.length > 0 || headerVariables.length > 0) && (
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           Sample Variable Values *
                         </label>
                         <div className="space-y-3">
-                          {extractedVariables.map((variable: string) => (
-                            <div key={variable} className="flex items-center gap-3">
-                              <span className="w-16 text-sm text-gray-500">{`{{${variable}}}`}</span>
-                              <input
-                                type="text"
-                                value={sampleVariables[variable] || ''}
-                                onChange={(e) =>
-                                  setSampleVariables((prev) => ({
-                                    ...prev,
-                                    [variable]: e.target.value,
-                                  }))
-                                }
-                                placeholder="Example value"
-                                className={`flex-1 px-3 py-1.5 border rounded-lg text-sm bg-white text-gray-950 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all ${errors.variables
-                                  ? 'border-red-300 focus:ring-red-500/20'
-                                  : 'border-gray-200'
-                                  }`}
-                              />
+                          {/* ✅ FIX A2: Header variables ALAG section */}
+                          {headerVariables.length > 0 && (
+                            <div className="mb-4">
+                              <p className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-1.5">
+                                <span>Header Variable Samples</span>
+                                <span className="text-xs text-gray-400">(required by Meta)</span>
+                              </p>
+                              {headerVariables.map((varIndex) => (
+                                <div key={`header_${varIndex}`} className="flex items-center gap-3 mb-2">
+                                  <span className="w-16 text-sm text-gray-500">{`{{${varIndex}}}`}</span>
+                                  <input
+                                    type="text"
+                                    placeholder={`Header sample for {{${varIndex}}}`}
+                                    value={sampleVariables[`header_${varIndex}`] || ''}
+                                    onChange={(e) => setSampleVariables(prev => ({
+                                      ...prev,
+                                      [`header_${varIndex}`]: e.target.value,
+                                    }))}
+                                    className={`flex-1 px-3 py-1.5 border border-blue-200 rounded-lg text-sm bg-white text-gray-950 focus:outline-none focus:ring-2 focus:ring-blue-400/20 focus:border-blue-400 transition-all ${errors.variables
+                                      ? 'border-red-300 focus:ring-red-500/20'
+                                      : 'border-gray-200'
+                                      }`}
+                                  />
+                                </div>
+                              ))}
                             </div>
-                          ))}
+                          )}
+
+                          {/* Body variables (existing) */}
+                          {bodyVariables.length > 0 && (
+                            <div className="mb-4">
+                              {headerVariables.length > 0 && (
+                                <p className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-1.5">
+                                  <span>Body Variable Samples</span>
+                                </p>
+                              )}
+                              {bodyVariables.map((varIndex) => (
+                                <div key={`body_${varIndex}`} className="flex items-center gap-3 mb-2">
+                                  <span className="w-16 text-sm text-gray-500">{`{{${varIndex}}}`}</span>
+                                  <input
+                                    type="text"
+                                    placeholder={`Body sample for {{${varIndex}}}`}
+                                    value={sampleVariables[`body_${varIndex}`] || ''}
+                                    onChange={(e) => setSampleVariables(prev => ({
+                                      ...prev,
+                                      [`body_${varIndex}`]: e.target.value,
+                                    }))}
+                                    className={`flex-1 px-3 py-1.5 border border-amber-250 rounded-lg text-sm bg-white text-gray-950 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all ${errors.variables
+                                      ? 'border-red-300 focus:ring-red-500/20'
+                                      : 'border-gray-200'
+                                      }`}
+                                  />
+                                </div>
+                              ))}
+                            </div>
+                          )}
                         </div>
                         {errors.variables && (
                           <p className="text-sm text-red-600 mt-2">
