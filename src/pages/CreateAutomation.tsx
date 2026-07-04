@@ -403,6 +403,48 @@ const CreateAutomation: React.FC = () => {
                   </div>
                 </div>
               )}
+
+              {/* ✅ NEW: INACTIVITY trigger config */}
+              {formData.trigger === 'INACTIVITY' && (
+                <div className="p-4 bg-gray-50 rounded-xl border border-gray-200 animate-in fade-in slide-in-from-top-2 duration-300">
+                  <label className="block text-sm font-bold text-gray-700 mb-2">
+                    Trigger after inactive for:
+                  </label>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="number"
+                      min="1"
+                      max="720"
+                      value={formData.triggerConfig.hours || 24}
+                      onChange={(e) => setFormData({
+                        ...formData,
+                        triggerConfig: { 
+                          ...formData.triggerConfig, 
+                          hours: parseInt(e.target.value) || 24 
+                        }
+                      })}
+                      className="w-32 px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-gray-900 outline-none focus:ring-2 focus:ring-emerald-500"
+                    />
+                    <span className="text-sm font-medium text-gray-600">hours</span>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-2">
+                    Contact will be sent this automation if they haven't sent any message for the specified hours.
+                  </p>
+                </div>
+              )}
+
+              {/* ✅ NEW: UNKNOWN_MESSAGE trigger info */}
+              {formData.trigger === 'UNKNOWN_MESSAGE' && (
+                <div className="p-4 bg-blue-50 rounded-xl border border-blue-200 animate-in fade-in slide-in-from-top-2 duration-300">
+                  <p className="text-sm text-blue-800">
+                    <strong>ℹ️ How it works:</strong> This automation triggers when a phone number that is NOT in your CRM sends you a message. 
+                    Perfect for auto-welcome or lead capture.
+                  </p>
+                  <p className="text-xs text-blue-600 mt-2">
+                    Enable "Skip existing CRM contacts" in Targeting to only trigger for genuinely new numbers.
+                  </p>
+                </div>
+              )}
             </div>
           </div>
 
