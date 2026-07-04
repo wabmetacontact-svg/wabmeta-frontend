@@ -703,37 +703,39 @@ const CreateTemplate: React.FC = () => {
       else if (['image', 'video', 'document'].includes(formData.header.type)) {
         
         const cloudinaryUrl = formData.header.cloudinaryUrl || '';
-        const mediaHandle = formData.header.mediaId || '';      // "4:V2hh..." 
-        const metaNumericId = formData.header.metaNumericId;   // "12345..."
+        const mediaHandle = formData.header.mediaId || '';
         
-        // ✅ Validation: Kuch toh hona chahiye
-        if (!cloudinaryUrl && !mediaHandle && !metaNumericId) {
-          setApiError('Please upload media first before creating the template.');
+        // ✅ Validation
+        if (!cloudinaryUrl) {
+          setApiError('Please upload media first (Cloudinary URL missing).');
+          setSaving(false);
+          return;
+        }
+        
+        if (!mediaHandle) {
+          setApiError('Meta upload handle missing. Please re-upload the file.');
           setSaving(false);
           return;
         }
 
-        // ✅ CORRECT STRATEGY:
-        // Template CREATION: mediaHandle (4:V2hh...) use karo → Meta approve kare
-        // DB mein: cloudinaryUrl PERMANENT save karo → campaigns ke liye
-        // headerMediaId: null save karo DB mein (handle expire ho jaata hai)
-        
-        // Backend ko ye bhejo:
-        payload.headerMediaId = mediaHandle || metaNumericId || '';  // Template creation ke liye
-        payload.headerContent = cloudinaryUrl;                        // DB permanent storage ✅
-        payload.cloudinaryUrl = cloudinaryUrl;                        // Extra confirmation ✅
-        
-        // Agar numeric ID hai toh alag se
-        if (metaNumericId) {
-          payload.metaNumericId = metaNumericId;
+        // ✅ Handle format check - MUST start with digit (like "4:V2hh...")
+        if (mediaHandle.startsWith('http')) {
+          setApiError('Invalid media handle. Please re-upload the file.');
+          setSaving(false);
+          return;
         }
 
+        // ✅ Send BOTH to backend:
+        payload.headerMediaId = mediaHandle;     // For Meta template creation
+        payload.headerContent = cloudinaryUrl;    // For DB permanent storage
+        payload.cloudinaryUrl = cloudinaryUrl;   // Backup confirmation
+        
+        // Remove metaNumericId - not needed
+        delete payload.metaNumericId;
+
         console.log('📤 Media payload:', {
-          headerMediaId: payload.headerMediaId?.substring(0, 30) + '...',
-          headerContent: cloudinaryUrl?.substring(0, 60),
-          hasCloudinaryUrl: !!cloudinaryUrl,
-          hasHandle: !!mediaHandle,
-          hasNumericId: !!metaNumericId,
+          handle: mediaHandle.substring(0, 30) + '...',
+          cloudinary: cloudinaryUrl.substring(0, 60),
         });
       }
 
