@@ -280,7 +280,13 @@ const CreateTemplate: React.FC = () => {
   const handleMediaUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    e.target.value = '';
+    e.target.value = ''; // Clear input immediately
+
+    // ✅ FIX: Prevent double upload if already uploading
+    if (mediaUploading) {
+      console.warn('⚠️ Upload already in progress, ignoring');
+      return;
+    }
 
     // File type validation
     const validTypes: Record<string, string[]> = {
@@ -295,8 +301,17 @@ const CreateTemplate: React.FC = () => {
       return;
     }
 
-    if (file.size > 50 * 1024 * 1024) {
-      setApiError('File too large. Maximum: 50MB');
+    // ✅ Meta size limits (strict)
+    const MAX_SIZES: Record<string, number> = {
+      image: 5 * 1024 * 1024,    // 5MB
+      video: 16 * 1024 * 1024,   // 16MB
+      document: 100 * 1024 * 1024, // 100MB
+    };
+
+    const maxSize = MAX_SIZES[formData.header.type] || 5 * 1024 * 1024;
+    if (file.size > maxSize) {
+      const maxMB = (maxSize / 1024 / 1024).toFixed(0);
+      setApiError(`File too large. Max: ${maxMB}MB for ${formData.header.type}`);
       return;
     }
 
@@ -310,59 +325,60 @@ const CreateTemplate: React.FC = () => {
       setMediaUploading(true);
       setApiError(null);
 
-      // ✅ Local preview immediately (blob URL)
-      const localPreviewUrl = URL.createObjectURL(file);
+      // ✅ FIX: Clear ALL previous media data FIRST
+      updateFormData('header', {
+        type: formData.header.type,
+        // All other fields cleared
+      });
 
+      // Small delay to ensure state clears
+      await new Promise(r => setTimeout(r, 100));
+
+      const localPreviewUrl = URL.createObjectURL(file);
       const response = await templateApi.uploadMedia(file, selectedAccountId);
 
       if (response.data?.success && response.data?.data) {
         const uploadData = response.data.data;
 
-        console.log('✅ Upload response:', {
-          cloudinaryUrl: uploadData.cloudinaryUrl?.substring(0, 60),
-          mediaHandle: uploadData.mediaHandle?.substring(0, 30),
-          metaNumericId: uploadData.metaNumericId,
+        // ✅ CRITICAL FIX: Extract SINGLE handle, not concatenated
+        let cleanHandle = String(uploadData.mediaHandle || uploadData.mediaId || '').trim();
+        
+        // ✅ If somehow multiple handles came, take FIRST one only
+        if (cleanHandle.includes('\n')) {
+          console.warn('⚠️ Multiple handles detected, using first');
+          cleanHandle = cleanHandle.split('\n')[0].trim();
+        }
+        if (cleanHandle.includes(',')) {
+          cleanHandle = cleanHandle.split(',')[0].trim();
+        }
+
+        // ✅ Validate handle format
+        if (!cleanHandle || cleanHandle.length < 10) {
+          throw new Error('Invalid media handle received from server');
+        }
+
+        const cloudinaryUrl = String(uploadData.cloudinaryUrl || uploadData.permanentUrl || '').trim();
+
+        console.log('✅ Clean media data:', {
+          handleLength: cleanHandle.length,
+          handlePreview: cleanHandle.substring(0, 40),
+          cloudinaryUrl: cloudinaryUrl.substring(0, 60),
         });
 
-        // ✅ CRITICAL: Cloudinary URL ko PRIMARY mano
-        // mediaHandle sirf template CREATION ke liye use hoga
-        // DB mein cloudinaryUrl save hoga (PERMANENT)
-        
-        const cloudinaryUrl = uploadData.cloudinaryUrl || uploadData.permanentUrl || '';
-        const mediaHandle = uploadData.mediaHandle || uploadData.mediaId || '';
-        const metaNumericId = uploadData.metaNumericId || null;
-
         updateFormData('header', {
-          ...formData.header,
-          
-          // ✅ Template CREATION ke liye (Meta approval)
-          // "4:V2hh..." handle - sirf ek baar use hoga
-          mediaId: mediaHandle,
-          
-          // ✅ PERMANENT: DB mein ye save hoga
+          type: formData.header.type,
+          mediaId: cleanHandle,           // ✅ SINGLE handle only
           cloudinaryUrl: cloudinaryUrl,
-          
-          // ✅ Numeric ID if available (most permanent)
-          metaNumericId: metaNumericId,
-          
-          // ✅ Preview ke liye (local blob URL)
           mediaUrl: localPreviewUrl,
-          
           fileName: uploadData.filename || file.name,
           uploadedAccountId: uploadData.whatsappAccountId || selectedAccountId,
         });
 
-        const successMsg = cloudinaryUrl 
-          ? `✅ Media uploaded! Permanent URL saved - no re-upload needed for campaigns.`
-          : metaNumericId
-          ? `✅ Media uploaded! Numeric ID saved - permanent.`
-          : `✅ Media uploaded successfully!`;
-          
-        setSuccessMessage(successMsg);
+        setSuccessMessage(`✅ Media uploaded successfully!`);
         setTimeout(() => setSuccessMessage(null), 5000);
 
       } else {
-        throw new Error(response.data?.message || 'Upload failed - no data returned');
+        throw new Error(response.data?.message || 'Upload failed');
       }
     } catch (error: any) {
       console.error('❌ Media upload failed:', error);
@@ -1184,6 +1200,7 @@ const CreateTemplate: React.FC = () => {
                               onChange={handleMediaUpload}
                               className="hidden"
                               id="header-media-upload"
+                              disabled={mediaUploading} // ✅ ADD THIS
                             />
                             <label
                               htmlFor="header-media-upload"
