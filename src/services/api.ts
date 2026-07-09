@@ -245,17 +245,29 @@ api.interceptors.request.use(
 );
 
 // ============================================
-// ✅ SINGLE-FLIGHT TOKEN REFRESH
-// Shared by this interceptor AND AuthProvider.tsx so only ONE
-// /auth/refresh request is ever in flight at a time.
+// ✅ SINGLE-FLIGHT TOKEN REFRESH (PRODUCTION)
 // ============================================
 
 let refreshPromise: Promise<string> | null = null;
+let lastRefreshTimestamp = 0;
+const REFRESH_DEBOUNCE_MS = 3000;
 
 export const performTokenRefresh = async (): Promise<string> => {
+  const now = Date.now();
+
+  // Already refreshing? Wait for it
   if (refreshPromise) {
-    // A refresh is already in flight — piggyback on it instead of firing another.
+    console.log('⏳ Refresh already in flight, waiting...');
     return refreshPromise;
+  }
+
+  // Recently refreshed? Return current token
+  if (now - lastRefreshTimestamp < REFRESH_DEBOUNCE_MS) {
+    const token = localStorage.getItem(TOKEN_KEYS.ACCESS);
+    if (token && isValidJWT(token)) {
+      console.log('✅ Using recently refreshed token');
+      return token;
+    }
   }
 
   const refreshToken = getRefreshToken();
@@ -265,12 +277,14 @@ export const performTokenRefresh = async (): Promise<string> => {
 
   refreshPromise = (async () => {
     try {
+      console.log('🔄 Starting token refresh...');
       const response = await axios.post<ApiResponse<RefreshTokenResponse>>(
         `${API_BASE_URL}/auth/refresh`,
         { refreshToken },
         {
           withCredentials: true,
           headers: { 'Content-Type': 'application/json' },
+          timeout: 15000,
         }
       );
 
@@ -282,10 +296,30 @@ export const performTokenRefresh = async (): Promise<string> => {
       }
 
       setAuthTokens(newAccessToken, newRefreshToken);
+      lastRefreshTimestamp = Date.now();
+      console.log('✅ Token refreshed successfully');
       return newAccessToken;
+    } catch (error: any) {
+      // Handle backend race detection gracefully
+      if (error?.response?.status === 401) {
+        const errMsg = error.response?.data?.message || '';
+        
+        if (errMsg.includes('in progress') || errMsg.includes('retry')) {
+          console.log('⏳ Backend race detected, retrying with current token...');
+          await new Promise(r => setTimeout(r, 800));
+          
+          const currentToken = localStorage.getItem(TOKEN_KEYS.ACCESS);
+          if (currentToken && isValidJWT(currentToken)) {
+            return currentToken;
+          }
+        }
+      }
+      throw error;
     } finally {
-      // Reset so the NEXT expiry triggers a fresh refresh
-      refreshPromise = null;
+      // Delayed reset to prevent immediate re-trigger
+      setTimeout(() => {
+        refreshPromise = null;
+      }, 500);
     }
   })();
 
@@ -296,23 +330,6 @@ export const performTokenRefresh = async (): Promise<string> => {
 // RESPONSE INTERCEPTOR
 // ============================================
 
-let isRefreshing = false;
-let failedQueue: Array<{
-  resolve: (value?: any) => void;
-  reject: (reason?: any) => void;
-}> = [];
-
-const processQueue = (error: AxiosError | null, token: string | null = null) => {
-  failedQueue.forEach(prom => {
-    if (error) {
-      prom.reject(error);
-    } else {
-      prom.resolve(token);
-    }
-  });
-  failedQueue = [];
-};
-
 api.interceptors.response.use(
   (response: AxiosResponse) => {
     const status = response.status;
@@ -320,7 +337,7 @@ api.interceptors.response.use(
 
     const newAccessToken = response.headers['x-new-access-token'];
     if (newAccessToken && isValidJWT(newAccessToken)) {
-      console.log('🛡️ Auto-healing SYNC: Updating local storage with new session token');
+      console.log('🛡️ Auto-healing: Updating token from response header');
       setAuthTokens(newAccessToken);
     }
 
@@ -332,7 +349,7 @@ api.interceptors.response.use(
   },
   async (error: AxiosError<ApiError>) => {
     const originalRequest = error.config as InternalAxiosRequestConfig & {
-      _retry?: boolean
+      _retry?: boolean;
     };
 
     const status = error.response?.status;
@@ -341,8 +358,8 @@ api.interceptors.response.use(
 
     console.error(`❌ ${status} ${url}`, errorData?.message || error.message);
 
+    // Network errors
     if (error.code === 'ERR_NETWORK') {
-      console.error('🔴 Network Error - Backend may be down or CORS misconfigured');
       return Promise.reject({
         message: 'Cannot connect to server. Please check your internet connection.',
         code: 'NETWORK_ERROR',
@@ -350,16 +367,23 @@ api.interceptors.response.use(
     }
 
     if (error.code === 'ECONNABORTED') {
-      console.error('⏱️ Request Timeout');
       return Promise.reject({
         message: 'Request timed out. Please try again.',
         code: 'TIMEOUT',
       });
     }
 
+    // ✅ 503 - Server busy, retry once
+    if (status === 503 && originalRequest && !originalRequest._retry) {
+      originalRequest._retry = true;
+      console.log('⏳ Server busy (503), retrying in 2s...');
+      await new Promise(r => setTimeout(r, 2000));
+      return api(originalRequest);
+    }
+
+    // 402 - Plan limit
     if (status === 402) {
       const errorData = error.response?.data as any;
-
       window.dispatchEvent(new CustomEvent('planLimitExceeded', {
         detail: {
           limitType: errorData?.data?.limitType,
@@ -368,7 +392,6 @@ api.interceptors.response.use(
           message: errorData?.message,
         }
       }));
-
       return Promise.reject({
         ...error,
         isLimitExceeded: true,
@@ -376,6 +399,7 @@ api.interceptors.response.use(
       });
     }
 
+    // 401 - Token expired
     if (status === 401 && originalRequest && !originalRequest._retry) {
       const isAdminRoute = url.includes('/admin');
 
@@ -403,36 +427,19 @@ api.interceptors.response.use(
       if (!refreshToken) {
         console.warn('⚠️ No refresh token available');
         clearAuthData();
-        window.location.href = '/login';
+        window.dispatchEvent(new CustomEvent('force_logout', {
+          detail: {
+            title: 'Session Expired',
+            message: 'Your session has ended. Please sign in again.',
+          },
+        }));
         return Promise.reject(error);
       }
 
-      if (isRefreshing) {
-        return new Promise((resolve, reject) => {
-          failedQueue.push({ resolve, reject });
-        })
-          .then(token => {
-            if (originalRequest.headers) {
-              originalRequest.headers.Authorization = `Bearer ${token}`;
-            }
-            return api(originalRequest);
-          })
-          .catch(err => Promise.reject(err));
-      }
-
       originalRequest._retry = true;
-      isRefreshing = true;
 
       try {
-        console.log('🔄 Attempting token refresh...');
-
-        // ✅ FIX: use the shared single-flight refresh instead of a local axios.post,
-        // so this interceptor and AuthProvider.tsx never race on the same refresh token.
         const newAccessToken = await performTokenRefresh();
-
-        console.log('✅ Token refreshed successfully');
-
-        processQueue(null, newAccessToken);
 
         if (originalRequest.headers) {
           originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
@@ -440,14 +447,27 @@ api.interceptors.response.use(
 
         return api(originalRequest);
 
-      } catch (refreshError) {
+      } catch (refreshError: any) {
         console.error('❌ Token refresh failed:', refreshError);
+
+        const errMsg = refreshError?.response?.data?.message || '';
+        if (errMsg.includes('in progress') || errMsg.includes('retry')) {
+          await new Promise(r => setTimeout(r, 1000));
+          const token = localStorage.getItem(TOKEN_KEYS.ACCESS);
+          if (token && isValidJWT(token) && originalRequest.headers) {
+            originalRequest.headers.Authorization = `Bearer ${token}`;
+            return api(originalRequest);
+          }
+        }
+
         clearAuthData();
-        processQueue(refreshError as AxiosError, null);
-        window.location.href = '/login';
+        window.dispatchEvent(new CustomEvent('force_logout', {
+          detail: {
+            title: 'Session Expired',
+            message: 'Your session has ended. Please sign in to continue.',
+          },
+        }));
         return Promise.reject(refreshError);
-      } finally {
-        isRefreshing = false;
       }
     }
 
