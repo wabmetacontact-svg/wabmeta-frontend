@@ -22,8 +22,6 @@ import {
   Mail,
   Tag,
   Calendar,
-  ChevronLeft,
-  ChevronRight,
   CheckSquare,
   Square,
   AlertTriangle,
@@ -44,7 +42,7 @@ import UpgradeModal from '../components/common/UpgradeModal';
 import api from '../services/api';
 import { useApp } from '../context/AppContext';
 import { useContactFeatures } from '../hooks/useContactFeatures';
-import { formatPhoneForDisplay, validateIndianPhone } from '../utils/csvContacts';
+import { formatPhoneForDisplay } from '../utils/csvContacts';
 
 // ============================================
 // TYPES
@@ -337,7 +335,7 @@ const ContactRow: React.FC<{
 
 const Contacts: React.FC = () => {
   const navigate = useNavigate();
-  const { refreshStats } = useApp();
+  const { setTotalContacts } = useApp();
 
   const [activeTab, setActiveTab] = useState<'contacts' | 'groups'>('contacts');
   const [activeGroup, setActiveGroup] = useState<Group | null>(null);
@@ -390,13 +388,17 @@ const Contacts: React.FC = () => {
     setLoadingStats(true);
     try {
       const res = await api.get('/contacts/stats');
-      setStatsApi(res.data?.data || null);
+      const stats = res.data?.data || null;
+      setStatsApi(stats);
+      if (stats) {
+        setTotalContacts(stats.total || 0);
+      }
     } catch (err) {
       console.error('Failed to fetch stats:', err);
     } finally {
       setLoadingStats(false);
     }
-  }, []);
+  }, [setTotalContacts]);
 
   const fetchContacts = useCallback(async () => {
     setLoading(true);
@@ -506,8 +508,7 @@ const Contacts: React.FC = () => {
 
   const fetchAll = useCallback(async () => {
     await Promise.allSettled([fetchStats(), fetchContacts(), fetchGroups()]);
-    refreshStats();
-  }, [fetchStats, fetchContacts, fetchGroups, refreshStats]);
+  }, [fetchStats, fetchContacts, fetchGroups]);
 
   // Initial load
   useEffect(() => {
@@ -575,22 +576,32 @@ const Contacts: React.FC = () => {
 
   const handleSaveContact = async (contactData: any) => {
     try {
-      // Validate phone
-      if (!validateIndianPhone(contactData.phone)) {
-        throw new Error('Invalid phone number format. Must include country code.');
+      // ✅ FIX: Universal international phone validation (not Indian-only)
+      const rawPhone = String(contactData.phone || '').trim();
+      const cleanPhone = rawPhone.replace(/[\s\-\(\)]/g, ''); // Keep the +
+      
+      // Validate international format
+      if (!cleanPhone.startsWith('+')) {
+        throw new Error('Phone number must start with country code (e.g. +91, +77, +1)');
+      }
+      
+      const digitsOnly = cleanPhone.replace(/\D/g, '');
+      if (digitsOnly.length < 7 || digitsOnly.length > 15) {
+        throw new Error('Phone number must be 7-15 digits');
       }
 
+      // ✅ FIX: Auto-detect country code from phone
+      // Backend expects phone WITH + prefix
       const payload: any = {
         firstName: contactData.firstName || null,
         lastName: contactData.lastName || null,
         email: contactData.email || null,
         tags: contactData.tags || [],
-        phone: String(contactData.phone || '').replace(/\D/g, ''),
-        countryCode: '+91',
+        phone: cleanPhone,  // ✅ Send WITH + and country code (e.g. "+7701995867")
         customFields: {
-          company: contactData.company || '',
-          address: contactData.address || '',
-          notes: contactData.notes || '',
+          company: contactData.customFields?.company || contactData.company || '',
+          address: contactData.customFields?.address || contactData.address || '',
+          notes: contactData.customFields?.notes || contactData.notes || '',
         },
       };
 
@@ -851,8 +862,6 @@ const Contacts: React.FC = () => {
       </div>
     );
   }
-
-  const totalPages = meta.totalPages || 1;
 
   return (
     <div className="space-y-6">

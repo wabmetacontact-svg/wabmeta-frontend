@@ -56,17 +56,34 @@ export type ParseError = {
 const INTERNATIONAL_PHONE_REGEX = /^\+\d{7,15}$/;
 
 /**
- * Validate if phone number is valid
+ * ✅ Universal international phone validation
+ * Supports all country codes, not just India
  */
-export function validateIndianPhone(phone: string): boolean {
-  const cleaned = phone.replace(/[\s\-\(\)]/g, '');
-  // Adding '+' if it's purely digits and >= 10
-  let toTest = cleaned;
-  if (!toTest.startsWith('+') && /^\d{10,15}$/.test(toTest)) {
-    toTest = '+' + toTest;
-  }
-  return INTERNATIONAL_PHONE_REGEX.test(toTest);
-}
+export const validateInternationalPhone = (phone: string): boolean => {
+  if (!phone) return false;
+  
+  const clean = String(phone).replace(/[\s\-\(\)]/g, '');
+  
+  // Must start with + followed by 7-15 digits
+  return /^\+\d{7,15}$/.test(clean);
+};
+
+/**
+ * ✅ Keep Indian validation for backward compatibility
+ * But make it optional
+ */
+export const validateIndianPhone = (phone: string): boolean => {
+  if (!phone) return false;
+  
+  const clean = String(phone).replace(/[\s\-\(\)]/g, '');
+  
+  // Accept: +91XXXXXXXXXX or 91XXXXXXXXXX or 10 digits
+  if (/^\+91\d{10}$/.test(clean)) return true;
+  if (/^91\d{10}$/.test(clean)) return true;
+  if (/^\d{10}$/.test(clean)) return true;
+  
+  return false;
+};
 
 /**
  * Normalize phone number to +91XXXXXXXXXX format
@@ -109,41 +126,59 @@ export function normalizePhone(
 }
 
 /**
- * Format phone for display
- * +919876543210 -> +91 98765 43210
+ * ✅ Format phone for display
+ * Handles international numbers gracefully
  */
-export function formatPhoneForDisplay(phone: string): string {
-  const normalized = normalizePhone(phone).phone;
-  if (!normalized) return phone;
-
-  const digits = normalized.substring(3); // Remove +91
-  return `+91 ${digits.substring(0, 5)} ${digits.substring(5)}`;
-}
+export const formatPhoneForDisplay = (phone: string): string => {
+  if (!phone) return '';
+  
+  const clean = String(phone).replace(/[\s\-\(\)]/g, '');
+  
+  // Already has +
+  if (clean.startsWith('+')) return clean;
+  
+  // Indian 10-digit
+  if (/^\d{10}$/.test(clean)) return `+91${clean}`;
+  
+  // Has 91 prefix
+  if (/^91\d{10}$/.test(clean)) return `+${clean}`;
+  
+  // Otherwise just add +
+  return `+${clean}`;
+};
 
 /**
- * Validate phone input in real-time
+ * ✅ Validate phone input (used by AddContactModal)
  */
-export function validatePhoneInput(phone: string): {
+export const validatePhoneInput = (phone: string): {
   valid: boolean;
   message: string;
   normalized?: string;
-} {
-  if (!phone) {
+} => {
+  if (!phone || !phone.trim()) {
     return { valid: false, message: 'Phone number is required' };
   }
-
-  if (!validateIndianPhone(phone)) {
-    return {
-      valid: false,
-      message: 'Invalid phone number format. Must include country code.',
+  
+  const clean = String(phone).replace(/[\s\-\(\)]/g, '');
+  
+  if (!clean.startsWith('+')) {
+    return { 
+      valid: false, 
+      message: 'Phone must start with country code (e.g. +91)' 
     };
   }
-
-  const { phone: normalized } = normalizePhone(phone);
-  return {
-    valid: true,
-    message: 'Valid phone number',
-    normalized,
+  
+  if (!/^\+\d{7,15}$/.test(clean)) {
+    return { 
+      valid: false, 
+      message: 'Enter 7-15 digits after country code' 
+    };
+  }
+  
+  return { 
+    valid: true, 
+    message: 'Valid phone number', 
+    normalized: clean 
   };
 }
 
@@ -505,6 +540,7 @@ export function findDuplicates(contacts: ParsedContact[]): {
 export default {
   // Validation
   validateIndianPhone,
+  validateInternationalPhone,
   validatePhoneInput,
   validateEmail,
   validatePhoneBatch,

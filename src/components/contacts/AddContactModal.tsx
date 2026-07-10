@@ -127,8 +127,8 @@ const AddContactModal: React.FC<AddContactModalProps> = ({
    * Validate phone number in real-time
    */
   const handlePhoneChange = (value: string) => {
-    // Basic formatting: ensure it starts with + if they are typing an international number
-    let formatted = value;
+    // ✅ Auto-prepend + if user starts typing digits
+    let formatted = value.trim();
     if (formatted.length > 0 && !formatted.startsWith('+') && /^\d/.test(formatted)) {
       formatted = '+' + formatted;
     }
@@ -136,12 +136,19 @@ const AddContactModal: React.FC<AddContactModalProps> = ({
     setFormData({ ...formData, phone: formatted });
 
     if (formatted.trim()) {
-      // Simple regex for international phone numbers
-      const isValid = /^\+\d{7,15}$/.test(formatted.replace(/[\s\-\(\)]/g, ''));
+      // ✅ Clean version for validation (remove spaces, hyphens, parens)
+      const cleanPhone = formatted.replace(/[\s\-\(\)]/g, '');
+      
+      // ✅ Universal international format: +[country code][number]
+      // Total 7-15 digits after the +
+      const isValid = /^\+\d{7,15}$/.test(cleanPhone);
+      
       setPhoneValidation({
         valid: isValid,
-        message: isValid ? '' : 'Please enter a valid international phone number with country code (e.g. +919876543210)',
-        normalized: formatted.replace(/[\s\-\(\)]/g, '')
+        message: isValid 
+          ? '' 
+          : 'Enter valid international number (e.g. +919876543210, +14155552671, +77019958678)',
+        normalized: cleanPhone
       });
     } else {
       setPhoneValidation(null);
@@ -198,8 +205,7 @@ const AddContactModal: React.FC<AddContactModalProps> = ({
     setFetchingProfile(true);
 
     try {
-      // Extract clean phone number
-      const cleanPhone = formData.phone.replace(/[\s\-\(\)]/g, ''); // e.g. +919876543210
+      const cleanPhone = formData.phone.replace(/[\s\-\(\)]/g, '');
 
       if (!cleanPhone.startsWith('+')) {
         throw new Error('Phone number must start with a country code (e.g. +91)');
@@ -208,16 +214,17 @@ const AddContactModal: React.FC<AddContactModalProps> = ({
       console.log('📤 Sending contact payload:', {
         phone: cleanPhone,
         firstName: formData.firstName.trim(),
-        lastName: formData.lastName.trim() || undefined,
       });
 
-      // ✅ FIXED PAYLOAD - phone WITH country code
       const payload = {
-        phone: cleanPhone,                          // ✅ "+919876543210"
+        phone: cleanPhone,
         firstName: formData.firstName.trim(),
         lastName: formData.lastName.trim() || undefined,
         email: formData.email.trim() || undefined,
         tags: formData.tags,
+        company: formData.company.trim() || undefined,
+        address: formData.address.trim() || undefined,
+        notes: formData.notes.trim() || undefined,
         customFields: {
           company: formData.company.trim() || undefined,
           address: formData.address.trim() || undefined,
@@ -225,16 +232,32 @@ const AddContactModal: React.FC<AddContactModalProps> = ({
         },
       };
 
+      // ✅ Call parent's save function
       await onSave(payload);
 
-      toast.success(editContact ? 'Contact updated successfully!' : 'Contact saved successfully!');
+      // ✅ Success! Toast is shown here (parent already saved successfully)
+      toast.success(
+        editContact 
+          ? '✅ Contact updated successfully!' 
+          : '✅ Contact added successfully!',
+        { duration: 3000 }
+      );
 
-      // Close modal after successful save
+      // ✅ Close modal
       onClose();
+      
     } catch (error: any) {
       console.error('❌ Error saving contact:', error);
-      console.error('❌ Full error:', error?.response?.data);
-      toast.error(error.message || 'Failed to save contact');
+      console.error('❌ Full error details:', error?.response?.data);
+      
+      // ✅ Show user-friendly error
+      const errorMessage = 
+        error?.response?.data?.message ||
+        error?.response?.data?.error ||
+        error?.message ||
+        'Failed to save contact. Please try again.';
+      
+      toast.error(errorMessage, { duration: 4000 });
     } finally {
       setLoading(false);
       setFetchingProfile(false);
