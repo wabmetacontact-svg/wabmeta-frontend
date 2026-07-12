@@ -1,12 +1,14 @@
-// src/components/auth/SocialLoginButtons.tsx - COMPLETE FIXED
+// src/components/auth/SocialLoginButtons.tsx - PRODUCTION READY
 
-import React, { useEffect, useCallback, useRef } from 'react';
+import React, { useEffect, useCallback, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
 
 interface SocialLoginButtonsProps {
   loading?: boolean;
+  onSuccess?: () => void;
+  mode?: 'login' | 'signup';
 }
 
 declare global {
@@ -16,7 +18,8 @@ declare global {
         id: {
           initialize: (config: any) => void;
           renderButton: (element: HTMLElement, config: any) => void;
-          prompt: () => void;
+          prompt: (notification?: any) => void;
+          disableAutoSelect: () => void;
         };
       };
     };
@@ -25,148 +28,186 @@ declare global {
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
 
-const SocialLoginButtons: React.FC<SocialLoginButtonsProps> = ({ loading = false }) => {
+const SocialLoginButtons: React.FC<SocialLoginButtonsProps> = ({ 
+  loading = false, 
+  onSuccess,
+  mode = 'login'
+}) => {
   const navigate = useNavigate();
   const { googleLogin } = useAuth();
 
-  // ✅ FIX #1: Prevent multiple initializations
-  const initialized = useRef(false);
-  const buttonRendered = useRef(false);
+  const buttonContainerRef = useRef<HTMLDivElement>(null);
+  const [isReady, setIsReady] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const initializedRef = useRef(false);
 
+  // ✅ Google callback handler
   const handleGoogleCallback = useCallback(async (response: any) => {
-    if (!response.credential) {
+    if (!response?.credential) {
       toast.error('Google login failed - no credential received');
       return;
     }
 
+    setIsProcessing(true);
+    const loadingToast = toast.loading('Signing in with Google...');
+
     try {
-      console.log('🔐 Google login callback triggered');
+      console.log('🔐 Google credential received, verifying...');
 
       const result = await googleLogin(response.credential);
 
+      toast.dismiss(loadingToast);
+
       if (result.success) {
-        toast.success('Login successful!');
-        navigate('/dashboard', { replace: true });
+        toast.success(mode === 'signup' ? 'Account created successfully! 🎉' : 'Welcome back! 👋');
+        
+        if (onSuccess) {
+          onSuccess();
+        } else {
+          navigate('/dashboard', { replace: true });
+        }
       } else {
-        toast.error(result.error || 'Google login failed');
+        toast.error(result.error || 'Google login failed. Please try again.');
       }
     } catch (error: any) {
+      toast.dismiss(loadingToast);
       console.error('❌ Google login error:', error);
-      toast.error(error.message || 'Google login failed');
+      
+      const errorMsg = 
+        error?.response?.data?.message || 
+        error?.message || 
+        'Google login failed. Please try again.';
+      
+      toast.error(errorMsg);
+    } finally {
+      setIsProcessing(false);
     }
-  }, [googleLogin, navigate]);
+  }, [googleLogin, navigate, onSuccess, mode]);
 
+  // ✅ Load and initialize Google Sign-In SDK
   useEffect(() => {
-    // ✅ FIX #2: Skip if no client ID
     if (!GOOGLE_CLIENT_ID) {
-      console.warn('⚠️ Google Client ID not configured');
+      console.warn('⚠️ VITE_GOOGLE_CLIENT_ID not configured in .env');
       return;
     }
 
-    // ✅ FIX #3: Prevent double initialization in React Strict Mode
-    if (initialized.current) {
-      console.log('ℹ️ Google already initialized, skipping...');
+    if (initializedRef.current) {
       return;
     }
 
-    const loadGoogleScript = () => {
-      // Check if script already exists
-      if (document.getElementById('google-signin-script')) {
-        console.log('ℹ️ Google script already loaded');
-        initializeGoogle();
+    const initGoogle = () => {
+      if (!window.google?.accounts?.id) {
+        console.error('❌ Google SDK not available');
         return;
       }
 
-      console.log('📥 Loading Google Sign-In script...');
+      try {
+        console.log('🔧 Initializing Google Sign-In with client ID:', GOOGLE_CLIENT_ID.substring(0, 20) + '...');
 
+        window.google.accounts.id.initialize({
+          client_id: GOOGLE_CLIENT_ID,
+          callback: handleGoogleCallback,
+          auto_select: false,
+          cancel_on_tap_outside: true,
+          use_fedcm_for_prompt: false,
+          context: mode === 'signup' ? 'signup' : 'signin',
+        });
+
+        // Render the button
+        if (buttonContainerRef.current) {
+          const width = buttonContainerRef.current.offsetWidth || 320;
+          
+          window.google.accounts.id.renderButton(buttonContainerRef.current, {
+            type: 'standard',
+            theme: 'outline',
+            size: 'large',
+            width: Math.min(width, 400),
+            text: mode === 'signup' ? 'signup_with' : 'continue_with',
+            shape: 'rectangular',
+            logo_alignment: 'left',
+          });
+
+          setIsReady(true);
+          initializedRef.current = true;
+          console.log('✅ Google Sign-In button rendered');
+        }
+      } catch (err: any) {
+        console.error('❌ Google init error:', err);
+      }
+    };
+
+    // Load Google script if not already loaded
+    const existingScript = document.getElementById('google-signin-script');
+    
+    if (existingScript && window.google?.accounts?.id) {
+      // Script already loaded
+      initGoogle();
+    } else if (!existingScript) {
+      // Load fresh
       const script = document.createElement('script');
       script.id = 'google-signin-script';
       script.src = 'https://accounts.google.com/gsi/client';
       script.async = true;
       script.defer = true;
       script.onload = () => {
-        console.log('✅ Google script loaded');
-        initializeGoogle();
+        console.log('✅ Google SDK loaded');
+        // Wait a tick for SDK to be ready
+        setTimeout(initGoogle, 100);
       };
       script.onerror = () => {
-        console.error('❌ Failed to load Google script');
+        console.error('❌ Failed to load Google Sign-In script');
+        toast.error('Failed to load Google Sign-In. Please check your internet connection.');
       };
-
       document.head.appendChild(script);
-    };
+    } else {
+      // Script tag exists but SDK not ready - wait
+      const checkInterval = setInterval(() => {
+        if (window.google?.accounts?.id) {
+          clearInterval(checkInterval);
+          initGoogle();
+        }
+      }, 100);
 
-    const initializeGoogle = () => {
-      if (!window.google) {
-        console.error('❌ Google SDK not available');
-        return;
-      }
+      // Timeout after 5 seconds
+      setTimeout(() => clearInterval(checkInterval), 5000);
+    }
+  }, [handleGoogleCallback, mode]);
 
-      // ✅ FIX #4: Mark as initialized BEFORE calling initialize
-      initialized.current = true;
-
-      console.log('🔧 Initializing Google Sign-In...');
-
-      window.google.accounts.id.initialize({
-        client_id: GOOGLE_CLIENT_ID,
-        callback: handleGoogleCallback,
-        auto_select: false,
-        cancel_on_tap_outside: true,
-      });
-
-      // ✅ FIX #5: Only render button once
-      const buttonDiv = document.getElementById('google-signin-button');
-      if (buttonDiv && !buttonRendered.current) {
-        console.log('🎨 Rendering Google button...');
-
-        window.google.accounts.id.renderButton(buttonDiv, {
-          type: 'standard',
-          theme: 'outline',
-          size: 'large',
-          width: buttonDiv.offsetWidth || 300,
-          text: 'continue_with',
-          shape: 'rectangular',
-          logo_alignment: 'center',
-        });
-
-        buttonRendered.current = true;
-        console.log('✅ Google button rendered');
-      }
-    };
-
-    loadGoogleScript();
-
-    // ✅ Cleanup (optional, but good practice)
-    return () => {
-      // Don't reset initialized.current here to prevent re-initialization
-      console.log('🧹 SocialLoginButtons unmounted');
-    };
-  }, [handleGoogleCallback]); // Only re-run if callback changes
-
+  // ─── Not Configured State ───
   if (!GOOGLE_CLIENT_ID) {
     return (
-      <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
-        <p className="text-sm text-yellow-700 dark:text-yellow-400">
-          Google Sign-In not configured
+      <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-xl">
+        <p className="text-xs text-yellow-700 text-center">
+          ⚠️ Google Sign-In not configured. Add <code className="font-mono bg-yellow-100 px-1 rounded">VITE_GOOGLE_CLIENT_ID</code> to your .env
         </p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-3">
-      {/* ✅ Google Sign-in Button Container */}
-      <div
-        id="google-signin-button"
-        className={`flex justify-center min-h-[44px] ${loading ? 'opacity-50 pointer-events-none' : ''
-          }`}
-      >
-        {/* Button will be rendered here by Google SDK */}
+    <div className="w-full">
+      {/* Google Button Container */}
+      <div className={`relative ${(loading || isProcessing) ? 'opacity-50 pointer-events-none' : ''}`}>
+        <div
+          ref={buttonContainerRef}
+          className="w-full flex justify-center min-h-[44px]"
+        />
+
+        {/* Loading skeleton while SDK loads */}
+        {!isReady && (
+          <div className="absolute inset-0 flex items-center justify-center bg-white">
+            <div className="flex items-center gap-2 text-sm text-gray-500">
+              <div className="w-4 h-4 border-2 border-gray-300 border-t-primary-500 rounded-full animate-spin" />
+              <span>Loading Google Sign-In...</span>
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* ✅ Loading indicator while Google SDK loads */}
-      {!buttonRendered.current && (
-        <div className="text-center text-sm text-gray-500">
-          Loading Google Sign-In...
+      {/* Processing overlay */}
+      {isProcessing && (
+        <div className="mt-2 text-center">
+          <p className="text-xs text-gray-500">Verifying your account...</p>
         </div>
       )}
     </div>

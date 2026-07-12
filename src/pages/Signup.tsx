@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { auth } from '../services/api';
 import AuthLayout from '../components/auth/AuthLayout';
+import SocialLoginButtons from '../components/auth/SocialLoginButtons';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -382,6 +383,23 @@ const Signup: React.FC = () => {
         {/* ══ STEP 1 - Personal Info ══════════════════════════════════════════ */}
         {step === 1 && (
           <div className="space-y-4 animate-fadeIn">
+
+            {/* ✅ NEW: Google Signup at top of Step 1 */}
+            <div>
+              <SocialLoginButtons mode="signup" />
+              
+              {/* Divider */}
+              <div className="relative py-4 mt-4">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-gray-200" />
+                </div>
+                <div className="relative flex justify-center">
+                  <span className="px-3 bg-white text-xs text-gray-400 uppercase tracking-wider">
+                    or sign up with email
+                  </span>
+                </div>
+              </div>
+            </div>
 
             {/* Name row */}
             <div className="grid grid-cols-2 gap-3">
