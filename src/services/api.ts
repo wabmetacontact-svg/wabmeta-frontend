@@ -250,24 +250,25 @@ api.interceptors.request.use(
 
 let refreshPromise: Promise<string> | null = null;
 let lastRefreshTimestamp = 0;
-const REFRESH_DEBOUNCE_MS = 3000;
+let lastRefreshedToken: string | null = null;
+const REFRESH_DEBOUNCE_MS = 5000; // 5 sec tak same token return karo
 
 export const performTokenRefresh = async (): Promise<string> => {
   const now = Date.now();
 
-  // Already refreshing? Wait for it
-  if (refreshPromise) {
-    console.log('⏳ Refresh already in flight, waiting...');
-    return refreshPromise;
-  }
-
-  // Recently refreshed? Return current token
+  // ✅ FIX 1: Already refreshed recently? Token return karo - API call mat karo
   if (now - lastRefreshTimestamp < REFRESH_DEBOUNCE_MS) {
     const token = localStorage.getItem(TOKEN_KEYS.ACCESS);
     if (token && isValidJWT(token)) {
-      console.log('✅ Using recently refreshed token');
+      console.log('✅ Debounce: returning recent token, skipping refresh');
       return token;
     }
+  }
+
+  // ✅ FIX 2: Already in-flight? Same promise return karo (no duplicate calls)
+  if (refreshPromise) {
+    console.log('⏳ Refresh in-flight, waiting for existing promise...');
+    return refreshPromise;
   }
 
   const refreshToken = getRefreshToken();
@@ -275,9 +276,11 @@ export const performTokenRefresh = async (): Promise<string> => {
     throw new Error('No refresh token available');
   }
 
+  // ✅ FIX 3: Single Promise - sirf ek hi API call hogi
   refreshPromise = (async () => {
     try {
       console.log('🔄 Starting token refresh...');
+      
       const response = await axios.post<ApiResponse<RefreshTokenResponse>>(
         `${API_BASE_URL}/auth/refresh`,
         { refreshToken },
@@ -297,29 +300,26 @@ export const performTokenRefresh = async (): Promise<string> => {
 
       setAuthTokens(newAccessToken, newRefreshToken);
       lastRefreshTimestamp = Date.now();
+      lastRefreshedToken = newAccessToken;
+      
       console.log('✅ Token refreshed successfully');
       return newAccessToken;
+      
     } catch (error: any) {
-      // Handle backend race detection gracefully
+      // ✅ FIX 4: 401 pe clear karo aur force logout
       if (error?.response?.status === 401) {
-        const errMsg = error.response?.data?.message || '';
-        
-        if (errMsg.includes('in progress') || errMsg.includes('retry')) {
-          console.log('⏳ Backend race detected, retrying with current token...');
-          await new Promise(r => setTimeout(r, 800));
-          
-          const currentToken = localStorage.getItem(TOKEN_KEYS.ACCESS);
-          if (currentToken && isValidJWT(currentToken)) {
-            return currentToken;
-          }
-        }
+        console.error('❌ Refresh token invalid/expired - clearing session');
+        clearAuthData();
+        lastRefreshTimestamp = 0;
+        lastRefreshedToken = null;
       }
       throw error;
     } finally {
-      // Delayed reset to prevent immediate re-trigger
+      // ✅ FIX 5: Promise clear karo - lekin thodi delay ke saath
+      // Taaki parallel calls us promise ko await kar sakein
       setTimeout(() => {
         refreshPromise = null;
-      }, 500);
+      }, 1000);
     }
   })();
 
@@ -332,31 +332,24 @@ export const performTokenRefresh = async (): Promise<string> => {
 
 api.interceptors.response.use(
   (response: AxiosResponse) => {
-    const status = response.status;
-    const url = response.config.url || '';
-
+    // ✅ Server se naya token aaye toh save karo
     const newAccessToken = response.headers['x-new-access-token'];
     if (newAccessToken && isValidJWT(newAccessToken)) {
-      console.log('🛡️ Auto-healing: Updating token from response header');
+      console.log('🛡️ Auto-healing: token updated from header');
       setAuthTokens(newAccessToken);
+      lastRefreshTimestamp = Date.now(); // ✅ Debounce update karo
     }
-
-    if (import.meta.env.DEV) {
-      console.log(`📥 ${status} ${url}`);
-    }
-
     return response;
   },
+  
   async (error: AxiosError<ApiError>) => {
     const originalRequest = error.config as InternalAxiosRequestConfig & {
       _retry?: boolean;
+      _retryCount?: number; // ✅ FIX: count track karo
     };
 
     const status = error.response?.status;
     const url = originalRequest?.url || '';
-    const errorData = error.response?.data;
-
-    console.error(`❌ ${status} ${url}`, errorData?.message || error.message);
 
     // Network errors
     if (error.code === 'ERR_NETWORK') {
@@ -399,7 +392,14 @@ api.interceptors.response.use(
       });
     }
 
-    // 401 - Token expired
+    // Skip refresh for these routes
+    const skipRefresh =
+      url.includes('/auth/login') ||
+      url.includes('/auth/register') ||
+      url.includes('/auth/refresh') ||
+      url.includes('/auth/google') ||
+      url.includes('/auth/verify');
+
     if (status === 401 && originalRequest && !originalRequest._retry) {
       const isAdminRoute = url.includes('/admin');
 
@@ -411,62 +411,50 @@ api.interceptors.response.use(
         return Promise.reject(error);
       }
 
-      const skipRefresh =
-        url.includes('/auth/login') ||
-        url.includes('/auth/register') ||
-        url.includes('/auth/refresh') ||
-        url.includes('/auth/google') ||
-        url.includes('/auth/verify');
-
       if (skipRefresh) {
         return Promise.reject(error);
       }
 
       const refreshToken = getRefreshToken();
-
       if (!refreshToken) {
-        console.warn('⚠️ No refresh token available');
+        console.warn('⚠️ No refresh token - forcing logout');
         clearAuthData();
         window.dispatchEvent(new CustomEvent('force_logout', {
           detail: {
             title: 'Session Expired',
-            message: 'Your session has ended. Please sign in again.',
+            message: 'Please sign in to continue.',
           },
         }));
         return Promise.reject(error);
       }
 
+      // ✅ FIX: _retry flag set karo PEHLE - race condition prevent
       originalRequest._retry = true;
 
       try {
         const newAccessToken = await performTokenRefresh();
-
+        
         if (originalRequest.headers) {
           originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
         }
-
+        
+        // ✅ Retry original request with new token
         return api(originalRequest);
-
+        
       } catch (refreshError: any) {
-        console.error('❌ Token refresh failed:', refreshError);
+        console.error('❌ Token refresh failed completely:', refreshError.message);
 
-        const errMsg = refreshError?.response?.data?.message || '';
-        if (errMsg.includes('in progress') || errMsg.includes('retry')) {
-          await new Promise(r => setTimeout(r, 1000));
-          const token = localStorage.getItem(TOKEN_KEYS.ACCESS);
-          if (token && isValidJWT(token) && originalRequest.headers) {
-            originalRequest.headers.Authorization = `Bearer ${token}`;
-            return api(originalRequest);
-          }
+        // ✅ Sirf clear karo agar actually invalid hai
+        if (refreshError?.response?.status === 401) {
+          clearAuthData();
+          window.dispatchEvent(new CustomEvent('force_logout', {
+            detail: {
+              title: 'Session Expired',
+              message: 'Your session has ended. Please sign in again.',
+            },
+          }));
         }
-
-        clearAuthData();
-        window.dispatchEvent(new CustomEvent('force_logout', {
-          detail: {
-            title: 'Session Expired',
-            message: 'Your session has ended. Please sign in to continue.',
-          },
-        }));
+        
         return Promise.reject(refreshError);
       }
     }
