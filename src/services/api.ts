@@ -1067,7 +1067,11 @@ export const wallet = {
     amount: number;
   }) => api.post<ApiResponse>('/wallet/topup/verify', data),
 
-  getAnalytics: () => api.get<ApiResponse>('/wallet/analytics'),
+  getAnalytics: (params?: {
+    days?: number;
+    startDate?: string;
+    endDate?: string;
+  }) => api.get<ApiResponse>('/wallet/analytics', { params }),
 
   adminGetAllWallets: (params?: {
     page?: number;

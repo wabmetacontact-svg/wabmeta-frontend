@@ -52,6 +52,49 @@ const getMessagingTierLabel = (tier: string | null) => {
   return tierMap[tier] || tier;
 };
 
+// ============================================
+// ✅ Verification Config Helper - Add karo top mein
+// ============================================
+const getVerificationConfig = (status: string | null) => {
+  switch (status?.toUpperCase()) {
+    case 'VERIFIED':
+      return { 
+        label: 'Verified', 
+        color: 'text-green-700', 
+        bg: 'bg-green-100',
+        icon: '✓' 
+      };
+    case 'EXPIRED':
+      return { 
+        label: 'Expired', 
+        color: 'text-red-700', 
+        bg: 'bg-red-100',
+        icon: '⚠' 
+      };
+    case 'PENDING':
+      return { 
+        label: 'Pending', 
+        color: 'text-yellow-700', 
+        bg: 'bg-yellow-100',
+        icon: '⏳' 
+      };
+    case 'NOT_VERIFIED':
+      return { 
+        label: 'Not Verified', 
+        color: 'text-orange-700', 
+        bg: 'bg-orange-100',
+        icon: '✕' 
+      };
+    default:
+      return { 
+        label: status || 'Unknown', 
+        color: 'text-slate-600', 
+        bg: 'bg-slate-100',
+        icon: '?' 
+      };
+  }
+};
+
 const formatLastSynced = (date: string) => {
   const now = new Date();
   const synced = new Date(date);
@@ -170,19 +213,42 @@ export default function WhatsAppSettings() {
     }
   };
 
+  // ✅ Initial load + first sync
   useEffect(() => {
     mountedRef.current = true;
+    
     const init = async () => {
       await fetchAccounts();
-      setTimeout(() => { syncAllQuality(false); }, 1500);
+      // ✅ Immediate sync (was 1500ms delay)
+      setTimeout(() => { 
+        if (mountedRef.current) syncAllQuality(false); 
+      }, 500);
     };
+    
     init();
     return () => { mountedRef.current = false; };
   }, [fetchAccounts, syncAllQuality]);
 
+  // ✅ Auto-refresh every 2 minutes (was 5)
   useEffect(() => {
-    const interval = setInterval(() => { syncAllQuality(false); }, 5 * 60 * 1000);
+    const interval = setInterval(() => { 
+      if (mountedRef.current) syncAllQuality(false); 
+    }, 2 * 60 * 1000); // 2 minutes
+    
     return () => clearInterval(interval);
+  }, [syncAllQuality]);
+
+  // ✅ NEW: Refresh on tab focus
+  useEffect(() => {
+    const handleFocus = () => {
+      if (mountedRef.current) {
+        console.log('🔄 Tab focused - refreshing accounts');
+        syncAllQuality(false);
+      }
+    };
+    
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
   }, [syncAllQuality]);
 
   const { connect, loading: connectLoading, progress, sdkReady, sdkLoading } = useMetaConnect({
@@ -298,9 +364,6 @@ export default function WhatsAppSettings() {
             {connectedAccounts.map((account) => {
               const quality = getQualityConfig(account.qualityRating);
               const isSyncingThis = syncingAccountId === account.id;
-              const usagePercent = account.dailyMessageLimit
-                ? (account.dailyMessagesUsed / account.dailyMessageLimit) * 100
-                : 0;
 
               return (
                 <div key={account.id} className="bg-white rounded-xl border border-green-200 overflow-hidden shadow-sm">
@@ -339,57 +402,50 @@ export default function WhatsAppSettings() {
                     </div>
                   </div>
 
-                  {/* Stats Grid */}
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 p-4 bg-slate-50">
-                    <div className="bg-white p-3 rounded-lg border border-slate-100 shadow-sm">
-                      <div className="flex items-center gap-1.5 text-xs text-slate-500 mb-1.5">
+                  {/* ✅ NEW: 3-Column Grid - Today's Usage HATA diya */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-4 bg-slate-50">
+                    
+                    {/* Card 1: Quality */}
+                    <div className="bg-white p-4 rounded-lg border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
+                      <div className="flex items-center gap-1.5 text-xs text-slate-500 mb-2">
                         <TrendingUp className="w-3.5 h-3.5" />
                         Quality
                       </div>
-                      <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${quality.bg} ${quality.color}`}>
+                      <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold ${quality.bg} ${quality.color}`}>
                         <span className={`w-2 h-2 rounded-full ${quality.dot}`} />
                         {quality.label}
                       </div>
                     </div>
 
-                    <div className="bg-white p-3 rounded-lg border border-slate-100 shadow-sm">
-                      <div className="flex items-center gap-1.5 text-xs text-slate-500 mb-1.5">
+                    {/* Card 2: Tier Limit */}
+                    <div className="bg-white p-4 rounded-lg border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
+                      <div className="flex items-center gap-1.5 text-xs text-slate-500 mb-2">
                         <Activity className="w-3.5 h-3.5" />
                         Tier Limit
                       </div>
-                      <p className="text-sm font-bold text-slate-900">
+                      <p className="text-base font-bold text-slate-900">
                         {getMessagingTierLabel(account.messagingLimit)}
                       </p>
+                      <p className="text-xs text-slate-400 mt-0.5">Messages per day</p>
                     </div>
 
-                    <div className="bg-white p-3 rounded-lg border border-slate-100 shadow-sm">
-                      <div className="flex items-center gap-1.5 text-xs text-slate-500 mb-1.5">
+                    {/* Card 3: Verification */}
+                    <div className="bg-white p-4 rounded-lg border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
+                      <div className="flex items-center gap-1.5 text-xs text-slate-500 mb-2">
                         <Shield className="w-3.5 h-3.5" />
                         Verification
                       </div>
-                      <p className={`text-sm font-bold ${account.codeVerificationStatus === 'VERIFIED' ? 'text-green-600' : 'text-yellow-600'
-                        }`}>
-                        {account.codeVerificationStatus === 'VERIFIED' ? '✓ Verified' : account.codeVerificationStatus || 'Pending'}
-                      </p>
+                      {(() => {
+                        const verify = getVerificationConfig(account.codeVerificationStatus);
+                        return (
+                          <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold ${verify.bg} ${verify.color}`}>
+                            <span>{verify.icon}</span>
+                            {verify.label}
+                          </div>
+                        );
+                      })()}
                     </div>
-
-                    <div className="bg-white p-3 rounded-lg border border-slate-100 shadow-sm">
-                      <div className="flex items-center gap-1.5 text-xs text-slate-500 mb-1.5">
-                        <Activity className="w-3.5 h-3.5" />
-                        Today's Usage
-                      </div>
-                      <p className="text-sm font-bold text-slate-900">
-                        {account.dailyMessagesUsed}
-                        <span className="text-slate-400 text-xs"> / {account.dailyMessageLimit}</span>
-                      </p>
-                      <div className="mt-1.5 w-full bg-slate-200 rounded-full h-1">
-                        <div
-                          className={`h-1 rounded-full transition-all ${usagePercent > 80 ? 'bg-red-500' : usagePercent > 50 ? 'bg-yellow-500' : 'bg-green-500'
-                            }`}
-                          style={{ width: `${Math.min(usagePercent, 100)}%` }}
-                        />
-                      </div>
-                    </div>
+                    
                   </div>
 
                   {/* Actions */}
