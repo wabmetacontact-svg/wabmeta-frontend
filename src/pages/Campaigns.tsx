@@ -109,18 +109,24 @@ const Campaigns: React.FC = () => {
     if (!socket || !isConnected) return;
 
     const handleCampaignUpdate = (data: any) => {
-      console.log('📡 [REAL-TIME] Campaign update:', data);
-
+      // ✅ Update individual campaign with all counters
       setCampaigns(prev => prev.map(c =>
         c.id === data.campaignId
-          ? { ...c, status: data.status, sentCount: data.sent || c.sentCount }
+          ? {
+            ...c,
+            status: data.status || c.status,
+            totalContacts: data.totalContacts ?? c.totalContacts,
+            sentCount: data.sentCount ?? c.sentCount,
+            deliveredCount: data.deliveredCount ?? c.deliveredCount,
+            readCount: data.readCount ?? c.readCount,
+            failedCount: data.failedCount ?? c.failedCount,
+          }
           : c
       ));
-
-      fetchStats();
     };
 
     const handleCampaignProgress = (data: any) => {
+      // ✅ Real-time update for THIS specific campaign
       setCampaigns(prev => prev.map(c =>
         c.id === data.campaignId
           ? {
@@ -129,14 +135,32 @@ const Campaigns: React.FC = () => {
             failedCount: data.failed,
             deliveredCount: data.delivered,
             readCount: data.read,
-            status: data.status || c.status
+            totalContacts: data.total ?? c.totalContacts,
+            status: data.status || c.status,
           }
           : c
       ));
     };
 
+    const handleCampaignCompleted = (data: any) => {
+      setCampaigns(prev => prev.map(c =>
+        c.id === data.campaignId
+          ? {
+            ...c,
+            status: 'COMPLETED',
+            sentCount: data.sentCount,
+            failedCount: data.failedCount,
+            deliveredCount: data.deliveredCount,
+            readCount: data.readCount,
+          }
+          : c
+      ));
+      // Refresh top stats (aggregated)
+      fetchStats();
+    };
+
     const handleCampaignError = (data: any) => {
-      console.error('❌ [REAL-TIME] Campaign error:', data);
+      console.error('Campaign error:', data);
       toast.error(data.message, { duration: 8000 });
       fetchCampaigns();
       fetchStats();
@@ -144,17 +168,14 @@ const Campaigns: React.FC = () => {
 
     socket.on('campaign:update', handleCampaignUpdate);
     socket.on('campaign:progress', handleCampaignProgress);
+    socket.on('campaign:completed', handleCampaignCompleted);
     socket.on('campaign:error', handleCampaignError);
-    socket.on('campaign:completed', (_data) => {
-      fetchCampaigns();
-      fetchStats();
-    });
 
     return () => {
       socket.off('campaign:update', handleCampaignUpdate);
       socket.off('campaign:progress', handleCampaignProgress);
+      socket.off('campaign:completed', handleCampaignCompleted);
       socket.off('campaign:error', handleCampaignError);
-      socket.off('campaign:completed');
     };
   }, [socket, isConnected]);
 
@@ -226,8 +247,10 @@ const Campaigns: React.FC = () => {
 
       if (response?.data.success) {
         toast.success(`Campaign ${action}ed successfully`);
-        fetchCampaigns();
-        fetchStats();
+        
+        // ✅ Add delay for backend
+        await new Promise(resolve => setTimeout(resolve, 300));
+        await Promise.all([fetchCampaigns(), fetchStats()]);
       }
     } catch (error: any) {
       const msg = error?.response?.data?.message || error?.message || '';
@@ -279,9 +302,11 @@ const Campaigns: React.FC = () => {
 
     try {
       await campaignsApi.start(pendingStartId);
-      // Refresh campaigns list
-      fetchCampaigns();
-      fetchStats();
+      
+      // ✅ Refresh with delay
+      await new Promise(resolve => setTimeout(resolve, 500));
+      await Promise.all([fetchCampaigns(), fetchStats()]);
+      
       toast.success('Campaign started successfully!');
     } catch (err: any) {
       const msg = err?.response?.data?.message || err?.message || '';
@@ -316,14 +341,22 @@ const Campaigns: React.FC = () => {
 
     try {
       setActionLoading(campaignId);
+      
+      // ✅ Optimistic update
+      setCampaigns(prev => prev.filter(c => c.id !== campaignId));
+      
       const response = await campaignsApi.delete(campaignId);
 
       if (response.data.success) {
         toast.success('Campaign deleted successfully');
-        fetchCampaigns();
-        fetchStats();
+        
+        // ✅ Ensure refresh with delay
+        await new Promise(resolve => setTimeout(resolve, 300));
+        await Promise.all([fetchCampaigns(), fetchStats()]);
       }
     } catch (error: any) {
+      // ✅ Rollback on error
+      await fetchCampaigns();
       toast.error(error.response?.data?.message || 'Failed to delete campaign');
     } finally {
       setActionLoading(null);

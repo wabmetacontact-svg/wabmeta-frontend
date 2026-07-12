@@ -55,10 +55,21 @@ const AutomationPage: React.FC = () => {
 
   const handleToggle = async (automation: Automation) => {
     try {
+      // ✅ Optimistic update
+      setAutomations(prev => prev.map(a => 
+        a.id === automation.id 
+          ? { ...a, isActive: !a.isActive }
+          : a
+      ));
+      
       await automationsApi.toggle(automation.id);
       toast.success(automation.isActive ? 'Automation paused' : 'Automation activated');
-      loadAutomations();
+      
+      // ✅ Refresh
+      await new Promise(resolve => setTimeout(resolve, 300));
+      await loadAutomations();
     } catch (err) {
+      await loadAutomations();  // Rollback
       toast.error('Failed to update status');
     }
   };
@@ -66,10 +77,17 @@ const AutomationPage: React.FC = () => {
   const handleDelete = async (automation: Automation) => {
     if (!confirm(`Delete "${automation.name}"?`)) return;
     try {
+      // ✅ Optimistic
+      setAutomations(prev => prev.filter(a => a.id !== automation.id));
+      
       await automationsApi.delete(automation.id);
       toast.success('Automation deleted');
-      loadAutomations();
+      
+      // ✅ Refresh
+      await new Promise(resolve => setTimeout(resolve, 300));
+      await loadAutomations();
     } catch (err) {
+      await loadAutomations();  // Rollback
       toast.error('Failed to delete');
     }
   };

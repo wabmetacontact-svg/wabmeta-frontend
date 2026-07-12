@@ -30,7 +30,10 @@ const CRM: React.FC = () => {
             const res = await crmApi.syncFromContacts();
             if (res.data.success) {
                 toast.success(res.data.message || 'Contacts synced successfully');
-                loadData();
+                
+                // ✅ Refresh with delay
+                await new Promise(resolve => setTimeout(resolve, 500));
+                await loadData();
             }
         } catch (err) {
             toast.error('Failed to sync contacts');

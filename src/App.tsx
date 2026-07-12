@@ -272,7 +272,11 @@ const AppRoutes: React.FC = () => {
         {/* ============================== */}
         {/* PUBLIC ROUTES */}
         {/* ============================== */}
-        <Route path="/" element={<Landing />} />
+        <Route path="/" element={
+          <PublicRoute>
+            <Landing />
+          </PublicRoute>
+        } />
         <Route path="/contact" element={<Contact />} />
         <Route path="/documentation" element={<Documentation />} />
         <Route path="/blog" element={<Blog />} />

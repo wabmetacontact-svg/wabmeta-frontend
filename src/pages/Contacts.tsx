@@ -611,7 +611,10 @@ const Contacts: React.FC = () => {
         await api.post('/contacts', payload);
       }
 
+      // ✅ FIX: Small delay for backend to commit, then refresh
+      await new Promise(resolve => setTimeout(resolve, 300));
       await fetchAll();
+      
       setShowAddModal(false);
       setEditingContact(null);
     } catch (err: any) {
@@ -628,9 +631,17 @@ const Contacts: React.FC = () => {
     if (!window.confirm('Are you sure you want to delete this contact?')) return;
 
     try {
+      // ✅ Optimistic update - remove from UI immediately
+      setContacts(prev => prev.filter(c => c.id !== id));
+      
       await api.delete(`/contacts/${id}`);
+      
+      // ✅ Then refresh to ensure accuracy
+      await new Promise(resolve => setTimeout(resolve, 200));
       await fetchAll();
     } catch (err: any) {
+      // ✅ Rollback on error
+      await fetchAll();
       alert(
         err.response?.data?.error ||
         err.response?.data?.message ||
@@ -644,16 +655,26 @@ const Contacts: React.FC = () => {
     if (!window.confirm(`Are you sure you want to delete the group "${groupName}"? All contacts within this group will also be deleted. This action cannot be undone.`)) return;
 
     try {
+      // ✅ Optimistic update
+      setGroups(prev => prev.filter(g => g.id !== groupId));
+      
       await api.delete(`/contacts/groups/${groupId}`);
-      await fetchAll();
+      
       if (activeGroup?.id === groupId) {
         setActiveGroup(null);
         setActiveTab('contacts');
       }
+      
+      // ✅ Then refresh
+      await new Promise(resolve => setTimeout(resolve, 200));
+      await fetchAll();
     } catch (err: any) {
+      // ✅ Rollback
+      await fetchAll();
       alert(
         err.response?.data?.error ||
         err.response?.data?.message ||
+        err.message ||
         'Failed to delete group'
       );
     }
@@ -1328,8 +1349,9 @@ const Contacts: React.FC = () => {
           setShowBulkPaste(false);
           setPasteTargetGroupId('');
         }}
-        onSuccess={() => {
-          fetchContacts();
+        onSuccess={async () => {
+          await new Promise(resolve => setTimeout(resolve, 500));
+          await fetchAll();        // ✅ Refresh EVERYTHING
           refetchFeatures();
         }}
         groups={groups}
@@ -1339,8 +1361,10 @@ const Contacts: React.FC = () => {
       <CsvUploadModal
         isOpen={showCsvUpload}
         onClose={() => setShowCsvUpload(false)}
-        onSuccess={() => {
-          fetchContacts();
+        onSuccess={async () => {
+          // ✅ Wait for backend to commit, then refresh EVERYTHING
+          await new Promise(resolve => setTimeout(resolve, 500));
+          await fetchAll();        // ✅ Refresh contacts + stats + groups
           refetchFeatures();
         }}
         groups={groups}
@@ -1350,9 +1374,10 @@ const Contacts: React.FC = () => {
         isOpen={showAddToGroupModal}
         onClose={() => setShowAddToGroupModal(false)}
         selectedContactIds={selectedContacts}
-        onSuccess={() => {
+        onSuccess={async () => {
           setSelectedContacts([]);
-          fetchAll();
+          await new Promise(resolve => setTimeout(resolve, 300));
+          await fetchAll();        // ✅ Refresh all
         }}
       />
 

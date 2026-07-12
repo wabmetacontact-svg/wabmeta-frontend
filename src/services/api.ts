@@ -701,11 +701,8 @@ export const campaigns = {
   uploadContacts: (file: File) => {
     const formData = new FormData();
     formData.append('file', file);
-
     return api.post<ApiResponse>('/campaigns/upload-contacts', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
+      headers: { 'Content-Type': 'multipart/form-data' },
     });
   },
 
@@ -714,11 +711,8 @@ export const campaigns = {
   validateCsv: (file: File) => {
     const formData = new FormData();
     formData.append('file', file);
-
     return api.post<ApiResponse>('/campaigns/upload-validate', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
+      headers: { 'Content-Type': 'multipart/form-data' },
     });
   },
 
@@ -768,8 +762,14 @@ export const campaigns = {
   resumePending: (campaignId: string) =>
     api.post<ApiResponse>(`/campaigns/${campaignId}/resume`),
 
-  retryFailed: (campaignId: string, data: { contactIds?: string[] }) =>
-    api.post<ApiResponse>(`/campaigns/${campaignId}/retry`, data),
+  // ✅ FIXED: Send proper payload matching backend expectation
+  retryFailed: (campaignId: string, data?: { contactIds?: string[]; retryFailed?: boolean; retryPending?: boolean }) =>
+    api.post<ApiResponse>(`/campaigns/${campaignId}/retry`, {
+      retryFailed: data?.retryFailed ?? true,
+      retryPending: data?.retryPending ?? false,
+      contactIds: data?.contactIds,
+    }),
+
   estimateCost: (campaignId: string) =>
     api.get<ApiResponse>(`/campaigns/${campaignId}/estimate-cost`),
 };
@@ -1066,6 +1066,13 @@ export const wallet = {
     razorpaySignature: string;
     amount: number;
   }) => api.post<ApiResponse>('/wallet/topup/verify', data),
+
+  // ✅ NEW: Get pending topups
+  getPendingTopUps: () => api.get<ApiResponse>('/wallet/pending-topups'),
+
+  // ✅ NEW: Retry topup verification  
+  retryTopUp: (data: { razorpayOrderId: string; razorpayPaymentId?: string }) =>
+    api.post<ApiResponse>('/wallet/topup/retry', data),
 
   getAnalytics: (params?: {
     days?: number;

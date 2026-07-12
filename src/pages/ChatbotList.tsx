@@ -37,6 +37,13 @@ const ChatbotList: React.FC = () => {
 
   const handleToggleStatus = async (chatbot: Chatbot) => {
     try {
+      // ✅ Optimistic update
+      setChatbots(prev => prev.map(c => 
+        c.id === chatbot.id 
+          ? { ...c, status: c.status === 'ACTIVE' ? 'PAUSED' : 'ACTIVE' as any }
+          : c
+      ));
+      
       if (chatbot.status === 'ACTIVE') {
         await chatbotsApi.deactivate(chatbot.id);
         toast.success('Chatbot paused');
@@ -44,8 +51,13 @@ const ChatbotList: React.FC = () => {
         await chatbotsApi.activate(chatbot.id);
         toast.success('Chatbot activated! 🚀');
       }
-      loadChatbots();
+      
+      // ✅ Refresh for accuracy
+      await new Promise(resolve => setTimeout(resolve, 300));
+      await loadChatbots();
     } catch (err: any) {
+      // ✅ Rollback
+      await loadChatbots();
       toast.error(err.response?.data?.message || 'Failed to update status');
     }
   };
@@ -57,7 +69,10 @@ const ChatbotList: React.FC = () => {
     try {
       await chatbotsApi.duplicate(chatbot.id, newName);
       toast.success('Chatbot duplicated');
-      loadChatbots();
+      
+      // ✅ Refresh with delay
+      await new Promise(resolve => setTimeout(resolve, 400));
+      await loadChatbots();
     } catch (err) {
       toast.error('Failed to duplicate');
     }
@@ -67,10 +82,17 @@ const ChatbotList: React.FC = () => {
     if (!confirm(`Delete "${chatbot.name}"?`)) return;
 
     try {
+      // ✅ Optimistic delete
+      setChatbots(prev => prev.filter(c => c.id !== chatbot.id));
+      
       await chatbotsApi.delete(chatbot.id);
       toast.success('Chatbot deleted');
-      loadChatbots();
+      
+      // ✅ Refresh for accuracy
+      await new Promise(resolve => setTimeout(resolve, 300));
+      await loadChatbots();
     } catch (err) {
+      await loadChatbots();  // Rollback
       toast.error('Failed to delete');
     }
   };
