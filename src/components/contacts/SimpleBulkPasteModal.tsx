@@ -31,6 +31,9 @@ export default function SimpleBulkPasteModal({ isOpen, onClose, onSuccess, group
     const [creatingGroup, setCreatingGroup] = useState(false);
     const [localGroups, setLocalGroups] = useState(groups);
 
+    // ✅ NEW: Auto-close countdown
+    const [autoCloseCountdown, setAutoCloseCountdown] = useState<number | null>(null);
+
     useEffect(() => {
         setLocalGroups(groups);
     }, [groups]);
@@ -40,6 +43,23 @@ export default function SimpleBulkPasteModal({ isOpen, onClose, onSuccess, group
             setSelectedGroup(initialGroupId);
         }
     }, [isOpen, initialGroupId]);
+
+    // ✅ NEW: Auto-close countdown effect
+    useEffect(() => {
+        if (autoCloseCountdown === null) return;
+
+        if (autoCloseCountdown <= 0) {
+            handleClose();
+            return;
+        }
+
+        const timer = setTimeout(() => {
+            setAutoCloseCountdown(prev => (prev !== null ? prev - 1 : null));
+        }, 1000);
+
+        return () => clearTimeout(timer);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [autoCloseCountdown]);
 
     if (!isOpen) return null;
 
@@ -112,6 +132,9 @@ export default function SimpleBulkPasteModal({ isOpen, onClose, onSuccess, group
 
             if (response.data.data.created > 0) {
                 onSuccess();
+
+                // ✅ NEW: Start 2-second auto-close countdown
+                setAutoCloseCountdown(2);
             }
 
         } catch (error: any) {
@@ -126,6 +149,7 @@ export default function SimpleBulkPasteModal({ isOpen, onClose, onSuccess, group
         setResult(null);
         setShowCreateGroup(false);
         setNewGroupName('');
+        setAutoCloseCountdown(null); // ✅ NEW: Reset countdown
         onClose();
     };
 
@@ -309,11 +333,23 @@ Examples:
                     {/* Result */}
                     {result && (
                         <div className="p-5 bg-green-50 dark:bg-green-900/20 rounded-xl border border-green-200 dark:border-green-800">
-                            <div className="flex items-center gap-2 mb-4">
-                                <CheckCircle className="w-6 h-6 text-green-600 dark:text-green-400" />
-                                <span className="font-bold text-green-800 dark:text-green-400 text-lg">
-                                    Upload Complete!
-                                </span>
+                            <div className="flex items-center justify-between gap-2 mb-4">
+                                <div className="flex items-center gap-2">
+                                    <CheckCircle className="w-6 h-6 text-green-600 dark:text-green-400" />
+                                    <span className="font-bold text-green-800 dark:text-green-400 text-lg">
+                                        Upload Complete!
+                                    </span>
+                                </div>
+
+                                {/* ✅ NEW: Auto-close countdown indicator */}
+                                {autoCloseCountdown !== null && autoCloseCountdown > 0 && (
+                                    <div className="flex items-center gap-1.5 px-3 py-1 bg-white dark:bg-gray-800 rounded-full border border-green-300 dark:border-green-700">
+                                        <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                                        <span className="text-xs font-semibold text-green-700 dark:text-green-400 whitespace-nowrap">
+                                            Closing in {autoCloseCountdown}s
+                                        </span>
+                                    </div>
+                                )}
                             </div>
 
                             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
