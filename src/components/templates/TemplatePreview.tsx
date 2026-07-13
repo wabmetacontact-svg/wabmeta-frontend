@@ -1,12 +1,15 @@
-import React from 'react';
+// src/components/templates/TemplatePreview.tsx - MEDIA PREVIEW FIXED
+
+import React, { useState } from 'react';
 import {
   X,
   CheckCheck,
   Phone,
   ExternalLink,
-  Image,
+  Image as ImageIcon,
   File,
-  Play
+  Play,
+  Download,
 } from 'lucide-react';
 import type { TemplateFormData, TemplateButton } from '../../types/template';
 
@@ -17,21 +20,42 @@ interface TemplatePreviewProps {
   onClose?: () => void;
 }
 
+// ✅ Get best media URL (same logic as TemplateCard)
+const getMediaUrl = (header: any): string | null => {
+  if (!header) return null;
+
+  if (header.cloudinaryUrl && header.cloudinaryUrl.startsWith('http')) {
+    return header.cloudinaryUrl;
+  }
+
+  if (header.mediaUrl && header.mediaUrl.startsWith('http')) {
+    if (!header.mediaUrl.includes('scontent.whatsapp')) {
+      return header.mediaUrl;
+    }
+  }
+
+  if (header.mediaId && typeof header.mediaId === 'string' && header.mediaId.startsWith('http')) {
+    if (!header.mediaId.includes('scontent.whatsapp')) {
+      return header.mediaId;
+    }
+  }
+
+  return null;
+};
+
 const TemplatePreview: React.FC<TemplatePreviewProps> = ({
   template,
   sampleVariables = {},
   isModal = false,
-  onClose
+  onClose,
 }) => {
-
-
   if (isModal) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div
           className="absolute inset-0 bg-black/50 backdrop-blur-sm"
           onClick={onClose}
-        ></div>
+        />
         <div className="relative bg-gray-900 rounded-3xl p-6 animate-fade-in">
           <button
             onClick={onClose}
@@ -54,13 +78,15 @@ interface PreviewContentProps {
 }
 
 const PreviewContent: React.FC<PreviewContentProps> = ({ template, sampleVariables }) => {
+  const [imgError, setImgError] = useState(false);
+  const [videoError, setVideoError] = useState(false);
+
   // Replace variables in text
   const replaceVariables = (text: string): string => {
     let result = text;
     Object.keys(sampleVariables).forEach((key) => {
       result = result.replace(new RegExp(`{{${key}}}`, 'g'), sampleVariables[key] || `{{${key}}}`);
     });
-    // Replace any remaining {{number}} patterns
     result = result.replace(/\{\{(\d+)\}\}/g, (_match, num) => {
       return sampleVariables[num] || `[Variable ${num}]`;
     });
@@ -90,13 +116,15 @@ const PreviewContent: React.FC<PreviewContentProps> = ({ template, sampleVariabl
     );
   };
 
+  const mediaUrl = getMediaUrl(template.header);
+
   return (
     <div className="w-full max-w-sm mx-auto">
       {/* Phone Frame */}
       <div className="bg-[#0b141a] rounded-[2.5rem] p-3 shadow-2xl">
         {/* Phone Notch */}
         <div className="bg-[#0b141a] h-6 flex items-center justify-center mb-1">
-          <div className="w-20 h-4 bg-black rounded-full"></div>
+          <div className="w-20 h-4 bg-black rounded-full" />
         </div>
 
         {/* WhatsApp Header */}
@@ -112,10 +140,10 @@ const PreviewContent: React.FC<PreviewContentProps> = ({ template, sampleVariabl
 
         {/* Chat Background */}
         <div
-          className="min-h-100 p-4 relative"
+          className="min-h-[500px] p-4 relative"
           style={{
             backgroundColor: '#0b141a',
-            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
           }}
         >
           {/* Message Bubble */}
@@ -124,73 +152,93 @@ const PreviewContent: React.FC<PreviewContentProps> = ({ template, sampleVariabl
               {/* Header Media/Text */}
               {template.header.type !== 'none' && (
                 <div className="relative">
+                  {/* ═══════════════════════════════════════════════════════ */}
+                  {/* ✅ IMAGE HEADER - Fixed                                 */}
+                  {/* ═══════════════════════════════════════════════════════ */}
                   {template.header.type === 'image' && (
-                    <div className="aspect-video bg-gray-700 flex items-center justify-center">
-                      {/* ✅ Try multiple sources for image */}
-                      {(template.header.mediaUrl || template.header.cloudinaryUrl) ? (
+                    <div className="aspect-video bg-gray-800 relative overflow-hidden">
+                      {mediaUrl && !imgError ? (
                         <img
-                          src={template.header.mediaUrl || template.header.cloudinaryUrl}
+                          src={mediaUrl}
                           alt="Header"
                           className="w-full h-full object-cover"
-                          onError={(e) => {
-                            // ✅ Fallback if image fails
-                            const target = e.target as HTMLImageElement;
-                            target.style.display = 'none';
-                            target.parentElement!.innerHTML = `
-                              <div class="text-center text-gray-400 p-4">
-                                <p class="text-sm">📷 Image Header</p>
-                                <p class="text-xs mt-1">Image will show in WhatsApp</p>
-                              </div>
-                            `;
-                          }}
+                          onError={() => setImgError(true)}
                         />
                       ) : (
-                        <div className="text-center text-gray-400">
-                          <Image className="w-12 h-12 mx-auto mb-2" />
-                          <p className="text-sm">Image Header</p>
+                        <div className="w-full h-full flex flex-col items-center justify-center text-gray-400 gap-2">
+                          <ImageIcon className="w-12 h-12" />
+                          <p className="text-xs font-semibold uppercase tracking-wider">
+                            Image Header
+                          </p>
+                          <p className="text-[10px] text-gray-500">
+                            Will show in actual message
+                          </p>
                         </div>
                       )}
                     </div>
                   )}
 
+                  {/* ═══════════════════════════════════════════════════════ */}
+                  {/* ✅ VIDEO HEADER - Fixed (no dark overlay)              */}
+                  {/* ═══════════════════════════════════════════════════════ */}
                   {template.header.type === 'video' && (
-                    <div className="aspect-video bg-gray-700 flex items-center justify-center relative">
-                      {(template.header.mediaUrl || template.header.cloudinaryUrl) ? (
-                        <video
-                          src={template.header.mediaUrl || template.header.cloudinaryUrl}
-                          className="w-full h-full object-cover"
-                          controls={false}
-                          autoPlay
-                          muted
-                          loop
-                          onError={(e) => {
-                            const target = e.target as HTMLVideoElement;
-                            target.style.display = 'none';
-                          }}
-                        />
+                    <div className="aspect-video bg-black relative overflow-hidden">
+                      {mediaUrl && !videoError ? (
+                        <>
+                          <video
+                            src={mediaUrl}
+                            className="w-full h-full object-cover"
+                            controls
+                            preload="metadata"
+                            playsInline
+                            onError={() => setVideoError(true)}
+                          />
+                        </>
                       ) : (
-                        <div className="text-center text-gray-400">
-                          <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto">
+                        <div className="w-full h-full flex flex-col items-center justify-center text-gray-400 gap-2">
+                          <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center backdrop-blur-sm">
                             <Play className="w-8 h-8 text-white ml-1" fill="white" />
                           </div>
-                          <p className="text-sm mt-2">Video Header</p>
+                          <p className="text-xs font-semibold uppercase tracking-wider mt-2">
+                            Video Header
+                          </p>
+                          <p className="text-[10px] text-gray-500">
+                            Will play in actual message
+                          </p>
                         </div>
                       )}
                     </div>
                   )}
+
+                  {/* ═══════════════════════════════════════════════════════ */}
+                  {/* ✅ DOCUMENT HEADER - Improved                          */}
+                  {/* ═══════════════════════════════════════════════════════ */}
                   {template.header.type === 'document' && (
-                    <div className="p-4 bg-[#1f2c34] flex items-center space-x-3">
-                      <div className="w-12 h-14 bg-gray-600 rounded flex items-center justify-center">
-                        <File className="w-6 h-6 text-gray-400" />
+                    <div className="p-3 bg-[#1f2c34] flex items-center space-x-3">
+                      <div className="w-12 h-14 bg-red-500/20 border border-red-500/40 rounded flex flex-col items-center justify-center flex-shrink-0">
+                        <File className="w-5 h-5 text-red-400" />
+                        <span className="text-[8px] font-black text-red-400 mt-0.5">PDF</span>
                       </div>
-                      <div className="flex-1">
-                        <p className="text-white text-sm font-medium">
-                          {template.header.fileName || 'Document.pdf'}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-white text-sm font-medium truncate">
+                          {(template.header as any).fileName || 'Document.pdf'}
                         </p>
                         <p className="text-gray-400 text-xs">PDF Document</p>
                       </div>
+                      {mediaUrl && (
+                        <a
+                          href={mediaUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="p-2 bg-white/10 hover:bg-white/20 rounded-full transition-colors"
+                        >
+                          <Download className="w-4 h-4 text-white" />
+                        </a>
+                      )}
                     </div>
                   )}
+
+                  {/* Text Header */}
                   {template.header.type === 'text' && template.header.text && (
                     <div className="px-3 pt-3">
                       <p className="text-white font-semibold">

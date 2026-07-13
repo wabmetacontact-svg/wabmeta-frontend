@@ -1,3 +1,5 @@
+// src/components/templates/TemplateCard.tsx - MEDIA PREVIEW FIXED
+
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
@@ -11,10 +13,13 @@ import {
   Clock,
   XCircle,
   FileText,
-  Image,
-  Video,
+  Image as ImageIcon,
+  Video as VideoIcon,
   File,
-  MessageSquare
+  MessageSquare,
+  Play,
+  Download,
+  RefreshCw,
 } from 'lucide-react';
 import type { Template } from '../../types/template';
 
@@ -55,11 +60,57 @@ const getCategoryConfig = (category: Template['category']) => {
 
 const getHeaderIcon = (type: Template['header']['type']) => {
   switch (type) {
-    case 'image': return Image;
-    case 'video': return Video;
+    case 'image': return ImageIcon;
+    case 'video': return VideoIcon;
     case 'document': return File;
     default: return FileText;
   }
+};
+
+// ✅ Get best available media URL
+const getMediaUrl = (template: Template): string | null => {
+  const header = template.header;
+  if (!header) return null;
+
+  // Try cloudinaryUrl first (permanent)
+  if (header.cloudinaryUrl && header.cloudinaryUrl.startsWith('http')) {
+    return header.cloudinaryUrl;
+  }
+
+  // Try mediaUrl (could be Cloudinary or blob)
+  if (header.mediaUrl && header.mediaUrl.startsWith('http')) {
+    // Skip scontent URLs (expired Meta URLs)
+    if (!header.mediaUrl.includes('scontent.whatsapp')) {
+      return header.mediaUrl;
+    }
+  }
+
+  // Try mediaId if it's a URL
+  if (header.mediaId && typeof header.mediaId === 'string' && header.mediaId.startsWith('http')) {
+    if (!header.mediaId.includes('scontent.whatsapp')) {
+      return header.mediaId;
+    }
+  }
+
+  return null;
+};
+
+// ✅ Get document filename
+const getDocumentName = (template: Template): string => {
+  const header = template.header;
+  if (header?.fileName) return header.fileName;
+  if (header?.mediaUrl) {
+    const parts = header.mediaUrl.split('/');
+    const last = parts[parts.length - 1]?.split('?')[0];
+    if (last && last.includes('.')) return last;
+  }
+  return template.name + '.pdf';
+};
+
+// ✅ Get document extension
+const getDocExt = (filename: string): string => {
+  const parts = filename.split('.');
+  return parts.length > 1 ? parts[parts.length - 1].toLowerCase() : 'file';
 };
 
 const isMediaExpired = (template: Template): boolean => {
@@ -81,20 +132,11 @@ const isMediaExpired = (template: Template): boolean => {
   if (metaNumericId && /^\d+$/.test(metaNumericId)) return false;
   if (mediaId && /^\d+$/.test(mediaId)) return false;
 
-  if (
-    cloudinaryUrl &&
-    cloudinaryUrl.startsWith('http') &&
-    !cloudinaryUrl.includes('scontent.whatsapp')
-  ) {
+  if (cloudinaryUrl && cloudinaryUrl.startsWith('http') && !cloudinaryUrl.includes('scontent.whatsapp')) {
     return false;
   }
 
-  if (
-    mediaUrl &&
-    mediaUrl.startsWith('http') &&
-    !mediaUrl.includes('scontent.whatsapp') &&
-    !mediaUrl.startsWith('blob:')
-  ) {
+  if (mediaUrl && mediaUrl.startsWith('http') && !mediaUrl.includes('scontent.whatsapp') && !mediaUrl.startsWith('blob:')) {
     return false;
   }
 
@@ -109,6 +151,170 @@ const isMediaExpired = (template: Template): boolean => {
   return false;
 };
 
+// ═══════════════════════════════════════════════════════════════════
+// ✅ NEW: Beautiful Media Preview Component
+// ═══════════════════════════════════════════════════════════════════
+interface MediaPreviewProps {
+  template: Template;
+}
+
+const MediaPreview: React.FC<MediaPreviewProps> = ({ template }) => {
+  const [imgError, setImgError] = useState(false);
+  const [videoError, setVideoError] = useState(false);
+  const [imgLoaded, setImgLoaded] = useState(false);
+
+  const mediaUrl = getMediaUrl(template);
+  const headerType = template.header?.type;
+
+  // ─── IMAGE Preview ──────────────────────────────────────────────
+  if (headerType === 'image') {
+    if (!mediaUrl || imgError) {
+      return (
+        <div className="mb-3 rounded-lg overflow-hidden h-40 bg-gradient-to-br from-emerald-50 to-emerald-100 border border-emerald-200 flex flex-col items-center justify-center gap-2 relative">
+          <ImageIcon className="w-10 h-10 text-emerald-400" />
+          <p className="text-xs font-semibold text-emerald-700 uppercase tracking-wider">Image Header</p>
+          <p className="text-[10px] text-emerald-600">Preview unavailable</p>
+        </div>
+      );
+    }
+
+    return (
+      <div className="mb-3 rounded-lg overflow-hidden h-40 bg-gray-100 border border-gray-200 relative group/media">
+        {!imgLoaded && (
+          <div className="absolute inset-0 flex items-center justify-center bg-gray-50">
+            <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+          </div>
+        )}
+        <img
+          src={mediaUrl}
+          alt={template.name}
+          className={`w-full h-full object-cover transition-opacity duration-300 ${imgLoaded ? 'opacity-100' : 'opacity-0'}`}
+          onLoad={() => setImgLoaded(true)}
+          onError={() => {
+            setImgError(true);
+            setImgLoaded(true);
+          }}
+          loading="lazy"
+        />
+        {/* Small badge overlay - bottom-left */}
+        <div className="absolute bottom-2 left-2 px-2 py-1 bg-black/60 backdrop-blur-sm rounded-md flex items-center gap-1">
+          <ImageIcon className="w-3 h-3 text-white" />
+          <span className="text-[10px] font-semibold text-white uppercase">Image</span>
+        </div>
+      </div>
+    );
+  }
+
+  // ─── VIDEO Preview ──────────────────────────────────────────────
+  if (headerType === 'video') {
+    if (!mediaUrl || videoError) {
+      return (
+        <div className="mb-3 rounded-lg overflow-hidden h-40 bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-200 flex flex-col items-center justify-center gap-2 relative">
+          <div className="w-14 h-14 bg-purple-500/20 rounded-full flex items-center justify-center backdrop-blur-sm">
+            <Play className="w-6 h-6 text-purple-600 ml-1" fill="currentColor" />
+          </div>
+          <p className="text-xs font-semibold text-purple-700 uppercase tracking-wider">Video Header</p>
+          <p className="text-[10px] text-purple-600">Preview unavailable</p>
+        </div>
+      );
+    }
+
+    return (
+      <div className="mb-3 rounded-lg overflow-hidden h-40 bg-black relative group/media cursor-pointer">
+        {/* Video Element - Shows first frame */}
+        <video
+          src={mediaUrl}
+          className="w-full h-full object-cover"
+          preload="metadata"
+          muted
+          playsInline
+          onError={() => setVideoError(true)}
+          onLoadedMetadata={(e) => {
+            // Seek to 1 second to get a better thumbnail
+            const vid = e.currentTarget;
+            if (vid.duration > 1) {
+              vid.currentTime = 1;
+            }
+          }}
+        />
+
+        {/* ✅ Play Button Overlay - Small centered, non-blocking */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none group-hover/media:bg-black/20 transition-colors">
+          <div className="w-14 h-14 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg group-hover/media:scale-110 transition-transform">
+            <Play className="w-6 h-6 text-gray-900 ml-1" fill="currentColor" />
+          </div>
+        </div>
+
+        {/* Video badge - bottom-left */}
+        <div className="absolute bottom-2 left-2 px-2 py-1 bg-black/60 backdrop-blur-sm rounded-md flex items-center gap-1">
+          <VideoIcon className="w-3 h-3 text-white" />
+          <span className="text-[10px] font-semibold text-white uppercase">Video</span>
+        </div>
+      </div>
+    );
+  }
+
+  // ─── DOCUMENT Preview ───────────────────────────────────────────
+  if (headerType === 'document') {
+    const fileName = getDocumentName(template);
+    const ext = getDocExt(fileName);
+
+    // Color mapping by extension
+    const extColors: Record<string, { bg: string; icon: string; label: string }> = {
+      pdf: { bg: 'from-red-50 to-red-100 border-red-200', icon: 'text-red-600', label: 'PDF' },
+      doc: { bg: 'from-blue-50 to-blue-100 border-blue-200', icon: 'text-blue-600', label: 'DOC' },
+      docx: { bg: 'from-blue-50 to-blue-100 border-blue-200', icon: 'text-blue-600', label: 'DOCX' },
+      xls: { bg: 'from-green-50 to-green-100 border-green-200', icon: 'text-green-600', label: 'XLS' },
+      xlsx: { bg: 'from-green-50 to-green-100 border-green-200', icon: 'text-green-600', label: 'XLSX' },
+      ppt: { bg: 'from-orange-50 to-orange-100 border-orange-200', icon: 'text-orange-600', label: 'PPT' },
+      pptx: { bg: 'from-orange-50 to-orange-100 border-orange-200', icon: 'text-orange-600', label: 'PPTX' },
+      txt: { bg: 'from-gray-50 to-gray-100 border-gray-200', icon: 'text-gray-600', label: 'TXT' },
+    };
+
+    const style = extColors[ext] || extColors.pdf;
+
+    return (
+      <div className={`mb-3 rounded-lg overflow-hidden bg-gradient-to-br ${style.bg} border p-4`}>
+        <div className="flex items-center gap-3">
+          {/* Document Icon Card */}
+          <div className="w-14 h-16 bg-white rounded-lg border border-gray-200 shadow-sm flex flex-col items-center justify-center flex-shrink-0">
+            <File className={`w-6 h-6 ${style.icon}`} />
+            <span className={`text-[9px] font-black uppercase mt-1 ${style.icon}`}>
+              {style.label}
+            </span>
+          </div>
+
+          {/* Info */}
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-gray-900 truncate" title={fileName}>
+              {fileName}
+            </p>
+            <p className="text-xs text-gray-600 mt-0.5 uppercase tracking-wider">
+              {style.label} Document
+            </p>
+            {mediaUrl && (
+              <a
+                href={mediaUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 mt-2 text-xs font-medium text-blue-600 hover:text-blue-700"
+              >
+                <Download className="w-3 h-3" />
+                Download
+              </a>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return null;
+};
+
+// ═══════════════════════════════════════════════════════════════════
+// Main Card Component
+// ═══════════════════════════════════════════════════════════════════
 const TemplateCard: React.FC<TemplateCardProps> = ({
   template,
   onDelete,
@@ -125,6 +331,8 @@ const TemplateCard: React.FC<TemplateCardProps> = ({
     if (text.length <= maxLength) return text;
     return text.substring(0, maxLength) + '...';
   };
+
+  const hasMediaHeader = ['image', 'video', 'document'].includes(template.header?.type || '');
 
   return (
     <div className="relative overflow-hidden rounded-2xl bg-white border border-gray-200 p-5 hover:border-emerald-400 hover:shadow-md transition-all duration-200 group">
@@ -228,41 +436,24 @@ const TemplateCard: React.FC<TemplateCardProps> = ({
         )}
       </div>
 
-      {/* Body Preview */}
+      {/* ═══════════════════════════════════════════════════════════════ */}
+      {/* ✅ MEDIA + BODY Preview (Fixed with proper rendering)          */}
+      {/* ═══════════════════════════════════════════════════════════════ */}
       <div className="bg-gray-50 rounded-xl p-4 mb-4 border border-gray-100">
-        {template.header.type === 'image' && (template.header.cloudinaryUrl || template.header.mediaUrl) && (
-          <div className="mb-3 rounded-lg overflow-hidden h-32 bg-gray-100 flex items-center justify-center">
-            <img 
-              src={template.header.cloudinaryUrl || template.header.mediaUrl} 
-              alt="Preview"
-              className="w-full h-full object-cover"
-              onError={(e) => {
-                const target = e.target as HTMLImageElement;
-                target.style.display = 'none';
-              }}
-            />
-          </div>
-        )}
-        
-        {template.header.type === 'video' && (template.header.cloudinaryUrl || template.header.mediaUrl) && (
-          <div className="mb-3 rounded-lg overflow-hidden h-32 bg-gray-100 flex items-center justify-center relative">
-            <video 
-              src={template.header.cloudinaryUrl || template.header.mediaUrl}
-              className="w-full h-full object-cover"
-              muted
-            />
-            <div className="absolute inset-0 flex items-center justify-center bg-black/40">
-              <Video className="w-8 h-8 text-white opacity-70" />
-            </div>
-          </div>
-        )}
+        {/* Media Preview - Only for media headers */}
+        {hasMediaHeader && <MediaPreview template={template} />}
 
+        {/* Text Header */}
         {template.header.type === 'text' && template.header.text && (
           <p className="font-semibold text-gray-900 mb-2">{template.header.text}</p>
         )}
+
+        {/* Body */}
         <p className="text-gray-700 text-sm leading-relaxed">
           {truncateBody(template.body)}
         </p>
+
+        {/* Footer */}
         {template.footer && (
           <p className="text-gray-500 text-xs mt-2">{template.footer}</p>
         )}
@@ -298,12 +489,13 @@ const TemplateCard: React.FC<TemplateCardProps> = ({
       {/* Expired Media Warning */}
       {isMediaExpired(template) && (
         <div className="mt-4 p-3 bg-orange-50 border border-orange-200 rounded-xl flex items-center justify-between">
-          <span className="text-sm text-orange-700 font-medium">
-            Media expired - re-upload required to use in campaigns
+          <span className="text-sm text-orange-700 font-medium flex items-center gap-2">
+            <RefreshCw className="w-4 h-4" />
+            Media expired - re-upload required
           </span>
           <Link
             to={`/dashboard/templates/edit/${template.id}`}
-            className="text-xs text-blue-600 font-bold hover:underline"
+            className="text-xs text-blue-600 font-bold hover:underline whitespace-nowrap"
           >
             Fix Now →
           </Link>
