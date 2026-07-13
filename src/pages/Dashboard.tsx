@@ -1,5 +1,6 @@
-// src/pages/Dashboard.tsx
-import React, { useState, useEffect } from 'react';
+// src/pages/Dashboard.tsx - OPTIMIZED WITH PROGRESSIVE LOADING
+
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Users,
   MessageSquare,
@@ -25,14 +26,13 @@ import {
   Inbox,
   Phone,
   Instagram,
-  Target
+  Target,
 } from 'lucide-react';
 import api, { dashboard } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useSocket } from '../context/SocketContext';
 import toast from 'react-hot-toast';
 import { Link, useNavigate } from 'react-router-dom';
-import PageSkeleton from '../components/common/PageSkeleton';
 import { FaWhatsapp } from "react-icons/fa";
 
 // ============================================
@@ -68,56 +68,6 @@ const formatRelativeTime = (dateStr: string) => {
 };
 
 // ============================================
-// SPARKLINE COMPONENT
-// ============================================
-
-const Sparkline: React.FC<{ data: number[]; color: string }> = ({ data, color }) => {
-  if (!data || data.length < 2) {
-    return (
-      <div className="h-11 flex items-center justify-center">
-        <div className="w-full h-px bg-gray-100" />
-      </div>
-    );
-  }
-
-  const width = 140;
-  const height = 45;
-  const max = Math.max(...data);
-  const min = Math.min(...data);
-  const range = max - min || 1;
-
-  const points = data.map((val, idx) => {
-    const x = (idx / (data.length - 1)) * width;
-    const y = height - ((val - min) / range) * (height - 8) - 4;
-    return { x, y };
-  });
-
-  let path = `M ${points[0].x} ${points[0].y}`;
-  for (let i = 0; i < points.length - 1; i++) {
-    const p0 = points[i];
-    const p1 = points[i + 1];
-    const cpX = p0.x + (p1.x - p0.x) / 2;
-    path += ` C ${cpX} ${p0.y}, ${cpX} ${p1.y}, ${p1.x} ${p1.y}`;
-  }
-
-  const fillPath = `${path} L ${width} ${height} L 0 ${height} Z`;
-  const gradId = `sparkline-${color.replace('#', '')}`;
-
-  return (
-    <svg className="w-full h-11 overflow-visible" viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="none">
-      <defs>
-        <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={color} stopOpacity="0.2" />
-          <stop offset="100%" stopColor={color} stopOpacity="0" />
-        </linearGradient>
-      </defs>
-      <path d={fillPath} fill={`url(#${gradId})`} />
-      <path d={path} fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-};
-
-// ============================================
 // MAIN DASHBOARD
 // ============================================
 
@@ -126,93 +76,120 @@ const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const { socket } = useSocket();
 
-  const [loading, setLoading] = useState(true);
+  // ✅ SEPARATE loading states for progressive loading
+  const [loadingStats, setLoadingStats] = useState(true);
+  const [loadingWidgets, setLoadingWidgets] = useState(true);
+  const [loadingActivity, setLoadingActivity] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [dateRange, setDateRange] = useState<7 | 14 | 30>(7);
 
   const [stats, setStats] = useState<any>(null);
   const [widgets, setWidgets] = useState<any>(null);
   const [activity, setActivity] = useState<any[]>([]);
-  const [unifiedStats, setUnifiedStats] = useState<any>(null);
+
+  // ✅ Debounce socket-triggered refetches
+  const refetchTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Real-time greeting
   const [greeting, setGreeting] = useState(getGreeting());
   useEffect(() => {
-    const timer = setInterval(() => {
-      setGreeting(getGreeting());
-    }, 60000);
+    const timer = setInterval(() => setGreeting(getGreeting()), 60000);
     return () => clearInterval(timer);
   }, []);
 
-  // ✅ FIXED: Properly handle axios response structure
-  const fetchDashboardData = async (showSkeleton = true) => {
-    if (showSkeleton) setLoading(true);
+  // ✅ PROGRESSIVE LOADING: Fetch each API independently, show as it arrives
+  const fetchStats = async () => {
     try {
-      const [statsRes, widgetsRes, activityRes] = await Promise.all([
-        dashboard.getStats(),
-        dashboard.getWidgets(dateRange),
-        dashboard.getActivity(10),
-      ]);
-
-      // ✅ FIXED: axios wraps response — access .data.data
-      if (statsRes?.data?.success && statsRes?.data?.data) {
-        setStats(statsRes.data.data);
-        console.log('✅ Stats loaded:', statsRes.data.data);
-      } else {
-        console.warn('⚠️ Stats response invalid:', statsRes);
+      const res = await dashboard.getStats();
+      if (res?.data?.success && res?.data?.data) {
+        setStats(res.data.data);
       }
-
-      if (widgetsRes?.data?.success && widgetsRes?.data?.data) {
-        setWidgets(widgetsRes.data.data);
-        console.log('✅ Widgets loaded:', widgetsRes.data.data);
-      }
-
-      if (activityRes?.data?.success && Array.isArray(activityRes?.data?.data)) {
-        setActivity(activityRes.data.data);
-      }
-
-      // Fallback unified stats since api method is missing for it right now, we can load it from our local backend endpoint
-      try {
-        const res = await api.get('/analytics/unified');
-        if (res.data?.success) setUnifiedStats(res.data.data);
-      } catch (err) {
-        console.error("Unified stats error:", err);
-      }
-    } catch (error) {
-      console.error('❌ Dashboard fetch error:', error);
-      toast.error('Failed to load dashboard data');
+    } catch (err) {
+      console.error('Stats fetch error:', err);
     } finally {
-      if (showSkeleton) setLoading(false);
+      setLoadingStats(false);
     }
   };
 
+  const fetchWidgets = async () => {
+    try {
+      const res = await dashboard.getWidgets(dateRange);
+      if (res?.data?.success && res?.data?.data) {
+        setWidgets(res.data.data);
+      }
+    } catch (err) {
+      console.error('Widgets fetch error:', err);
+    } finally {
+      setLoadingWidgets(false);
+    }
+  };
+
+  const fetchActivity = async () => {
+    try {
+      const res = await dashboard.getActivity(10);
+      if (res?.data?.success && Array.isArray(res?.data?.data)) {
+        setActivity(res.data.data);
+      }
+    } catch (err) {
+      console.error('Activity fetch error:', err);
+    } finally {
+      setLoadingActivity(false);
+    }
+  };
+
+  // ✅ Fetch all in parallel but track separately
+  const fetchAll = () => {
+    fetchStats();
+    fetchWidgets();
+    fetchActivity();
+  };
+
+  // Initial load
   useEffect(() => {
-    fetchDashboardData(true);
+    fetchAll();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Refetch widgets when date range changes
+  useEffect(() => {
+    setLoadingWidgets(true);
+    fetchWidgets();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dateRange]);
 
+  // ✅ DEBOUNCED socket updates - don't refetch on every message
   useEffect(() => {
     if (!socket) return;
-    const handleUpdate = () => fetchDashboardData(false);
 
-    socket.on('message:new', handleUpdate);
-    socket.on('message:status', handleUpdate);
-    socket.on('campaign:update', handleUpdate);
-    socket.on('campaign:progress', handleUpdate);
-    socket.on('campaign:completed', handleUpdate);
+    const debouncedRefetch = () => {
+      if (refetchTimerRef.current) clearTimeout(refetchTimerRef.current);
+      refetchTimerRef.current = setTimeout(() => {
+        fetchStats();
+        fetchWidgets();
+      }, 3000); // Wait 3 sec, then refetch (batches multiple events)
+    };
+
+    socket.on('message:new', debouncedRefetch);
+    socket.on('message:status', debouncedRefetch);
+    socket.on('campaign:update', debouncedRefetch);
+    socket.on('campaign:progress', debouncedRefetch);
+    socket.on('campaign:completed', debouncedRefetch);
 
     return () => {
-      socket.off('message:new', handleUpdate);
-      socket.off('message:status', handleUpdate);
-      socket.off('campaign:update', handleUpdate);
-      socket.off('campaign:progress', handleUpdate);
-      socket.off('campaign:completed', handleUpdate);
+      socket.off('message:new', debouncedRefetch);
+      socket.off('message:status', debouncedRefetch);
+      socket.off('campaign:update', debouncedRefetch);
+      socket.off('campaign:progress', debouncedRefetch);
+      socket.off('campaign:completed', debouncedRefetch);
+      if (refetchTimerRef.current) clearTimeout(refetchTimerRef.current);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [socket]);
 
   const handleRefresh = async () => {
     setRefreshing(true);
     try {
-      await fetchDashboardData(false);
+      await Promise.all([fetchStats(), fetchWidgets(), fetchActivity()]);
       toast.success('Dashboard refreshed');
     } catch {
       toast.error('Refresh failed');
@@ -221,48 +198,18 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  if (loading) return <PageSkeleton />;
-
-  // ✅ Pull REAL data from API response (with safe defaults of 0)
+  // ✅ Pull data with safe defaults
   const contactsTotal = stats?.contacts?.total ?? 0;
-  const contactsGrowth = stats?.contacts?.growth ?? 0;
-  const contactsThisMonth = stats?.contacts?.thisMonth ?? 0;
-
   const messagesSent = stats?.messages?.sent ?? 0;
-  const messagesGrowth = stats?.messages?.growth ?? 0;
-  const messagesToday = stats?.messages?.today ?? 0;
-
   const deliveryRate = stats?.delivery?.deliveryRate ?? 0;
-  const readRate = stats?.delivery?.readRate ?? 0;
   const totalDelivered = stats?.delivery?.delivered ?? 0;
   const totalFailed = stats?.delivery?.failed ?? 0;
-
   const activeCampaigns = stats?.campaigns?.active ?? 0;
   const completedCampaigns = stats?.campaigns?.completed ?? 0;
-  const campaignsThisMonth = stats?.campaigns?.thisMonth ?? 0;
-
   const conversationsUnread = stats?.conversations?.unread ?? 0;
   const conversationsActive = stats?.conversations?.active ?? 0;
   const templatesApproved = stats?.templates?.approved ?? 0;
   const whatsappConnected = stats?.whatsapp?.connected ?? 0;
-
-  // Sparkline data from widgets
-  const getContactsHistory = (): number[] => {
-    if (!widgets?.contactsGrowth?.length) return [];
-    let current = Math.max(0, contactsTotal - widgets.contactsGrowth.reduce((a: number, b: any) => a + (b.count || 0), 0));
-    return widgets.contactsGrowth.map((d: any) => { current += (d.count || 0); return current; });
-  };
-
-  const getMessagesHistory = (): number[] => {
-    if (!widgets?.messagesOverview?.length) return [];
-    let current = Math.max(0, messagesSent - widgets.messagesOverview.reduce((a: number, b: any) => a + (b.sent || 0), 0));
-    return widgets.messagesOverview.map((d: any) => { current += (d.sent || 0); return current; });
-  };
-
-  const getDeliveryHistory = (): number[] => {
-    if (!widgets?.messagesOverview?.length) return [];
-    return widgets.messagesOverview.map((d: any) => d.sent > 0 ? Math.round((d.delivered / d.sent) * 100) : 0);
-  };
 
   const chartData = widgets?.messagesOverview?.map((item: any) => ({
     label: new Date(item.date).toLocaleDateString('en-US', { weekday: 'short' }),
@@ -280,7 +227,7 @@ const Dashboard: React.FC = () => {
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-10">
 
-      {/* ✅ HEADER */}
+      {/* ✅ HEADER - Always visible */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 mb-2">
@@ -293,10 +240,11 @@ const Dashboard: React.FC = () => {
             Welcome back, {userName} 👋
           </h1>
           <p className="mt-2 text-sm text-gray-600">
-            {hasAnyData
-              ? `Here's what's happening with your WhatsApp business today`
-              : `Let's get your WhatsApp business set up. It takes ~6 minutes.`
-            }
+            {loadingStats
+              ? 'Loading your dashboard...'
+              : hasAnyData
+                ? `Here's what's happening with your WhatsApp business today`
+                : `Let's get your WhatsApp business set up. It takes ~6 minutes.`}
           </p>
         </div>
 
@@ -321,36 +269,25 @@ const Dashboard: React.FC = () => {
           <button
             onClick={handleRefresh}
             disabled={refreshing}
-            className="p-2.5 rounded-xl bg-white border border-gray-200 shadow-sm
-              hover:bg-gray-50 hover:border-gray-300
-              text-gray-500 hover:text-gray-900 transition-all duration-300 disabled:opacity-50"
+            className="p-2.5 rounded-xl bg-white border border-gray-200 shadow-sm hover:bg-gray-50 hover:border-gray-300 text-gray-500 hover:text-gray-900 transition-all duration-300 disabled:opacity-50"
           >
             <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
           </button>
         </div>
       </div>
 
-      {/* ✅ NEW USER ONBOARDING CARD (only if no data) */}
-      {!hasAnyData && (
-        <div className="relative rounded-2xl overflow-hidden
-          bg-white shadow-[0_1px_3px_0_rgba(0,0,0,0.05),0_1px_2px_0_rgba(0,0,0,0.03)]
-          border border-gray-200
-          p-6 lg:p-8">
-
+      {/* ✅ NEW USER ONBOARDING CARD */}
+      {!loadingStats && !hasAnyData && (
+        <div className="relative rounded-2xl overflow-hidden bg-white shadow-[0_1px_3px_0_rgba(0,0,0,0.05),0_1px_2px_0_rgba(0,0,0,0.03)] border border-gray-200 p-6 lg:p-8">
           <div className="absolute inset-0 pointer-events-none"
-            style={{
-              background: 'radial-gradient(ellipse 60% 50% at 20% 50%, rgba(16, 185, 129, 0.06) 0%, transparent 60%)',
-            }}
+            style={{ background: 'radial-gradient(ellipse 60% 50% at 20% 50%, rgba(16, 185, 129, 0.06) 0%, transparent 60%)' }}
           />
 
           <div className="relative grid grid-cols-1 lg:grid-cols-3 gap-6 items-center">
             <div className="lg:col-span-2">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full
-                bg-green-50 border border-green-200 mb-3 select-none">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-50 border border-green-200 mb-3 select-none">
                 <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                <span className="text-xs font-mono uppercase tracking-wider text-green-700">
-                  Quick setup
-                </span>
+                <span className="text-xs font-mono uppercase tracking-wider text-green-700">Quick setup</span>
               </div>
 
               <h2 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-2">
@@ -363,11 +300,7 @@ const Dashboard: React.FC = () => {
               <div className="flex flex-wrap gap-2">
                 <button
                   onClick={() => navigate('/dashboard/settings?tab=whatsapp')}
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full
-                    bg-gradient-to-r from-green-600 to-emerald-600 text-white text-sm font-semibold
-                    shadow-[0_8px_24px_rgba(16,185,129,0.2)]
-                    hover:shadow-[0_12px_32px_rgba(16,185,129,0.3)]
-                    hover:-translate-y-0.5 transition-all duration-500"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-green-600 to-emerald-600 text-white text-sm font-semibold shadow-[0_8px_24px_rgba(16,185,129,0.2)] hover:shadow-[0_12px_32px_rgba(16,185,129,0.3)] hover:-translate-y-0.5 transition-all duration-500"
                 >
                   <Phone className="w-4 h-4" />
                   Connect WhatsApp
@@ -375,9 +308,7 @@ const Dashboard: React.FC = () => {
                 </button>
                 <button
                   onClick={() => navigate('/dashboard/contacts/import')}
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full
-                    bg-gray-50 border border-gray-200 hover:bg-gray-100
-                    text-gray-700 hover:text-gray-900 text-sm font-medium shadow-sm transition-all duration-300"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-gray-50 border border-gray-200 hover:bg-gray-100 text-gray-700 hover:text-gray-900 text-sm font-medium shadow-sm transition-all duration-300"
                 >
                   <UserPlus className="w-4 h-4" />
                   Import contacts
@@ -394,17 +325,11 @@ const Dashboard: React.FC = () => {
               ].map((item) => (
                 <div key={item.step}
                   className={`flex items-center gap-3 p-2.5 rounded-xl border transition-all
-                    ${item.done
-                      ? 'bg-green-50 border-green-200'
-                      : 'bg-gray-50 border-gray-100'
-                    }
+                    ${item.done ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-100'}
                   `}
                 >
                   <div className={`w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-mono font-bold
-                    ${item.done
-                      ? 'bg-green-100 text-green-700 border border-green-200'
-                      : 'bg-gray-100 text-gray-500 border border-gray-200'
-                    }
+                    ${item.done ? 'bg-green-100 text-green-700 border border-green-200' : 'bg-gray-100 text-gray-500 border border-gray-200'}
                   `}>
                     {item.done ? <CheckCircle className="w-3.5 h-3.5" /> : item.step}
                   </div>
@@ -424,58 +349,64 @@ const Dashboard: React.FC = () => {
         {/* LEFT: 3/4 width */}
         <div className="xl:col-span-3 space-y-6">
 
-          {/* UNIFIED OVERVIEW ROW */}
+          {/* ✅ UNIFIED OVERVIEW ROW - Show skeleton or data */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-            {/* WhatsApp Quick Stat */}
-            <div className="relative overflow-hidden rounded-2xl bg-green-50/40 border border-green-200 p-6 group shadow-sm">
-              <div className="absolute top-0 right-0 p-4 opacity-[0.07] text-green-600 group-hover:scale-110 transition-transform">
-                <FaWhatsapp size={80} />
-              </div>
-              <div className="relative">
-                <p className="text-xs font-mono text-green-700 uppercase tracking-widest mb-1">WhatsApp</p>
-                <h3 className="text-3xl font-bold text-gray-900">{formatNum(unifiedStats?.overview?.waVolume || messagesSent)}</h3>
-                <p className="text-xs text-gray-600 mt-2">Messages sent this month</p>
-                <div className="mt-4 flex items-center gap-2">
-                  <span className="text-[10px] bg-green-100 text-green-800 px-2 py-0.5 rounded-full font-bold">{unifiedStats?.performance?.waDeliveryRate || deliveryRate}% Delivery</span>
+            {loadingStats ? (
+              <>
+                <QuickStatSkeleton />
+                <QuickStatSkeleton />
+                <QuickStatSkeleton />
+              </>
+            ) : (
+              <>
+                <div className="relative overflow-hidden rounded-2xl bg-green-50/40 border border-green-200 p-6 group shadow-sm">
+                  <div className="absolute top-0 right-0 p-4 opacity-[0.07] text-green-600 group-hover:scale-110 transition-transform">
+                    <FaWhatsapp size={80} />
+                  </div>
+                  <div className="relative">
+                    <p className="text-xs font-mono text-green-700 uppercase tracking-widest mb-1">WhatsApp</p>
+                    <h3 className="text-3xl font-bold text-gray-900">{formatNum(messagesSent)}</h3>
+                    <p className="text-xs text-gray-600 mt-2">Messages sent this month</p>
+                    <div className="mt-4 flex items-center gap-2">
+                      <span className="text-[10px] bg-green-100 text-green-800 px-2 py-0.5 rounded-full font-bold">{deliveryRate}% Delivery</span>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
 
-            {/* Instagram Quick Stat */}
-            <div className="relative overflow-hidden rounded-2xl bg-pink-50/40 border border-pink-200 p-6 group shadow-sm">
-              <div className="absolute top-0 right-0 p-4 opacity-[0.07] text-pink-600 group-hover:scale-110 transition-transform">
-                <Instagram size={80} />
-              </div>
-              <div className="relative">
-                <p className="text-xs font-mono text-pink-700 uppercase tracking-widest mb-1">Instagram</p>
-                <h3 className="text-3xl font-bold text-gray-900">{formatNum(unifiedStats?.overview?.igVolume || 0)}</h3>
-                <p className="text-xs text-gray-600 mt-2">Automated interactions</p>
-                <div className="mt-4 flex items-center gap-2">
-                  <span className="text-[10px] bg-pink-100 text-pink-800 px-2 py-0.5 rounded-full font-bold">Live Data</span>
+                <div className="relative overflow-hidden rounded-2xl bg-pink-50/40 border border-pink-200 p-6 group shadow-sm">
+                  <div className="absolute top-0 right-0 p-4 opacity-[0.07] text-pink-600 group-hover:scale-110 transition-transform">
+                    <Instagram size={80} />
+                  </div>
+                  <div className="relative">
+                    <p className="text-xs font-mono text-pink-700 uppercase tracking-widest mb-1">Instagram</p>
+                    <h3 className="text-3xl font-bold text-gray-900">0</h3>
+                    <p className="text-xs text-gray-600 mt-2">Automated interactions</p>
+                    <div className="mt-4 flex items-center gap-2">
+                      <span className="text-[10px] bg-pink-100 text-pink-800 px-2 py-0.5 rounded-full font-bold">Coming soon</span>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
 
-            {/* Combined Efficiency */}
-            <div className="relative overflow-hidden rounded-2xl bg-indigo-50/40 border border-indigo-200 p-6 group shadow-sm">
-              <div className="absolute top-0 right-0 p-4 opacity-[0.07] text-indigo-600 group-hover:scale-110 transition-transform">
-                <Target size={80} />
-              </div>
-              <div className="relative">
-                <p className="text-xs font-mono text-indigo-700 uppercase tracking-widest mb-1">Efficiency</p>
-                <h3 className="text-3xl font-bold text-gray-900">84%</h3>
-                <p className="text-xs text-gray-600 mt-2">AI Response Accuracy</p>
-                <div className="mt-4 flex items-center gap-2">
-                  <Zap size={12} className="text-indigo-600" />
-                  <span className="text-[10px] text-indigo-700 font-bold">Saving hours/week</span>
+                <div className="relative overflow-hidden rounded-2xl bg-indigo-50/40 border border-indigo-200 p-6 group shadow-sm">
+                  <div className="absolute top-0 right-0 p-4 opacity-[0.07] text-indigo-600 group-hover:scale-110 transition-transform">
+                    <Target size={80} />
+                  </div>
+                  <div className="relative">
+                    <p className="text-xs font-mono text-indigo-700 uppercase tracking-widest mb-1">Efficiency</p>
+                    <h3 className="text-3xl font-bold text-gray-900">84%</h3>
+                    <p className="text-xs text-gray-600 mt-2">AI Response Accuracy</p>
+                    <div className="mt-4 flex items-center gap-2">
+                      <Zap size={12} className="text-indigo-600" />
+                      <span className="text-[10px] text-indigo-700 font-bold">Saving hours/week</span>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
+              </>
+            )}
           </div>
 
           {/* CHARTS ROW */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-
             {/* Messages Overview Chart */}
             <GlassCard className="lg:col-span-8">
               <div className="flex items-center justify-between mb-5">
@@ -500,9 +431,10 @@ const Dashboard: React.FC = () => {
                 </div>
               </div>
 
-              {hasChartData ? (
+              {loadingWidgets ? (
+                <ChartSkeleton />
+              ) : hasChartData ? (
                 <div className="h-80 w-full mt-6">
-                  {/* Channel Comparison Chart */}
                   <MessagesChart data={chartData} />
                 </div>
               ) : (
@@ -525,7 +457,9 @@ const Dashboard: React.FC = () => {
                 <h3 className="text-base font-semibold text-gray-900">Delivery</h3>
               </div>
 
-              {messagesSent > 0 ? (
+              {loadingStats ? (
+                <DonutSkeleton />
+              ) : messagesSent > 0 ? (
                 <DonutChart
                   delivered={totalDelivered}
                   read={stats?.delivery?.read ?? 0}
@@ -534,8 +468,7 @@ const Dashboard: React.FC = () => {
                 />
               ) : (
                 <div className="flex flex-col items-center justify-center py-10 text-center">
-                  <div className="w-14 h-14 rounded-2xl bg-gray-50 border border-gray-200
-                    flex items-center justify-center mb-3">
+                  <div className="w-14 h-14 rounded-2xl bg-gray-50 border border-gray-200 flex items-center justify-center mb-3">
                     <BarChart3 className="w-6 h-6 text-gray-500" />
                   </div>
                   <p className="text-sm text-gray-600">No delivery data</p>
@@ -549,14 +482,18 @@ const Dashboard: React.FC = () => {
                     <CheckCircle className="w-3 h-3 text-green-600" />
                     <span className="text-[10px] text-gray-500 uppercase tracking-wider">Delivered</span>
                   </div>
-                  <p className="text-sm font-bold text-green-700 mt-1">{formatNum(totalDelivered)}</p>
+                  <p className="text-sm font-bold text-green-700 mt-1">
+                    {loadingStats ? '...' : formatNum(totalDelivered)}
+                  </p>
                 </div>
                 <div className="p-2.5 rounded-xl bg-red-50 border border-red-100">
                   <div className="flex items-center gap-1.5">
                     <XCircle className="w-3 h-3 text-red-600" />
                     <span className="text-[10px] text-gray-500 uppercase tracking-wider">Failed</span>
                   </div>
-                  <p className="text-sm font-bold text-red-700 mt-1">{formatNum(totalFailed)}</p>
+                  <p className="text-sm font-bold text-red-700 mt-1">
+                    {loadingStats ? '...' : formatNum(totalFailed)}
+                  </p>
                 </div>
               </div>
             </GlassCard>
@@ -566,15 +503,15 @@ const Dashboard: React.FC = () => {
           <GlassCard>
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-base font-semibold text-gray-900">Recent Campaigns</h3>
-              <Link to="/dashboard/campaigns"
-                className="text-xs text-green-600 hover:text-green-700 flex items-center gap-1 group"
-              >
+              <Link to="/dashboard/campaigns" className="text-xs text-green-600 hover:text-green-700 flex items-center gap-1 group">
                 View all
                 <ArrowUpRight className="w-3 h-3 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
               </Link>
             </div>
 
-            {recentCampaigns.length > 0 ? (
+            {loadingWidgets ? (
+              <TableSkeleton />
+            ) : recentCampaigns.length > 0 ? (
               <div className="overflow-x-auto -mx-2">
                 <table className="w-full">
                   <thead>
@@ -589,9 +526,7 @@ const Dashboard: React.FC = () => {
                     {recentCampaigns.map((campaign: any) => (
                       <tr key={campaign.id} className="hover:bg-gray-50 transition-colors">
                         <td className="py-3 px-2">
-                          <Link to={`/dashboard/campaigns/${campaign.id}`}
-                            className="text-sm font-medium text-gray-900 hover:text-green-600 transition-colors"
-                          >
+                          <Link to={`/dashboard/campaigns/${campaign.id}`} className="text-sm font-medium text-gray-900 hover:text-green-600 transition-colors">
                             {campaign.name}
                           </Link>
                         </td>
@@ -611,14 +546,11 @@ const Dashboard: React.FC = () => {
               </div>
             ) : (
               <div className="text-center py-10">
-                <div className="w-14 h-14 rounded-2xl bg-gray-50 border border-gray-200
-                  flex items-center justify-center mx-auto mb-3">
+                <div className="w-14 h-14 rounded-2xl bg-gray-50 border border-gray-200 flex items-center justify-center mx-auto mb-3">
                   <Zap className="w-6 h-6 text-gray-500" />
                 </div>
                 <p className="text-sm text-gray-600">No campaigns yet</p>
-                <Link to="/dashboard/campaigns/create"
-                  className="mt-3 inline-block text-xs text-green-600 hover:text-green-700 font-medium"
-                >
+                <Link to="/dashboard/campaigns/create" className="mt-3 inline-block text-xs text-green-600 hover:text-green-700 font-medium">
                   Create your first campaign →
                 </Link>
               </div>
@@ -632,15 +564,23 @@ const Dashboard: React.FC = () => {
           {/* QUICK STATS */}
           <GlassCard>
             <h3 className="text-sm font-semibold text-gray-900 mb-4">At a glance</h3>
-            <div className="space-y-2">
-              <QuickStatItem label="Unread chats" value={conversationsUnread} icon={Mail} color="#f59e0b" href="/dashboard/inbox" />
-              <QuickStatItem label="Active chats" value={conversationsActive} icon={MessageSquare} color="#3b82f6" href="/dashboard/inbox" />
-              <QuickStatItem label="Templates" value={templatesApproved} icon={FileText} color="#10b981" href="/dashboard/templates" />
-              <QuickStatItem label="WhatsApp accounts" value={whatsappConnected} icon={Phone} color="#a855f7" href="/dashboard/settings" />
-            </div>
+            {loadingStats ? (
+              <div className="space-y-3">
+                {[1, 2, 3, 4].map(i => (
+                  <div key={i} className="h-10 bg-gray-100 rounded-xl animate-pulse" />
+                ))}
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <QuickStatItem label="Unread chats" value={conversationsUnread} icon={Mail} color="#f59e0b" href="/dashboard/inbox" />
+                <QuickStatItem label="Active chats" value={conversationsActive} icon={MessageSquare} color="#3b82f6" href="/dashboard/inbox" />
+                <QuickStatItem label="Templates" value={templatesApproved} icon={FileText} color="#10b981" href="/dashboard/templates" />
+                <QuickStatItem label="WhatsApp accounts" value={whatsappConnected} icon={Phone} color="#a855f7" href="/dashboard/settings" />
+              </div>
+            )}
           </GlassCard>
 
-          {/* QUICK ACTIONS */}
+          {/* QUICK ACTIONS - Always visible */}
           <GlassCard>
             <h3 className="text-sm font-semibold text-gray-900 mb-4">Quick actions</h3>
             <div className="grid grid-cols-3 gap-2">
@@ -655,14 +595,9 @@ const Dashboard: React.FC = () => {
                 <button
                   key={action.label}
                   onClick={() => navigate(action.href)}
-                  className="flex flex-col items-center justify-center gap-1.5 p-3 rounded-xl
-                    bg-gray-50/50 border border-gray-200/60
-                    hover:bg-gray-50 hover:border-gray-300/85
-                    shadow-sm transition-all duration-300 group"
+                  className="flex flex-col items-center justify-center gap-1.5 p-3 rounded-xl bg-gray-50/50 border border-gray-200/60 hover:bg-gray-50 hover:border-gray-300/85 shadow-sm transition-all duration-300 group"
                 >
-                  <action.icon className="w-4 h-4 group-hover:scale-110 transition-transform" 
-                    style={{ color: action.color }} 
-                  />
+                  <action.icon className="w-4 h-4 group-hover:scale-110 transition-transform" style={{ color: action.color }} />
                   <span className="text-[10px] font-medium text-gray-600 group-hover:text-gray-900">{action.label}</span>
                 </button>
               ))}
@@ -672,8 +607,14 @@ const Dashboard: React.FC = () => {
           {/* RECENT ACTIVITY */}
           <GlassCard>
             <h3 className="text-sm font-semibold text-gray-900 mb-4">Recent activity</h3>
-            
-            {activity.length > 0 ? (
+
+            {loadingActivity ? (
+              <div className="space-y-3">
+                {[1, 2, 3].map(i => (
+                  <div key={i} className="h-8 bg-gray-100 rounded-lg animate-pulse" />
+                ))}
+              </div>
+            ) : activity.length > 0 ? (
               <div className="space-y-3 relative pl-3.5 before:absolute before:left-1 before:top-2 before:bottom-2 before:w-0.5 before:bg-gray-200">
                 {activity.slice(0, 5).map((act) => (
                   <div key={act.id} className="relative">
@@ -702,101 +643,53 @@ const Dashboard: React.FC = () => {
 };
 
 // ============================================
+// SKELETON COMPONENTS
+// ============================================
+
+const QuickStatSkeleton = () => (
+  <div className="relative overflow-hidden rounded-2xl bg-gray-50 border border-gray-200 p-6 shadow-sm animate-pulse">
+    <div className="h-3 w-20 bg-gray-200 rounded mb-2" />
+    <div className="h-8 w-24 bg-gray-200 rounded mb-3" />
+    <div className="h-3 w-32 bg-gray-200 rounded mb-3" />
+    <div className="h-4 w-16 bg-gray-200 rounded-full" />
+  </div>
+);
+
+const ChartSkeleton = () => (
+  <div className="h-80 flex items-end gap-2 pt-8 animate-pulse">
+    {[40, 60, 45, 80, 55, 70, 90].map((h, i) => (
+      <div key={i} className="flex-1 bg-gray-100 rounded-t" style={{ height: `${h}%` }} />
+    ))}
+  </div>
+);
+
+const DonutSkeleton = () => (
+  <div className="flex items-center justify-center py-4 animate-pulse">
+    <div className="w-28 h-28 rounded-full border-8 border-gray-100" />
+  </div>
+);
+
+const TableSkeleton = () => (
+  <div className="space-y-3 animate-pulse">
+    {[1, 2, 3].map(i => (
+      <div key={i} className="flex items-center gap-3 py-2">
+        <div className="h-4 flex-1 bg-gray-100 rounded" />
+        <div className="h-4 w-20 bg-gray-100 rounded" />
+        <div className="h-4 w-16 bg-gray-100 rounded" />
+      </div>
+    ))}
+  </div>
+);
+
+// ============================================
 // REUSABLE COMPONENTS
 // ============================================
 
 const GlassCard: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className = '' }) => (
-  <div className={`relative rounded-2xl
-    bg-white shadow-[0_1px_3px_0_rgba(0,0,0,0.05),0_1px_2px_0_rgba(0,0,0,0.03)]
-    border border-gray-200
-    p-6
-    ${className}
-  `}>
+  <div className={`relative rounded-2xl bg-white shadow-[0_1px_3px_0_rgba(0,0,0,0.05),0_1px_2px_0_rgba(0,0,0,0.03)] border border-gray-200 p-6 ${className}`}>
     <div className="relative">{children}</div>
   </div>
 );
-
-const StatCard: React.FC<{
-  title: string;
-  value: string | number;
-  change?: number;
-  subtitle?: string;
-  icon: React.ElementType;
-  accentColor: string;
-  sparkline?: number[];
-  showAsPercentage?: boolean;
-  emptyAction?: { text: string; href: string };
-}> = ({ title, value, change, subtitle, icon: Icon, accentColor, sparkline = [], emptyAction }) => {
-  const numValue = typeof value === 'number' ? value : parseFloat(String(value)) || 0;
-  const isEmpty = numValue === 0;
-
-  return (
-    <div className="group relative rounded-2xl overflow-hidden
-      bg-white shadow-[0_1px_3px_0_rgba(0,0,0,0.05),0_1px_2px_0_rgba(0,0,0,0.03)]
-      border border-gray-200
-      hover:border-gray-300
-      hover:-translate-y-0.5
-      p-5
-      transition-all duration-500">
-
-      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
-        style={{ background: `radial-gradient(ellipse 80% 60% at 0% 0%, ${accentColor}08 0%, transparent 60%)` }}
-      />
-
-      <div className="relative">
-        <div className="flex items-center justify-between mb-4">
-          <div className="w-10 h-10 rounded-xl flex items-center justify-center"
-            style={{
-              background: `linear-gradient(135deg, ${accentColor}15, ${accentColor}08)`,
-              border: `1px solid ${accentColor}25`,
-              boxShadow: `0 4px 12px ${accentColor}12`,
-            }}
-          >
-            <Icon className="w-4.5 h-4.5" style={{ color: accentColor }} />
-          </div>
-
-          {change !== undefined && change !== 0 && (
-            <div className={`flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[10px] font-mono font-bold
-              ${change >= 0
-                ? 'bg-green-50 text-green-700 border border-green-200'
-                : 'bg-red-50 text-red-700 border border-red-200'
-              }
-            `}>
-              {change >= 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
-              {Math.abs(change)}%
-            </div>
-          )}
-        </div>
-
-        <p className="text-xs text-gray-500">{title}</p>
-        <p className="text-2xl lg:text-3xl font-bold text-gray-900 mt-1 tracking-tight">
-          {typeof value === 'number' ? value.toLocaleString() : value}
-        </p>
-
-        {subtitle && (
-          <p className="text-[10px] text-gray-500 mt-1.5 font-mono">{subtitle}</p>
-        )}
-
-        <div className="mt-3 h-11">
-          {!isEmpty && sparkline.length > 1 ? (
-            <Sparkline data={sparkline} color={accentColor} />
-          ) : emptyAction ? (
-            <Link to={emptyAction.href}
-              className="inline-flex items-center gap-1 text-[10px] font-medium mt-2
-                hover:underline"
-              style={{ color: accentColor }}
-            >
-              {emptyAction.text}
-              <ArrowUpRight className="w-2.5 h-2.5" />
-            </Link>
-          ) : (
-            <div className="h-px bg-gray-100 mt-5" />
-          )}
-        </div>
-      </div>
-    </div>
-  );
-};
 
 const MessagesChart: React.FC<{ data: any[] }> = ({ data }) => {
   const maxVal = Math.max(...data.flatMap((d) => [d.sent, d.delivered, d.read, d.failed]), 1);
@@ -805,8 +698,7 @@ const MessagesChart: React.FC<{ data: any[] }> = ({ data }) => {
     <div className="relative w-full overflow-x-auto select-none pt-2">
       <svg className="w-full min-w-[420px] h-48 overflow-visible" viewBox="0 0 500 180" preserveAspectRatio="none">
         {[0, 45, 90, 135].map((y) => (
-          <line key={y} x1="35" y1={y + 10} x2="495" y2={y + 10}
-            stroke="rgba(0,0,0,0.06)" strokeWidth="1" strokeDasharray="4 4" />
+          <line key={y} x1="35" y1={y + 10} x2="495" y2={y + 10} stroke="rgba(0,0,0,0.06)" strokeWidth="1" strokeDasharray="4 4" />
         ))}
 
         {data.map((item, idx) => {
@@ -839,10 +731,7 @@ const MessagesChart: React.FC<{ data: any[] }> = ({ data }) => {
                 />
               ))}
               {(N <= 10 || idx % Math.ceil(N / 7) === 0) && (
-                <text x={startX + (barWidth + gap) * 1.5} y="176"
-                  className="text-[9px] font-mono fill-gray-500"
-                  textAnchor="middle"
-                >
+                <text x={startX + (barWidth + gap) * 1.5} y="176" className="text-[9px] font-mono fill-gray-500" textAnchor="middle">
                   {item.label}
                 </text>
               )}
@@ -874,16 +763,14 @@ const DonutChart: React.FC<{ delivered: number; read: number; failed: number; to
     <div className="flex items-center gap-4 justify-center py-2">
       <div className="relative w-28 h-28">
         <svg className="w-full h-full" viewBox="0 0 100 100">
-          <circle cx="50" cy="50" r={radius} fill="transparent"
-            stroke="rgba(0,0,0,0.05)" strokeWidth="9" />
+          <circle cx="50" cy="50" r={radius} fill="transparent" stroke="rgba(0,0,0,0.05)" strokeWidth="9" />
           {segments.map((s) => {
             const pct = (s.value / sum) * 100;
             const strokeLen = (pct / 100) * circumference;
             const offset = circumference - (currentOffset / 100) * circumference;
             currentOffset += pct;
             return (
-              <circle key={s.name}
-                cx="50" cy="50" r={radius} fill="transparent"
+              <circle key={s.name} cx="50" cy="50" r={radius} fill="transparent"
                 stroke={s.color} strokeWidth="9"
                 strokeDasharray={`${strokeLen} ${circumference}`}
                 strokeDashoffset={offset}
@@ -920,19 +807,12 @@ const EmptyChart: React.FC<{
   actionHref: string;
 }> = ({ icon: Icon, title, subtitle, actionText, actionHref }) => (
   <div className="flex flex-col items-center justify-center py-16 text-center">
-    <div className="w-16 h-16 rounded-2xl bg-gray-50 border border-gray-200
-      flex items-center justify-center mb-4 shadow-sm">
+    <div className="w-16 h-16 rounded-2xl bg-gray-50 border border-gray-200 flex items-center justify-center mb-4 shadow-sm">
       <Icon className="w-7 h-7 text-gray-500" />
     </div>
     <p className="text-sm font-medium text-gray-900 mb-1">{title}</p>
     <p className="text-xs text-gray-500 mb-4">{subtitle}</p>
-    <Link to={actionHref}
-      className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full
-        bg-green-50 border border-green-200
-        text-green-700 text-xs font-medium
-        hover:bg-green-100 hover:border-green-300
-        transition-all duration-300 shadow-sm"
-    >
+    <Link to={actionHref} className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-green-50 border border-green-200 text-green-700 text-xs font-medium hover:bg-green-100 hover:border-green-300 transition-all duration-300 shadow-sm">
       {actionText}
       <ArrowUpRight className="w-3 h-3" />
     </Link>
@@ -946,11 +826,7 @@ const QuickStatItem: React.FC<{
   color: string;
   href: string;
 }> = ({ label, value, icon: Icon, color, href }) => (
-  <Link to={href}
-    className="flex items-center justify-between p-2.5 rounded-xl
-      hover:bg-gray-50 border border-transparent hover:border-gray-100
-      transition-all duration-300 group"
-  >
+  <Link to={href} className="flex items-center justify-between p-2.5 rounded-xl hover:bg-gray-50 border border-transparent hover:border-gray-100 transition-all duration-300 group">
     <div className="flex items-center gap-2.5">
       <div className="w-7 h-7 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform"
         style={{ background: `${color}10`, border: `1px solid ${color}20` }}
@@ -971,21 +847,14 @@ const StatusBadge: React.FC<{ status: string }> = ({ status }) => {
     PAUSED: 'bg-yellow-50 text-yellow-700 border-yellow-200',
   };
   return (
-    <span className={`px-2 py-1 text-[10px] font-mono font-semibold rounded-full border
-      ${styles[status] || 'bg-gray-50 text-gray-600 border-gray-200'}
-    `}>
+    <span className={`px-2 py-1 text-[10px] font-mono font-semibold rounded-full border ${styles[status] || 'bg-gray-50 text-gray-600 border-gray-200'}`}>
       {status}
     </span>
   );
 };
 
 const DeliveryRateBadge: React.FC<{ rate: number }> = ({ rate }) => (
-  <span className={`text-sm font-bold
-    ${rate >= 90 ? 'text-green-700'
-      : rate >= 70 ? 'text-yellow-700'
-      : 'text-red-700'
-    }
-  `}>
+  <span className={`text-sm font-bold ${rate >= 90 ? 'text-green-700' : rate >= 70 ? 'text-yellow-700' : 'text-red-700'}`}>
     {rate}%
   </span>
 );
