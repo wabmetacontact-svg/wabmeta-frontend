@@ -380,7 +380,7 @@ const Footer: React.FC = () => {
                       <p className="text-white font-bold text-lg tracking-wide group-hover/info:text-blue-300 transition-colors">
                         Mirtunjay Thakur
                       </p>
-                      <p className="text-gray-500 text-xs mt-0.5">Founder & CEO</p>
+                      <p className="text-gray-500 text-xs mt-0.5"></p>
                     </div>
 
                     {/* Trust Badge */}
