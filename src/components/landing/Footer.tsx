@@ -1,4 +1,4 @@
-// src/components/landing/Footer.tsx - COMPLETE FINAL VERSION
+// src/components/landing/Footer.tsx - PREMIUM UPGRADED VERSION
 
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
@@ -14,9 +14,13 @@ import {
   ArrowRight,
   Heart,
   ExternalLink,
-  Building2,
+  Shield,
+  Clock,
+  Award,
+  Sparkles,
 } from 'lucide-react';
 import logo from '../../assets/logo.png';
+import nexronLogo from '../../assets/nexron-group-logo.png'; // ✅ Nexron logo
 
 const Footer: React.FC = () => {
   const currentYear = new Date().getFullYear();
@@ -78,7 +82,6 @@ const Footer: React.FC = () => {
     },
     {
       name: 'Instagram',
-      // ✅ Instagram link updated
       href: 'https://www.instagram.com/wabmeta?igsh=MXNtOXpwYzdhanFleA%3D%3D&utm_source=qr',
       icon: Instagram,
       color: 'hover:text-pink-500 hover:bg-pink-500/10',
@@ -93,7 +96,6 @@ const Footer: React.FC = () => {
     }
   };
 
-  // ✅ Reusable link renderer
   const renderLink = (link: { name: string; href: string; type: string }) => {
     const linkClass = `text-gray-400 hover:text-green-400 transition-all duration-300 text-sm
       flex items-center group hover:translate-x-2`;
@@ -123,7 +125,6 @@ const Footer: React.FC = () => {
 
   return (
     <footer className="relative bg-gradient-to-b from-gray-900 to-gray-950 text-white overflow-hidden">
-
       {/* Animated Background */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-green-500/5 
@@ -265,7 +266,7 @@ const Footer: React.FC = () => {
       </div>
 
       {/* ============================================ */}
-      {/* ✅ NEXRON GROUP SECTION                     */}
+      {/* ✅ NEXRON GROUP PREMIUM SECTION (UPGRADED)  */}
       {/* ============================================ */}
       <div className="relative border-t border-gray-800/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -273,106 +274,189 @@ const Footer: React.FC = () => {
           {/* Powered By Divider */}
           <div className="flex items-center gap-3 mb-6">
             <div className="h-px flex-1 bg-gradient-to-r from-transparent via-gray-700/80 to-transparent" />
-            <span className="text-[11px] text-gray-500 uppercase tracking-[0.2em] 
-                             font-medium px-2 flex-shrink-0">
-              Powered By
-            </span>
+            <div className="flex items-center gap-2 px-3">
+              <Sparkles className="w-3 h-3 text-blue-400 animate-pulse" />
+              <span className="text-[11px] text-gray-400 uppercase tracking-[0.25em] font-semibold">
+                Powered By
+              </span>
+              <Sparkles className="w-3 h-3 text-blue-400 animate-pulse" />
+            </div>
             <div className="h-px flex-1 bg-gradient-to-r from-transparent via-gray-700/80 to-transparent" />
           </div>
 
           {/* Nexron Premium Card */}
           <div className="relative group">
-            {/* Animated Border Gradient */}
-            <div className="absolute -inset-[1px] bg-gradient-to-r from-gray-800 via-blue-500/20 to-gray-800 rounded-[2rem] opacity-50 group-hover:opacity-100 transition-all duration-700" />
-            
-            {/* Background Glow */}
-            <div className="absolute inset-0 bg-blue-500/5 blur-[100px] rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
+            {/* Animated Gradient Border */}
+            <div className="absolute -inset-[1.5px] bg-gradient-to-r from-blue-600/40 via-purple-500/30 to-blue-600/40 rounded-[2rem] opacity-50 group-hover:opacity-100 blur-sm transition-all duration-700 animate-gradient-x" />
 
-            <div className="relative bg-[#050505]/75 backdrop-blur-2xl rounded-[1.9rem] p-6 lg:p-10 border border-white/5 overflow-hidden">
-              {/* Decorative Corner */}
-              <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-full blur-3xl -mr-16 -mt-16 group-hover:bg-blue-500/10 transition-colors duration-700" />
+            {/* Static Border */}
+            <div className="absolute -inset-[1px] bg-gradient-to-r from-blue-500/20 via-blue-400/30 to-purple-500/20 rounded-[2rem] opacity-60 group-hover:opacity-100 transition-opacity duration-700" />
 
-              <div className="flex flex-col lg:flex-row lg:items-center gap-10">
-                {/* Left: Company High-Profile */}
+            <div className="relative bg-gradient-to-br from-[#0a0a0f] via-[#050510] to-[#0a0a0f] backdrop-blur-2xl rounded-[1.9rem] p-6 lg:p-10 border border-white/5 overflow-hidden">
+
+              {/* Decorative Grid Pattern */}
+              <div
+                className="absolute inset-0 opacity-[0.03] pointer-events-none"
+                style={{
+                  backgroundImage: `linear-gradient(rgba(96, 165, 250, 0.5) 1px, transparent 1px),
+                                    linear-gradient(90deg, rgba(96, 165, 250, 0.5) 1px, transparent 1px)`,
+                  backgroundSize: '40px 40px',
+                }}
+              />
+
+              {/* Corner Glow Effects */}
+              <div className="absolute top-0 right-0 w-40 h-40 bg-blue-500/10 rounded-full blur-3xl -mr-20 -mt-20 group-hover:bg-blue-500/20 transition-colors duration-700" />
+              <div className="absolute bottom-0 left-0 w-40 h-40 bg-purple-500/10 rounded-full blur-3xl -ml-20 -mb-20 group-hover:bg-purple-500/20 transition-colors duration-700" />
+
+              <div className="relative flex flex-col lg:flex-row lg:items-center gap-8 lg:gap-10">
+
+                {/* Left: Company Info */}
                 <div className="flex-1 space-y-6">
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-6">
-                    {/* Nexron Custom SVG Logo */}
-                    <div className="relative flex-shrink-0 w-16 h-16">
-                      <div className="absolute inset-0 bg-blue-500/20 blur-xl rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
-                      <div className="relative p-2 bg-gradient-to-br from-gray-950 to-gray-900 rounded-2xl border border-white/10 shadow-2xl group-hover:border-blue-500/30 transition-colors duration-500">
-                        <svg viewBox="0 0 120 120" className="w-12 h-12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <defs>
-                            <linearGradient id="metalGrad" x1="0" y1="0" x2="120" y2="120" gradientUnits="userSpaceOnUse">
-                              <stop offset="0%" stopColor="#E2E8F0" />
-                              <stop offset="35%" stopColor="#94A3B8" />
-                              <stop offset="50%" stopColor="#F8FAFC" />
-                              <stop offset="75%" stopColor="#475569" />
-                              <stop offset="100%" stopColor="#CBD5E1" />
-                            </linearGradient>
-                            <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
-                              <feGaussianBlur stdDeviation="3" result="blur" />
-                              <feComposite in="SourceGraphic" in2="blur" operator="over" />
-                            </filter>
-                          </defs>
-                          {/* N Shape */}
-                          <path d="M30 30 L48 30 L60 85 L42 85 Z" fill="url(#metalGrad)" />
-                          <path d="M62 30 L80 30 L68 85 L50 85 Z" fill="url(#metalGrad)" />
-                          <path d="M30 30 L80 30 L60 55 L10 55 Z" fill="url(#metalGrad)" opacity="0.6" />
-                          
-                          {/* Orbit Ring */}
-                          <path d="M12 60 C 8 45, 112 30, 108 65 C 104 80, 16 85, 12 60 Z" stroke="url(#metalGrad)" strokeWidth="3.5" strokeLinecap="round" />
-                          
-                          {/* Glowing Dot */}
-                          <circle cx="88" cy="38" r="4.5" fill="#60A5FA" filter="url(#glow)" />
-                          <circle cx="88" cy="38" r="2" fill="#FFFFFF" />
-                        </svg>
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-5">
+
+                    {/* ✅ NEXRON LOGO - PNG IMAGE */}
+                    <div className="relative flex-shrink-0 w-20 h-20 group/logo">
+                      {/* Animated Glow Ring */}
+                      <div className="absolute inset-0 bg-gradient-to-br from-blue-500 via-cyan-400 to-purple-500 blur-2xl opacity-30 group-hover:opacity-60 transition-opacity duration-500 rounded-2xl animate-pulse" />
+
+                      {/* Static Glow */}
+                      <div className="absolute -inset-1 bg-gradient-to-br from-blue-500/40 to-purple-500/40 rounded-2xl blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+
+                      {/* Logo Container */}
+                      <div className="relative w-full h-full bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 rounded-2xl border border-white/10 shadow-2xl group-hover:border-blue-400/50 transition-all duration-500 flex items-center justify-center p-2 overflow-hidden">
+                        {/* Inner shine effect */}
+                        <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+
+                        <img
+                          src={nexronLogo}
+                          alt="Nexron Group"
+                          className="relative w-full h-full object-contain group-hover/logo:scale-110 transition-transform duration-500"
+                        />
                       </div>
                     </div>
-                    
-                    <div>
-                      <div className="flex items-center gap-2 mb-1.5">
-                        <span className="h-px w-4 bg-blue-500/50" />
+
+                    {/* Company Details */}
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="h-[2px] w-6 bg-gradient-to-r from-blue-500 to-transparent" />
                         <p className="text-[10px] text-blue-400 uppercase tracking-[0.3em] font-black">
                           Corporate Headquarters
                         </p>
                       </div>
-                      <h4 className="text-2xl lg:text-3xl font-extrabold text-white tracking-tight group-hover:text-blue-50 transition-colors">
-                        NEXRON GROUP <span className="text-blue-500 font-light">PRIVATE LIMITED</span>
+
+                      <h4 className="text-2xl lg:text-3xl font-black text-white tracking-tight leading-tight">
+                        <span className="bg-gradient-to-r from-white via-slate-100 to-slate-300 bg-clip-text text-transparent">
+                          NEXRON GROUP
+                        </span>
+                        <br className="sm:hidden" />
+                        <span className="ml-0 sm:ml-2 bg-gradient-to-r from-blue-400 via-blue-500 to-cyan-400 bg-clip-text text-transparent font-light">
+                          PRIVATE LIMITED
+                        </span>
                       </h4>
-                      <p className="text-gray-400 text-sm mt-1.5 font-medium tracking-wide flex items-center gap-1.5">
-                        <span>One Vision.</span>
-                        <span className="w-1.5 h-1.5 bg-blue-500 rounded-full" />
-                        <span className="text-blue-400">Infinite Possibilities.</span>
+
+                      <p className="text-gray-400 text-sm mt-2 font-medium tracking-wide flex items-center gap-2">
+                        <span className="text-slate-300">One Vision.</span>
+                        <span className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse" />
+                        <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent font-semibold">
+                          Infinite Possibilities.
+                        </span>
                       </p>
                     </div>
                   </div>
 
-                  <div className="pt-6 border-t border-white/5 flex items-center justify-between">
-                    <div>
-                      <p className="text-[10px] text-gray-500 uppercase tracking-widest font-bold mb-1">Director</p>
-                      <p className="text-gray-100 font-bold text-lg tracking-wide">Mirtunjay Thakur</p>
+                  {/* Divider with gradient */}
+                  <div className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+
+                  {/* Director + Extra Info */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    {/* Director */}
+                    <div className="group/info">
+                      <div className="flex items-center gap-2 mb-1.5">
+                        <div className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />
+                        <p className="text-[10px] text-gray-500 uppercase tracking-[0.2em] font-bold">
+                          Director
+                        </p>
+                      </div>
+                      <p className="text-white font-bold text-lg tracking-wide group-hover/info:text-blue-300 transition-colors">
+                        Mirtunjay Thakur
+                      </p>
+                      <p className="text-gray-500 text-xs mt-0.5">Founder & CEO</p>
+                    </div>
+
+                    {/* Trust Badge */}
+                    <div className="group/info">
+                      <div className="flex items-center gap-2 mb-1.5">
+                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                        <p className="text-[10px] text-gray-500 uppercase tracking-[0.2em] font-bold">
+                          Trusted By
+                        </p>
+                      </div>
+                      <p className="text-white font-bold text-lg tracking-wide group-hover/info:text-emerald-300 transition-colors">
+                        Enterprise Clients
+                      </p>
+                      <p className="text-gray-500 text-xs mt-0.5">Across India & Beyond</p>
                     </div>
                   </div>
                 </div>
 
                 {/* Vertical Divider - Desktop Only */}
-                <div className="hidden lg:block w-px h-32 bg-gradient-to-b from-transparent via-white/10 to-transparent" />
+                <div className="hidden lg:block w-px h-48 bg-gradient-to-b from-transparent via-white/10 to-transparent" />
 
-                {/* Right: Direct Contact */}
-                <div className="lg:w-80 space-y-4">
-                  <p className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">Direct Contact</p>
-                  
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-4 p-4 rounded-2xl bg-white/5 border border-white/5 group-hover:border-blue-500/20 transition-all duration-300">
-                      <div className="p-2.5 bg-blue-500/10 rounded-xl">
-                        <MessageCircle className="w-4 h-4 text-blue-400" />
-                      </div>
-                      <div>
-                        <p className="text-[9px] text-gray-500 uppercase font-black tracking-widest">Availability</p>
-                        <p className="text-sm text-gray-200 font-semibold">24/7 Priority Assistance</p>
-                      </div>
+                {/* Right: Contact Info Cards */}
+                <div className="lg:w-80 space-y-3">
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className="h-[2px] w-6 bg-gradient-to-r from-purple-400 to-transparent" />
+                    <p className="text-[10px] text-purple-400 uppercase tracking-[0.3em] font-black">
+                      Direct Contact
+                    </p>
+                  </div>
+
+                  {/* Priority Assistance */}
+                  <div className="group/card relative overflow-hidden flex items-center gap-4 p-4 rounded-2xl bg-gradient-to-br from-blue-500/10 to-blue-600/5 border border-blue-500/20 hover:border-blue-400/50 transition-all duration-300 cursor-pointer">
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-500/0 via-blue-500/10 to-blue-500/0 translate-x-[-100%] group-hover/card:translate-x-[100%] transition-transform duration-1000" />
+
+                    <div className="relative p-2.5 bg-blue-500/20 rounded-xl border border-blue-400/30 group-hover/card:scale-110 transition-transform">
+                      <MessageCircle className="w-4 h-4 text-blue-300" />
+                    </div>
+                    <div className="relative">
+                      <p className="text-[9px] text-blue-300/70 uppercase font-black tracking-widest">Availability</p>
+                      <p className="text-sm text-white font-bold">24/7 Priority Assistance</p>
                     </div>
                   </div>
+
+                  {/* Enterprise Grade Badge */}
+                  <div className="group/card flex items-center gap-4 p-3.5 rounded-2xl bg-white/[0.03] border border-white/5 hover:border-emerald-500/30 hover:bg-emerald-500/5 transition-all duration-300 cursor-pointer">
+                    <div className="p-2 bg-emerald-500/10 rounded-lg border border-emerald-500/20 group-hover/card:scale-110 transition-transform">
+                      <Shield className="w-4 h-4 text-emerald-400" />
+                    </div>
+                    <div>
+                      <p className="text-[9px] text-gray-500 uppercase font-black tracking-widest">Security</p>
+                      <p className="text-sm text-gray-200 font-semibold">Enterprise Grade</p>
+                    </div>
+                  </div>
+
+                  {/* Response Time */}
+                  <div className="group/card flex items-center gap-4 p-3.5 rounded-2xl bg-white/[0.03] border border-white/5 hover:border-amber-500/30 hover:bg-amber-500/5 transition-all duration-300 cursor-pointer">
+                    <div className="p-2 bg-amber-500/10 rounded-lg border border-amber-500/20 group-hover/card:scale-110 transition-transform">
+                      <Clock className="w-4 h-4 text-amber-400" />
+                    </div>
+                    <div>
+                      <p className="text-[9px] text-gray-500 uppercase font-black tracking-widest">Response Time</p>
+                      <p className="text-sm text-gray-200 font-semibold">&lt; 1 Hour Guaranteed</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Bottom Achievement Bar */}
+              <div className="relative mt-6 pt-6 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-3">
+                <div className="flex items-center gap-2 text-xs text-gray-500">
+                  <Award className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Certified Business Solution Partner</span>
+                </div>
+                <div className="flex items-center gap-2 text-xs">
+                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  <span className="text-emerald-400 font-semibold">All Systems Operational</span>
                 </div>
               </div>
             </div>
@@ -414,16 +498,13 @@ const Footer: React.FC = () => {
                   title={social.name}
                   style={{ animationDelay: `${index * 100}ms` }}
                 >
-                  {/* Glow */}
                   <span className={`absolute inset-0 rounded-full opacity-0 
                     group-hover:opacity-100 transition-opacity duration-300
                     ${social.hoverBg} blur-md scale-150`} />
 
-                  {/* Icon */}
                   <social.icon className="w-4 h-4 relative z-10 
                     transition-transform duration-300 group-hover:rotate-12" />
 
-                  {/* Tooltip */}
                   <span className={`absolute -top-8 left-1/2 -translate-x-1/2 
                     px-2 py-1 bg-gray-800 text-white text-[10px] rounded 
                     whitespace-nowrap pointer-events-none
