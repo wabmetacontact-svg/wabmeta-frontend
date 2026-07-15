@@ -300,7 +300,15 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
               </p>
               <p className="text-xs text-gray-500 mt-1">
                 {headerType === 'image' && `JPG, PNG, WebP - Max ${uploadLimit.label} (auto-optimized)`}
-                {headerType === 'video' && `MP4 - Max ${uploadLimit.label} (auto-compressed to ${metaLimit.label})`}
+                {headerType === 'video' && (
+                  <>
+                    MP4 with H.264 codec - Max {uploadLimit.label}
+                    <br />
+                    <span className="text-amber-600">
+                      ⚠️ Videos will be compressed to under {metaLimit.label}
+                    </span>
+                  </>
+                )}
                 {headerType === 'document' && `PDF, DOC, XLS, TXT - Max ${uploadLimit.label}`}
               </p>
             </div>
@@ -321,6 +329,25 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
           </div>
         )}
       </div>
+
+      {headerType === 'video' && !mediaUrl && !uploading && (
+        <div className="mt-3 bg-blue-50 border border-blue-200 rounded-lg p-3 text-xs text-left">
+          <p className="font-semibold text-blue-900 mb-1">📹 Video Requirements:</p>
+          <ul className="text-blue-800 space-y-0.5 list-disc list-inside">
+            <li>Format: MP4 (H.264 codec)</li>
+            <li>Max size: 100 MB (will be compressed to under 16 MB)</li>
+            <li>Recommended: 720p resolution, under 60 seconds</li>
+            <li>Audio: AAC codec (optional but recommended)</li>
+          </ul>
+          <p className="mt-2 text-blue-700">
+            💡 <strong>Tip:</strong> If upload fails, re-encode using{' '}
+            <a href="https://handbrake.fr/" target="_blank" rel="noopener noreferrer" className="underline">
+              HandBrake
+            </a>{' '}
+            with "Fast 720p30" preset.
+          </p>
+        </div>
+      )}
 
       {/* ✅ WhatsApp Limits Info */}
       <div className="flex items-start gap-2 text-xs text-gray-500 px-1">
