@@ -250,7 +250,6 @@ api.interceptors.request.use(
 
 let refreshPromise: Promise<string> | null = null;
 let lastRefreshTimestamp = 0;
-let lastRefreshedToken: string | null = null;
 const REFRESH_DEBOUNCE_MS = 5000; // 5 sec tak same token return karo
 
 export const performTokenRefresh = async (): Promise<string> => {
@@ -300,7 +299,6 @@ export const performTokenRefresh = async (): Promise<string> => {
 
       setAuthTokens(newAccessToken, newRefreshToken);
       lastRefreshTimestamp = Date.now();
-      lastRefreshedToken = newAccessToken;
       
       console.log('✅ Token refreshed successfully');
       return newAccessToken;
@@ -311,7 +309,6 @@ export const performTokenRefresh = async (): Promise<string> => {
         console.error('❌ Refresh token invalid/expired - clearing session');
         clearAuthData();
         lastRefreshTimestamp = 0;
-        lastRefreshedToken = null;
       }
       throw error;
     } finally {
@@ -685,6 +682,8 @@ export const templates = {
       whatsappAccountId?: string;
       wabaId?: string;
       url: string;
+      compressionApplied?: boolean;
+      originalSize?: number;
     }>>('/templates/upload-media', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
       timeout: 120000,
