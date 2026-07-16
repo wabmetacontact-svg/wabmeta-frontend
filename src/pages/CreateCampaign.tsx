@@ -158,8 +158,8 @@ const CreateCampaign: React.FC = () => {
   const [walletEstimate, setWalletEstimate] = useState<WalletEstimate | null>(null);
   const [loadingEstimate, setLoadingEstimate] = useState(false);
 
-  // ✅ NEW: Group member count
-  const [groupMemberCount, setGroupMemberCount] = useState<number>(0);
+  const [audienceCount, setAudienceCount] = useState<number>(0);
+  const [loadingCount, setLoadingCount] = useState(false);
 
   // ✅ NEW: Created campaign ID (to start after create)
   const [createdCampaignId, setCreatedCampaignId] = useState<string | null>(null);
@@ -287,29 +287,49 @@ const CreateCampaign: React.FC = () => {
     [formData.templateId, templates]
   );
 
-  // ✅ FIX Bug3: Group count from state, others calculated
+  // ─── Fetch audience count on filter change ─────────────────
+  useEffect(() => {
+    const fetchCount = async () => {
+      setLoadingCount(true);
+      try {
+        let params: any = { type: formData.audienceType };
+
+        if (formData.audienceType === 'tags' && formData.selectedTags.length > 0) {
+          params.tags = formData.selectedTags.join(',');
+        } else if (formData.audienceType === 'group' && formData.selectedGroup) {
+          params.groupId = formData.selectedGroup;
+        }
+
+        // Only fetch for 'all', 'tags', 'group'
+        if (['all', 'tags', 'group'].includes(formData.audienceType)) {
+          const res = await contactApi.getAudienceCount(params);
+          setAudienceCount(res.data?.data?.count || 0);
+        }
+      } catch (e) {
+        console.warn('Failed to fetch audience count');
+      } finally {
+        setLoadingCount(false);
+      }
+    };
+
+    fetchCount();
+  }, [formData.audienceType, formData.selectedTags, formData.selectedGroup]);
+
+  // ─── totalRecipients using real backend count ──────────────
   const totalRecipients = useMemo(() => {
     switch (formData.audienceType) {
       case "all":
-        return contacts.length;
       case "tags":
-        return contacts.filter(c =>
-          formData.selectedTags.some(tag => c.tags.includes(tag))
-        ).length;
+      case "group":
+        return audienceCount;  // ✅ Real count from backend
       case "manual":
         return formData.selectedContacts.length;
-      case "group":
-        return groupMemberCount;
       case "csv":
         return formData.csvContacts?.length || 0;
       default:
         return 0;
     }
-  }, [
-    formData.audienceType, formData.selectedTags,
-    formData.selectedContacts, formData.selectedGroup,
-    formData.csvContacts, contacts, groupMemberCount,
-  ]);
+  }, [formData.audienceType, formData.selectedContacts, formData.csvContacts, audienceCount]);
 
   // ─── Fetch wallet estimate after campaign created ──────────
   const fetchWalletEstimate = useCallback(async (campaignId: string) => {
@@ -345,7 +365,7 @@ const CreateCampaign: React.FC = () => {
         );
       case 2:
         if (formData.audienceType === "group")
-          return !!formData.selectedGroup && groupMemberCount > 0;
+          return !!formData.selectedGroup && totalRecipients > 0;
         if (formData.audienceType === "csv")
           return !!(formData.csvContacts && formData.csvContacts.length > 0);
         if (formData.audienceType === "tags")
@@ -461,7 +481,7 @@ const CreateCampaign: React.FC = () => {
       console.log("📤 Creating campaign:", payload);
 
       const res = await campaignApi.create(payload);
-      const campaignId = res.data?.data?.id || res.data?.id;
+      const campaignId = res.data?.data?.id || (res.data as any)?.id;
 
       if (!campaignId) {
         throw new Error("Campaign created but ID not returned");
@@ -797,11 +817,7 @@ const CreateCampaign: React.FC = () => {
                 selectedGroup={formData.selectedGroup || ""}
                 onGroupChange={g => {
                   setFormData(f => ({ ...f, selectedGroup: g }));
-                  // ✅ FIX Bug3: Reset group count when group changes
-                  setGroupMemberCount(0);
                 }}
-                // ✅ FIX Bug3: Pass setter so AudienceSelector can update count
-                onGroupMemberCountChange={setGroupMemberCount}
                 csvContacts={formData.csvContacts}
                 onCsvContactsChange={c =>
                   setFormData(f => ({ ...f, csvContacts: c }))
@@ -913,11 +929,9 @@ const CreateCampaign: React.FC = () => {
                     },
                     {
                       label: "Recipients",
-                      value:
-                        formData.audienceType === "group" && groupMemberCount === 0
-                          ? "Group selected"
-                          : `${totalRecipients.toLocaleString()} ${totalRecipients === 1 ? "recipient" : "recipients"
-                          }`,
+                      value: loadingCount
+                        ? "Calculating..."
+                        : `${totalRecipients.toLocaleString()} ${totalRecipients === 1 ? "recipient" : "recipients"}`,
                     },
                     {
                       label: "Timing",

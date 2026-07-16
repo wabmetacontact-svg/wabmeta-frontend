@@ -627,6 +627,14 @@ export const contacts = {
   stats: () => api.get<ApiResponse>('/contacts/stats'),
   getTags: () => api.get<ApiResponse>('/contacts/tags'),
   getGroups: () => api.get<ApiResponse>('/contacts/groups/all'),
+  getAudienceCount: (params: {
+    type: 'all' | 'tags' | 'group';
+    tags?: string;
+    groupId?: string;
+  }) => api.get<ApiResponse<{ count: number }>>(
+    '/contacts/audience-count',
+    { params }
+  ),
 };
 
 // ---------- TEMPLATES ----------
