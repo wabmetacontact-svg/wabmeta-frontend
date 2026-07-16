@@ -81,17 +81,11 @@ export interface RegisterResponse {
 
 const getApiBaseUrl = (): string => {
   const envUrl = import.meta.env.VITE_API_URL;
-
-  console.log('VITE_API_URL:', envUrl);
-
-  if (envUrl) {
-    return envUrl.replace(/\/+$/, '').replace(/\/v1$/, '');
-  }
-
+  if (envUrl) return envUrl.replace(/\/+$/, '').replace(/\/v1$/, '');
+  
   if (import.meta.env.PROD) {
-    return 'https://wabmeta-api.onrender.com/api';
+    return 'https://api.wabmeta.com/api'; // ✅ Correct URL
   }
-
   return 'http://localhost:10000/api';
 };
 
@@ -248,79 +242,79 @@ api.interceptors.request.use(
 // ✅ SINGLE-FLIGHT TOKEN REFRESH (PRODUCTION)
 // ============================================
 
-let refreshPromise: Promise<string> | null = null;
 let lastRefreshTimestamp = 0;
 const REFRESH_DEBOUNCE_MS = 5000; // 5 sec tak same token return karo
 
-export const performTokenRefresh = async (): Promise<string> => {
-  const now = Date.now();
+// ─── Fix 2: Token Refresh - Queue based ─────
+let isRefreshing = false;
+let failedQueue: Array<{
+  resolve: (token: string) => void;
+  reject: (error: any) => void;
+}> = [];
 
-  // ✅ FIX 1: Already refreshed recently? Token return karo - API call mat karo
+const processQueue = (error: any, token: string | null = null) => {
+  failedQueue.forEach(({ resolve, reject }) => {
+    if (error) reject(error);
+    else resolve(token!);
+  });
+  failedQueue = [];
+};
+
+export const performTokenRefresh = async (): Promise<string> => {
+  // Already refreshed recently?
+  const now = Date.now();
   if (now - lastRefreshTimestamp < REFRESH_DEBOUNCE_MS) {
     const token = localStorage.getItem(TOKEN_KEYS.ACCESS);
-    if (token && isValidJWT(token)) {
-      console.log('✅ Debounce: returning recent token, skipping refresh');
-      return token;
-    }
+    if (token && isValidJWT(token)) return token;
   }
 
-  // ✅ FIX 2: Already in-flight? Same promise return karo (no duplicate calls)
-  if (refreshPromise) {
-    console.log('⏳ Refresh in-flight, waiting for existing promise...');
-    return refreshPromise;
+  // Already refreshing? Queue this request
+  if (isRefreshing) {
+    return new Promise((resolve, reject) => {
+      failedQueue.push({ resolve, reject });
+    });
   }
 
   const refreshToken = getRefreshToken();
-  if (!refreshToken) {
-    throw new Error('No refresh token available');
-  }
+  if (!refreshToken) throw new Error('No refresh token available');
 
-  // ✅ FIX 3: Single Promise - sirf ek hi API call hogi
-  refreshPromise = (async () => {
-    try {
-      console.log('🔄 Starting token refresh...');
-      
-      const response = await axios.post<ApiResponse<RefreshTokenResponse>>(
-        `${API_BASE_URL}/auth/refresh`,
-        { refreshToken },
-        {
-          withCredentials: true,
-          headers: { 'Content-Type': 'application/json' },
-          timeout: 15000,
-        }
-      );
+  isRefreshing = true;
 
-      const newAccessToken = response.data?.data?.accessToken;
-      const newRefreshToken = response.data?.data?.refreshToken;
-
-      if (!newAccessToken || !isValidJWT(newAccessToken)) {
-        throw new Error('Invalid access token received from refresh');
+  try {
+    const response = await axios.post<ApiResponse<RefreshTokenResponse>>(
+      `${API_BASE_URL}/auth/refresh`,
+      { refreshToken },
+      {
+        withCredentials: true,
+        headers: { 'Content-Type': 'application/json' },
+        timeout: 15000,
       }
+    );
 
-      setAuthTokens(newAccessToken, newRefreshToken);
-      lastRefreshTimestamp = Date.now();
-      
-      console.log('✅ Token refreshed successfully');
-      return newAccessToken;
-      
-    } catch (error: any) {
-      // ✅ FIX 4: 401 pe clear karo aur force logout
-      if (error?.response?.status === 401) {
-        console.error('❌ Refresh token invalid/expired - clearing session');
-        clearAuthData();
-        lastRefreshTimestamp = 0;
-      }
-      throw error;
-    } finally {
-      // ✅ FIX 5: Promise clear karo - lekin thodi delay ke saath
-      // Taaki parallel calls us promise ko await kar sakein
-      setTimeout(() => {
-        refreshPromise = null;
-      }, 1000);
+    const newAccessToken = response.data?.data?.accessToken;
+    const newRefreshToken = response.data?.data?.refreshToken;
+
+    if (!newAccessToken || !isValidJWT(newAccessToken)) {
+      throw new Error('Invalid access token from refresh');
     }
-  })();
 
-  return refreshPromise;
+    setAuthTokens(newAccessToken, newRefreshToken);
+    lastRefreshTimestamp = Date.now();
+    
+    processQueue(null, newAccessToken); // ✅ Queued requests resolve karo
+    return newAccessToken;
+
+  } catch (error: any) {
+    processQueue(error, null); // ✅ Queued requests reject karo
+    
+    if (error?.response?.status === 401) {
+      clearAuthData();
+      lastRefreshTimestamp = 0;
+    }
+    throw error;
+  } finally {
+    isRefreshing = false; // ✅ Always reset
+  }
 };
 
 // ============================================
@@ -637,58 +631,94 @@ export const contacts = {
 
 // ---------- TEMPLATES ----------
 export const templates = {
-  getAll: (params?: any) => api.get<ApiResponse>('/templates', { params }),
+  getAll: (params?: {
+    page?: number;
+    limit?: number;
+    search?: string;
+    status?: string;
+    category?: string;
+    language?: string;
+    sortBy?: string;
+    sortOrder?: 'asc' | 'desc';
+    whatsappAccountId?: string;
+    wabaId?: string;
+  }) => api.get<ApiResponse>('/templates', { params }),
 
-  create: (data: any) => api.post<ApiResponse>('/templates', data),
+  create: (data: any) =>
+    api.post<ApiResponse>('/templates', data),
 
-  getById: (id: string) => api.get<ApiResponse>(`/templates/${id}`),
+  getById: (id: string) =>
+    api.get<ApiResponse>(`/templates/${id}`),
 
-  update: (id: string, data: any) => api.put<ApiResponse>(`/templates/${id}`, data),
+  update: (id: string, data: any) =>
+    api.put<ApiResponse>(`/templates/${id}`, data),
 
-  delete: (id: string) => api.delete<ApiResponse>(`/templates/${id}`),
+  delete: (id: string) =>
+    api.delete<ApiResponse>(`/templates/${id}`),
 
-  sync: (whatsappAccountId: string) =>
-    api.post<ApiResponse>('/templates/sync', { whatsappAccountId }),
+  sync: (whatsappAccountId?: string) =>
+    api.post<ApiResponse<{ message: string; synced: number; cleaned: number }>>(
+      '/templates/sync',
+      { whatsappAccountId }
+    ),
 
-  submitForApproval: (id: string) =>
-    api.post<ApiResponse>(`/templates/${id}/submit`),
+  submitForApproval: (id: string, options?: {
+    whatsappAccountId?: string;
+    forceResubmit?: boolean;
+  }) =>
+    api.post<ApiResponse>(`/templates/${id}/submit`, options || {}),
 
-  stats: () => api.get<ApiResponse>('/templates/stats'),
+  getApproved: (params?: {
+    whatsappAccountId?: string;
+    wabaId?: string;
+  }) => api.get<ApiResponse>('/templates/approved', { params }),
 
+  getStats: (whatsappAccountId?: string) =>
+    api.get<ApiResponse>('/templates/stats', {
+      params: whatsappAccountId ? { whatsappAccountId } : undefined,
+    }),
+
+  getLanguages: (whatsappAccountId?: string) =>
+    api.get<ApiResponse>('/templates/languages', {
+      params: whatsappAccountId ? { whatsappAccountId } : undefined,
+    }),
+
+  checkConnection: () =>
+    api.get<ApiResponse>('/templates/check-connection'),
+
+  // ✅ Fixed: Correct response type matching backend
   uploadMedia: (file: File, whatsappAccountId?: string) => {
     const formData = new FormData();
     formData.append('file', file);
-
     if (whatsappAccountId) {
       formData.append('whatsappAccountId', whatsappAccountId);
     }
 
-    console.log('📤 API: Uploading media:', {
-      filename: file.name,
-      size: `${(file.size / 1024).toFixed(2)} KB`,
-      type: file.type,
-      accountId: whatsappAccountId || 'auto',
-    });
-
     return api.post<ApiResponse<{
-      cloudinaryUrl: string;
-      permanentUrl?: string;
-      mediaHandle?: string;
-      metaNumericId?: string;
-      mediaId: string;
+      mediaHandle: string;      // ✅ Primary - Meta handle
+      cloudinaryUrl: string;    // ✅ Primary - Permanent URL
+      permanentUrl: string;     // Same as cloudinaryUrl
+      mediaId: string;          // Same as mediaHandle (compat)
+      url: string;              // Same as cloudinaryUrl (compat)
       filename: string;
       mimeType: string;
       size: number;
-      whatsappAccountId?: string;
       wabaId?: string;
-      url: string;
-      compressionApplied?: boolean;
-      originalSize?: number;
+      whatsappAccountId?: string;
     }>>('/templates/upload-media', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
-      timeout: 120000,
+      timeout: 180_000, // 3 min for large videos
     });
   },
+
+  duplicate: (id: string, name: string, whatsappAccountId?: string) =>
+    api.post<ApiResponse>(`/templates/${id}/duplicate`, {
+      name,
+      whatsappAccountId,
+    }),
+
+  reuploadMedia: (id: string) =>
+    api.post<ApiResponse>(`/templates/${id}/reupload-media`),
 };
 
 // ---------- CAMPAIGNS ----------
@@ -1412,6 +1442,15 @@ export const handleApiError = (error: any): string => {
   }
 
   return 'An unknown error occurred';
+};
+
+// ─── Fix 4: Normalize accounts helper ───────
+export const normalizeAccounts = (data: any): any[] => {
+  if (Array.isArray(data?.data?.accounts)) return data.data.accounts;
+  if (Array.isArray(data?.accounts))       return data.accounts;
+  if (Array.isArray(data?.data))           return data.data;
+  if (Array.isArray(data))                 return data;
+  return [];
 };
 
 export default api;

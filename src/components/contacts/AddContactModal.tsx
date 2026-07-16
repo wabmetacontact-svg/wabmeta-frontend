@@ -44,7 +44,6 @@ const AddContactModal: React.FC<AddContactModalProps> = ({
   editContact
 }) => {
   const [loading, setLoading] = useState(false);
-  const [fetchingProfile, setFetchingProfile] = useState(false);
   const [newTag, setNewTag] = useState('');
   const [phoneValidation, setPhoneValidation] = useState<{
     valid: boolean;
@@ -202,7 +201,6 @@ const AddContactModal: React.FC<AddContactModalProps> = ({
     }
 
     setLoading(true);
-    setFetchingProfile(true);
 
     try {
       const cleanPhone = formData.phone.replace(/[\s\-\(\)]/g, '');
@@ -260,7 +258,6 @@ const AddContactModal: React.FC<AddContactModalProps> = ({
       toast.error(errorMessage, { duration: 4000 });
     } finally {
       setLoading(false);
-      setFetchingProfile(false);
     }
   };
 
@@ -432,13 +429,7 @@ const AddContactModal: React.FC<AddContactModalProps> = ({
               </p>
             )}
 
-            {/* Fetching Profile Indicator */}
-            {fetchingProfile && !editContact && (
-              <div className="mt-2 text-sm text-blue-600 flex items-center gap-2">
-                <Loader2 className="w-4 h-4 animate-spin" />
-                Checking WhatsApp profile...
-              </div>
-            )}
+
           </div>
 
           {/* Email */}

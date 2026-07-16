@@ -1,347 +1,280 @@
-// src/pages/Templates.tsx
-
-import React, { useState, useEffect } from 'react';
+// src/pages/Templates.tsx - FIXED
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
-  Plus,
-  Search,
-  Filter,
-  RefreshCw,
-  FileText,
-  Image,
-  Video,
-  Edit,
-  Trash2,
-  Copy,
-  Eye,
-  CheckCircle,
-  XCircle,
-  Clock,
-  AlertCircle,
-  LayoutGrid,
-  List,
-  Loader2,
-  Type,
+  Plus, Search, Filter, RefreshCw, FileText,
+  Image, Video, Edit, Trash2, Copy, Eye,
+  CheckCircle, XCircle, Clock, AlertCircle,
+  LayoutGrid, List, Loader2, Type, CheckCircle2,
 } from 'lucide-react';
-import { templates, whatsapp } from '../services/api';
+import { templates as templateApi, whatsapp } from '../services/api';
 import TemplateCard from '../components/templates/TemplateCard';
 import TemplatePreview from '../components/templates/TemplatePreview';
 import type { Template, TemplateCategory, TemplateStatus } from '../types/template';
 
+// ─── Types ───────────────────────────────────────────────────
 type TemplateTab = 'text' | 'media';
+const MEDIA_TYPES = ['image', 'video', 'document'] as const;
 
-const Templates: React.FC = () => {
-  const navigate = useNavigate();
+// ─── Helpers ─────────────────────────────────────────────────
+const extractVarsFromText = (text: string): string[] =>
+  [...new Set((text.match(/\{\{(\d+)\}\}/g) || []).map(m => m.replace(/[{}]/g, '')))];
 
-  const [templateList, setTemplateList] = useState<Template[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [syncing, setSyncing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('');
-  const [categoryFilter, setCategoryFilter] = useState<string>('');
-  const [showFilters, setShowFilters] = useState(false);
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null);
-  const [previewTemplate, setPreviewTemplate] = useState<Template | null>(null);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [templateTab, setTemplateTab] = useState<TemplateTab>('text');
+const mapTemplate = (t: any): Template => {
+  const ht = String(t.headerType || 'NONE').toUpperCase();
 
-  // Helper Functions
-  const extractVariablesFromText = (text: string) => {
-    const matches = text.match(/\{\{(\d+)\}\}/g) || [];
-    return [...new Set(matches.map((m) => m.replace(/[{}]/g, '')))];
-  };
-
-  const mapHeaderFromBackend = (t: any) => {
-    const ht = (t.headerType || 'NONE').toUpperCase();
-
-    if (ht === 'NONE' || ht === null) return { type: 'none' as const };
-
-    if (ht === 'TEXT') {
-      return {
-        type: 'text' as const,
-        text: t.headerContent || ''
-      };
-    }
-
-    return {
+  let header: Template['header'];
+  if (ht === 'NONE') {
+    header = { type: 'none' };
+  } else if (ht === 'TEXT') {
+    header = { type: 'text', text: t.headerContent || '' };
+  } else {
+    header = {
       type: ht.toLowerCase() as any,
-      mediaUrl: t.headerContent || undefined,
-      mediaId: t.headerMediaId || undefined,
       cloudinaryUrl: t.headerContent || undefined,
-      text: undefined
+      mediaUrl: t.headerContent || undefined,
+      fileName: t.headerContent
+        ? t.headerContent.split('/').pop()?.split('?')[0]
+        : undefined,
     };
-  };
+  }
 
-  const mapButtonsFromBackend = (t: any) => {
-    const btns = Array.isArray(t.buttons) ? t.buttons : [];
-    return btns.map((b: any, index: number) => ({
-      id: String(index),
-      type: (b.type || '').toLowerCase(),
-      text: b.text,
+  const buttons = (Array.isArray(t.buttons) ? t.buttons : []).map(
+    (b: any, i: number) => ({
+      id: String(i),
+      type: String(b.type || 'QUICK_REPLY').toLowerCase(),
+      text: b.text || '',
       url: b.url,
-      phoneNumber: b.phoneNumber || b.phone_number
-    }));
-  };
+      phoneNumber: b.phoneNumber || b.phone_number,
+    })
+  );
 
-  // Map backend template to frontend Template type
-  const mapTemplate = (t: any): Template => ({
+  return {
     id: t.id,
     name: t.name,
     category: String(t.category || 'UTILITY').toLowerCase() as TemplateCategory,
     language: t.language || 'en',
     status: String(t.status || 'PENDING').toLowerCase() as TemplateStatus,
-    header: mapHeaderFromBackend(t),
+    header,
     body: t.bodyText || '',
     footer: t.footerText || '',
-    buttons: mapButtonsFromBackend(t),
+    buttons,
     variables:
       Array.isArray(t.variables) && t.variables.length > 0
         ? t.variables.map((v: any) => String(v.index))
-        : extractVariablesFromText(t.bodyText || ''),
+        : extractVarsFromText(t.bodyText || ''),
     createdAt: t.createdAt || new Date().toISOString(),
     updatedAt: t.updatedAt || new Date().toISOString(),
     usageCount: t.usageCount || 0,
     metaTemplateId: t.metaTemplateId || null,
-    rejectionReason: t.rejectionReason || undefined
-  });
+    rejectionReason: t.rejectionReason || null,
+  };
+};
 
-  // Fetch templates
-  const fetchTemplates = async () => {
+// ─── Status Badge ─────────────────────────────────────────────
+const StatusBadge: React.FC<{ status: string }> = ({ status }) => {
+  const map: Record<string, { icon: React.ElementType; cls: string; label: string }> = {
+    approved: { icon: CheckCircle, cls: 'bg-green-50 text-green-700 border-green-200', label: 'Approved' },
+    rejected: { icon: XCircle, cls: 'bg-red-50 text-red-700 border-red-200', label: 'Rejected' },
+    pending: { icon: Clock, cls: 'bg-yellow-50 text-yellow-700 border-yellow-200', label: 'Pending' },
+    draft: { icon: FileText, cls: 'bg-gray-50 text-gray-700 border-gray-200', label: 'Draft' },
+  };
+  const b = map[status.toLowerCase()] || map.pending;
+  const Icon = b.icon;
+  return (
+    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full
+                      text-xs font-medium border ${b.cls}`}>
+      <Icon className="w-3 h-3 mr-1" />
+      {b.label}
+    </span>
+  );
+};
+
+// ─── Category Badge ───────────────────────────────────────────
+const CategoryBadge: React.FC<{ category: string }> = ({ category }) => {
+  const colors: Record<string, string> = {
+    marketing: 'bg-purple-50 text-purple-700 border-purple-200',
+    utility: 'bg-blue-50 text-blue-700 border-blue-200',
+    authentication: 'bg-orange-50 text-orange-700 border-orange-200',
+  };
+  return (
+    <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium border
+                      ${colors[category.toLowerCase()] || 'bg-gray-50 text-gray-700 border-gray-200'}`}>
+      {category.toUpperCase()}
+    </span>
+  );
+};
+
+// ─── Header Icon ──────────────────────────────────────────────
+const HeaderIcon: React.FC<{ type?: string }> = ({ type }) => {
+  if (type === 'image') return <Image className="w-4 h-4 text-gray-400" />;
+  if (type === 'video') return <Video className="w-4 h-4 text-gray-400" />;
+  if (type === 'document') return <FileText className="w-4 h-4 text-gray-400" />;
+  return <FileText className="w-4 h-4 text-gray-400" />;
+};
+
+// ─── Component ────────────────────────────────────────────────
+const Templates: React.FC = () => {
+  const navigate = useNavigate();
+
+  const [list, setList] = useState<Template[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [syncing, setSyncing] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+  const [search, setSearch] = useState('');
+  const [statusF, setStatusF] = useState('');
+  const [categoryF, setCategoryF] = useState('');
+  const [showFilters, setShowFilters] = useState(false);
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [previewTemplate, setPreviewTemplate] = useState<Template | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<Template | null>(null);
+  const [tab, setTab] = useState<TemplateTab>('text');
+
+  // ✅ FIX: Track first mount to avoid double fetch
+  const isFirstMount = useRef(true);
+
+  // ─── Fetch ─────────────────────────────────────────────────
+  const fetchTemplates = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
 
-      const response = await templates.getAll({
-        search: searchQuery || undefined,
-        status: statusFilter || undefined,
-        category: categoryFilter || undefined,
+      const res = await templateApi.getAll({
+        search: search || undefined,
+        status: statusF || undefined,
+        category: categoryF || undefined,
       });
 
-      const templatesData = Array.isArray(response.data?.data) ? response.data.data : [];
-      const mappedTemplates = templatesData.map(mapTemplate);
-      setTemplateList(mappedTemplates);
+      const raw = Array.isArray(res.data?.data) ? res.data.data : [];
+      setList(raw.map(mapTemplate));
     } catch (err: any) {
-      console.error('Error fetching templates:', err);
       setError(err.response?.data?.message || 'Failed to load templates');
     } finally {
       setLoading(false);
     }
-  };
+  }, [search, statusF, categoryF]);
 
-  // Sync templates from Meta
-  const handleSyncTemplates = async () => {
+  // ─── Mount fetch ───────────────────────────────────────────
+  useEffect(() => {
+    fetchTemplates();
+  }, []);
+
+  // ─── Filter change fetch (debounced) ──────────────────────
+  // ✅ FIX: Skip first render (mount already fetched)
+  useEffect(() => {
+    if (isFirstMount.current) {
+      isFirstMount.current = false;
+      return;
+    }
+    const t = setTimeout(fetchTemplates, 300);
+    return () => clearTimeout(t);
+  }, [search, statusF, categoryF]);
+
+  // ─── Sync ──────────────────────────────────────────────────
+  const handleSync = async () => {
     try {
       setSyncing(true);
       setError(null);
+      setSuccess(null);
 
-      // Find a connected WhatsApp account only when user clicks Sync
-      const accountsRes = await whatsapp.accounts();
-      const accountsData = accountsRes.data?.data;
-      const accounts = accountsData?.accounts || (Array.isArray(accountsData) ? accountsData : []);
-
+      // Get connected account
+      const accRes = await whatsapp.accounts();
+      const accounts: any[] = accRes.data?.data?.accounts || [];
       const connected =
-        (Array.isArray(accounts) &&
-          (accounts.find((a: any) => a.status === 'CONNECTED' && a.isDefault) ||
-            accounts.find((a: any) => a.status === 'CONNECTED'))) ||
-        null;
+        accounts.find(a => a.status === 'CONNECTED' && a.isDefault) ||
+        accounts.find(a => a.status === 'CONNECTED');
 
       if (!connected) {
-        setError('No connected WhatsApp account found. Please connect WhatsApp to sync templates.');
+        setError(
+          'No connected WhatsApp account found. ' +
+          'Please connect WhatsApp in Settings first.'
+        );
         return;
       }
 
-      await templates.sync(connected.id);
+      const res = await templateApi.sync(connected.id);
+      const msg = res.data?.message || 'Templates synced successfully';
+      setSuccess(msg);
+      setTimeout(() => setSuccess(null), 5000);
       await fetchTemplates();
     } catch (err: any) {
-      console.error('Error syncing templates:', err);
-      setError(err.response?.data?.message || 'Failed to sync templates from Meta');
+      setError(err.response?.data?.message || 'Failed to sync from Meta');
     } finally {
       setSyncing(false);
     }
   };
 
-  // Delete template
-  const handleDeleteTemplate = async (id?: string) => {
-    const templateId = id || selectedTemplate?.id;
-    if (!templateId) return;
-
+  // ─── Delete ────────────────────────────────────────────────
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
     try {
-      await templates.delete(templateId);
-      setTemplateList(prev => prev.filter(t => t.id !== templateId));
-      setShowDeleteModal(false);
-      setSelectedTemplate(null);
+      setDeleting(true);
+      await templateApi.delete(deleteTarget.id);
+      setList(prev => prev.filter(t => t.id !== deleteTarget.id));
+      setDeleteTarget(null);
+      setSuccess('Template deleted successfully');
+      setTimeout(() => setSuccess(null), 3000);
     } catch (err: any) {
-      console.error('Error deleting template:', err);
-      alert(err.response?.data?.message || 'Failed to delete template');
+      setError(err.response?.data?.message || 'Failed to delete template');
+    } finally {
+      setDeleting(false);
     }
   };
 
-  // Duplicate template
-  const handleDuplicateTemplate = (template: Template) => {
+  // ─── Duplicate ─────────────────────────────────────────────
+  const handleDuplicate = (template: Template) => {
     navigate('/dashboard/templates/new', {
       state: { duplicateFrom: template },
     });
   };
 
-  // Initial fetch
-  useEffect(() => {
-    fetchTemplates();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  // ─── Filtered lists ────────────────────────────────────────
+  // ✅ FIX: Server already filters, client filter nahi karo
+  // Sirf tab split karo
+  const textTemplates = list.filter(t => !MEDIA_TYPES.includes(t.header?.type as any));
+  const mediaTemplates = list.filter(t => MEDIA_TYPES.includes(t.header?.type as any));
+  const activeList = tab === 'media' ? mediaTemplates : textTemplates;
 
-  // Fetch on filter/search change
-  useEffect(() => {
-    const debounceTimer = setTimeout(() => {
-      fetchTemplates();
-    }, 300);
-
-    return () => clearTimeout(debounceTimer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchQuery, statusFilter, categoryFilter]);
-
-  // Filter templates (client-side filtering for already fetched data)
-  const filteredTemplates = templateList.filter((template) => {
-    const matchesSearch =
-      !searchQuery ||
-      template.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      template.body.toLowerCase().includes(searchQuery.toLowerCase());
-
-    const matchesStatus = !statusFilter || template.status === statusFilter.toLowerCase();
-    const matchesCategory = !categoryFilter || template.category === categoryFilter.toLowerCase();
-
-    return matchesSearch && matchesStatus && matchesCategory;
-  });
-
-  // Split into text vs media templates
-  const MEDIA_TYPES = ['image', 'video', 'document'];
-  const textTemplates = filteredTemplates.filter(
-    (t) => !MEDIA_TYPES.includes((t.header?.type || 'none').toLowerCase())
-  );
-  const mediaTemplates = filteredTemplates.filter(
-    (t) => MEDIA_TYPES.includes((t.header?.type || 'none').toLowerCase())
-  );
-
-  // Active tab templates
-  const activeTemplates = templateTab === 'media' ? mediaTemplates : textTemplates;
-
-  // Stats
+  // ─── Stats ─────────────────────────────────────────────────
   const stats = [
-    {
-      label: 'Total Templates',
-      value: templateList.length,
-      icon: FileText,
-      color: 'bg-blue-50 text-blue-600',
-      hexColor: '#3B82F6'
-    },
-    {
-      label: 'Approved',
-      value: templateList.filter(t => t.status === 'approved').length,
-      icon: CheckCircle,
-      color: 'bg-green-50 text-green-600',
-      hexColor: '#10B981'
-    },
-    {
-      label: 'Pending',
-      value: templateList.filter(t => t.status === 'pending').length,
-      icon: Clock,
-      color: 'bg-yellow-50 text-yellow-600',
-      hexColor: '#F59E0B'
-    },
-    {
-      label: 'Rejected',
-      value: templateList.filter(t => t.status === 'rejected').length,
-      icon: XCircle,
-      color: 'bg-red-50 text-red-600',
-      hexColor: '#EF4444'
-    },
+    { label: 'Total', value: list.length, icon: FileText, hex: '#3B82F6' },
+    { label: 'Approved', value: list.filter(t => t.status === 'approved').length, icon: CheckCircle2, hex: '#10B981' },
+    { label: 'Pending', value: list.filter(t => t.status === 'pending').length, icon: Clock, hex: '#F59E0B' },
+    { label: 'Rejected', value: list.filter(t => t.status === 'rejected').length, icon: XCircle, hex: '#EF4444' },
   ];
 
-  // Get status badge
-  const getStatusBadge = (status: string) => {
-    const badges: Record<string, { icon: any; class: string; label: string }> = {
-      approved: {
-        icon: CheckCircle,
-        class: 'bg-green-50 text-green-700 border-green-200',
-        label: 'Approved',
-      },
-      rejected: {
-        icon: XCircle,
-        class: 'bg-red-50 text-red-700 border-red-200',
-        label: 'Rejected',
-      },
-      pending: {
-        icon: Clock,
-        class: 'bg-yellow-50 text-yellow-700 border-yellow-200',
-        label: 'Pending',
-      },
-    };
-
-    const badge = badges[status.toLowerCase()] || badges.pending;
-    const Icon = badge.icon;
-
-    return (
-      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${badge.class}`}>
-        <Icon className="w-3 h-3 mr-1" />
-        {badge.label}
-      </span>
-    );
-  };
-
-  // Get category badge
-  const getCategoryBadge = (category: string) => {
-    const colors: Record<string, string> = {
-      marketing: 'bg-purple-50 text-purple-700 border-purple-200',
-      utility: 'bg-blue-50 text-blue-700 border-blue-200',
-      authentication: 'bg-orange-50 text-orange-700 border-orange-200',
-    };
-
-    return (
-      <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium border ${colors[category.toLowerCase()] || 'bg-gray-50 text-gray-700 border-gray-200'
-        }`}>
-        {category.toUpperCase()}
-      </span>
-    );
-  };
-
-  // Get header type icon
-  const getHeaderIcon = (type: string | null) => {
-    switch (type?.toUpperCase()) {
-      case 'IMAGE':
-        return <Image className="w-4 h-4 text-gray-400" />;
-      case 'VIDEO':
-        return <Video className="w-4 h-4 text-gray-400" />;
-      case 'DOCUMENT':
-      case 'TEXT':
-      default:
-        return <FileText className="w-4 h-4 text-gray-400" />;
-    }
-  };
-
+  // ─── Render ────────────────────────────────────────────────
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+
+      {/* ── Header ── */}
+      <div className="flex flex-col sm:flex-row sm:items-center
+                      sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Message Templates</h1>
+          <h1 className="text-2xl font-bold text-gray-900">
+            Message Templates
+          </h1>
           <p className="text-gray-500 mt-1">
             Create and manage your WhatsApp message templates
           </p>
         </div>
         <div className="flex items-center gap-3">
           <button
-            onClick={handleSyncTemplates}
+            onClick={handleSync}
             disabled={syncing || loading}
-            className="inline-flex items-center px-4 py-2 border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 disabled:opacity-50 transition-colors"
-            title="Sync templates from Meta"
+            className="inline-flex items-center px-4 py-2 border border-gray-200
+                       rounded-lg text-gray-600 hover:bg-gray-50
+                       disabled:opacity-50 transition-colors"
           >
-            <RefreshCw className={`w-5 h-5 mr-2 ${syncing || loading ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`w-5 h-5 mr-2 ${syncing ? 'animate-spin' : ''}`} />
             {syncing ? 'Syncing...' : 'Sync from Meta'}
           </button>
           <Link
             to="/dashboard/templates/new"
-            className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+            className="inline-flex items-center px-4 py-2 bg-green-600
+                       text-white rounded-lg hover:bg-green-700 transition-colors"
           >
             <Plus className="w-5 h-5 mr-2" />
             Create Template
@@ -349,116 +282,150 @@ const Templates: React.FC = () => {
         </div>
       </div>
 
-      {/* Error Alert */}
-      {error && (
-        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 flex items-start">
-          <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400 mr-3 mt-0.5" />
-          <div className="flex-1">
-            <p className="text-red-800 dark:text-red-200 font-medium">Error</p>
-            <p className="text-red-700 dark:text-red-300 text-sm">{error}</p>
+      {/* ── Success Banner ── */}
+      {success && (
+        <div className="bg-green-50 border border-green-200 rounded-lg p-4
+                        flex items-center justify-between">
+          <div className="flex items-center gap-2 text-green-800">
+            <CheckCircle2 className="w-5 h-5 text-green-600 shrink-0" />
+            <span className="text-sm font-medium">{success}</span>
           </div>
-          <button
-            onClick={() => setError(null)}
-            className="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-200"
-          >
+          <button onClick={() => setSuccess(null)}
+            className="text-green-500 hover:text-green-700">
             <XCircle className="w-5 h-5" />
           </button>
         </div>
       )}
 
-      {/* Stats */}
+      {/* ── Error Banner ── */}
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4
+                        flex items-start gap-3">
+          <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
+          <div className="flex-1">
+            <p className="text-red-800 font-medium text-sm">Error</p>
+            <p className="text-red-700 text-sm">{error}</p>
+          </div>
+          <button onClick={() => setError(null)}
+            className="text-red-500 hover:text-red-700">
+            <XCircle className="w-5 h-5" />
+          </button>
+        </div>
+      )}
+
+      {/* ── Stats ── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {stats.map((stat) => (
-          <div key={stat.label} className="relative overflow-hidden rounded-2xl border p-6 group/stat transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md" style={{ backgroundColor: `${stat.hexColor}0A`, borderColor: `${stat.hexColor}20` }}>
-            <div className="absolute top-0 right-0 p-4 opacity-[0.08] group-hover/stat:scale-110 group-hover/stat:opacity-[0.15] transition-all duration-500">
-              <stat.icon size={80} className={stat.color.split(' ')[1]} />
+        {stats.map(s => (
+          <div
+            key={s.label}
+            className="relative overflow-hidden rounded-2xl border p-6
+                       transition-all duration-300 hover:-translate-y-0.5
+                       hover:shadow-md"
+            style={{
+              backgroundColor: `${s.hex}0A`,
+              borderColor: `${s.hex}20`,
+            }}
+          >
+            <div className="absolute top-0 right-0 p-4 opacity-[0.08]">
+              <s.icon size={80} />
             </div>
-            <div className="relative z-10 flex flex-col justify-between h-full">
-              <p className={`text-xs font-mono uppercase tracking-widest mb-1 ${stat.color.split(' ')[1]}`}>{stat.label}</p>
-              <p className="text-3xl font-bold text-gray-900 mt-1">{stat.value}</p>
-            </div>
+            <p className="text-xs font-mono uppercase tracking-widest mb-1 text-gray-500">
+              {s.label}
+            </p>
+            <p className="text-3xl font-bold text-gray-900">{s.value}</p>
           </div>
         ))}
       </div>
 
-      {/* Search & Filters */}
-      <div className="relative overflow-hidden rounded-2xl bg-white border border-gray-200 p-4 shadow-sm">
-        <div className="flex flex-col sm:flex-row gap-4 relative z-10">
+      {/* ── Search & Filters ── */}
+      <div className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm">
+        <div className="flex flex-col sm:flex-row gap-4">
           {/* Search */}
           <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2
+                               w-5 h-5 text-gray-400" />
             <input
               type="text"
               placeholder="Search templates..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-green-500 focus:bg-white transition-colors shadow-sm"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border
+                         border-gray-200 rounded-xl text-gray-900
+                         placeholder:text-gray-400 focus:outline-none
+                         focus:border-green-500 focus:bg-white transition-colors"
             />
           </div>
 
-          {/* Filter Toggle */}
+          {/* Filter toggle */}
           <button
             onClick={() => setShowFilters(!showFilters)}
-            className={`inline-flex items-center px-4 py-2 border rounded-lg transition-colors ${showFilters
-              ? 'bg-gray-100 text-gray-900 border-gray-300 font-medium'
-              : 'border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-              }`}
+            className={`inline-flex items-center px-4 py-2 border
+                        rounded-lg transition-colors
+                        ${showFilters
+                ? 'bg-gray-100 text-gray-900 border-gray-300 font-medium'
+                : 'border-gray-200 text-gray-600 hover:bg-gray-50'}`}
           >
             <Filter className="w-5 h-5 mr-2" />
             Filters
-            {(statusFilter || categoryFilter) && (
-              <span className="ml-2 w-5 h-5 bg-green-600 text-white text-xs rounded-full flex items-center justify-center font-bold">
-                {[statusFilter, categoryFilter].filter(Boolean).length}
+            {(statusF || categoryF) && (
+              <span className="ml-2 w-5 h-5 bg-green-600 text-white
+                               text-xs rounded-full flex items-center
+                               justify-center font-bold">
+                {[statusF, categoryF].filter(Boolean).length}
               </span>
             )}
           </button>
 
-          {/* View Mode Toggle */}
-          <div className="flex items-center space-x-2">
-            <button
-              onClick={() => setViewMode('grid')}
-              className={`p-2 rounded-lg border transition-colors ${viewMode === 'grid'
-                ? 'bg-green-50 text-green-600 border-green-200'
-                : 'bg-white text-gray-400 hover:text-gray-600 border-gray-200 hover:bg-gray-50'
-                }`}
-            >
-              <LayoutGrid className="w-5 h-5" />
-            </button>
-            <button
-              onClick={() => setViewMode('list')}
-              className={`p-2 rounded-lg border transition-colors ${viewMode === 'list'
-                ? 'bg-green-50 text-green-600 border-green-200'
-                : 'bg-white text-gray-400 hover:text-gray-600 border-gray-200 hover:bg-gray-50'
-                }`}
-            >
-              <List className="w-5 h-5" />
-            </button>
+          {/* View mode */}
+          <div className="flex items-center gap-2">
+            {(['grid', 'list'] as const).map(mode => (
+              <button
+                key={mode}
+                onClick={() => setViewMode(mode)}
+                className={`p-2 rounded-lg border transition-colors
+                            ${viewMode === mode
+                    ? 'bg-green-50 text-green-600 border-green-200'
+                    : 'bg-white text-gray-400 hover:text-gray-600 border-gray-200'}`}
+              >
+                {mode === 'grid'
+                  ? <LayoutGrid className="w-5 h-5" />
+                  : <List className="w-5 h-5" />}
+              </button>
+            ))}
           </div>
         </div>
 
-        {/* Expanded Filters */}
+        {/* Expanded filters */}
         {showFilters && (
           <div className="mt-4 pt-4 border-t border-gray-200 flex flex-wrap gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Status
+              </label>
               <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="px-3 py-2 border border-gray-200 rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500"
+                value={statusF}
+                onChange={e => setStatusF(e.target.value)}
+                className="px-3 py-2 border border-gray-200 rounded-lg
+                           bg-white text-gray-900 focus:outline-none
+                           focus:ring-2 focus:ring-green-500"
               >
                 <option value="">All Status</option>
                 <option value="APPROVED">Approved</option>
                 <option value="PENDING">Pending</option>
                 <option value="REJECTED">Rejected</option>
+                <option value="DRAFT">Draft</option>
               </select>
             </div>
-
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Category
+              </label>
               <select
-                value={categoryFilter}
-                onChange={(e) => setCategoryFilter(e.target.value)}
-                className="px-3 py-2 border border-gray-200 rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500"
+                value={categoryF}
+                onChange={e => setCategoryF(e.target.value)}
+                className="px-3 py-2 border border-gray-200 rounded-lg
+                           bg-white text-gray-900 focus:outline-none
+                           focus:ring-2 focus:ring-green-500"
               >
                 <option value="">All Categories</option>
                 <option value="MARKETING">Marketing</option>
@@ -466,14 +433,11 @@ const Templates: React.FC = () => {
                 <option value="AUTHENTICATION">Authentication</option>
               </select>
             </div>
-
-            {(statusFilter || categoryFilter) && (
+            {(statusF || categoryF) && (
               <button
-                onClick={() => {
-                  setStatusFilter('');
-                  setCategoryFilter('');
-                }}
-                className="self-end px-3 py-2 text-sm text-gray-500 hover:text-gray-900 font-medium"
+                onClick={() => { setStatusF(''); setCategoryF(''); }}
+                className="self-end px-3 py-2 text-sm text-gray-500
+                           hover:text-gray-900 font-medium"
               >
                 Clear all
               </button>
@@ -483,139 +447,169 @@ const Templates: React.FC = () => {
       </div>
 
       {/* ── Tab Switcher ── */}
-      <div className="flex items-center gap-1 bg-gray-100 border border-gray-200 rounded-xl p-1 w-fit">
-        <button
-          onClick={() => setTemplateTab('text')}
-          className={`flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-medium transition-all ${templateTab === 'text'
-              ? 'bg-green-600 text-white shadow-sm'
-              : 'text-gray-600 hover:text-gray-900'
-            }`}
-        >
-          <Type className="w-4 h-4" />
-          Text Templates
-          <span className={`ml-1 px-1.5 py-0.5 rounded-full text-xs font-semibold ${templateTab === 'text'
-              ? 'bg-green-700 text-white'
-              : 'bg-gray-200 text-gray-600'
-            }`}>
-            {textTemplates.length}
-          </span>
-        </button>
-        <button
-          onClick={() => setTemplateTab('media')}
-          className={`flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-medium transition-all ${templateTab === 'media'
-              ? 'bg-green-600 text-white shadow-sm'
-              : 'text-gray-600 hover:text-gray-900'
-            }`}
-        >
-          <Image className="w-4 h-4" />
-          Media Templates
-          <span className={`ml-1 px-1.5 py-0.5 rounded-full text-xs font-semibold ${templateTab === 'media'
-              ? 'bg-green-700 text-white'
-              : 'bg-gray-200 text-gray-600'
-            }`}>
-            {mediaTemplates.length}
-          </span>
-        </button>
+      <div className="flex items-center gap-1 bg-gray-100 border
+                      border-gray-200 rounded-xl p-1 w-fit">
+        {([
+          { id: 'text', label: 'Text Templates', icon: Type, count: textTemplates.length },
+          { id: 'media', label: 'Media Templates', icon: Image, count: mediaTemplates.length },
+        ] as const).map(t => (
+          <button
+            key={t.id}
+            onClick={() => setTab(t.id)}
+            className={`flex items-center gap-2 px-5 py-2 rounded-lg
+                        text-sm font-medium transition-all
+                        ${tab === t.id
+                ? 'bg-green-600 text-white shadow-sm'
+                : 'text-gray-600 hover:text-gray-900'}`}
+          >
+            <t.icon className="w-4 h-4" />
+            {t.label}
+            <span className={`ml-1 px-1.5 py-0.5 rounded-full text-xs font-semibold
+                              ${tab === t.id
+                ? 'bg-green-700 text-white'
+                : 'bg-gray-200 text-gray-600'}`}>
+              {t.count}
+            </span>
+          </button>
+        ))}
       </div>
 
-      {/* ── Templates Display ── */}
+      {/* ── Content ── */}
       {loading ? (
-        <div className="flex items-center justify-center py-12">
+        <div className="flex items-center justify-center py-16">
           <div className="text-center">
             <Loader2 className="w-10 h-10 text-green-600 animate-spin mx-auto mb-4" />
             <p className="text-gray-500">Loading templates...</p>
           </div>
         </div>
-      ) : activeTemplates.length === 0 ? (
-        <div className="text-center py-16 bg-white rounded-2xl border border-gray-200 shadow-sm">
-          <div className="w-20 h-20 bg-gray-50 border border-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            {templateTab === 'media'
+
+      ) : activeList.length === 0 ? (
+        <div className="text-center py-16 bg-white rounded-2xl
+                        border border-gray-200 shadow-sm">
+          <div className="w-20 h-20 bg-gray-50 border border-gray-100
+                          rounded-full flex items-center justify-center mx-auto mb-4">
+            {tab === 'media'
               ? <Image className="w-10 h-10 text-gray-400" />
               : <FileText className="w-10 h-10 text-gray-400" />}
           </div>
           <h3 className="text-lg font-semibold text-gray-900 mb-2">
-            No {templateTab === 'media' ? 'media' : 'text'} templates found
+            No {tab === 'media' ? 'media' : 'text'} templates found
           </h3>
-          <p className="text-gray-500 mb-6 max-w-md mx-auto">
-            {searchQuery || statusFilter || categoryFilter
-              ? 'Try adjusting your filters or search query'
-              : templateTab === 'media'
-                ? 'Create a template with an Image, Video or Document header'
-                : 'Create your first text template to get started'}
+          <p className="text-gray-500 mb-6 max-w-sm mx-auto">
+            {search || statusF || categoryF
+              ? 'Try adjusting your filters'
+              : `Create your first ${tab} template to get started`}
           </p>
-          {!searchQuery && !statusFilter && !categoryFilter && (
+          {!search && !statusF && !categoryF && (
             <Link
               to="/dashboard/templates/new"
-              className="inline-flex items-center space-x-2 px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white font-medium rounded-xl transition-colors"
+              className="inline-flex items-center gap-2 px-4 py-2.5
+                         bg-green-600 hover:bg-green-700 text-white
+                         font-medium rounded-xl transition-colors"
             >
               <Plus className="w-5 h-5" />
-              <span>Create Template</span>
+              Create Template
             </Link>
           )}
         </div>
+
       ) : viewMode === 'grid' ? (
         <div className="grid gap-6 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
-          {activeTemplates.map((template) => (
+          {activeList.map(t => (
             <TemplateCard
-              key={template.id}
-              template={template}
-              onDelete={() => handleDeleteTemplate(template.id)}
-              onDuplicate={() => handleDuplicateTemplate(template)}
-              onPreview={() => setPreviewTemplate(template)}
+              key={t.id}
+              template={t}
+              onDelete={() => { setDeleteTarget(t); }}
+              onDuplicate={() => handleDuplicate(t)}
+              onPreview={() => setPreviewTemplate(t)}
             />
           ))}
         </div>
+
       ) : (
-        <div className="relative overflow-hidden rounded-2xl bg-white border border-gray-200 shadow-sm">
+        /* ── List View ── */
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Template</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Language</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                  {['Template', 'Category', 'Status', 'Language', 'Created', 'Actions'].map(h => (
+                    <th key={h}
+                      className={`px-6 py-3 text-xs font-medium text-gray-500
+                                    uppercase tracking-wider
+                                    ${h === 'Actions' ? 'text-right' : 'text-left'}`}>
+                      {h}
+                    </th>
+                  ))}
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 bg-white">
-                {activeTemplates.map((template) => (
-                  <tr key={template.id} className="hover:bg-gray-50 transition-all duration-200 group/row">
+                {activeList.map(t => (
+                  <tr key={t.id}
+                    className="hover:bg-gray-50 transition-colors group">
                     <td className="px-6 py-4">
-                      <div className="flex items-start">
-                        <div className="w-10 h-10 bg-gray-50 border border-gray-200/50 rounded-lg flex items-center justify-center mr-3">
-                          {getHeaderIcon(template.header.type)}
+                      <div className="flex items-start gap-3">
+                        <div className="w-10 h-10 bg-gray-50 border border-gray-200
+                                        rounded-lg flex items-center justify-center shrink-0">
+                          <HeaderIcon type={t.header?.type} />
                         </div>
                         <div>
-                          <p className="font-medium text-gray-900">{template.name}</p>
-                          <p className="text-sm text-gray-500 line-clamp-1 max-w-xs">{template.body}</p>
-                          {template.status === 'rejected' && template.rejectionReason && (
-                            <p className="text-xs text-red-600 mt-1">Reason: {template.rejectionReason}</p>
+                          <p className="font-medium text-gray-900">{t.name}</p>
+                          <p className="text-sm text-gray-500 line-clamp-1 max-w-xs">
+                            {t.body}
+                          </p>
+                          {t.status === 'rejected' && t.rejectionReason && (
+                            <p className="text-xs text-red-600 mt-0.5">
+                              Reason: {t.rejectionReason}
+                            </p>
                           )}
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4">{getCategoryBadge(template.category)}</td>
-                    <td className="px-6 py-4">{getStatusBadge(template.status)}</td>
-                    <td className="px-6 py-4"><span className="text-gray-600">{template.language}</span></td>
                     <td className="px-6 py-4">
-                      <span className="text-gray-550 text-sm">
-                        {new Date(template.createdAt).toLocaleDateString()}
-                      </span>
+                      <CategoryBadge category={t.category} />
                     </td>
-                    <td className="px-6 py-4 text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <button onClick={() => setPreviewTemplate(template)} className="p-2 text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors" title="Preview">
+                    <td className="px-6 py-4">
+                      <StatusBadge status={t.status} />
+                    </td>
+                    <td className="px-6 py-4 text-gray-600">{t.language}</td>
+                    <td className="px-6 py-4 text-sm text-gray-500">
+                      {new Date(t.createdAt).toLocaleDateString()}
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center justify-end gap-1">
+                        <button
+                          onClick={() => setPreviewTemplate(t)}
+                          className="p-2 text-gray-400 hover:text-gray-700
+                                     hover:bg-gray-100 rounded-lg transition-colors"
+                          title="Preview"
+                        >
                           <Eye className="w-4 h-4" />
                         </button>
-                        <button onClick={() => navigate(`/dashboard/templates/edit/${template.id}`)} className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Edit">
+                        <button
+                          onClick={() =>
+                            navigate(`/dashboard/templates/edit/${t.id}`)
+                          }
+                          className="p-2 text-gray-400 hover:text-blue-600
+                                     hover:bg-blue-50 rounded-lg transition-colors"
+                          title="Edit"
+                        >
                           <Edit className="w-4 h-4" />
                         </button>
-                        <button onClick={() => handleDuplicateTemplate(template)} className="p-2 text-gray-500 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors" title="Duplicate">
+                        <button
+                          onClick={() => handleDuplicate(t)}
+                          className="p-2 text-gray-400 hover:text-green-600
+                                     hover:bg-green-50 rounded-lg transition-colors"
+                          title="Duplicate"
+                        >
                           <Copy className="w-4 h-4" />
                         </button>
-                        <button onClick={() => { setSelectedTemplate(template); setShowDeleteModal(true); }} className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Delete">
+                        <button
+                          onClick={() => setDeleteTarget(t)}
+                          className="p-2 text-gray-400 hover:text-red-600
+                                     hover:bg-red-50 rounded-lg transition-colors"
+                          title="Delete"
+                        >
                           <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
@@ -628,7 +622,7 @@ const Templates: React.FC = () => {
         </div>
       )}
 
-      {/* Template Preview Modal */}
+      {/* ── Preview Modal ── */}
       {previewTemplate && (
         <TemplatePreview
           template={{
@@ -638,7 +632,7 @@ const Templates: React.FC = () => {
             header: previewTemplate.header,
             body: previewTemplate.body,
             footer: previewTemplate.footer || '',
-            buttons: previewTemplate.buttons
+            buttons: previewTemplate.buttons,
           }}
           sampleVariables={{}}
           isModal
@@ -646,34 +640,42 @@ const Templates: React.FC = () => {
         />
       )}
 
-      {/* Delete Confirmation Modal */}
-      {showDeleteModal && selectedTemplate && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white border border-gray-200 shadow-xl rounded-xl max-w-md w-full p-6">
-            <div className="w-12 h-12 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-red-100">
+      {/* ── Delete Confirm Modal ── */}
+      {deleteTarget && (
+        <div className="fixed inset-0 bg-black/50 flex items-center
+                        justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
+            <div className="w-12 h-12 bg-red-50 rounded-full flex items-center
+                            justify-center mx-auto mb-4">
               <Trash2 className="w-6 h-6 text-red-600" />
             </div>
             <h3 className="text-lg font-bold text-center text-gray-900 mb-2">
               Delete Template
             </h3>
-            <p className="text-center text-gray-600 mb-6">
-              Are you sure you want to delete "{selectedTemplate.name}"? This action cannot be undone.
+            <p className="text-center text-gray-600 mb-6 text-sm">
+              Are you sure you want to delete{' '}
+              <strong>"{deleteTarget.name}"</strong>?
+              This cannot be undone.
             </p>
             <div className="flex gap-3">
               <button
-                onClick={() => {
-                  setShowDeleteModal(false);
-                  setSelectedTemplate(null);
-                }}
-                className="flex-1 px-4 py-2 border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+                onClick={() => setDeleteTarget(null)}
+                disabled={deleting}
+                className="flex-1 px-4 py-2 border border-gray-200
+                           rounded-lg text-gray-700 hover:bg-gray-50
+                           transition-colors disabled:opacity-50"
               >
                 Cancel
               </button>
               <button
-                onClick={() => handleDeleteTemplate()}
-                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                onClick={handleDelete}
+                disabled={deleting}
+                className="flex-1 px-4 py-2 bg-red-600 text-white
+                           rounded-lg hover:bg-red-700 transition-colors
+                           disabled:opacity-50 flex items-center justify-center gap-2"
               >
-                Delete
+                {deleting && <Loader2 className="w-4 h-4 animate-spin" />}
+                {deleting ? 'Deleting...' : 'Delete'}
               </button>
             </div>
           </div>

@@ -13,7 +13,6 @@ import {
   Edit,
   Trash2,
   Send,
-  Loader2,
   AlertCircle
 } from 'lucide-react';
 import { contacts as contactApi } from '../services/api';
@@ -29,61 +28,46 @@ const ContactDetails: React.FC = () => {
 
   // Fetch Contact Details
   useEffect(() => {
-    const fetchContact = async () => {
+    if (!id) return;
+    (async () => {
       setLoading(true);
       setError(null);
-      
       try {
-        // Try getting by ID first if endpoint exists, otherwise filter from all
-        let foundContact = null;
-
-        try {
-          // If your backend supports GET /contacts/:id
-          const res = await contactApi.getById(id!);
-          foundContact = res.data.data;
-        } catch (e) {
-          // Fallback: Fetch all and find
-          console.warn("getById failed, fetching all contacts to find match");
-          const res = await contactApi.getAll();
-          foundContact = (res.data.data as any[] || []).find((c: any) => c._id === id || c.id === id);
+        const res = await contactApi.getById(id);
+        const data = res.data?.data;
+        if (!data) {
+          setError("Contact not found");
+          return;
         }
-
-        if (foundContact) {
-          // Transform data for UI
-          const fullName = foundContact.name || 
-                          `${foundContact.firstName || ''} ${foundContact.lastName || ''}`.trim() || 
-                          'Unknown Contact';
-          
-          setContact({
-            ...foundContact,
-            name: fullName,
-            firstName: fullName.split(' ')[0],
-            lastName: fullName.split(' ').slice(1).join(' '),
-            initials: fullName.substring(0, 2).toUpperCase(),
-            phone: foundContact.phone || 'N/A',
-            email: foundContact.email || 'N/A',
-            company: foundContact.company || 'N/A',
-            address: foundContact.address || 'N/A',
-            status: foundContact.status || 'active',
-            tags: foundContact.tags || [],
-            notes: foundContact.notes || '',
-            totalMessages: foundContact.stats?.messagesSent || 0,
-            campaigns: foundContact.stats?.campaigns || 0,
-            lastContacted: foundContact.lastContacted || 'Never',
-            createdAt: foundContact.createdAt || new Date().toISOString()
-          });
-        } else {
-          setError('Contact not found');
-        }
+        
+        const firstName = data.firstName || "";
+        const lastName = data.lastName || "";
+        const fullName = data.name || `${firstName} ${lastName}`.trim() || "Unknown Contact";
+        
+        setContact({
+          ...data,
+          name: fullName,
+          firstName: firstName || fullName.split(" ")[0] || "",
+          lastName: lastName || fullName.split(" ").slice(1).join(" ") || "",
+          initials: fullName.slice(0, 2).toUpperCase(),
+          phone: data.phone || "N/A",
+          email: data.email || "N/A",
+          company: data.company || data.customFields?.company || "N/A",
+          address: data.address || "N/A",
+          status: String(data.status || "active").toLowerCase(),
+          tags: data.tags || [],
+          notes: data.notes || "",
+          totalMessages: data.stats?.messagesSent || 0,
+          campaigns: data.stats?.campaigns || 0,
+          lastContacted: data.lastContacted || "Never",
+          createdAt: data.createdAt || new Date().toISOString(),
+        });
       } catch (err: any) {
-        console.error("Error fetching contact details:", err);
-        setError('Failed to load contact details');
+        setError(err?.message || "Failed to fetch contact details");
       } finally {
         setLoading(false);
       }
-    };
-
-    if (id) fetchContact();
+    })();
   }, [id]);
 
   const handleDelete = async () => {

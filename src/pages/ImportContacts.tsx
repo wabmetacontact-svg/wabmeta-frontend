@@ -244,7 +244,10 @@ const ImportContacts: React.FC = () => {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/contacts/import`, {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          Authorization: `Bearer ${
+            localStorage.getItem("accessToken") ||
+            localStorage.getItem("token") || ""
+          }`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
@@ -287,6 +290,11 @@ const ImportContacts: React.FC = () => {
     setCsvHeaders([]);
     setFailures([]);
     setFieldMapping({ name: "", phone: "", email: "", company: "" });
+  };
+
+  const handleBack = () => {
+    setFailures([]);
+    setStep("mapping");
   };
 
   const visualStepIndex = useMemo(() => {
@@ -574,7 +582,7 @@ const ImportContacts: React.FC = () => {
             </div>
 
             <div className="flex justify-end gap-3 mt-6">
-              <button onClick={() => setStep("mapping")} className="px-5 py-2.5 text-gray-600 rounded-xl hover:bg-gray-100 transition-colors">
+              <button onClick={handleBack} className="px-5 py-2.5 text-gray-600 rounded-xl hover:bg-gray-100 transition-colors">
                 Back
               </button>
               <button 

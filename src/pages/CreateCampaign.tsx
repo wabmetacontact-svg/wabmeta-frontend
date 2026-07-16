@@ -1,20 +1,10 @@
-// src/pages/CreateCampaign.tsx - COMPLETE (CSV REMOVED, GROUP ADDED)
-
-import React, { useState, useMemo, useEffect } from "react";
+// src/pages/CreateCampaign.tsx - FIXED
+import React, { useState, useMemo, useEffect, useCallback } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import {
-  ArrowLeft,
-  ArrowRight,
-  Check,
-  Send,
-  Users,
-  FileText,
-  Settings,
-  Clock,
-  Loader2,
-  Eye,
-  AlertCircle,
-  Wifi,
+  ArrowLeft, ArrowRight, Check, Send, Users,
+  FileText, Settings, Clock, Loader2, Eye,
+  AlertCircle, Wifi, Wallet, Info,
 } from "lucide-react";
 
 import TemplateSelector from "../components/campaigns/TemplateSelector";
@@ -31,17 +21,19 @@ import {
   whatsapp as whatsappApi,
 } from "../services/api";
 
-// TYPES
+// ─── Types ───────────────────────────────────────────────────
 interface MappedTemplate {
   id: string;
   name: string;
   category: string;
   language: string;
   headerType: string;
+  headerContent?: string;
   body: string;
-  buttons: { text: string }[];
-  variables: string[];
-  status: string; // ✅ Added
+  buttons: { text: string; type?: string }[];
+  variables: string[];  // body variables
+  headerVariables: string[];  // ✅ FIX Bug6: header variables separately
+  status: string;
   whatsappAccountId?: string;
 }
 
@@ -52,22 +44,43 @@ interface MappedContact {
   tags: string[];
 }
 
-type WhatsAppAccountLite = {
+interface WhatsAppAccountLite {
   id: string;
   phoneNumberId?: string;
   phoneNumber?: string;
   displayName?: string;
   isDefault?: boolean;
   status?: string;
-};
+}
 
-// HELPERS
-const extractVariablesFromBody = (bodyText: string): string[] => {
-  if (!bodyText) return [];
-  const matches = bodyText.match(/\{\{(\d+)\}\}/g) || [];
-  return [...new Set(matches.map((m: string) => m.replace(/[{}]/g, "")))].sort(
-    (a, b) => Number(a) - Number(b)
-  );
+// ✅ Wallet estimate type
+interface WalletEstimate {
+  hasWallet: boolean;
+  walletActive: boolean;
+  availableBalance: number;
+  estimatedCost: number;
+  canProceed: boolean;
+  shortfall: number;
+  currency: string;
+  estimatedCostBreakdown?: {
+    totalRecipients: number;
+    ratePerMessage: number;
+    category: string;
+    countryBreakdown?: {
+      country: string;
+      count: number;
+      rate: number;
+      cost: number;
+    }[];
+  };
+}
+
+// ─── Helpers ─────────────────────────────────────────────────
+const extractVars = (text: string): string[] => {
+  if (!text) return [];
+  const matches = text.match(/\{\{(\d+)\}\}/g) || [];
+  return [...new Set(matches.map(m => m.replace(/[{}]/g, "")))]
+    .sort((a, b) => Number(a) - Number(b));
 };
 
 const parseApiArray = <T,>(resp: any, keys: string[] = []): T[] => {
@@ -85,16 +98,42 @@ const parseApiArray = <T,>(resp: any, keys: string[] = []): T[] => {
   return [];
 };
 
-const mapHeaderForPreview = (headerType: string) => {
+const mapHeaderForPreview = (headerType: string, headerContent?: string) => {
   const ht = String(headerType || "none").toLowerCase();
   if (ht === "none" || ht === "null") return { type: "none" as const };
-  if (ht === "text") return { type: "text" as const, text: "" };
-  if (ht === "image") return { type: "image" as const, mediaUrl: undefined };
-  if (ht === "video") return { type: "video" as const, mediaUrl: undefined };
-  if (ht === "document") return { type: "document" as const, mediaUrl: undefined };
+  if (ht === "text") return { type: "text" as const, text: headerContent || "" };
+  if (ht === "image") return { type: "image" as const, cloudinaryUrl: headerContent, mediaUrl: headerContent };
+  if (ht === "video") return { type: "video" as const, cloudinaryUrl: headerContent, mediaUrl: headerContent };
+  if (ht === "document") return { type: "document" as const, cloudinaryUrl: headerContent };
   return { type: "none" as const };
 };
 
+// ✅ FIX Bug8: Parse wallet error from backend error string
+const parseWalletError = (
+  msg: string
+): { isWalletError: boolean; type?: string; required?: string; available?: string } => {
+  if (msg.includes("WALLET_LOW_BALANCE")) {
+    const parts = msg.split("::");
+    return {
+      isWalletError: true,
+      type: "LOW_BALANCE",
+      required: parts[1],
+      available: parts[2],
+    };
+  }
+  if (msg.includes("WALLET_INSUFFICIENT")) {
+    const parts = msg.split("::");
+    return {
+      isWalletError: true,
+      type: "INSUFFICIENT",
+      required: parts[1],
+      available: parts[2],
+    };
+  }
+  return { isWalletError: false };
+};
+
+// ─── Component ────────────────────────────────────────────────
 const CreateCampaign: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -115,17 +154,27 @@ const CreateCampaign: React.FC = () => {
   const [selectedAccountId, setSelectedAccountId] = useState<string>("");
   const [loadingAccounts, setLoadingAccounts] = useState(true);
 
+  // ✅ NEW: Wallet estimate state
+  const [walletEstimate, setWalletEstimate] = useState<WalletEstimate | null>(null);
+  const [loadingEstimate, setLoadingEstimate] = useState(false);
+
+  // ✅ NEW: Group member count
+  const [groupMemberCount, setGroupMemberCount] = useState<number>(0);
+
+  // ✅ NEW: Created campaign ID (to start after create)
+  const [createdCampaignId, setCreatedCampaignId] = useState<string | null>(null);
+
   // Form State
   const [formData, setFormData] = useState<CampaignFormData>(() => {
-    const stateData = location.state as any;
+    const s = location.state as any;
     return {
-      name: stateData?.name || "",
-      description: stateData?.description || "",
-      templateId: stateData?.templateId || "",
+      name: s?.name || "",
+      description: s?.description || "",
+      templateId: s?.templateId || "",
       audienceType: "all",
       selectedTags: [],
       selectedContacts: [],
-      selectedGroup: "", // ✅ Added
+      selectedGroup: "",
       csvContacts: [],
       variableMapping: {},
       scheduleType: "now",
@@ -134,123 +183,150 @@ const CreateCampaign: React.FC = () => {
     };
   });
 
-  // Load Accounts
+  // ─── Load Accounts ─────────────────────────────────────────
   useEffect(() => {
-    const loadAccounts = async () => {
+    (async () => {
       setApiError(null);
       try {
         setLoadingAccounts(true);
         const res = await whatsappApi.accounts();
-        const accountsArr = parseApiArray<any>(res, ["accounts", "items", "data"]);
-        const connected = (accountsArr || []).filter(
-          (a: any) => String(a.status || "").toUpperCase() === "CONNECTED"
+        const arr = parseApiArray<any>(res, ["accounts", "items", "data"]);
+        const conn = arr.filter(
+          a => String(a.status || "").toUpperCase() === "CONNECTED"
         );
 
-        if (!connected.length) {
-          throw new Error("No WhatsApp accounts connected. Please connect one in Settings → WhatsApp.");
+        if (!conn.length) {
+          throw new Error(
+            "No WhatsApp accounts connected. Please connect one in Settings → WhatsApp."
+          );
         }
 
-        setWhatsappAccounts(connected);
-        const def = connected.find((a: any) => a.isDefault) || connected[0];
+        setWhatsappAccounts(conn);
+        const def = conn.find(a => a.isDefault) || conn[0];
         setSelectedAccountId(def.id);
       } catch (e: any) {
-        setApiError(e?.response?.data?.message || e?.message || "Failed to load WhatsApp accounts.");
+        setApiError(
+          e?.response?.data?.message || e?.message || "Failed to load accounts."
+        );
       } finally {
         setLoadingAccounts(false);
       }
-    };
-    loadAccounts();
+    })();
   }, []);
 
-  // Load Templates & Contacts
+  // ─── Load Templates & Contacts ─────────────────────────────
   useEffect(() => {
-    const fetchData = async () => {
-      if (!selectedAccountId) return;
+    if (loadingAccounts || !selectedAccountId) {
+      if (!loadingAccounts) setLoadingData(false);
+      return;
+    }
+
+    (async () => {
       setLoadingData(true);
       setApiError(null);
-
       try {
-        const [templatesRes, contactsRes] = await Promise.all([
-          templateApi.getAll({ whatsappAccountId: selectedAccountId }),
-          contactApi.getAll({ limit: 10000 }),
+        const [tplRes, cntRes] = await Promise.all([
+          // ✅ Only approved templates
+          templateApi.getAll({
+            whatsappAccountId: selectedAccountId,
+            status: "APPROVED",
+            limit: 200,
+          }),
+          // ✅ FIX Bug7: Limit contacts, not 10000
+          contactApi.getAll({ limit: 500, status: "ACTIVE" }),
         ]);
 
-        // Templates
-        const templatesArray = parseApiArray<any>(templatesRes, ["templates", "items", "data"]);
-        const mappedTemplates: MappedTemplate[] = (templatesArray || []).map((t: any) => ({
-          id: t._id || t.id,
-          name: t.name || "Untitled",
-          category: (t.category || "UTILITY").toLowerCase(),
-          language: t.language || "en_US",
-          headerType: (t.headerType || "NONE").toLowerCase(),
-          body: t.bodyText || t.body || "",
-          buttons: Array.isArray(t.buttons) ? t.buttons.map((b: any) => ({ text: b.text || "" })) : [],
-          variables: extractVariablesFromBody(t.bodyText || t.body || ""),
-          status: String(t.status || "PENDING").toLowerCase(), // ✅ Added
-          whatsappAccountId: t.whatsappAccountId,
-        }));
+        // Map templates
+        const tplArr = parseApiArray<any>(tplRes, ["templates", "data"]);
+        const mapped: MappedTemplate[] = tplArr
+          .filter(t => String(t.status || "").toLowerCase() === "approved")
+          .map(t => ({
+            id: t._id || t.id,
+            name: t.name || "Untitled",
+            category: (t.category || "UTILITY").toLowerCase(),
+            language: t.language || "en_US",
+            headerType: (t.headerType || "NONE").toLowerCase(),
+            headerContent: t.headerContent || undefined,
+            body: t.bodyText || t.body || "",
+            buttons: (Array.isArray(t.buttons) ? t.buttons : [])
+              .map((b: any) => ({ text: b.text || "", type: b.type || "" })),
+            // ✅ FIX Bug6: Extract body AND header variables
+            variables: extractVars(t.bodyText || t.body || ""),
+            headerVariables: extractVars(t.headerContent || ""),
+            status: String(t.status || "PENDING").toLowerCase(),
+            whatsappAccountId: t.whatsappAccountId,
+          }));
+        setTemplates(mapped);
 
-        // Filter: Only show approved templates
-        const approvedTemplates = mappedTemplates.filter(t => t.status === 'approved');
-        setTemplates(approvedTemplates);
-
-        // Contacts
-        const contactsArray = parseApiArray<any>(contactsRes, ["contacts", "items", "data"]);
-        const mappedContacts: MappedContact[] = (contactsArray || []).map((c: any) => ({
+        // Map contacts
+        const cntArr = parseApiArray<any>(cntRes, ["contacts", "data"]);
+        const cMapped: MappedContact[] = cntArr.map((c: any) => ({
           id: c._id || c.id,
           name: `${c.firstName || ""} ${c.lastName || ""}`.trim() || c.phone || "Unknown",
           phone: c.phone || "",
           tags: Array.isArray(c.tags) ? c.tags : [],
         }));
-        setContacts(mappedContacts);
+        setContacts(cMapped);
 
-        // Tags
         const tagsSet = new Set<string>();
-        mappedContacts.forEach((c) => c.tags.forEach((tag: string) => tagsSet.add(tag)));
-        setAvailableTags(Array.from(tagsSet));
+        cMapped.forEach(c => c.tags.forEach(t => tagsSet.add(t)));
+        setAvailableTags([...tagsSet]);
       } catch (err: any) {
-        console.error("❌ Failed to load data:", err);
-        setApiError(err?.response?.data?.message || err?.message || "Failed to load data.");
+        setApiError(
+          err?.response?.data?.message || err?.message || "Failed to load data."
+        );
       } finally {
         setLoadingData(false);
       }
-    };
-    if (!loadingAccounts) {
-      if (selectedAccountId) {
-        fetchData();
-      } else {
-        setLoadingData(false);
-      }
-    }
+    })();
   }, [loadingAccounts, selectedAccountId]);
 
-  // Computed
+  // ─── Computed ──────────────────────────────────────────────
   const selectedTemplate = useMemo(
-    () => templates.find((t) => t.id === formData.templateId),
+    () => templates.find(t => t.id === formData.templateId),
     [formData.templateId, templates]
   );
 
-  // Note: For 'group', we don't know exact count until send, but we can fetch it if needed.
-  // For now we assume if group selected > 0.
+  // ✅ FIX Bug3: Group count from state, others calculated
   const totalRecipients = useMemo(() => {
     switch (formData.audienceType) {
       case "all":
         return contacts.length;
       case "tags":
-        return contacts.filter((c) => formData.selectedTags.some((tag) => c.tags.includes(tag))).length;
+        return contacts.filter(c =>
+          formData.selectedTags.some(tag => c.tags.includes(tag))
+        ).length;
       case "manual":
         return formData.selectedContacts.length;
       case "group":
-        // We don't have group member count locally here without extra API call
-        // Assuming user selected a group with members.
-        return formData.selectedGroup ? 1 : 0;
+        return groupMemberCount;
       case "csv":
         return formData.csvContacts?.length || 0;
       default:
         return 0;
     }
-  }, [formData.audienceType, formData.selectedTags, formData.selectedContacts, formData.selectedGroup, contacts]);
+  }, [
+    formData.audienceType, formData.selectedTags,
+    formData.selectedContacts, formData.selectedGroup,
+    formData.csvContacts, contacts, groupMemberCount,
+  ]);
 
+  // ─── Fetch wallet estimate after campaign created ──────────
+  const fetchWalletEstimate = useCallback(async (campaignId: string) => {
+    try {
+      setLoadingEstimate(true);
+      const res = await campaignApi.estimateCost(campaignId);
+      const data = res.data?.data || res.data;
+      setWalletEstimate(data);
+    } catch (e: any) {
+      console.warn("Wallet estimate failed:", e.message);
+      // Non-blocking
+    } finally {
+      setLoadingEstimate(false);
+    }
+  }, []);
+
+  // ─── Steps ─────────────────────────────────────────────────
   const steps = [
     { number: 1, title: "Template", icon: FileText },
     { number: 2, title: "Audience", icon: Users },
@@ -258,125 +334,237 @@ const CreateCampaign: React.FC = () => {
     { number: 4, title: "Schedule", icon: Clock },
   ];
 
+  // ─── Validate Step ─────────────────────────────────────────
   const validateStep = (step: number): boolean => {
     switch (step) {
       case 1:
-        return !!formData.name.trim() && !!formData.templateId && !!selectedAccountId;
+        return (
+          !!formData.name.trim() &&
+          !!formData.templateId &&
+          !!selectedAccountId
+        );
       case 2:
-        if (formData.audienceType === 'group') return !!formData.selectedGroup;
-        if (formData.audienceType === 'csv') return !!(formData.csvContacts && formData.csvContacts.length > 0);
-        return totalRecipients > 0;
+        if (formData.audienceType === "group")
+          return !!formData.selectedGroup && groupMemberCount > 0;
+        if (formData.audienceType === "csv")
+          return !!(formData.csvContacts && formData.csvContacts.length > 0);
+        if (formData.audienceType === "tags")
+          return formData.selectedTags.length > 0 && totalRecipients > 0;
+        if (formData.audienceType === "manual")
+          return formData.selectedContacts.length > 0;
+        return contacts.length > 0; // "all"
       case 3:
         if (!selectedTemplate) return true;
-        return (selectedTemplate.variables || []).every((v: string) => formData.variableMapping[v]);
+        // ✅ FIX Bug6: Check both body + header variables
+        const allVars = [
+          ...(selectedTemplate.variables || []),
+          ...(selectedTemplate.headerVariables || []),
+        ];
+        return allVars.every(v => formData.variableMapping[v]?.trim());
       case 4:
-        if (formData.scheduleType === "later") return !!formData.scheduledDate && !!formData.scheduledTime;
+        if (formData.scheduleType === "later") {
+          if (!formData.scheduledDate || !formData.scheduledTime) return false;
+          // ✅ FIX Bug5: Reject past time
+          const scheduled = new Date(
+            `${formData.scheduledDate}T${formData.scheduledTime}:00`
+          );
+          return scheduled > new Date();
+        }
         return true;
       default:
         return true;
     }
   };
 
-  const handleNext = () => { if (validateStep(currentStep) && currentStep < 4) setCurrentStep(currentStep + 1); };
-  const handleBack = () => { if (currentStep > 1) setCurrentStep(currentStep - 1); };
+  const handleNext = () => {
+    if (validateStep(currentStep) && currentStep < 4) {
+      setCurrentStep(s => s + 1);
+    }
+  };
+  const handleBack = () => {
+    if (currentStep > 1) setCurrentStep(s => s - 1);
+  };
 
-  const handleSend = async () => {
+  // ─── Create Campaign (DRAFT first, then start) ─────────────
+  // ✅ FIX Bug2: Proper 2-step flow:
+  //    1. Create campaign (DRAFT/SCHEDULED)
+  //    2. Show wallet estimate
+  //    3. User confirms → Start campaign
+  const handleCreate = async () => {
     setSending(true);
     setApiError(null);
 
     try {
-      const whatsappAccount = whatsappAccounts.find((a) => a.id === selectedAccountId);
-      if (!whatsappAccount?.id) throw new Error("Invalid WhatsApp account.");
+      const account = whatsappAccounts.find(a => a.id === selectedAccountId);
+      if (!account?.id) throw new Error("Invalid WhatsApp account.");
       if (!formData.templateId) throw new Error("Please select a template.");
 
-      // ✅ FIXED: Build audience payload
-      let contactIds: string[] | undefined = undefined;
-      let contactGroupId: string | undefined = undefined;
-      let audienceFilter: any = undefined;
-      let csvContactsPayload: any[] | undefined = undefined;
+      // Build audience
+      let contactIds: string[] | undefined;
+      let contactGroupId: string | undefined;
+      let audienceFilter: any;
+      let csvContactsPayload: any[] | undefined;
 
-      if (formData.audienceType === "all") {
-        audienceFilter = { all: true };
-        console.log('✅ Using ALL contacts');
-      } else if (formData.audienceType === "tags") {
-        audienceFilter = { tags: formData.selectedTags };
-        console.log('✅ Using tags:', formData.selectedTags);
-      } else if (formData.audienceType === "manual") {
-        contactIds = formData.selectedContacts;
-        console.log('✅ Using manual selection:', contactIds?.length);
-      } else if (formData.audienceType === "group") {
-        contactGroupId = formData.selectedGroup;
-        console.log('✅ Using group:', contactGroupId);
-      } else if (formData.audienceType === "csv") {
-        csvContactsPayload = formData.csvContacts;
-        console.log('✅ Using CSV:', csvContactsPayload?.length);
+      switch (formData.audienceType) {
+        case "all":
+          audienceFilter = { all: true };
+          break;
+        case "tags":
+          audienceFilter = { tags: formData.selectedTags };
+          break;
+        case "manual":
+          if (!formData.selectedContacts.length)
+            throw new Error("No contacts selected.");
+          contactIds = formData.selectedContacts;
+          break;
+        case "group":
+          if (!formData.selectedGroup)
+            throw new Error("No group selected.");
+          contactGroupId = formData.selectedGroup;
+          break;
+        case "csv":
+          if (!formData.csvContacts?.length)
+            throw new Error("No CSV contacts uploaded.");
+          csvContactsPayload = formData.csvContacts;
+          break;
       }
 
-      if (
-        (formData.audienceType === "manual" && (!contactIds || contactIds.length === 0)) ||
-        (formData.audienceType === "group" && !contactGroupId) ||
-        (formData.audienceType === "csv" && (!csvContactsPayload || csvContactsPayload.length === 0))
-      ) {
-        throw new Error("No recipients selected.");
-      }
+      // ✅ FIX Bug4: variableMapping - send plain strings, not {type, value}
+      const variableMapping: Record<string, string> = {};
+      Object.entries(formData.variableMapping).forEach(([k, v]) => {
+        variableMapping[k] = String(v).trim();
+      });
 
       const scheduledAt =
         formData.scheduleType === "later"
-          ? new Date(`${formData.scheduledDate}T${formData.scheduledTime}:00`).toISOString()
+          ? new Date(
+            `${formData.scheduledDate}T${formData.scheduledTime}:00`
+          ).toISOString()
           : undefined;
-
-      // Format variable mapping to match backend schema
-      const formattedMapping: Record<string, any> = {};
-      Object.entries(formData.variableMapping).forEach(([key, val]) => {
-        formattedMapping[key] = { type: 'field', value: val };
-      });
 
       const payload = {
         name: formData.name.trim(),
         description: formData.description?.trim() || undefined,
         templateId: formData.templateId,
-        whatsappAccountId: whatsappAccount.id, // ✅ PRIMARY
+        whatsappAccountId: account.id,
         contactIds,
         contactGroupId,
         audienceFilter,
         csvContacts: csvContactsPayload,
-        variableMapping: Object.keys(formattedMapping).length > 0 ? formattedMapping : undefined,
+        variableMapping:
+          Object.keys(variableMapping).length > 0
+            ? variableMapping
+            : undefined,
         scheduledAt,
       };
 
-      console.log("📤 Campaign Payload:", payload);
+      console.log("📤 Creating campaign:", payload);
 
-      await campaignApi.create(payload);
-      navigate("/dashboard/campaigns");
+      const res = await campaignApi.create(payload);
+      const campaignId = res.data?.data?.id || res.data?.id;
+
+      if (!campaignId) {
+        throw new Error("Campaign created but ID not returned");
+      }
+
+      setCreatedCampaignId(campaignId);
+
+      // ✅ For scheduled: just navigate
+      if (formData.scheduleType === "later") {
+        navigate("/dashboard/campaigns");
+        return;
+      }
+
+      // ✅ For immediate: fetch wallet estimate first
+      await fetchWalletEstimate(campaignId);
+
+      // Move to confirmation step
+      setCurrentStep(5); // Virtual confirmation step
+
     } catch (error: any) {
       console.error("❌ Campaign creation error:", error);
-      setApiError(error?.response?.data?.message || error?.message || "Failed to create campaign");
+
+      const raw = error?.response?.data?.message || error?.message || "";
+      const wall = parseWalletError(raw);
+
+      if (wall.isWalletError) {
+        setApiError(
+          wall.type === "LOW_BALANCE"
+            ? `💳 Wallet balance too low (₹${wall.available}). ` +
+            `Minimum ₹${wall.required} required. Please top up your wallet.`
+            : `💳 Insufficient balance. Need ₹${wall.required}, ` +
+            `have ₹${wall.available}. Please top up your wallet.`
+        );
+      } else {
+        setApiError(raw || "Failed to create campaign");
+      }
     } finally {
       setSending(false);
     }
   };
 
+  // ─── Start Campaign (after wallet confirmed) ───────────────
+  const handleStartCampaign = async () => {
+    if (!createdCampaignId) return;
+    setSending(true);
+    setApiError(null);
+
+    try {
+      await campaignApi.start(createdCampaignId);
+      navigate("/dashboard/campaigns");
+    } catch (error: any) {
+      const raw = error?.response?.data?.message || error?.message || "";
+      const wall = parseWalletError(raw);
+
+      if (wall.isWalletError) {
+        setApiError(
+          wall.type === "LOW_BALANCE"
+            ? `💳 Wallet balance too low (₹${wall.available}). Please top up.`
+            : `💳 Insufficient balance. Need ₹${wall.required}, ` +
+            `have ₹${wall.available}.`
+        );
+      } else {
+        setApiError(raw || "Failed to start campaign");
+      }
+    } finally {
+      setSending(false);
+    }
+  };
+
+  // ─── Loading state ─────────────────────────────────────────
   if (loadingAccounts || loadingData) {
     return (
-      <div className="flex items-center justify-center h-screen bg-gray-50">
+      <div className="flex flex-col items-center justify-center h-screen bg-gray-50 gap-3">
         <Loader2 className="w-10 h-10 text-primary-500 animate-spin" />
+        <p className="text-gray-500 text-sm">
+          {loadingAccounts ? "Loading accounts..." : "Loading templates..."}
+        </p>
       </div>
     );
   }
 
+  // ─── Render ────────────────────────────────────────────────
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* ── Header ── */}
       <div className="bg-white border-b border-gray-200 sticky top-16 z-20 shadow-sm">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            <div className="flex items-center space-x-4">
-              <Link to="/dashboard/campaigns" className="p-2 hover:bg-gray-100 rounded-lg">
+            <div className="flex items-center gap-4">
+              <Link
+                to="/dashboard/campaigns"
+                className="p-2 hover:bg-gray-100 rounded-lg"
+              >
                 <ArrowLeft className="w-5 h-5 text-gray-500" />
               </Link>
               <div>
-                <h1 className="text-xl font-bold text-gray-900">Create Campaign</h1>
+                <h1 className="text-xl font-bold text-gray-900">
+                  Create Campaign
+                </h1>
                 <div className="flex items-center gap-2 text-sm text-gray-500">
-                  <span>Step {currentStep} of 4</span>
+                  {currentStep <= 4 && (
+                    <span>Step {currentStep} of 4</span>
+                  )}
                   <span>•</span>
                   <span className="flex items-center text-green-600">
                     <Wifi className="w-3 h-3 mr-1" /> Connected
@@ -384,9 +572,14 @@ const CreateCampaign: React.FC = () => {
                 </div>
               </div>
             </div>
-            {selectedTemplate && (
-              <button onClick={() => setShowPreview(true)} className="flex items-center space-x-2 px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-xl">
-                <Eye className="w-5 h-5" /> <span>Preview</span>
+            {selectedTemplate && currentStep <= 4 && (
+              <button
+                onClick={() => setShowPreview(true)}
+                className="flex items-center gap-2 px-4 py-2
+                           text-gray-600 hover:bg-gray-100 rounded-xl"
+              >
+                <Eye className="w-5 h-5" />
+                <span>Preview</span>
               </button>
             )}
           </div>
@@ -394,93 +587,225 @@ const CreateCampaign: React.FC = () => {
       </div>
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+        {/* ── Error Banner ── */}
         {apiError && (
-          <div className="mb-6 bg-red-50 border border-red-200 rounded-xl p-4 flex items-start space-x-3">
-            <AlertCircle className="w-5 h-5 text-red-600" />
+          <div className="mb-6 bg-red-50 border border-red-200
+                          rounded-xl p-4 flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
             <div className="flex-1">
-              <p className="text-red-700 font-medium">Error</p>
+              <p className="text-red-700 font-medium text-sm">Error</p>
               <p className="text-red-600 text-sm">{apiError}</p>
             </div>
-            <button onClick={() => setApiError(null)} className="text-red-400 hover:text-red-600 text-xl">×</button>
+            <button
+              onClick={() => setApiError(null)}
+              className="text-red-400 hover:text-red-600 text-xl"
+            >
+              ×
+            </button>
           </div>
         )}
 
-        {/* Steps */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between">
-            {steps.map((step, index) => (
-              <React.Fragment key={step.number}>
-                <div className="flex items-center">
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold transition-all ${step.number < currentStep ? "bg-primary-500 text-white" : step.number === currentStep ? "bg-primary-500 text-white ring-4 ring-primary-100" : "bg-gray-200 text-gray-500"
-                    }`}>
-                    {step.number < currentStep ? <Check className="w-5 h-5" /> : <step.icon className="w-5 h-5" />}
+        {/* ── Step Indicators (1-4 only) ── */}
+        {currentStep <= 4 && (
+          <div className="mb-8">
+            <div className="flex items-center justify-between">
+              {steps.map((step, idx) => (
+                <React.Fragment key={step.number}>
+                  <div className="flex items-center">
+                    <div
+                      className={`w-10 h-10 rounded-full flex items-center
+                                  justify-center font-semibold transition-all
+                                  ${step.number < currentStep
+                          ? "bg-primary-500 text-white"
+                          : step.number === currentStep
+                            ? "bg-primary-500 text-white ring-4 ring-primary-100"
+                            : "bg-gray-200 text-gray-500"}`}
+                    >
+                      {step.number < currentStep
+                        ? <Check className="w-5 h-5" />
+                        : <step.icon className="w-5 h-5" />}
+                    </div>
+                    <span
+                      className={`ml-3 font-medium hidden sm:inline
+                                  ${step.number <= currentStep
+                          ? "text-gray-900"
+                          : "text-gray-500"}`}
+                    >
+                      {step.title}
+                    </span>
                   </div>
-                  <span className={`ml-3 font-medium hidden sm:inline ${step.number <= currentStep ? "text-gray-900" : "text-gray-500"}`}>{step.title}</span>
-                </div>
-                {index < steps.length - 1 && <div className={`flex-1 h-1 mx-4 rounded ${step.number < currentStep ? "bg-primary-500" : "bg-gray-200"}`} />}
-              </React.Fragment>
-            ))}
+                  {idx < steps.length - 1 && (
+                    <div
+                      className={`flex-1 h-1 mx-4 rounded
+                                  ${step.number < currentStep
+                          ? "bg-primary-500"
+                          : "bg-gray-200"}`}
+                    />
+                  )}
+                </React.Fragment>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
-        <div className="relative overflow-hidden bg-white rounded-2xl border border-gray-200 p-6 md:p-8 shadow-sm">
+        {/* ── Step Content ── */}
+        <div className="bg-white rounded-2xl border border-gray-200
+                        p-6 md:p-8 shadow-sm">
+
+          {/* Step 1: Template */}
           {currentStep === 1 && (
-            <div className="space-y-6 animate-fade-in">
+            <div className="space-y-6">
               <div className="border-b border-gray-200 pb-4">
-                <h2 className="text-xl font-bold text-gray-900 mb-1">Campaign Details</h2>
-                <p className="text-gray-500">Set up the foundational details for your campaign.</p>
+                <h2 className="text-xl font-bold text-gray-900 mb-1">
+                  Campaign Details
+                </h2>
+                <p className="text-gray-500">
+                  Set up the foundational details for your campaign.
+                </p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* WA Account */}
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">WhatsApp Account *</label>
-                  <select value={selectedAccountId} onChange={(e) => setSelectedAccountId(e.target.value)} className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white hover:bg-gray-50 text-gray-900 transition-all focus:ring-2 focus:ring-emerald-500 focus:outline-none focus:border-emerald-500">
-                    {whatsappAccounts.map((a) => (
-                      <option key={a.id} value={a.id}>{a.displayName || "WhatsApp"} - {a.phoneNumber}</option>
+                  <label className="block text-sm font-semibold
+                                    text-gray-700 mb-2">
+                    WhatsApp Account *
+                  </label>
+                  <select
+                    value={selectedAccountId}
+                    onChange={e => setSelectedAccountId(e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-200
+                               rounded-xl bg-white text-gray-900
+                               focus:ring-2 focus:ring-emerald-500
+                               focus:outline-none focus:border-emerald-500"
+                  >
+                    {whatsappAccounts.map(a => (
+                      <option key={a.id} value={a.id}>
+                        {a.displayName || "WhatsApp"} — {a.phoneNumber}
+                      </option>
                     ))}
                   </select>
-                  <p className="text-xs text-gray-500 mt-2">The verified number used to send messages.</p>
                 </div>
+
+                {/* Campaign Name */}
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Campaign Name *</label>
-                  <input type="text" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white hover:bg-gray-50 text-gray-900 transition-all focus:ring-2 focus:ring-emerald-500 focus:outline-none focus:border-emerald-500" placeholder="e.g. Diwali Mega Sale" />
-                  <p className="text-xs text-gray-500 mt-2">A unique name to identify this campaign later.</p>
+                  <label className="block text-sm font-semibold
+                                    text-gray-700 mb-2">
+                    Campaign Name *
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.name}
+                    onChange={e =>
+                      setFormData(f => ({ ...f, name: e.target.value }))
+                    }
+                    className="w-full px-4 py-3 border border-gray-200
+                               rounded-xl bg-white text-gray-900
+                               focus:ring-2 focus:ring-emerald-500
+                               focus:outline-none focus:border-emerald-500"
+                    placeholder="e.g. Diwali Mega Sale"
+                  />
                 </div>
+
+                {/* Description */}
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Description (Optional)</label>
-                  <textarea value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} rows={2} className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white hover:bg-gray-50 text-gray-900 transition-all focus:ring-2 focus:ring-emerald-500 focus:outline-none focus:border-emerald-500 resize-none" placeholder="Brief notes about this campaign..." />
+                  <label className="block text-sm font-semibold
+                                    text-gray-700 mb-2">
+                    Description (Optional)
+                  </label>
+                  <textarea
+                    value={formData.description}
+                    onChange={e =>
+                      setFormData(f => ({ ...f, description: e.target.value }))
+                    }
+                    rows={2}
+                    className="w-full px-4 py-3 border border-gray-200
+                               rounded-xl bg-white text-gray-900
+                               focus:ring-2 focus:ring-emerald-500
+                               focus:outline-none focus:border-emerald-500 resize-none"
+                    placeholder="Brief notes about this campaign..."
+                  />
                 </div>
               </div>
 
+              {/* Template Selector */}
               <div className="pt-4 border-t border-gray-200">
-                <div className="flex items-center justify-between mb-4">
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700">Message Template *</label>
-                    <p className="text-xs text-gray-500">Select an approved WhatsApp template</p>
-                  </div>
+                <div className="mb-4">
+                  <label className="block text-sm font-semibold text-gray-700">
+                    Message Template *
+                  </label>
+                  <p className="text-xs text-gray-500">
+                    Only approved templates are shown
+                  </p>
                 </div>
-                <TemplateSelector templates={templates} selectedId={formData.templateId} onSelect={(t) => setFormData({ ...formData, templateId: t.id })} onPreview={() => setShowPreview(true)} />
+                {templates.length === 0 ? (
+                  <div className="text-center py-8 bg-yellow-50 rounded-xl
+                                  border border-yellow-200">
+                    <AlertCircle className="w-8 h-8 text-yellow-500 mx-auto mb-2" />
+                    <p className="text-yellow-800 font-medium">
+                      No approved templates found
+                    </p>
+                    <p className="text-yellow-600 text-sm mt-1">
+                      Create and get a template approved in{" "}
+                      <Link
+                        to="/dashboard/templates/new"
+                        className="underline font-medium"
+                      >
+                        Templates
+                      </Link>
+                    </p>
+                  </div>
+                ) : (
+                  <TemplateSelector
+                    templates={templates}
+                    selectedId={formData.templateId}
+                    onSelect={t =>
+                      setFormData(f => ({ ...f, templateId: t.id }))
+                    }
+                    onPreview={() => setShowPreview(true)}
+                  />
+                )}
               </div>
             </div>
           )}
 
+          {/* Step 2: Audience */}
           {currentStep === 2 && (
-            <div className="space-y-6 animate-fade-in">
+            <div className="space-y-6">
               <div className="border-b border-gray-200 pb-4">
-                <h2 className="text-xl font-bold text-gray-900 mb-1">Select Audience</h2>
-                <p className="text-gray-500">Choose who should receive this campaign</p>
+                <h2 className="text-xl font-bold text-gray-900 mb-1">
+                  Select Audience
+                </h2>
+                <p className="text-gray-500">
+                  Choose who should receive this campaign
+                </p>
               </div>
               <AudienceSelector
                 audienceType={formData.audienceType}
-                onTypeChange={(type) => setFormData({ ...formData, audienceType: type })}
+                onTypeChange={type =>
+                  setFormData(f => ({ ...f, audienceType: type }))
+                }
                 selectedTags={formData.selectedTags}
-                onTagsChange={(tags) => setFormData({ ...formData, selectedTags: tags })}
+                onTagsChange={tags =>
+                  setFormData(f => ({ ...f, selectedTags: tags }))
+                }
                 selectedContacts={formData.selectedContacts}
-                onContactsChange={(c) => setFormData({ ...formData, selectedContacts: c })}
-                selectedGroup={formData.selectedGroup || ''}
-                onGroupChange={(g) => setFormData({ ...formData, selectedGroup: g })}
+                onContactsChange={c =>
+                  setFormData(f => ({ ...f, selectedContacts: c }))
+                }
+                selectedGroup={formData.selectedGroup || ""}
+                onGroupChange={g => {
+                  setFormData(f => ({ ...f, selectedGroup: g }));
+                  // ✅ FIX Bug3: Reset group count when group changes
+                  setGroupMemberCount(0);
+                }}
+                // ✅ FIX Bug3: Pass setter so AudienceSelector can update count
+                onGroupMemberCountChange={setGroupMemberCount}
                 csvContacts={formData.csvContacts}
-                onCsvContactsChange={(c) => setFormData({ ...formData, csvContacts: c })}
+                onCsvContactsChange={c =>
+                  setFormData(f => ({ ...f, csvContacts: c }))
+                }
                 availableTags={availableTags}
                 contacts={contacts}
                 totalSelected={totalRecipients}
@@ -488,93 +813,389 @@ const CreateCampaign: React.FC = () => {
             </div>
           )}
 
+          {/* Step 3: Variables */}
           {currentStep === 3 && (
-            <div className="space-y-6 animate-fade-in">
+            <div className="space-y-6">
               <div className="border-b border-gray-200 pb-4">
-                <h2 className="text-xl font-bold text-gray-900 mb-1">Map Variables</h2>
-                <p className="text-gray-500">Personalize your template by mapping variables</p>
+                <h2 className="text-xl font-bold text-gray-900 mb-1">
+                  Map Variables
+                </h2>
+                <p className="text-gray-500">
+                  Personalize your template by mapping variables
+                </p>
               </div>
-              {selectedTemplate?.variables?.length ? (
-                <VariableMapper variables={selectedTemplate.variables} mapping={formData.variableMapping} onMappingChange={(m) => setFormData({ ...formData, variableMapping: m })} />
+
+              {/* ✅ FIX Bug6: Show both body + header variables */}
+              {(selectedTemplate?.variables?.length || 0) +
+                (selectedTemplate?.headerVariables?.length || 0) > 0 ? (
+                <VariableMapper
+                  variables={[
+                    ...(selectedTemplate?.variables || []),
+                    ...(selectedTemplate?.headerVariables || []),
+                  ]}
+                  mapping={formData.variableMapping}
+                  onMappingChange={m =>
+                    setFormData(f => ({ ...f, variableMapping: m }))
+                  }
+                />
               ) : (
-                <div className="text-center py-10 bg-green-50 rounded-2xl border border-green-200">
-                  <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                <div className="text-center py-10 bg-green-50 rounded-2xl
+                                border border-green-200">
+                  <div className="w-16 h-16 bg-green-100 rounded-full
+                                  flex items-center justify-center mx-auto mb-3">
                     <Check className="w-8 h-8 text-green-600" />
                   </div>
-                  <p className="text-lg text-green-700 font-bold">No Variables Required</p>
-                  <p className="text-green-600 mt-1 max-w-sm mx-auto">This template is static and does not require any dynamic fields to be filled.</p>
+                  <p className="text-lg text-green-700 font-bold">
+                    No Variables Required
+                  </p>
+                  <p className="text-green-600 mt-1 max-w-sm mx-auto text-sm">
+                    This template sends the same message to all recipients.
+                  </p>
                 </div>
               )}
             </div>
           )}
 
+          {/* Step 4: Schedule */}
           {currentStep === 4 && (
-            <div className="space-y-6 animate-fade-in">
+            <div className="space-y-6">
               <div className="border-b border-gray-200 pb-4">
-                <h2 className="text-xl font-bold text-gray-900 mb-1">Schedule Campaign</h2>
-                <p className="text-gray-500">Choose when to launch your campaign</p>
+                <h2 className="text-xl font-bold text-gray-900 mb-1">
+                  Schedule Campaign
+                </h2>
+                <p className="text-gray-500">
+                  Choose when to launch your campaign
+                </p>
               </div>
-              <SchedulePicker scheduleType={formData.scheduleType} onTypeChange={(t) => setFormData({ ...formData, scheduleType: t })} scheduledDate={formData.scheduledDate || ""} scheduledTime={formData.scheduledTime || ""} onDateChange={(d) => setFormData({ ...formData, scheduledDate: d })} onTimeChange={(t) => setFormData({ ...formData, scheduledTime: t })} />
+
+              <SchedulePicker
+                scheduleType={formData.scheduleType}
+                onTypeChange={t =>
+                  setFormData(f => ({ ...f, scheduleType: t }))
+                }
+                scheduledDate={formData.scheduledDate || ""}
+                scheduledTime={formData.scheduledTime || ""}
+                onDateChange={d =>
+                  setFormData(f => ({ ...f, scheduledDate: d }))
+                }
+                onTimeChange={t =>
+                  setFormData(f => ({ ...f, scheduledTime: t }))
+                }
+              />
+
+              {/* ✅ FIX Bug5: Past time warning */}
+              {formData.scheduleType === "later" &&
+                formData.scheduledDate &&
+                formData.scheduledTime &&
+                new Date(`${formData.scheduledDate}T${formData.scheduledTime}:00`) <= new Date() && (
+                  <div className="flex items-center gap-2 p-3 bg-red-50
+                                border border-red-200 rounded-lg text-sm text-red-700">
+                    <AlertCircle className="w-4 h-4 shrink-0" />
+                    Scheduled time is in the past. Please select a future time.
+                  </div>
+                )}
 
               {/* Campaign Summary */}
-              <div className="mt-8 p-6 bg-green-50 rounded-2xl border border-green-200 shadow-sm relative overflow-hidden">
-                <h3 className="text-lg font-bold text-gray-900 mb-4 relative z-10">Campaign Summary</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm relative z-10">
-                  <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
-                    <span className="text-gray-500 block mb-1">Campaign Name</span>
-                    <p className="font-semibold text-gray-900 truncate" title={formData.name || "Untitled Campaign"}>{formData.name || "Untitled Campaign"}</p>
-                  </div>
-                  <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
-                    <span className="text-gray-500 block mb-1">Template</span>
-                    <p className="font-semibold text-gray-900 truncate" title={selectedTemplate?.name || "Not selected"}>{selectedTemplate?.name || "Not selected"}</p>
-                  </div>
-                  <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
-                    <span className="text-gray-500 block mb-1">Audience</span>
-                    <p className="font-semibold text-gray-900">
-                      {totalRecipients.toLocaleString()} {totalRecipients === 1 ? 'recipient' : 'recipients'}
-                    </p>
-                  </div>
-                  <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
-                    <span className="text-gray-500 block mb-1">Timing</span>
-                    <p className="font-semibold text-gray-900">
-                      {formData.scheduleType === "now"
-                        ? "Send immediately"
-                        : `${formData.scheduledDate} at ${formData.scheduledTime}`}
-                    </p>
-                  </div>
+              <div className="mt-6 p-6 bg-green-50 rounded-2xl
+                              border border-green-200 shadow-sm">
+                <h3 className="text-lg font-bold text-gray-900 mb-4">
+                  Campaign Summary
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                  {[
+                    {
+                      label: "Campaign Name",
+                      value: formData.name || "Untitled",
+                    },
+                    {
+                      label: "Template",
+                      value: selectedTemplate?.name || "Not selected",
+                    },
+                    {
+                      label: "Recipients",
+                      value:
+                        formData.audienceType === "group" && groupMemberCount === 0
+                          ? "Group selected"
+                          : `${totalRecipients.toLocaleString()} ${totalRecipients === 1 ? "recipient" : "recipients"
+                          }`,
+                    },
+                    {
+                      label: "Timing",
+                      value:
+                        formData.scheduleType === "now"
+                          ? "Send immediately"
+                          : `${formData.scheduledDate} at ${formData.scheduledTime}`,
+                    },
+                  ].map(item => (
+                    <div
+                      key={item.label}
+                      className="bg-white p-4 rounded-xl
+                                 border border-gray-200 shadow-sm"
+                    >
+                      <span className="text-gray-500 block mb-1 text-xs">
+                        {item.label}
+                      </span>
+                      <p
+                        className="font-semibold text-gray-900 truncate"
+                        title={item.value}
+                      >
+                        {item.value}
+                      </p>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
           )}
+
+          {/* ✅ Step 5 (Virtual): Wallet Confirmation */}
+          {currentStep === 5 && (
+            <div className="space-y-6">
+              <div className="border-b border-gray-200 pb-4">
+                <h2 className="text-xl font-bold text-gray-900 mb-1">
+                  Confirm & Send
+                </h2>
+                <p className="text-gray-500">
+                  Review cost estimate before sending
+                </p>
+              </div>
+
+              {loadingEstimate ? (
+                <div className="flex items-center justify-center py-12">
+                  <div className="text-center">
+                    <Loader2 className="w-8 h-8 text-primary-500
+                                        animate-spin mx-auto mb-3" />
+                    <p className="text-gray-500 text-sm">
+                      Calculating cost estimate...
+                    </p>
+                  </div>
+                </div>
+              ) : walletEstimate ? (
+                <div className="space-y-4">
+                  {/* Wallet not active - free send */}
+                  {!walletEstimate.hasWallet || !walletEstimate.walletActive ? (
+                    <div className="p-4 bg-blue-50 border border-blue-200
+                                    rounded-xl flex items-start gap-3">
+                      <Info className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-blue-800 font-medium">
+                          No wallet configured
+                        </p>
+                        <p className="text-blue-700 text-sm mt-1">
+                          Charges will be applied directly to your Meta
+                          Business account.
+                        </p>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      {/* Cost breakdown */}
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        {[
+                          {
+                            label: "Available Balance",
+                            value: `₹${walletEstimate.availableBalance.toFixed(2)}`,
+                            color: "text-green-700",
+                            bg: "bg-green-50 border-green-200",
+                          },
+                          {
+                            label: "Estimated Cost",
+                            value: `₹${walletEstimate.estimatedCost.toFixed(2)}`,
+                            color: "text-blue-700",
+                            bg: "bg-blue-50 border-blue-200",
+                          },
+                          {
+                            label: "After Deduction",
+                            value: `₹${Math.max(
+                              0,
+                              walletEstimate.availableBalance -
+                              walletEstimate.estimatedCost
+                            ).toFixed(2)}`,
+                            color: walletEstimate.canProceed
+                              ? "text-gray-700"
+                              : "text-red-700",
+                            bg: walletEstimate.canProceed
+                              ? "bg-gray-50 border-gray-200"
+                              : "bg-red-50 border-red-200",
+                          },
+                        ].map(card => (
+                          <div
+                            key={card.label}
+                            className={`p-4 rounded-xl border ${card.bg}`}
+                          >
+                            <p className="text-xs text-gray-500 mb-1">
+                              {card.label}
+                            </p>
+                            <p className={`text-xl font-bold ${card.color}`}>
+                              {card.value}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Rate info */}
+                      {walletEstimate.estimatedCostBreakdown && (
+                        <div className="p-4 bg-gray-50 border border-gray-200
+                                        rounded-xl text-sm">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-gray-600">Recipients</span>
+                            <span className="font-medium">
+                              {walletEstimate.estimatedCostBreakdown
+                                .totalRecipients.toLocaleString()}
+                            </span>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span className="text-gray-600">
+                              Avg rate/message
+                            </span>
+                            <span className="font-medium">
+                              ₹{walletEstimate.estimatedCostBreakdown
+                                .ratePerMessage.toFixed(4)}
+                            </span>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Insufficient balance warning */}
+                      {!walletEstimate.canProceed && (
+                        <div className="p-4 bg-red-50 border border-red-200
+                                        rounded-xl flex items-start gap-3">
+                          <AlertCircle className="w-5 h-5 text-red-600
+                                                  shrink-0 mt-0.5" />
+                          <div>
+                            <p className="text-red-800 font-medium">
+                              Insufficient Balance
+                            </p>
+                            <p className="text-red-700 text-sm mt-1">
+                              You need ₹{walletEstimate.shortfall.toFixed(2)}{" "}
+                              more to run this campaign. Please top up your
+                              wallet.
+                            </p>
+                            <Link
+                              to="/dashboard/wallet"
+                              className="inline-flex items-center gap-1
+                                         mt-2 text-sm font-medium text-red-700
+                                         underline"
+                            >
+                              <Wallet className="w-4 h-4" />
+                              Go to Wallet
+                            </Link>
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+              ) : (
+                <div className="p-4 bg-gray-50 border border-gray-200
+                                rounded-xl text-sm text-gray-600">
+                  Campaign created. Ready to send.
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
+        {/* ── Navigation ── */}
         <div className="flex items-center justify-between mt-8">
-          <button onClick={handleBack} disabled={currentStep === 1} className="flex items-center space-x-2 px-6 py-3 text-gray-600 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 disabled:opacity-50 font-medium transition-all shadow-sm">
-            <ArrowLeft className="w-5 h-5" /> <span>Back</span>
+          {/* Back */}
+          <button
+            onClick={() => {
+              if (currentStep === 5) {
+                // Back to step 4, keep created campaign
+                setCurrentStep(4);
+                setCreatedCampaignId(null);
+                setWalletEstimate(null);
+              } else {
+                handleBack();
+              }
+            }}
+            disabled={currentStep === 1}
+            className="flex items-center gap-2 px-6 py-3 text-gray-600
+                       bg-white border border-gray-200 rounded-xl
+                       hover:bg-gray-50 disabled:opacity-50
+                       font-medium transition-all shadow-sm"
+          >
+            <ArrowLeft className="w-5 h-5" />
+            <span>Back</span>
           </button>
+
+          {/* Next / Create / Start */}
           {currentStep < 4 ? (
-            <button onClick={handleNext} disabled={!validateStep(currentStep)} className="flex items-center space-x-2 px-6 py-3 bg-primary-500 text-white rounded-xl hover:bg-primary-600 disabled:opacity-50 font-medium transition-colors shadow-sm shadow-primary-500/30 disabled:shadow-none">
-              <span>Continue</span> <ArrowRight className="w-5 h-5" />
+            <button
+              onClick={handleNext}
+              disabled={!validateStep(currentStep)}
+              className="flex items-center gap-2 px-6 py-3 bg-primary-500
+                         text-white rounded-xl hover:bg-primary-600
+                         disabled:opacity-50 font-medium transition-colors
+                         shadow-sm shadow-primary-500/30 disabled:shadow-none"
+            >
+              <span>Continue</span>
+              <ArrowRight className="w-5 h-5" />
             </button>
+
+          ) : currentStep === 4 ? (
+            <button
+              onClick={handleCreate}
+              disabled={sending || !validateStep(currentStep)}
+              className="flex items-center gap-2 px-8 py-3 bg-primary-500
+                         text-white rounded-xl hover:bg-primary-600
+                         disabled:opacity-50 font-bold transition-all
+                         shadow-md shadow-primary-500/30"
+            >
+              {sending
+                ? <Loader2 className="w-5 h-5 animate-spin" />
+                : <ArrowRight className="w-5 h-5" />}
+              <span>
+                {formData.scheduleType === "now"
+                  ? "Review & Send"
+                  : "Schedule Campaign"}
+              </span>
+            </button>
+
           ) : (
-            <button onClick={handleSend} disabled={sending || !validateStep(currentStep)} className="flex items-center space-x-2 px-8 py-3 bg-primary-500 text-white rounded-xl hover:bg-primary-600 disabled:opacity-50 font-bold transition-all shadow-md shadow-primary-500/30 hover:shadow-lg disabled:shadow-none hover:-translate-y-0.5">
-              {sending ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
-              <span>{formData.scheduleType === "now" ? "Send Now" : "Schedule Campaign"}</span>
+            /* Step 5: Confirm send */
+            <button
+              onClick={handleStartCampaign}
+              disabled={
+                sending ||
+                loadingEstimate ||
+                (walletEstimate?.hasWallet &&
+                  walletEstimate?.walletActive &&
+                  !walletEstimate?.canProceed)
+              }
+              className="flex items-center gap-2 px-8 py-3 bg-green-600
+                         text-white rounded-xl hover:bg-green-700
+                         disabled:opacity-50 font-bold transition-all
+                         shadow-md"
+            >
+              {sending
+                ? <Loader2 className="w-5 h-5 animate-spin" />
+                : <Send className="w-5 h-5" />}
+              <span>Confirm & Send</span>
             </button>
           )}
         </div>
       </div>
 
+      {/* ── Template Preview Modal ── */}
       {showPreview && selectedTemplate && (
         <TemplatePreview
           template={{
             name: selectedTemplate.name,
             category: selectedTemplate.category as any,
             language: selectedTemplate.language,
-            header: mapHeaderForPreview(selectedTemplate.headerType) as any,
+            header: mapHeaderForPreview(
+              selectedTemplate.headerType,
+              selectedTemplate.headerContent
+            ) as any,
             body: selectedTemplate.body,
             footer: "",
-            buttons: selectedTemplate.buttons.map((b: any, i: number) => ({ id: String(i), type: "quick_reply", text: b.text })),
+            buttons: selectedTemplate.buttons.map((b, i) => ({
+              id: String(i),
+              type: "quick_reply" as const,
+              text: b.text,
+            })),
           }}
           sampleVariables={formData.variableMapping}
           isModal

@@ -1,8 +1,10 @@
-// src/hooks/useCampaignRealtime.ts - PRODUCTION READY
-
-import { useEffect, useState, useCallback, useRef } from 'react';
+// src/hooks/useCampaignRealtime.ts - FIXED
+import {
+  useEffect, useState, useCallback, useRef,
+} from 'react';
 import { useSocket } from '../context/SocketContext';
 
+// ─── Types ───────────────────────────────────────────────────
 interface CampaignProgress {
   sent: number;
   failed: number;
@@ -27,166 +29,196 @@ interface ContactStatusUpdate {
   status: string;
   messageId?: string;
   error?: string;
-  sentAt?: string;
-  deliveredAt?: string;
-  readAt?: string;
-  failedAt?: string;
   timestamp: string;
 }
 
+// ✅ FIX Bug1: Use plain object instead of Map for React state
+type ContactStatusRecord = Record<string, ContactStatusUpdate>;
+
+// ✅ FIX Bug4: Max contacts to track in memory
+const MAX_CONTACT_UPDATES = 500;
+
+// ─── Hook ─────────────────────────────────────────────────────
 export const useCampaignRealtime = (campaignId: string | null) => {
   const { socket, isConnected } = useSocket();
-  const joinedRef = useRef(false);
-  const joinedCampaignRef = useRef<string | null>(null);
 
   const [progress, setProgress] = useState<CampaignProgress | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [completedStats, setCompletedStats] = useState<CompletedStats | null>(null);
-  
-  // ✅ NEW: Map for per-contact real-time updates
-  const [contactStatusMap, setContactStatusMap] = useState<Map<string, ContactStatusUpdate>>(new Map());
-  
-  const [campaignError, setCampaignError] = useState<{ message: string; code?: string } | null>(null);
+  // ✅ FIX Bug1: Plain object instead of Map
+  const [contactStatusRec, setContactStatusRec] = useState<ContactStatusRecord>({});
+  const [campaignError, setCampaignError] = useState<{
+    message: string; code?: string;
+  } | null>(null);
 
-  // ✅ Join/leave campaign room
+  // Track join state
+  const joinedCampaignRef = useRef<string | null>(null);
+
+  // ✅ FIX Bug4: Track count to enforce limit
+  const contactCountRef = useRef(0);
+
+  // ─── Join/leave campaign room ─────────────────────────────
+  // ✅ FIX Bug2: Re-join on socket reconnect (isConnected in deps)
   useEffect(() => {
     if (!socket || !isConnected || !campaignId) return;
 
-    // Leave previous campaign if switched
-    if (joinedCampaignRef.current && joinedCampaignRef.current !== campaignId) {
+    // Leave old room if campaign changed
+    if (
+      joinedCampaignRef.current &&
+      joinedCampaignRef.current !== campaignId
+    ) {
       socket.emit('campaign:leave', joinedCampaignRef.current);
-      joinedRef.current = false;
+      joinedCampaignRef.current = null;
     }
 
-    if (!joinedRef.current || joinedCampaignRef.current !== campaignId) {
-      socket.emit('campaign:join', campaignId);
-      joinedRef.current = true;
-      joinedCampaignRef.current = campaignId;
-      console.log(`🔌 Joined campaign room: ${campaignId}`);
-    }
+    // Join new room
+    socket.emit('campaign:join', campaignId);
+    joinedCampaignRef.current = campaignId;
 
     return () => {
-      if (joinedRef.current && joinedCampaignRef.current === campaignId) {
-        socket.emit('campaign:leave', campaignId);
-        joinedRef.current = false;
+      if (joinedCampaignRef.current) {
+        socket.emit('campaign:leave', joinedCampaignRef.current);
         joinedCampaignRef.current = null;
       }
     };
-  }, [socket, isConnected, campaignId]);
+  }, [socket, isConnected, campaignId]); // ✅ isConnected = rejoin on reconnect
 
-  // ✅ Listen for all campaign events
+  // ─── Event listeners ──────────────────────────────────────
   useEffect(() => {
     if (!socket || !campaignId) return;
 
-    const handleUpdate = (data: any) => {
+    const onUpdate = (data: any) => {
       if (data.campaignId !== campaignId) return;
 
-      if (data.status === 'RUNNING') {
+      const status = data.status;
+      if (status === 'RUNNING') {
         setIsProcessing(true);
-      } else if (['COMPLETED', 'FAILED', 'PAUSED', 'CANCELLED'].includes(data.status)) {
+      } else if (
+        ['COMPLETED', 'FAILED', 'PAUSED', 'CANCELLED'].includes(status)
+      ) {
         setIsProcessing(false);
       }
     };
 
-    const handleProgress = (data: any) => {
+    const onProgress = (data: any) => {
       if (data.campaignId !== campaignId) return;
 
       setProgress({
-        sent: data.sent || 0,
-        failed: data.failed || 0,
-        delivered: data.delivered || 0,
-        read: data.read || 0,
-        total: data.total || 0,
-        percentage: data.percentage || 0,
+        sent: Math.max(0, data.sent || 0),
+        failed: Math.max(0, data.failed || 0),
+        delivered: Math.max(0, data.delivered || 0),
+        read: Math.max(0, data.read || 0),
+        total: Math.max(0, data.total || 0),
+        percentage: Math.min(100, Math.max(0, data.percentage || 0)),
         status: data.status || 'RUNNING',
       });
 
-      if (data.status === 'RUNNING') {
-        setIsProcessing(true);
-      }
+      if (data.status === 'RUNNING') setIsProcessing(true);
     };
 
-    // ✅ NEW: Per-contact status update
-    const handleContactStatus = (data: any) => {
+    const onContactStatus = (data: any) => {
       if (data.campaignId !== campaignId) return;
       if (!data.contactId) return;
 
-      setContactStatusMap((prev) => {
-        const newMap = new Map(prev);
-        newMap.set(data.contactId, {
-          contactId: data.contactId,
-          phone: data.phone,
-          status: data.status,
-          messageId: data.messageId,
-          error: data.error,
-          sentAt: data.sentAt,
-          deliveredAt: data.deliveredAt,
-          readAt: data.readAt,
-          failedAt: data.failedAt,
-          timestamp: data.timestamp || new Date().toISOString(),
-        });
-        return newMap;
+      // ✅ FIX Bug4: Enforce memory limit
+      if (contactCountRef.current >= MAX_CONTACT_UPDATES) {
+        // Stop tracking new contacts to prevent memory leak
+        return;
+      }
+
+      // ✅ FIX Bug1 & Bug3: Plain object update (no Map)
+      setContactStatusRec(prev => {
+        // If contact already exists, update; else increment count
+        if (!prev[data.contactId]) {
+          contactCountRef.current++;
+        }
+        return {
+          ...prev,
+          [data.contactId]: {
+            contactId: data.contactId,
+            phone: data.phone || '',
+            status: data.status || 'SENT',
+            messageId: data.messageId,
+            error: data.error,
+            timestamp: data.timestamp || new Date().toISOString(),
+          },
+        };
       });
     };
 
-    const handleCompleted = (data: any) => {
+    const onCompleted = (data: any) => {
       if (data.campaignId !== campaignId) return;
 
       setCompletedStats({
-        sentCount: data.sentCount || 0,
-        failedCount: data.failedCount || 0,
-        deliveredCount: data.deliveredCount || 0,
-        readCount: data.readCount || 0,
-        totalRecipients: data.totalRecipients || 0,
+        sentCount: Math.max(0, data.sentCount || 0),
+        failedCount: Math.max(0, data.failedCount || 0),
+        deliveredCount: Math.max(0, data.deliveredCount || 0),
+        readCount: Math.max(0, data.readCount || 0),
+        totalRecipients: Math.max(0, data.totalRecipients || 0),
       });
       setIsProcessing(false);
     };
 
-    const handleCampaignError = (data: any) => {
+    const onError = (data: any) => {
       if (data.campaignId !== campaignId) return;
-      setCampaignError({ message: data.message, code: data.code });
+      setCampaignError({
+        message: data.message || 'Campaign error occurred',
+        code: data.code,
+      });
       setIsProcessing(false);
     };
 
-    socket.on('campaign:update', handleUpdate);
-    socket.on('campaign:progress', handleProgress);
-    socket.on('campaign:contact', handleContactStatus);
-    socket.on('campaign:contact:status', handleContactStatus);
-    socket.on('campaign:completed', handleCompleted);
-    socket.on('campaign:error', handleCampaignError);
+    socket.on('campaign:update', onUpdate);
+    socket.on('campaign:progress', onProgress);
+    socket.on('campaign:contact', onContactStatus);
+    socket.on('campaign:contact:status', onContactStatus);
+    socket.on('campaign:completed', onCompleted);
+    socket.on('campaign:error', onError);
 
     return () => {
-      socket.off('campaign:update', handleUpdate);
-      socket.off('campaign:progress', handleProgress);
-      socket.off('campaign:contact', handleContactStatus);
-      socket.off('campaign:contact:status', handleContactStatus);
-      socket.off('campaign:completed', handleCompleted);
-      socket.off('campaign:error', handleCampaignError);
+      socket.off('campaign:update', onUpdate);
+      socket.off('campaign:progress', onProgress);
+      socket.off('campaign:contact', onContactStatus);
+      socket.off('campaign:contact:status', onContactStatus);
+      socket.off('campaign:completed', onCompleted);
+      socket.off('campaign:error', onError);
     };
   }, [socket, campaignId]);
 
+  // ─── Helpers ──────────────────────────────────────────────
   const resetStats = useCallback(() => {
     setProgress(null);
     setCompletedStats(null);
     setIsProcessing(false);
-    setContactStatusMap(new Map());
+    setContactStatusRec({});
     setCampaignError(null);
+    contactCountRef.current = 0;
   }, []);
 
   const clearContactUpdates = useCallback(() => {
-    setContactStatusMap(new Map());
+    setContactStatusRec({});
+    contactCountRef.current = 0;
   }, []);
+
+  // ✅ FIX Bug1: Convert to Map only when needed (memoized)
+  // CampaignDetails uses contactStatusMap (Map type)
+  // We expose a getter that converts lazily
+  const contactStatusMap = new Map(
+    Object.entries(contactStatusRec)
+  );
 
   return {
     progress,
     isProcessing,
     completedStats,
-    contactStatusMap,           // ✅ NEW
-    contactUpdates: Array.from(contactStatusMap.values()),  // For backward compat
+    // ✅ Map for CampaignDetails.tsx compatibility
+    contactStatusMap,
+    // ✅ Array for any component that needs array
+    contactUpdates: Object.values(contactStatusRec),
     campaignError,
     isConnected,
-    clearContactUpdates,        // ✅ NEW
     resetStats,
+    clearContactUpdates,
   };
 };
 

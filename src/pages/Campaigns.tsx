@@ -1,22 +1,10 @@
-// src/pages/Campaigns.tsx
-
-import React, { useState, useEffect } from 'react';
+// src/pages/Campaigns.tsx - FIXED
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  Plus,
-  Search,
-  BarChart3,
-  Calendar,
-  Send,
-  Clock,
-  CheckCircle,
-  XCircle,
-  Pause,
-  Play,
-  Eye,
-  Loader2,
-  AlertCircle,
-  AlertTriangle
+  Plus, Search, BarChart3, Calendar, Send, Clock,
+  CheckCircle, XCircle, Pause, Play, Eye, Loader2,
+  AlertCircle, AlertTriangle, RefreshCw,
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { campaigns as campaignsApi } from '../services/api';
@@ -24,25 +12,24 @@ import { useSocket } from '../context/SocketContext';
 import toast from 'react-hot-toast';
 import PageSkeleton from '../components/common/PageSkeleton';
 import WalletCostModal from '../components/campaigns/WalletCostModal';
-import { campaigns as campaignApi } from '../services/api';
 
-
-// ✅ Safe number helpers
-const safeNumber = (value: any): number => {
-  if (value === null || value === undefined) return 0;
-  const num = Number(value);
-  return isNaN(num) ? 0 : num;
+// ─── Helpers ─────────────────────────────────────────────────
+const safeNum = (v: any): number => {
+  const n = Number(v);
+  return isNaN(n) ? 0 : n;
 };
+const safeStr = (v: any): string => safeNum(v).toLocaleString();
 
-const safeLocaleString = (value: any): string => {
-  return safeNumber(value).toLocaleString();
-};
+// ─── Types ───────────────────────────────────────────────────
+type CampaignStatus =
+  | 'DRAFT' | 'SCHEDULED' | 'RUNNING'
+  | 'PAUSED' | 'COMPLETED' | 'FAILED' | 'CANCELLED';
 
 interface Campaign {
   id: string;
   name: string;
   description?: string;
-  status: 'DRAFT' | 'SCHEDULED' | 'RUNNING' | 'PAUSED' | 'COMPLETED' | 'FAILED';
+  status: CampaignStatus;
   totalContacts?: number;
   sentCount?: number;
   deliveredCount?: number;
@@ -52,69 +39,167 @@ interface Campaign {
   startedAt?: string;
   completedAt?: string;
   createdAt: string;
-  template?: {
-    name: string;
-  };
+  template?: { name: string };
 }
 
 interface CampaignStats {
-  total?: number;
-  active?: number;
-  scheduled?: number;
-  completed?: number;
-  totalSent?: number;
-  totalDelivered?: number;
+  total: number;
+  totalSent: number;
+  totalDelivered: number;
+  totalRead: number;
+  totalRecipients: number;
 }
 
+// ─── Status Badge ─────────────────────────────────────────────
+// ✅ FIX Bug6: Added CANCELLED status
+const STATUS_CONFIG: Record<CampaignStatus, {
+  color: string; icon: React.ElementType; label: string;
+}> = {
+  DRAFT: { color: 'bg-gray-100 text-gray-700 border-gray-200', icon: Clock, label: 'Draft' },
+  SCHEDULED: { color: 'bg-blue-50 text-blue-700 border-blue-200', icon: Calendar, label: 'Scheduled' },
+  RUNNING: { color: 'bg-green-50 text-green-700 border-green-200', icon: Play, label: 'Running' },
+  PAUSED: { color: 'bg-yellow-50 text-yellow-700 border-yellow-200', icon: Pause, label: 'Paused' },
+  COMPLETED: { color: 'bg-purple-50 text-purple-700 border-purple-200', icon: CheckCircle, label: 'Completed' },
+  FAILED: { color: 'bg-red-50 text-red-700 border-red-200', icon: XCircle, label: 'Failed' },
+  CANCELLED: { color: 'bg-gray-50 text-gray-600 border-gray-200', icon: XCircle, label: 'Cancelled' },
+};
+
+const StatusBadge: React.FC<{ status: CampaignStatus }> = ({ status }) => {
+  const cfg = STATUS_CONFIG[status] || STATUS_CONFIG.DRAFT;
+  const Icon = cfg.icon;
+  return (
+    <span className={`inline-flex items-center gap-1 px-2.5 py-0.5
+                      rounded-full text-xs font-medium border ${cfg.color}`}>
+      <Icon className="w-3 h-3" />
+      {cfg.label}
+    </span>
+  );
+};
+
+// ─── Progress ─────────────────────────────────────────────────
+const getProgress = (c: Campaign): number => {
+  const total = safeNum(c.totalContacts);
+  const sent = safeNum(c.sentCount);
+  if (total === 0) return 0;
+  return Math.min(100, Math.round((sent / total) * 100));
+};
+
+// ─── Wallet error parser ──────────────────────────────────────
+const parseWalletErr = (msg: string) => {
+  if (msg.startsWith('WALLET_LOW_BALANCE::')) {
+    const p = msg.split('::');
+    return {
+      isWallet: true, type: 'low' as const,
+      required: parseFloat(p[1]), balance: parseFloat(p[2])
+    };
+  }
+  if (msg.startsWith('WALLET_INSUFFICIENT::')) {
+    const p = msg.split('::');
+    return {
+      isWallet: true, type: 'insufficient' as const,
+      required: parseFloat(p[1]), balance: parseFloat(p[2])
+    };
+  }
+  return { isWallet: false };
+};
+
+// ─── Component ────────────────────────────────────────────────
 const Campaigns: React.FC = () => {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [stats, setStats] = useState<CampaignStats>({
-    total: 0,
-    active: 0,
-    scheduled: 0,
-    completed: 0,
-    totalSent: 0,
-    totalDelivered: 0
+    total: 0, totalSent: 0, totalDelivered: 0,
+    totalRead: 0, totalRecipients: 0,
   });
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [searchInput, setSearchInput] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
   const [error, setError] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
-  // ✅ Wallet Cost Estimation states
+  // Wallet
+  const [walletBlockData, setWalletBlockData] = useState<{
+    balance: number; required?: number; type?: 'low' | 'insufficient';
+  } | null>(null);
   const [costModalOpen, setCostModalOpen] = useState(false);
   const [costEstimate, setCostEstimate] = useState<any>(null);
   const [costLoading, setCostLoading] = useState(false);
   const [pendingStartId, setPendingStartId] = useState<string | null>(null);
-  const [pendingCampaignName, setPendingCampaignName] = useState('');
-
-
-  // ✅ NEW: Wallet low balance state
-  const [walletBlockData, setWalletBlockData] = useState<{
-    balance: number;
-    required?: number;
-    type?: 'low' | 'insufficient';
-  } | null>(null);
+  const [pendingCampName, setPendingCampName] = useState('');
 
   const { socket, isConnected } = useSocket();
 
+  // ✅ FIX Bug5: Debounce ref for search
+  const searchDebounce = useRef<ReturnType<typeof setTimeout>>();
+
+  // ─── Fetch ─────────────────────────────────────────────────
+  const fetchCampaigns = useCallback(async (silent = false) => {
+    if (!silent) setLoading(true);
+    setError(null);
+    try {
+      const res = await campaignsApi.getAll({
+        status: statusFilter !== 'all' ? statusFilter : undefined,
+        search: searchQuery || undefined,
+      });
+      if (res.data.success) {
+        setCampaigns(
+          Array.isArray(res.data.data) ? res.data.data : []
+        );
+      }
+    } catch (e: any) {
+      setError(e.message || 'Failed to load campaigns');
+      setCampaigns([]);
+    } finally {
+      if (!silent) setLoading(false);
+    }
+  }, [statusFilter, searchQuery]);
+
+  const fetchStats = useCallback(async () => {
+    try {
+      const res = await campaignsApi.stats();
+      if (res.data.success) {
+        const d = res.data.data || {};
+        setStats({
+          total: safeNum(d.total),
+          totalSent: safeNum(d.totalSent),
+          totalDelivered: safeNum(d.totalDelivered),
+          totalRead: safeNum(d.totalRead),
+          totalRecipients: safeNum(d.totalRecipients),
+        });
+      }
+    } catch { /* silent */ }
+  }, []);
+
+  // ✅ FIX Bug1: Single effect, not double fetch
   useEffect(() => {
     fetchCampaigns();
     fetchStats();
-  }, [statusFilter]);
+  }, [statusFilter, searchQuery]);
 
-  // ✅ REAL-TIME UPDATES
+  // ✅ FIX Bug5: Search with debounce
+  const handleSearchInput = (val: string) => {
+    setSearchInput(val);
+    clearTimeout(searchDebounce.current);
+    searchDebounce.current = setTimeout(() => {
+      setSearchQuery(val);
+    }, 400);
+  };
+
+  const handleSearchSubmit = () => {
+    clearTimeout(searchDebounce.current);
+    setSearchQuery(searchInput);
+  };
+
+  // ─── Socket ────────────────────────────────────────────────
   useEffect(() => {
     if (!socket || !isConnected) return;
 
-    const handleCampaignUpdate = (data: any) => {
-      // ✅ Update individual campaign with all counters
+    const onUpdate = (data: any) => {
       setCampaigns(prev => prev.map(c =>
         c.id === data.campaignId
           ? {
             ...c,
-            status: data.status || c.status,
+            status: data.status ?? c.status,
             totalContacts: data.totalContacts ?? c.totalContacts,
             sentCount: data.sentCount ?? c.sentCount,
             deliveredCount: data.deliveredCount ?? c.deliveredCount,
@@ -125,8 +210,7 @@ const Campaigns: React.FC = () => {
       ));
     };
 
-    const handleCampaignProgress = (data: any) => {
-      // ✅ Real-time update for THIS specific campaign
+    const onProgress = (data: any) => {
       setCampaigns(prev => prev.map(c =>
         c.id === data.campaignId
           ? {
@@ -142,155 +226,54 @@ const Campaigns: React.FC = () => {
       ));
     };
 
-    const handleCampaignCompleted = (data: any) => {
+    const onCompleted = (data: any) => {
       setCampaigns(prev => prev.map(c =>
         c.id === data.campaignId
           ? {
-            ...c,
-            status: 'COMPLETED',
-            sentCount: data.sentCount,
-            failedCount: data.failedCount,
-            deliveredCount: data.deliveredCount,
-            readCount: data.readCount,
+            ...c, status: 'COMPLETED', sentCount: data.sentCount,
+            failedCount: data.failedCount, deliveredCount: data.deliveredCount
           }
           : c
       ));
-      // Refresh top stats (aggregated)
       fetchStats();
     };
 
-    const handleCampaignError = (data: any) => {
-      console.error('Campaign error:', data);
+    const onError = (data: any) => {
       toast.error(data.message, { duration: 8000 });
-      fetchCampaigns();
+      fetchCampaigns(true);
       fetchStats();
     };
 
-    socket.on('campaign:update', handleCampaignUpdate);
-    socket.on('campaign:progress', handleCampaignProgress);
-    socket.on('campaign:completed', handleCampaignCompleted);
-    socket.on('campaign:error', handleCampaignError);
+    socket.on('campaign:update', onUpdate);
+    socket.on('campaign:progress', onProgress);
+    socket.on('campaign:completed', onCompleted);
+    socket.on('campaign:error', onError);
 
     return () => {
-      socket.off('campaign:update', handleCampaignUpdate);
-      socket.off('campaign:progress', handleCampaignProgress);
-      socket.off('campaign:completed', handleCampaignCompleted);
-      socket.off('campaign:error', handleCampaignError);
+      socket.off('campaign:update', onUpdate);
+      socket.off('campaign:progress', onProgress);
+      socket.off('campaign:completed', onCompleted);
+      socket.off('campaign:error', onError);
     };
-  }, [socket, isConnected]);
+  }, [socket, isConnected, fetchCampaigns, fetchStats]);
 
-  const fetchCampaigns = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      const response = await campaignsApi.getAll({
-        status: statusFilter !== 'all' ? statusFilter : undefined,
-        search: searchQuery || undefined
-      });
-
-      if (response.data.success) {
-        const campaignsData = Array.isArray(response.data.data)
-          ? response.data.data
-          : [];
-        setCampaigns(campaignsData);
-      } else {
-        throw new Error(response.data.message || 'Failed to load campaigns');
-      }
-    } catch (error: any) {
-      setError(error.message || 'Failed to load campaigns');
-      setCampaigns([]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchStats = async () => {
-    try {
-      const response = await campaignsApi.stats();
-      if (response.data.success) {
-        const statsData = response.data.data || {};
-        setStats({
-          total: safeNumber(statsData.total),
-          active: safeNumber(statsData.active),
-          scheduled: safeNumber(statsData.scheduled),
-          completed: safeNumber(statsData.completed),
-          totalSent: safeNumber(statsData.totalSent),
-          totalDelivered: safeNumber(statsData.totalDelivered)
-        });
-      }
-    } catch (error) {
-      console.error('Fetch stats error:', error);
-    }
-  };
-
-  const handleAction = async (action: 'start' | 'pause' | 'resume' | 'cancel', campaignId: string) => {
-    try {
-      setActionLoading(campaignId);
-      setWalletBlockData(null); // Clear previous warning
-
-      let response;
-      switch (action) {
-        case 'start':
-          response = await campaignsApi.start(campaignId);
-          break;
-        case 'pause':
-          response = await campaignsApi.pause(campaignId);
-          break;
-        case 'resume':
-          response = await campaignsApi.resume(campaignId);
-          break;
-        case 'cancel':
-          response = await campaignsApi.cancel(campaignId);
-          break;
-      }
-
-      if (response?.data.success) {
-        toast.success(`Campaign ${action}ed successfully`);
-        
-        // ✅ Add delay for backend
-        await new Promise(resolve => setTimeout(resolve, 300));
-        await Promise.all([fetchCampaigns(), fetchStats()]);
-      }
-    } catch (error: any) {
-      const msg = error?.response?.data?.message || error?.message || '';
-
-      // ✅ Wallet balance checks
-      if (msg.startsWith('WALLET_LOW_BALANCE::')) {
-        const parts = msg.split('::');
-        const minReq = parseFloat(parts[1]);
-        const balance = parseFloat(parts[2]);
-        setWalletBlockData({ balance, required: minReq, type: 'low' });
-      } 
-      else if (msg.startsWith('WALLET_INSUFFICIENT::')) {
-        const parts = msg.split('::');
-        const estCost = parseFloat(parts[1]);
-        const balance = parseFloat(parts[2]);
-        setWalletBlockData({ balance, required: estCost, type: 'insufficient' });
-      }
-      else {
-        toast.error(msg || `Failed to ${action} campaign`);
-      }
-    } finally {
-      setActionLoading(null);
-    }
-  };
-
-  const handleStartCampaign = async (campaignId: string, campaignName: string) => {
+  // ─── Start with wallet estimate ────────────────────────────
+  const handleStartCampaign = async (
+    campaignId: string, campaignName: string
+  ) => {
     setPendingStartId(campaignId);
-    setPendingCampaignName(campaignName);
+    setPendingCampName(campaignName);
     setCostEstimate(null);
     setCostLoading(true);
     setCostModalOpen(true);
 
     try {
-      const res = await campaignApi.estimateCost(campaignId);
+      const res = await campaignsApi.estimateCost(campaignId);
       const estimate = res.data?.data || res.data;
       setCostEstimate(estimate);
-    } catch (err: any) {
-      console.error('Cost estimation failed:', err);
-      // Error pe bhi modal open rakho with null estimate
-      setCostEstimate(null);
+    } catch (e: any) {
+      console.warn('Cost estimate failed:', e.message);
+      // Keep modal open with null estimate
     } finally {
       setCostLoading(false);
     }
@@ -301,122 +284,93 @@ const Campaigns: React.FC = () => {
     setCostModalOpen(false);
 
     try {
+      setActionLoading(pendingStartId);
       await campaignsApi.start(pendingStartId);
-      
-      // ✅ Refresh with delay
-      await new Promise(resolve => setTimeout(resolve, 500));
-      await Promise.all([fetchCampaigns(), fetchStats()]);
-      
-      toast.success('Campaign started successfully!');
-    } catch (err: any) {
-      const msg = err?.response?.data?.message || err?.message || '';
-      
-      // ── Wallet error parse karo ────────────────────────────────
-      if (msg.startsWith('WALLET_INSUFFICIENT::')) {
-        const parts = msg.split('::');
-        const needed = parseFloat(parts[1]) || 0;
-        const available = parseFloat(parts[2]) || 0;
-        toast.error(
-          `Insufficient balance! Need ₹${needed.toFixed(2)}, have ₹${available.toFixed(2)}. Please top up.`,
-          { duration: 6000 }
-        );
-      } else if (msg.startsWith('WALLET_LOW_BALANCE::')) {
-        const parts = msg.split('::');
-        const available = parseFloat(parts[2]) || 0;
-        toast.error(
-          `Wallet balance too low (₹${available.toFixed(2)}). Minimum ₹20 required.`,
-          { duration: 6000 }
-        );
+      toast.success('Campaign started!');
+      await new Promise(r => setTimeout(r, 400));
+      await fetchCampaigns(true);
+      await fetchStats();
+    } catch (e: any) {
+      const msg = e?.response?.data?.message || e?.message || '';
+      const wall = parseWalletErr(msg);
+      if (wall.isWallet) {
+        setWalletBlockData({
+          balance: wall.balance,
+          required: wall.required,
+          type: wall.type,
+        });
       } else {
         toast.error(msg || 'Failed to start campaign');
       }
     } finally {
+      setActionLoading(null);
       setPendingStartId(null);
     }
   };
 
-
-  const handleDelete = async (campaignId: string) => {
-    if (!confirm('Are you sure you want to delete this campaign?')) return;
-
+  // ─── Pause / Resume / Cancel ───────────────────────────────
+  const handleAction = async (
+    action: 'pause' | 'resume' | 'cancel',
+    campaignId: string
+  ) => {
     try {
       setActionLoading(campaignId);
-      
-      // ✅ Optimistic update
-      setCampaigns(prev => prev.filter(c => c.id !== campaignId));
-      
-      const response = await campaignsApi.delete(campaignId);
+      setWalletBlockData(null);
 
-      if (response.data.success) {
-        toast.success('Campaign deleted successfully');
-        
-        // ✅ Ensure refresh with delay
-        await new Promise(resolve => setTimeout(resolve, 300));
-        await Promise.all([fetchCampaigns(), fetchStats()]);
+      let res;
+      if (action === 'pause') res = await campaignsApi.pause(campaignId);
+      if (action === 'resume') res = await campaignsApi.resume(campaignId);
+      if (action === 'cancel') res = await campaignsApi.cancel(campaignId);
+
+      if (res?.data.success) {
+        toast.success(`Campaign ${action}d successfully`);
+        await new Promise(r => setTimeout(r, 300));
+        await fetchCampaigns(true);
+        await fetchStats();
       }
-    } catch (error: any) {
-      // ✅ Rollback on error
-      await fetchCampaigns();
-      toast.error(error.response?.data?.message || 'Failed to delete campaign');
+    } catch (e: any) {
+      const msg = e?.response?.data?.message || e?.message || '';
+      const wall = parseWalletErr(msg);
+      if (wall.isWallet) {
+        setWalletBlockData({
+          balance: wall.balance,
+          required: wall.required,
+          type: wall.type,
+        });
+      } else {
+        toast.error(msg || `Failed to ${action} campaign`);
+      }
     } finally {
       setActionLoading(null);
     }
   };
 
-  const getStatusBadge = (status: Campaign['status']) => {
-    const badges = {
-      DRAFT: { color: 'bg-gray-100 text-gray-700 border-gray-200', icon: Clock },
-      SCHEDULED: { color: 'bg-blue-50 text-blue-700 border-blue-200', icon: Calendar },
-      RUNNING: { color: 'bg-green-50 text-green-700 border-green-200', icon: Play },
-      PAUSED: { color: 'bg-yellow-50 text-yellow-700 border-yellow-200', icon: Pause },
-      COMPLETED: { color: 'bg-purple-50 text-purple-700 border-purple-200', icon: CheckCircle },
-      FAILED: { color: 'bg-red-50 text-red-700 border-red-200', icon: XCircle }
-    };
-
-    const badge = badges[status] || badges.DRAFT;
-    const Icon = badge.icon;
-
-    return (
-      <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium border ${badge.color}`}>
-        <Icon className="w-3 h-3" />
-        {status}
-      </span>
-    );
+  // ─── Delete ────────────────────────────────────────────────
+  // ✅ FIX Bug3: No optimistic update - just delete then refetch
+  const handleDelete = async (campaignId: string) => {
+    if (!confirm('Delete this campaign? This cannot be undone.')) return;
+    try {
+      setActionLoading(campaignId);
+      await campaignsApi.delete(campaignId);
+      toast.success('Campaign deleted');
+      setCampaigns(prev => prev.filter(c => c.id !== campaignId));
+      fetchStats();
+    } catch (e: any) {
+      toast.error(
+        e.response?.data?.message || 'Failed to delete campaign'
+      );
+    } finally {
+      setActionLoading(null);
+    }
   };
 
-  const getProgress = (campaign: Campaign) => {
-    const total = safeNumber(campaign.totalContacts);
-    const sent = safeNumber(campaign.sentCount);
-
-    if (total === 0) return 0;
-    return Math.min(Math.round((sent / total) * 100), 100);
-  };
-
-  if (loading) {
-    return <PageSkeleton />;
-  }
-
-  if (error) {
-    return (
-      <div className="flex flex-col items-center justify-center h-full py-12">
-        <AlertCircle className="w-12 h-12 text-red-500 mb-4" />
-        <h3 className="text-lg font-semibold text-gray-900 mb-2">
-          Failed to Load Campaigns
-        </h3>
-        <p className="text-gray-600 mb-4">{error}</p>
-        <button
-          onClick={fetchCampaigns}
-          className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
-        >
-          Retry
-        </button>
-      </div>
-    );
-  }
+  // ─── Render ────────────────────────────────────────────────
+  if (loading) return <PageSkeleton />;
 
   return (
     <div className="space-y-6">
-      {/* Header */}
+
+      {/* ── Header ── */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Campaigns</h1>
@@ -426,125 +380,129 @@ const Campaigns: React.FC = () => {
         </div>
         <Link
           to="/dashboard/campaigns/create"
-          className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 shadow-sm"
+          className="flex items-center gap-2 px-4 py-2 bg-green-600
+                     text-white rounded-lg hover:bg-green-700 shadow-sm"
         >
           <Plus className="w-5 h-5" />
           New Campaign
         </Link>
       </div>
 
-      {/* ✅ NEW: Dynamic Wallet Balance Warning Banner */}
-      {walletBlockData && (
-        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200
-                        dark:border-red-800 rounded-2xl p-4
-                        flex items-start gap-3 animate-in fade-in slide-in-from-top-4 duration-300">
+      {/* ── Error ── */}
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-xl p-4
+                        flex items-start gap-3">
+          <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
+          <div className="flex-1">
+            <p className="text-red-800 font-medium text-sm">Error</p>
+            <p className="text-red-700 text-sm">{error}</p>
+          </div>
+          <button
+            onClick={() => { setError(null); fetchCampaigns(); }}
+            className="px-3 py-1 bg-red-600 text-white text-xs
+                       rounded-lg hover:bg-red-700"
+          >
+            Retry
+          </button>
+        </div>
+      )}
 
-          {/* Icon */}
-          <div className="w-10 h-10 bg-red-100 dark:bg-red-900/40
-                          rounded-xl flex items-center justify-center flex-shrink-0">
+      {/* ── Wallet Warning ── */}
+      {walletBlockData && (
+        <div className="bg-red-50 border border-red-200 rounded-2xl p-4
+                        flex items-start gap-3">
+          <div className="w-10 h-10 bg-red-100 rounded-xl flex items-center
+                          justify-center shrink-0">
             <AlertTriangle className="w-5 h-5 text-red-600" />
           </div>
-
-          {/* Text */}
           <div className="flex-1">
-            <p className="font-semibold text-red-700 dark:text-red-400 text-sm">
-              Insufficient Wallet Balance
+            <p className="font-semibold text-red-700 text-sm">
+              {walletBlockData.type === 'low'
+                ? 'Wallet Balance Too Low'
+                : 'Insufficient Wallet Balance'}
             </p>
-            <p className="text-red-600 dark:text-red-500 text-xs mt-0.5">
-              Your current wallet balance (₹{walletBlockData.balance.toFixed(2)}) is insufficient to run this campaign. Please add money to your wallet to proceed.
+            <p className="text-red-600 text-xs mt-0.5">
+              Current balance: ₹{walletBlockData.balance.toFixed(2)}.
+              {walletBlockData.required &&
+                ` Required: ₹${walletBlockData.required.toFixed(2)}.`}
+              {' '}Please add funds to proceed.
             </p>
-
-            {/* Button */}
             <Link
               to="/dashboard/wallet"
-              className="inline-flex items-center gap-1.5 mt-2
-                         px-3 py-1.5 bg-red-600 hover:bg-red-700
-                         text-white text-xs font-semibold
-                         rounded-lg shadow-sm shadow-red-200 transition-all active:scale-95"
+              className="inline-flex items-center gap-1.5 mt-2 px-3 py-1.5
+                         bg-red-600 hover:bg-red-700 text-white text-xs
+                         font-semibold rounded-lg transition-all"
             >
               Add Money to Wallet →
             </Link>
           </div>
-
-          {/* Close */}
           <button
             onClick={() => setWalletBlockData(null)}
-            className="text-red-400 hover:text-red-600 transition-all p-1"
+            className="text-red-400 hover:text-red-600 p-1"
           >
             <XCircle className="w-5 h-5" />
           </button>
         </div>
       )}
 
-      {/* Stats Cards */}
+      {/* ── Stats ── */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="relative overflow-hidden rounded-2xl border p-6 group/stat transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md bg-blue-50/40 border-blue-200">
-          <div className="absolute top-0 right-0 p-4 opacity-[0.08] group-hover/stat:scale-110 group-hover/stat:opacity-[0.15] transition-all duration-500">
-            <BarChart3 size={80} style={{ color: '#3B82F6' }} />
+        {[
+          { label: 'Total Campaigns', value: stats.total, color: '#3B82F6', icon: BarChart3 },
+          { label: 'Messages Sent', value: stats.totalSent, color: '#8B5CF6', icon: Send },
+          { label: 'Delivered', value: stats.totalDelivered, color: '#25D366', icon: CheckCircle },
+          { label: 'Read', value: stats.totalRead, color: '#10B981', icon: Eye },
+        ].map(s => (
+          <div
+            key={s.label}
+            className="relative overflow-hidden rounded-2xl border p-6
+                       transition-all duration-300 hover:-translate-y-0.5
+                       hover:shadow-md"
+            style={{
+              backgroundColor: `${s.color}0A`,
+              borderColor: `${s.color}30`,
+            }}
+          >
+            <div className="absolute top-0 right-0 p-4 opacity-[0.08]">
+              <s.icon size={80} />
+            </div>
+            <div className="relative z-10">
+              <p className="text-xs font-mono uppercase tracking-widest mb-1"
+                style={{ color: s.color }}>
+                {s.label}
+              </p>
+              <h3 className="text-3xl font-bold text-gray-900">
+                {safeStr(s.value)}
+              </h3>
+            </div>
           </div>
-          <div className="relative z-10">
-            <p className="text-xs font-mono uppercase tracking-widest mb-1 text-blue-700">Total Campaigns</p>
-            <h3 className="text-3xl font-bold text-gray-900">
-              {safeNumber(stats.total)}
-            </h3>
-          </div>
-        </div>
-
-        <div className="relative overflow-hidden rounded-2xl border p-6 group/stat transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md bg-green-50/40 border-green-200">
-          <div className="absolute top-0 right-0 p-4 opacity-[0.08] group-hover/stat:scale-110 group-hover/stat:opacity-[0.15] transition-all duration-500">
-            <Play size={80} style={{ color: '#10B981' }} />
-          </div>
-          <div className="relative z-10">
-            <p className="text-xs font-mono uppercase tracking-widest mb-1 text-green-700">Active</p>
-            <h3 className="text-3xl font-bold text-gray-900">
-              {safeNumber(stats.active)}
-            </h3>
-          </div>
-        </div>
-
-        <div className="relative overflow-hidden rounded-2xl border p-6 group/stat transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md bg-purple-50/40 border-purple-200">
-          <div className="absolute top-0 right-0 p-4 opacity-[0.08] group-hover/stat:scale-110 group-hover/stat:opacity-[0.15] transition-all duration-500">
-            <Send size={80} style={{ color: '#8B5CF6' }} />
-          </div>
-          <div className="relative z-10">
-            <p className="text-xs font-mono uppercase tracking-widest mb-1 text-purple-700">Messages Sent</p>
-            <h3 className="text-3xl font-bold text-gray-900">
-              {safeLocaleString(stats.totalSent)}
-            </h3>
-          </div>
-        </div>
-
-        <div className="relative overflow-hidden rounded-2xl border p-6 group/stat transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md bg-emerald-50/40 border-emerald-200">
-          <div className="absolute top-0 right-0 p-4 opacity-[0.08] group-hover/stat:scale-110 group-hover/stat:opacity-[0.15] transition-all duration-500">
-            <CheckCircle size={80} style={{ color: '#25D366' }} />
-          </div>
-          <div className="relative z-10">
-            <p className="text-xs font-mono uppercase tracking-widest mb-1 text-emerald-700">Delivered</p>
-            <h3 className="text-3xl font-bold text-gray-900">
-              {safeLocaleString(stats.totalDelivered)}
-            </h3>
-          </div>
-        </div>
+        ))}
       </div>
 
-      {/* Filters */}
+      {/* ── Filters ── */}
       <div className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm">
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2
+                               w-5 h-5 text-gray-400" />
             <input
               type="text"
               placeholder="Search campaigns..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 transition-all text-gray-900 placeholder-gray-400"
+              value={searchInput}
+              onChange={e => handleSearchInput(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && handleSearchSubmit()}
+              className="w-full pl-10 pr-4 py-2 bg-gray-50 border
+                         border-gray-200 rounded-lg text-gray-900
+                         placeholder-gray-400 focus:outline-none
+                         focus:ring-2 focus:ring-green-500"
             />
           </div>
-
           <select
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 transition-all text-gray-900"
+            onChange={e => setStatusFilter(e.target.value)}
+            className="px-4 py-2 bg-gray-50 border border-gray-200
+                       rounded-lg text-gray-900 focus:outline-none
+                       focus:ring-2 focus:ring-green-500"
           >
             <option value="all">All Status</option>
             <option value="DRAFT">Draft</option>
@@ -553,32 +511,59 @@ const Campaigns: React.FC = () => {
             <option value="PAUSED">Paused</option>
             <option value="COMPLETED">Completed</option>
             <option value="FAILED">Failed</option>
+            <option value="CANCELLED">Cancelled</option>
           </select>
-
           <button
-            onClick={fetchCampaigns}
-            className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors flex items-center justify-center text-gray-700"
+            onClick={() => fetchCampaigns()}
+            className="px-4 py-2 bg-gray-100 hover:bg-gray-200
+                       rounded-lg text-gray-700 flex items-center gap-2"
           >
-            <Search className="w-5 h-5" />
+            <RefreshCw className="w-5 h-5" />
           </button>
         </div>
       </div>
 
-      {/* Campaigns List */}
+      {/* ── Campaign List ── */}
       <div className="space-y-4">
-        {campaigns.length > 0 ? (
-          campaigns.map((campaign) => (
+        {campaigns.length === 0 ? (
+          <div className="bg-white rounded-2xl p-16 text-center
+                          border border-gray-200 shadow-sm">
+            <div className="w-20 h-20 bg-gray-50 rounded-full flex
+                            items-center justify-center mx-auto mb-6">
+              <Send className="w-10 h-10 text-gray-400" />
+            </div>
+            <h3 className="text-xl font-bold text-gray-900 mb-2">
+              No campaigns yet
+            </h3>
+            <p className="text-gray-600 mb-8 max-w-xs mx-auto">
+              Create your first campaign to start sending bulk messages.
+            </p>
+            <Link
+              to="/dashboard/campaigns/create"
+              className="inline-flex items-center gap-2 px-6 py-3
+                         bg-green-600 hover:bg-green-700 text-white
+                         font-bold rounded-xl transition-all shadow-lg"
+            >
+              <Plus className="w-5 h-5" />
+              Create First Campaign
+            </Link>
+          </div>
+        ) : (
+          campaigns.map(campaign => (
             <div
               key={campaign.id}
-              className="relative overflow-hidden rounded-2xl bg-white border border-gray-200 p-6 hover:border-green-300 hover:shadow-md transition-all duration-300 group"
+              className="relative overflow-hidden rounded-2xl bg-white
+                         border border-gray-200 p-6 hover:border-green-300
+                         hover:shadow-md transition-all duration-300 group"
             >
               <div className="flex items-start justify-between mb-4">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-3 mb-2 flex-wrap">
-                    <h3 className="text-lg font-semibold text-gray-900 truncate max-w-[250px] sm:max-w-none">
+                    <h3 className="text-lg font-semibold text-gray-900
+                                   truncate max-w-[200px] sm:max-w-none">
                       {campaign.name}
                     </h3>
-                    {getStatusBadge(campaign.status)}
+                    <StatusBadge status={campaign.status} />
                   </div>
                   {campaign.description && (
                     <p className="text-gray-600 text-sm line-clamp-1">
@@ -601,29 +586,33 @@ const Campaigns: React.FC = () => {
                     <Eye className="w-5 h-5 text-gray-400 hover:text-gray-600" />
                   </Link>
 
-                  {campaign.status === 'DRAFT' && (
-                    <button
-                      onClick={() => handleStartCampaign(campaign.id, campaign.name)}
-                      disabled={actionLoading === campaign.id}
-                      className="p-2 hover:bg-green-50 rounded-lg transition-colors"
-                      title="Start Campaign"
-                    >
-                      {actionLoading === campaign.id ? (
-                        <Loader2 className="w-5 h-5 animate-spin text-green-600" />
-                      ) : (
-                        <Play className="w-5 h-5 text-green-600" />
-                      )}
-                    </button>
-                  )}
+                  {/* ✅ FIX Bug2: DRAFT + SCHEDULED both show start */}
+                  {(campaign.status === 'DRAFT' ||
+                    campaign.status === 'SCHEDULED') && (
+                      <button
+                        onClick={() =>
+                          handleStartCampaign(campaign.id, campaign.name)
+                        }
+                        disabled={actionLoading === campaign.id}
+                        className="p-2 hover:bg-green-50 rounded-lg transition-colors"
+                        title="Start Campaign"
+                      >
+                        {actionLoading === campaign.id
+                          ? <Loader2 className="w-5 h-5 animate-spin text-green-600" />
+                          : <Play className="w-5 h-5 text-green-600" />}
+                      </button>
+                    )}
 
                   {campaign.status === 'RUNNING' && (
                     <button
                       onClick={() => handleAction('pause', campaign.id)}
                       disabled={actionLoading === campaign.id}
-                      className="p-2 hover:bg-yellow-50 rounded-lg transition-colors"
-                      title="Pause Campaign"
+                      className="p-2 hover:bg-yellow-50 rounded-lg"
+                      title="Pause"
                     >
-                      <Pause className="w-5 h-5 text-yellow-600" />
+                      {actionLoading === campaign.id
+                        ? <Loader2 className="w-5 h-5 animate-spin text-yellow-600" />
+                        : <Pause className="w-5 h-5 text-yellow-600" />}
                     </button>
                   )}
 
@@ -631,17 +620,29 @@ const Campaigns: React.FC = () => {
                     <button
                       onClick={() => handleAction('resume', campaign.id)}
                       disabled={actionLoading === campaign.id}
-                      className="p-2 hover:bg-green-50 rounded-lg transition-colors"
-                      title="Resume Campaign"
+                      className="p-2 hover:bg-green-50 rounded-lg"
+                      title="Resume"
                     >
-                      <Play className="w-5 h-5 text-green-600" />
+                      {actionLoading === campaign.id
+                        ? <Loader2 className="w-5 h-5 animate-spin text-green-600" />
+                        : <Play className="w-5 h-5 text-green-600" />}
                     </button>
                   )}
 
                   <button
                     onClick={() => handleDelete(campaign.id)}
-                    className="p-2 hover:bg-red-50 rounded-lg transition-colors opacity-0 group-hover:opacity-100 transition-opacity"
-                    title="Delete"
+                    disabled={
+                      actionLoading === campaign.id ||
+                      campaign.status === 'RUNNING'
+                    }
+                    className="p-2 hover:bg-red-50 rounded-lg transition-colors
+                               opacity-0 group-hover:opacity-100
+                               disabled:opacity-0 disabled:cursor-not-allowed"
+                    title={
+                      campaign.status === 'RUNNING'
+                        ? 'Pause campaign before deleting'
+                        : 'Delete'
+                    }
                   >
                     <XCircle className="w-5 h-5 text-red-500" />
                   </button>
@@ -650,100 +651,100 @@ const Campaigns: React.FC = () => {
 
               {/* Stats Grid */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-5">
-                <div className="bg-gray-50 p-3 rounded-xl border border-gray-100">
-                  <p className="text-[10px] uppercase tracking-wider font-bold text-gray-500 mb-1">Recipients</p>
-                  <p className="text-lg font-bold text-gray-900">
-                    {safeLocaleString(campaign.totalContacts)}
-                  </p>
-                </div>
-                <div className="bg-gray-50 p-3 rounded-xl border border-gray-100">
-                  <p className="text-[10px] uppercase tracking-wider font-bold text-gray-500 mb-1">Sent</p>
-                  <p className="text-lg font-bold text-green-700">
-                    {safeLocaleString(campaign.sentCount)}
-                  </p>
-                </div>
-                <div className="bg-gray-50 p-3 rounded-xl border border-gray-100">
-                  <p className="text-[10px] uppercase tracking-wider font-bold text-gray-500 mb-1">Delivered</p>
-                  <p className="text-lg font-bold text-blue-700">
-                    {safeLocaleString(campaign.deliveredCount)}
-                  </p>
-                </div>
-                <div className="bg-gray-50 p-3 rounded-xl border border-gray-100">
-                  <p className="text-[10px] uppercase tracking-wider font-bold text-gray-500 mb-1">Read</p>
-                  <p className="text-lg font-bold text-purple-700">
-                    {safeLocaleString(campaign.readCount)}
-                  </p>
-                </div>
+                {[
+                  { label: 'Recipients', value: campaign.totalContacts, color: 'text-gray-900' },
+                  { label: 'Sent', value: campaign.sentCount, color: 'text-green-700' },
+                  { label: 'Delivered', value: campaign.deliveredCount, color: 'text-blue-700' },
+                  { label: 'Failed', value: campaign.failedCount, color: 'text-red-600' },
+                ].map(s => (
+                  <div key={s.label}
+                    className="bg-gray-50 p-3 rounded-xl border border-gray-100">
+                    <p className="text-[10px] uppercase tracking-wider
+                                  font-bold text-gray-500 mb-1">
+                      {s.label}
+                    </p>
+                    <p className={`text-lg font-bold ${s.color}`}>
+                      {safeStr(s.value)}
+                    </p>
+                  </div>
+                ))}
               </div>
 
-              {/* Progress Bar */}
-              {(campaign.status === 'RUNNING' || (campaign.sentCount || 0) > 0) && (
-                <div className="mb-4">
-                  <div className="flex items-center justify-between text-xs text-gray-600 mb-1.5">
-                    <span className="font-medium">Campaign Progress</span>
-                    <span className="font-bold">{getProgress(campaign)}%</span>
+              {/* Progress */}
+              {(['RUNNING', 'PAUSED', 'COMPLETED'].includes(campaign.status) ||
+                safeNum(campaign.sentCount) > 0) && (
+                  <div className="mb-4">
+                    <div className="flex items-center justify-between
+                                  text-xs text-gray-600 mb-1.5">
+                      <span className="font-medium">Progress</span>
+                      <span className="font-bold">
+                        {getProgress(campaign)}%
+                      </span>
+                    </div>
+                    <div className="w-full bg-gray-100 rounded-full h-2">
+                      <div
+                        className={`h-2 rounded-full transition-all duration-700 ${campaign.status === 'COMPLETED'
+                            ? 'bg-purple-600'
+                            : campaign.status === 'PAUSED'
+                              ? 'bg-yellow-500'
+                              : 'bg-green-500'
+                          }`}
+                        style={{ width: `${getProgress(campaign)}%` }}
+                      />
+                    </div>
                   </div>
-                  <div className="w-full bg-gray-100 rounded-full h-2 shadow-inner">
-                    <div
-                      className={`h-2 rounded-full transition-all duration-700 ease-out ${
-                        campaign.status === 'COMPLETED' ? 'bg-purple-600' : 'bg-green-500'
-                      }`}
-                      style={{ width: `${getProgress(campaign)}%` }}
-                    />
-                  </div>
-                </div>
-              )}
+                )}
 
-              {/* Meta Info */}
-              <div className="flex items-center gap-4 mt-2 text-[11px] text-gray-500 border-t border-gray-100 pt-3">
+              {/* Meta info */}
+              <div className="flex items-center gap-4 mt-2 text-[11px]
+                              text-gray-500 border-t border-gray-100 pt-3
+                              flex-wrap">
                 <span className="flex items-center gap-1.5">
                   <Calendar className="w-3.5 h-3.5" />
-                  Created {formatDistanceToNow(new Date(campaign.createdAt), { addSuffix: true })}
+                  Created{' '}
+                  {formatDistanceToNow(new Date(campaign.createdAt), {
+                    addSuffix: true,
+                  })}
                 </span>
                 {campaign.scheduledAt && (
                   <span className="flex items-center gap-1.5">
                     <Clock className="w-3.5 h-3.5" />
-                    Scheduled for {new Date(campaign.scheduledAt).toLocaleString()}
+                    Scheduled:{' '}
+                    {new Date(campaign.scheduledAt).toLocaleString()}
                   </span>
                 )}
                 {campaign.startedAt && (
                   <span className="flex items-center gap-1.5">
                     <Play className="w-3.5 h-3.5" />
-                    Started {formatDistanceToNow(new Date(campaign.startedAt), { addSuffix: true })}
+                    Started{' '}
+                    {formatDistanceToNow(new Date(campaign.startedAt), {
+                      addSuffix: true,
+                    })}
+                  </span>
+                )}
+                {campaign.completedAt && (
+                  <span className="flex items-center gap-1.5">
+                    <CheckCircle className="w-3.5 h-3.5 text-purple-500" />
+                    Completed{' '}
+                    {formatDistanceToNow(new Date(campaign.completedAt), {
+                      addSuffix: true,
+                    })}
                   </span>
                 )}
               </div>
             </div>
           ))
-         ) : (
-          <div className="bg-white rounded-2xl p-16 text-center border border-gray-200 shadow-sm">
-            <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-6 border border-gray-100">
-              <Send className="w-10 h-10 text-gray-400" />
-            </div>
-            <h3 className="text-xl font-bold text-gray-900 mb-2">
-              No campaigns yet
-            </h3>
-            <p className="text-gray-600 mb-8 max-w-xs mx-auto">
-              Create your first campaign to start sending bulk messages and reach your customers.
-            </p>
-            <Link
-              to="/dashboard/campaigns/create"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl transition-all shadow-lg shadow-green-200 active:scale-95"
-            >
-              <Plus className="w-5 h-5" />
-              Create Your First Campaign
-            </Link>
-          </div>
         )}
       </div>
 
+      {/* ── Wallet Cost Modal ── */}
       <WalletCostModal
         isOpen={costModalOpen}
         onClose={() => { setCostModalOpen(false); setPendingStartId(null); }}
         onConfirm={handleConfirmStart}
         estimate={costEstimate}
         loading={costLoading}
-        campaignName={pendingCampaignName}
+        campaignName={pendingCampName}
       />
     </div>
   );

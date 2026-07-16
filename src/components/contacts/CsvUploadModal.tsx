@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import Papa from 'papaparse';
 import {
     X,
     FileSpreadsheet,
@@ -54,38 +55,36 @@ export default function CsvUploadModal({ isOpen, onClose, onSuccess, groups = []
     };
 
     const parseCSV = (file: File) => {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            const text = e.target?.result as string;
-            const lines = text.split('\n').filter(line => line.trim());
-
-            if (lines.length < 2) {
-                toast.error('CSV file is empty or has no data rows');
-                return;
-            }
-
-            // Parse header
-            const header = lines[0].split(',').map(h => h.trim().toLowerCase());
-
-            // Parse data rows
-            const data = lines.slice(1).map(line => {
-                const values = line.split(',').map(v => v.trim().replace(/^["']|["']$/g, ''));
-                const obj: any = {};
-
-                header.forEach((h, i) => {
-                    obj[h] = values[i] || '';
+        Papa.parse(file, {
+            header: true,
+            skipEmptyLines: true,
+            complete: (results) => {
+                const rows = results.data || [];
+                // Standardize keys to lowercase and trim values
+                const data = rows.map((row: any) => {
+                    const normalizedRow: any = {};
+                    Object.keys(row).forEach(key => {
+                        normalizedRow[key.trim().toLowerCase()] = String(row[key] ?? '').trim();
+                    });
+                    return normalizedRow;
+                }).filter(row => {
+                    const phone = row.phone || row.phonenumber || row.mobile || row.number;
+                    return phone && phone.length > 0;
                 });
 
-                return obj;
-            }).filter(row => {
-                const phone = row.phone || row.phonenumber || row.mobile || row.number;
-                return phone && phone.length > 0;
-            });
+                if (data.length === 0) {
+                    toast.error('No valid contacts found in CSV (must contain phone column)');
+                    setParsedData([]);
+                    return;
+                }
 
-            setParsedData(data);
-            toast.success(`${data.length} contacts found in CSV`);
-        };
-        reader.readAsText(file);
+                setParsedData(data);
+                toast.success(`${data.length} contacts found in CSV`);
+            },
+            error: (error) => {
+                toast.error(`Failed to parse CSV: ${error.message}`);
+            }
+        });
     };
 
     // ✅ CREATE NEW GROUP

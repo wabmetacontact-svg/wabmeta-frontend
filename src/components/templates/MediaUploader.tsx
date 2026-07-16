@@ -1,217 +1,232 @@
+// src/components/templates/MediaUploader.tsx
 import React, { useState, useRef } from 'react';
-import { Upload, Image, Video, File, X, CheckCircle2, AlertCircle, Info } from 'lucide-react';
+import {
+  Upload, Image, Video, File, X,
+  CheckCircle2, AlertCircle, Info, Loader2
+} from 'lucide-react';
 import type { HeaderType } from '../../types/template';
-import toast from 'react-hot-toast';
 import { templates as templatesApi } from '../../services/api';
 
+// ─── Props ───────────────────────────────────────────────────
 interface MediaUploaderProps {
   headerType: HeaderType;
-  mediaUrl?: string;
+  cloudinaryUrl?: string;     // Permanent URL for display
+  localPreviewUrl?: string;   // Blob URL for local preview
   fileName?: string;
   whatsappAccountId?: string;
-  onMediaChange: (url: string, fileName?: string, metaHandle?: string, metaId?: string) => void;
+  onUploadSuccess: (data: {
+    mediaHandle: string;
+    cloudinaryUrl: string;
+    localPreviewUrl: string;
+    fileName: string;
+    whatsappAccountId: string;
+  }) => void;
   onRemove: () => void;
 }
 
-const getIcon = (headerType: HeaderType) => {
-  switch (headerType) {
-    case 'image': return Image;
-    case 'video': return Video;
-    case 'document': return File;
-    default: return Upload;
-  }
-};
-
-// ✅ META HARD LIMITS
-const META_LIMITS = {
+// ─── Constants ────────────────────────────────────────────────
+const META_LIMITS: Record<string, { size: number; label: string }> = {
   image: { size: 5 * 1024 * 1024, label: '5 MB' },
   video: { size: 16 * 1024 * 1024, label: '16 MB' },
   document: { size: 100 * 1024 * 1024, label: '100 MB' },
 };
 
-// ✅ ABSOLUTE UPLOAD LIMITS (before compression)
-const UPLOAD_LIMITS = {
+const UPLOAD_LIMITS: Record<string, { size: number; label: string }> = {
   image: { size: 15 * 1024 * 1024, label: '15 MB' },
   video: { size: 100 * 1024 * 1024, label: '100 MB' },
   document: { size: 100 * 1024 * 1024, label: '100 MB' },
 };
 
-const formatBytes = (bytes: number): string => {
-  return `${(bytes / 1024 / 1024).toFixed(2)} MB`;
+const ACCEPTED_TYPES: Record<string, string> = {
+  image: 'image/jpeg,image/jpg,image/png,image/webp',
+  video: 'video/mp4,video/3gpp',
+  document: 'application/pdf,.doc,.docx,.xls,.xlsx,.txt',
 };
 
+const TYPE_LABELS: Record<string, string> = {
+  image: 'Image',
+  video: 'Video',
+  document: 'Document',
+};
+
+const formatBytes = (bytes: number): string =>
+  `${(bytes / 1024 / 1024).toFixed(2)} MB`;
+
+// ─── Handle Validator ─────────────────────────────────────────
+const isValidMetaHandle = (handle: string): boolean => {
+  if (!handle || handle.trim().length < 10) return false;
+  if (handle.startsWith('http')) return false;
+  if (handle.includes('\n') || handle.includes(',')) return false;
+  if (handle.includes(':::')) return false;
+  return true;
+};
+
+// ─── Icon Helper ──────────────────────────────────────────────
+const getIcon = (type: HeaderType) => {
+  if (type === 'image') return Image;
+  if (type === 'video') return Video;
+  if (type === 'document') return File;
+  return Upload;
+};
+
+// ─── Component ────────────────────────────────────────────────
 const MediaUploader: React.FC<MediaUploaderProps> = ({
   headerType,
-  mediaUrl,
+  cloudinaryUrl,
+  localPreviewUrl,
   fileName,
   whatsappAccountId,
-  onMediaChange,
+  onUploadSuccess,
   onRemove,
 }) => {
   const [dragActive, setDragActive] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState<string>('');
+  const [uploadStatus, setUploadStatus] = useState('');
   const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const getAcceptedTypes = () => {
-    switch (headerType) {
-      case 'image': return 'image/jpeg,image/png,image/webp';
-      case 'video': return 'video/mp4';
-      case 'document': return 'application/pdf,application/msword,.doc,.docx,.xls,.xlsx,.txt';
-      default: return '';
-    }
-  };
-
   const Icon = getIcon(headerType);
+  const metaLimit = META_LIMITS[headerType];
+  const uploadLimit = UPLOAD_LIMITS[headerType];
+  const displayUrl = localPreviewUrl || cloudinaryUrl; // blob first, then permanent
 
-  const handleDrag = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (e.type === 'dragenter' || e.type === 'dragover') {
-      setDragActive(true);
-    } else if (e.type === 'dragleave') {
-      setDragActive(false);
-    }
-  };
-
-  // ✅ VALIDATE FILE BEFORE UPLOAD
-  const validateFile = (file: File): { valid: boolean; error?: string; warning?: string } => {
-    if (headerType === 'none' || headerType === 'text') {
-      return { valid: false, error: 'Unsupported file type' };
-    }
-    const uploadLimit = UPLOAD_LIMITS[headerType as 'image' | 'video' | 'document'];
-    const metaLimit = META_LIMITS[headerType as 'image' | 'video' | 'document'];
-
-    // ❌ ABSOLUTE MAX EXCEEDED
+  // ─── Validate ───────────────────────────────────────────────
+  const validateFile = (file: File): string | null => {
+    if (!uploadLimit) return 'Unsupported file type';
+    if (file.size === 0) return 'File is empty';
     if (file.size > uploadLimit.size) {
-      return {
-        valid: false,
-        error: `File too large (${formatBytes(file.size)}). Maximum allowed: ${uploadLimit.label}. Please compress your file first.`,
-      };
+      return (
+        `File too large (${formatBytes(file.size)}). ` +
+        `Maximum: ${uploadLimit.label}. Please compress first.`
+      );
     }
-
-    // ⚠️ WARNING - Will be compressed
-    if (file.size > metaLimit.size) {
-      return {
-        valid: true,
-        warning: `File is ${formatBytes(file.size)} - larger than WhatsApp's ${metaLimit.label} limit. It will be automatically compressed.`,
-      };
-    }
-
-    return { valid: true };
+    return null; // valid
   };
 
+  // ─── Upload ─────────────────────────────────────────────────
   const handleFile = async (file: File) => {
     setError(null);
 
-    // ✅ Step 1: Frontend validation
-    const validation = validateFile(file);
-    
-    if (!validation.valid) {
-      setError(validation.error!);
-      toast.error(validation.error!, { duration: 6000 });
+    // Frontend validation
+    const validationError = validateFile(file);
+    if (validationError) {
+      setError(validationError);
       return;
     }
 
-    if (validation.warning) {
-      toast(validation.warning, { 
-        duration: 5000, 
-        icon: '📦',
-        style: {
-          background: '#FEF3C7',
-          color: '#92400E',
-          border: '1px solid #FCD34D',
-        },
-      });
+    // Warn about compression
+    const willCompress = metaLimit && file.size > metaLimit.size;
+
+    if (!whatsappAccountId) {
+      setError('Please select a WhatsApp account first (Settings tab).');
+      return;
     }
 
-    // ✅ Step 2: Upload to backend
     setUploading(true);
-    setUploadProgress('Preparing upload...');
+    setUploadStatus(
+      willCompress
+        ? 'Uploading and compressing...'
+        : file.size > 10 * 1024 * 1024
+          ? 'Uploading large file...'
+          : 'Uploading...'
+    );
+
+    // Create local preview immediately
+    const localUrl = URL.createObjectURL(file);
 
     try {
-      // Show progress based on file size
-      if (file.size > 20 * 1024 * 1024) {
-        setUploadProgress('Uploading large file, this may take a while...');
-      } else if (file.size > 5 * 1024 * 1024) {
-        setUploadProgress('Uploading and compressing...');
-      } else {
-        setUploadProgress('Uploading...');
-      }
-
       const response = await templatesApi.uploadMedia(file, whatsappAccountId);
 
-      if (response.data.success) {
-        const data = response.data.data;
-        
-        console.log('✅ Upload successful:', {
-          url: data.cloudinaryUrl?.substring(0, 60),
-          size: data.size,
-          compressed: data.compressionApplied,
-        });
-
-        // Show success message with compression info
-        if (data.compressionApplied && data.originalSize) {
-          const savedMB = ((data.originalSize - data.size) / 1024 / 1024).toFixed(2);
-          toast.success(
-            `File compressed! Saved ${savedMB} MB (${formatBytes(data.size)} final)`,
-            { duration: 4000 }
-          );
-        } else {
-          toast.success('File uploaded successfully!');
-        }
-
-        onMediaChange(
-          data.cloudinaryUrl || data.url,
-          file.name,
-          data.mediaHandle,
-          data.metaNumericId
-        );
-      } else {
-        throw new Error(response.data.message || 'Upload failed');
+      if (!response.data?.success) {
+        throw new Error(response.data?.message || 'Upload failed');
       }
+
+      const data = response.data.data;
+
+      // ✅ Extract and validate handle
+      const rawHandle = String(
+        data.mediaHandle || data.mediaId || ''
+      ).trim();
+
+      if (!isValidMetaHandle(rawHandle)) {
+        throw new Error(
+          'Server returned invalid media handle. Please try again.'
+        );
+      }
+
+      const permanentUrl = String(
+        data.cloudinaryUrl || data.permanentUrl || data.url || ''
+      ).trim();
+
+      if (!permanentUrl || !permanentUrl.startsWith('http')) {
+        throw new Error(
+          'Server did not return a valid permanent URL. Please try again.'
+        );
+      }
+
+      console.log('✅ Media upload success:', {
+        handle: rawHandle.substring(0, 30) + '...',
+        cloudinaryUrl: permanentUrl.substring(0, 60),
+      });
+
+      onUploadSuccess({
+        mediaHandle: rawHandle,
+        cloudinaryUrl: permanentUrl,
+        localPreviewUrl: localUrl,
+        fileName: file.name,
+        whatsappAccountId: data.whatsappAccountId || whatsappAccountId,
+      });
+
     } catch (err: any) {
-      const errorMsg = err.response?.data?.message || err.message || 'Upload failed';
-      console.error('❌ Upload error:', errorMsg);
-      setError(errorMsg);
-      toast.error(errorMsg, { duration: 8000 });
+      URL.revokeObjectURL(localUrl); // cleanup blob
+      const msg =
+        err.response?.data?.message ||
+        err.message ||
+        'Upload failed. Please try again.';
+      setError(msg);
+      console.error('❌ Media upload failed:', msg);
     } finally {
       setUploading(false);
-      setUploadProgress('');
+      setUploadStatus('');
     }
+  };
+
+  // ─── Drag handlers ──────────────────────────────────────────
+  const handleDrag = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(e.type === 'dragenter' || e.type === 'dragover');
   };
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
-
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      handleFile(e.dataTransfer.files[0]);
-    }
+    const file = e.dataTransfer.files?.[0];
+    if (file) handleFile(file);
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      handleFile(e.target.files[0]);
-      e.target.value = ''; // Reset for re-upload
-    }
+    const file = e.target.files?.[0];
+    if (file) handleFile(file);
+    e.target.value = ''; // allow re-upload of same file
   };
 
-  if (mediaUrl) {
+  // ─── Uploaded State ─────────────────────────────────────────
+  if (displayUrl && !uploading) {
     return (
       <div className="relative bg-gray-100 rounded-xl overflow-hidden">
+        {/* Preview */}
         {headerType === 'image' && (
           <img
-            src={mediaUrl}
+            src={displayUrl}
             alt="Header preview"
             className="w-full h-48 object-cover"
           />
         )}
         {headerType === 'video' && (
           <video
-            src={mediaUrl}
+            src={displayUrl}
             className="w-full h-48 object-cover"
             controls
           />
@@ -221,35 +236,40 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
             <div className="w-12 h-14 bg-red-100 rounded flex items-center justify-center">
               <File className="w-6 h-6 text-red-600" />
             </div>
-            <div className="flex-1">
-              <p className="font-medium text-gray-900">{fileName || 'Document'}</p>
+            <div className="flex-1 min-w-0">
+              <p className="font-medium text-gray-900 truncate">
+                {fileName || 'Document'}
+              </p>
               <p className="text-sm text-gray-500">PDF Document</p>
             </div>
           </div>
         )}
 
+        {/* Remove button */}
         <button
           onClick={onRemove}
-          className="absolute top-2 right-2 p-2 bg-white/90 hover:bg-white rounded-full shadow-md transition-colors"
+          className="absolute top-2 right-2 p-2 bg-white/90
+                     hover:bg-white rounded-full shadow-md
+                     transition-colors"
+          title="Remove media"
         >
           <X className="w-4 h-4 text-gray-600" />
         </button>
 
-        <div className="absolute bottom-2 left-2 px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium flex items-center space-x-1">
+        {/* Uploaded badge */}
+        <div className="absolute bottom-2 left-2 px-2 py-1
+                        bg-green-100 text-green-700 rounded-full
+                        text-xs font-medium flex items-center space-x-1">
           <CheckCircle2 className="w-3 h-3" />
-          <span>Uploaded</span>
+          <span>
+            {cloudinaryUrl ? 'Saved' : 'Uploaded'}
+          </span>
         </div>
       </div>
     );
   }
 
-  if (headerType === 'none' || headerType === 'text') {
-    return null;
-  }
-
-  const metaLimit = META_LIMITS[headerType as 'image' | 'video' | 'document'];
-  const uploadLimit = UPLOAD_LIMITS[headerType as 'image' | 'video' | 'document'];
-
+  // ─── Upload Zone ─────────────────────────────────────────────
   return (
     <div className="space-y-2">
       <div
@@ -257,107 +277,105 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
         onDragLeave={handleDrag}
         onDragOver={handleDrag}
         onDrop={handleDrop}
-        className={`relative border-2 border-dashed rounded-xl p-6 text-center transition-all ${
-          dragActive
+        className={`relative border-2 border-dashed rounded-xl p-6
+                    text-center transition-all
+                    ${dragActive
             ? 'border-primary-500 bg-primary-50'
             : error
-            ? 'border-red-300 bg-red-50'
-            : 'border-gray-300 hover:border-gray-400 bg-gray-50'
-        }`}
+              ? 'border-red-300 bg-red-50'
+              : 'border-gray-300 hover:border-gray-400 bg-gray-50'
+          }`}
       >
         <input
           ref={inputRef}
           type="file"
-          accept={getAcceptedTypes()}
+          accept={ACCEPTED_TYPES[headerType] || '*'}
           onChange={handleChange}
           className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
           disabled={uploading}
         />
 
         {uploading ? (
-          <div className="space-y-3">
-            <div className="w-12 h-12 mx-auto rounded-full bg-primary-100 flex items-center justify-center animate-pulse">
-              <Icon className="w-6 h-6 text-primary-600" />
+          /* ── Uploading State ── */
+          <div className="space-y-3 pointer-events-none">
+            <div className="w-12 h-12 mx-auto rounded-full
+                            bg-primary-100 flex items-center justify-center">
+              <Loader2 className="w-6 h-6 text-primary-600 animate-spin" />
             </div>
-            <p className="text-sm text-gray-700 font-medium">{uploadProgress}</p>
-            <div className="w-40 h-2 bg-gray-200 rounded-full mx-auto overflow-hidden">
-              <div className="h-full bg-primary-500 rounded-full animate-pulse w-2/3"></div>
+            <p className="text-sm text-gray-700 font-medium">
+              {uploadStatus}
+            </p>
+            <div className="w-40 h-1.5 bg-gray-200 rounded-full
+                            mx-auto overflow-hidden">
+              <div className="h-full bg-primary-500 rounded-full
+                              animate-pulse w-2/3" />
             </div>
-            <p className="text-xs text-gray-500">Please wait, do not close this window</p>
+            <p className="text-xs text-gray-500">
+              Please wait, do not close this window
+            </p>
           </div>
         ) : (
+          /* ── Idle State ── */
           <div className="space-y-3">
-            <div
-              className={`w-12 h-12 mx-auto rounded-full flex items-center justify-center ${
-                dragActive ? 'bg-primary-100' : 'bg-gray-200'
-              }`}
-            >
-              <Icon className={`w-6 h-6 ${dragActive ? 'text-primary-600' : 'text-gray-500'}`} />
+            <div className={`w-12 h-12 mx-auto rounded-full
+                             flex items-center justify-center
+                             ${dragActive ? 'bg-primary-100' : 'bg-gray-200'}`}>
+              <Icon className={`w-6 h-6 ${dragActive ? 'text-primary-600' : 'text-gray-500'
+                }`} />
             </div>
+
             <div>
               <p className="text-sm font-medium text-gray-900">
-                {dragActive ? 'Drop file here' : `Upload ${headerType}`}
+                {dragActive
+                  ? 'Drop file here'
+                  : `Upload ${TYPE_LABELS[headerType] || 'File'}`}
               </p>
               <p className="text-xs text-gray-500 mt-1">
-                {headerType === 'image' && `JPG, PNG, WebP - Max ${uploadLimit.label} (auto-optimized)`}
-                {headerType === 'video' && (
-                  <>
-                    MP4 with H.264 codec - Max {uploadLimit.label}
-                    <br />
-                    <span className="text-amber-600">
-                      ⚠️ Videos will be compressed to under {metaLimit.label}
-                    </span>
-                  </>
-                )}
-                {headerType === 'document' && `PDF, DOC, XLS, TXT - Max ${uploadLimit.label}`}
+                {headerType === 'image' &&
+                  `JPG, PNG, WebP — Max ${uploadLimit?.label}`}
+                {headerType === 'video' &&
+                  `MP4 — Max ${uploadLimit?.label} (auto-compressed to ${metaLimit?.label})`}
+                {headerType === 'document' &&
+                  `PDF, DOC, XLS, TXT — Max ${uploadLimit?.label}`}
               </p>
             </div>
+
             <button
               type="button"
               onClick={() => inputRef.current?.click()}
-              className="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+              className="px-4 py-2 bg-white border border-gray-300
+                         rounded-lg text-sm font-medium text-gray-700
+                         hover:bg-gray-50 transition-colors"
             >
               Choose File
             </button>
           </div>
         )}
 
-        {error && (
-          <div className="mt-3 flex items-center justify-center space-x-1 text-red-600 text-sm">
-            <AlertCircle className="w-4 h-4 flex-shrink-0" />
+        {/* Error */}
+        {error && !uploading && (
+          <div className="mt-3 flex items-start justify-center
+                          space-x-1 text-red-600 text-sm">
+            <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
             <span className="text-left">{error}</span>
           </div>
         )}
       </div>
 
-      {headerType === 'video' && !mediaUrl && !uploading && (
-        <div className="mt-3 bg-blue-50 border border-blue-200 rounded-lg p-3 text-xs text-left">
-          <p className="font-semibold text-blue-900 mb-1">📹 Video Requirements:</p>
-          <ul className="text-blue-800 space-y-0.5 list-disc list-inside">
-            <li>Format: MP4 (H.264 codec)</li>
-            <li>Max size: 100 MB (will be compressed to under 16 MB)</li>
-            <li>Recommended: 720p resolution, under 60 seconds</li>
-            <li>Audio: AAC codec (optional but recommended)</li>
-          </ul>
-          <p className="mt-2 text-blue-700">
-            💡 <strong>Tip:</strong> If upload fails, re-encode using{' '}
-            <a href="https://handbrake.fr/" target="_blank" rel="noopener noreferrer" className="underline">
-              HandBrake
-            </a>{' '}
-            with "Fast 720p30" preset.
+      {/* Limits info */}
+      {metaLimit && (
+        <div className="flex items-start gap-2 text-xs text-gray-500 px-1">
+          <Info className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
+          <p>
+            WhatsApp {TYPE_LABELS[headerType]} limit:{' '}
+            <strong>{metaLimit.label}</strong>.
+            {headerType === 'video' &&
+              ' Videos larger than 16 MB will be auto-compressed.'}
+            {headerType === 'image' &&
+              ' Images larger than 5 MB will be auto-optimized.'}
           </p>
         </div>
       )}
-
-      {/* ✅ WhatsApp Limits Info */}
-      <div className="flex items-start gap-2 text-xs text-gray-500 px-1">
-        <Info className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
-        <p>
-          WhatsApp {headerType} limit: <strong>{metaLimit.label}</strong>.
-          {headerType === 'video' && ' Large videos will be auto-compressed to 720p.'}
-          {headerType === 'image' && ' Large images will be auto-optimized.'}
-        </p>
-      </div>
     </div>
   );
 };
