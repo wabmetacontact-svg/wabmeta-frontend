@@ -121,7 +121,7 @@ export default function SimpleBulkPasteModal({ isOpen, onClose, onSuccess, group
         setResult(null);
 
         try {
-            const response = await api.post('/contacts/simple-bulk-paste', {
+            const response = await api.post('/contacts/bulk-paste', {
                 phoneNumbers,
                 groupId: selectedGroup || undefined,
                 tags: tags.split(',').map(t => t.trim()).filter(t => t)
