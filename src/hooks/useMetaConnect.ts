@@ -15,7 +15,7 @@ import { refreshAllWhatsAppConnections } from './useWhatsAppConnection'; // ✅ 
 interface UseMetaConnectOptions {
   organizationId: string;
   organizationName?: string;
-  onSuccess?: () => void;
+  onSuccess?: (data?: any) => void;
   onError?: (error: string) => void;
 }
 
@@ -94,13 +94,22 @@ export const useMetaConnect = ({
       console.log('📥 Backend connect response:', data);
 
       if (data?.success !== false) {
-        toast.success('✅ WhatsApp connected successfully!');
+        const warning = data?.data?.warning;
+        if (warning === 'PHONE_NOT_REGISTERED') {
+          toast.error(
+            'Phone connected but not fully activated. Please check Meta Business Manager to complete setup.',
+            { duration: 10000 }
+          );
+        } else {
+          toast.success('✅ WhatsApp connected successfully!');
+        }
+        
         setProgress('');
         setLoading(false);
 
         // ✅ FIX B1: First call local onSuccess callback
         // (WhatsAppSettings.tsx uses this to refresh its own list)
-        onSuccess?.();
+        onSuccess?.(data?.data);
 
         // ✅ FIX B2: Then trigger global refresh after a short delay
         // to ensure the backend has fully committed the new account to DB.

@@ -958,7 +958,7 @@ export const meta = {
     wabaId?: string;
     phoneNumberId?: string;
   }) =>
-    api.post<ApiResponse<{ account: any }>>('/meta/connect', data),
+    api.post<ApiResponse<{ account: any; warning?: string; message?: string }>>('/meta/connect', data),
   getOrgStatus: (organizationId: string) =>
     api.get<ApiResponse<{ status: 'CONNECTED' | 'DISCONNECTED'; connectedCount: number }>>(
       `/meta/organizations/${organizationId}/status`

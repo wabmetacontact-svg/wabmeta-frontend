@@ -9,6 +9,7 @@ import { useMetaConnect } from '../../hooks/useMetaConnect';
 import {
   Phone, CheckCircle, Trash2, Loader2, Star, Cloud, Plus,
   RefreshCw, AlertCircle, TrendingUp, Activity, Shield, Clock,
+  AlertTriangle,
 } from 'lucide-react';
 import api, { whatsapp } from '../../services/api';
 import toast from 'react-hot-toast';
@@ -114,6 +115,7 @@ export default function WhatsAppSettings() {
   const [syncing, setSyncing] = useState(false);
   const [syncingAccountId, setSyncingAccountId] = useState<string | null>(null);
   const [lastSyncTime, setLastSyncTime] = useState<Date | null>(null);
+  const [showSetupWarning, setShowSetupWarning] = useState(false); // ✅ Warning Modal state
   const mountedRef = useRef(true);
 
   const getOrgId = (): string => {
@@ -253,7 +255,11 @@ export default function WhatsAppSettings() {
 
   const { connect, loading: connectLoading, progress, sdkReady, sdkLoading } = useMetaConnect({
     organizationId: getOrgId(),
-    onSuccess: async () => {
+    onSuccess: async (data: any) => {
+      // ✅ Check for registration warning in data
+      if (data?.warning === 'PHONE_NOT_REGISTERED') {
+        setShowSetupWarning(true);
+      }
       // ✅ FIX B1: Use retry-based fetch so we get the account even if DB
       // commit hasn't finished when we first poll
       await fetchAccountsWithRetry();
@@ -532,6 +538,72 @@ export default function WhatsAppSettings() {
                 <strong>Low (Red):</strong> Many complaints, may face restrictions.
                 Quality is calculated by Meta based on user feedback.
               </p>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Warning Modal */}
+      {showSetupWarning && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-12 h-12 bg-yellow-100 rounded-full
+                              flex items-center justify-center">
+                <AlertTriangle className="w-6 h-6 text-yellow-600" />
+              </div>
+              <h2 className="text-xl font-bold text-gray-900">
+                Setup Incomplete
+              </h2>
+            </div>
+
+            <p className="text-gray-700 mb-4">
+              Your WhatsApp is connected to WabMeta, but Meta requires
+              additional setup before you can send messages.
+            </p>
+
+            <div className="bg-yellow-50 border border-yellow-200
+                            rounded-xl p-4 mb-4">
+              <h3 className="font-semibold text-yellow-900 mb-2">
+                Please complete these steps:
+              </h3>
+              <ol className="list-decimal list-inside text-sm
+                             text-yellow-800 space-y-2">
+                <li>
+                  Go to{' '}
+                  <a href="https://business.facebook.com"
+                     target="_blank"
+                     rel="noopener noreferrer"
+                     className="underline font-medium">
+                    Meta Business Manager
+                  </a>
+                </li>
+                <li>Select your WhatsApp Business Account</li>
+                <li>Go to <strong>Phone Numbers</strong> section</li>
+                <li>Verify your phone number if pending</li>
+                <li>Add a payment method under <strong>Billing</strong></li>
+                <li>Disable 2FA temporarily OR provide the 2FA PIN</li>
+                <li>Come back here and click <strong>Refresh</strong></li>
+              </ol>
+            </div>
+
+            <div className="flex gap-3">
+              <a
+                href="https://business.facebook.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1 px-4 py-3 bg-blue-600 hover:bg-blue-700
+                           text-white rounded-xl font-medium text-center
+                           transition-colors"
+              >
+                Open Meta Business Manager
+              </a>
+              <button
+                onClick={() => setShowSetupWarning(false)}
+                className="px-4 py-3 border border-gray-200 text-gray-700
+                           rounded-xl hover:bg-gray-50 transition-colors"
+              >
+                Later
+              </button>
             </div>
           </div>
         </div>
