@@ -158,8 +158,10 @@ const CreateCampaign: React.FC = () => {
   const [walletEstimate, setWalletEstimate] = useState<WalletEstimate | null>(null);
   const [loadingEstimate, setLoadingEstimate] = useState(false);
 
-  const [audienceCount, setAudienceCount] = useState<number>(0);
-  const [loadingCount, setLoadingCount] = useState(false);
+  // ─── Add state for total count ─────────────────────────────
+  const [totalAllContactsCount, setTotalAllContactsCount] = useState<number>(0);
+  const [totalTagsCount,        setTotalTagsCount]         = useState<number>(0);
+  const [groupMemberCount,      setGroupMemberCount]       = useState<number>(0);
 
   // ✅ NEW: Created campaign ID (to start after create)
   const [createdCampaignId, setCreatedCampaignId] = useState<string | null>(null);
@@ -287,49 +289,52 @@ const CreateCampaign: React.FC = () => {
     [formData.templateId, templates]
   );
 
-  // ─── Fetch audience count on filter change ─────────────────
+  // ─── Fetch total count on mount ────────────────────────────
   useEffect(() => {
-    const fetchCount = async () => {
-      setLoadingCount(true);
-      try {
-        let params: any = { type: formData.audienceType };
+    contactApi.getAudienceCount({ type: 'all' })
+      .then(res => setTotalAllContactsCount(res.data?.data?.count || 0))
+      .catch(() => {});
+  }, []);
 
-        if (formData.audienceType === 'tags' && formData.selectedTags.length > 0) {
-          params.tags = formData.selectedTags.join(',');
-        } else if (formData.audienceType === 'group' && formData.selectedGroup) {
-          params.groupId = formData.selectedGroup;
-        }
+  // ─── Fetch tags count when selection changes ───────────────
+  useEffect(() => {
+    if (formData.selectedTags.length === 0) {
+      setTotalTagsCount(0);
+      return;
+    }
 
-        // Only fetch for 'all', 'tags', 'group'
-        if (['all', 'tags', 'group'].includes(formData.audienceType)) {
-          const res = await contactApi.getAudienceCount(params);
-          setAudienceCount(res.data?.data?.count || 0);
-        }
-      } catch (e) {
-        console.warn('Failed to fetch audience count');
-      } finally {
-        setLoadingCount(false);
-      }
-    };
+    contactApi.getAudienceCount({
+      type: 'tags',
+      tags: formData.selectedTags.join(','),
+    })
+      .then(res => setTotalTagsCount(res.data?.data?.count || 0))
+      .catch(() => setTotalTagsCount(0));
+  }, [formData.selectedTags]);
 
-    fetchCount();
-  }, [formData.audienceType, formData.selectedTags, formData.selectedGroup]);
-
-  // ─── totalRecipients using real backend count ──────────────
+  // ─── FIX totalRecipients calculation ───────────────────────
   const totalRecipients = useMemo(() => {
     switch (formData.audienceType) {
       case "all":
+        return totalAllContactsCount;   // ✅ Real total (2671)
       case "tags":
-      case "group":
-        return audienceCount;  // ✅ Real count from backend
+        return totalTagsCount;          // ✅ Real tags count from backend
       case "manual":
         return formData.selectedContacts.length;
+      case "group":
+        return groupMemberCount;
       case "csv":
         return formData.csvContacts?.length || 0;
       default:
         return 0;
     }
-  }, [formData.audienceType, formData.selectedContacts, formData.csvContacts, audienceCount]);
+  }, [
+    formData.audienceType,
+    formData.selectedContacts,
+    formData.csvContacts,
+    totalAllContactsCount,
+    totalTagsCount,
+    groupMemberCount,
+  ]);
 
   // ─── Fetch wallet estimate after campaign created ──────────
   const fetchWalletEstimate = useCallback(async (campaignId: string) => {
@@ -818,6 +823,7 @@ const CreateCampaign: React.FC = () => {
                 onGroupChange={g => {
                   setFormData(f => ({ ...f, selectedGroup: g }));
                 }}
+                onGroupMemberCountChange={setGroupMemberCount}
                 csvContacts={formData.csvContacts}
                 onCsvContactsChange={c =>
                   setFormData(f => ({ ...f, csvContacts: c }))
@@ -929,9 +935,7 @@ const CreateCampaign: React.FC = () => {
                     },
                     {
                       label: "Recipients",
-                      value: loadingCount
-                        ? "Calculating..."
-                        : `${totalRecipients.toLocaleString()} ${totalRecipients === 1 ? "recipient" : "recipients"}`,
+                      value: `${totalRecipients.toLocaleString()} ${totalRecipients === 1 ? "recipient" : "recipients"}`,
                     },
                     {
                       label: "Timing",

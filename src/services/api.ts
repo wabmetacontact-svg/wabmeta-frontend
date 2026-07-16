@@ -627,14 +627,33 @@ export const contacts = {
   stats: () => api.get<ApiResponse>('/contacts/stats'),
   getTags: () => api.get<ApiResponse>('/contacts/tags'),
   getGroups: () => api.get<ApiResponse>('/contacts/groups/all'),
+
+  // ✅ Get audience count for any type
   getAudienceCount: (params: {
     type: 'all' | 'tags' | 'group';
     tags?: string;
     groupId?: string;
-  }) => api.get<ApiResponse<{ count: number }>>(
-    '/contacts/audience-count',
-    { params }
-  ),
+  }) =>
+    api.get<ApiResponse<{ count: number; type: string }>>(
+      '/contacts/audience-count',
+      { params }
+    ),
+
+  // ✅ Search contacts (backend search - all 2700+)
+  search: (query: string, limit = 30) =>
+    api.get<ApiResponse<{
+      contacts: Array<{
+        id:    string;
+        name:  string;
+        phone: string;
+        email: string;
+        tags:  string[];
+      }>;
+      total: number;
+    }>>(
+      '/contacts/search',
+      { params: { q: query, limit } }
+    ),
 };
 
 // ---------- TEMPLATES ----------
