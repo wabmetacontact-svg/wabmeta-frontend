@@ -38,6 +38,7 @@ interface AudienceSelectorProps {
   availableTags:     string[];
   contacts:          Contact[];  // Loaded 100 contacts (fallback only)
   totalSelected:     number;
+  allContactsCount?: number;
 }
 
 // ─── Component ────────────────────────────────────────────────
@@ -56,6 +57,7 @@ const AudienceSelector: React.FC<AudienceSelectorProps> = ({
   availableTags,
   contacts,
   totalSelected,
+  allContactsCount,
 }) => {
   const [searchQuery,     setSearchQuery]     = useState('');
   const [groups,          setGroups]          = useState<Group[]>([]);
@@ -197,7 +199,9 @@ const AudienceSelector: React.FC<AudienceSelectorProps> = ({
       label:       'All Contacts',
       description: 'Send to all your contacts',
       icon:        Users,
-      count:       loadingCounts ? '...' : totalAllCount.toLocaleString(),  // ✅ FIX 1
+      count:       allContactsCount !== undefined
+                     ? allContactsCount.toLocaleString()
+                     : (loadingCounts ? '...' : totalAllCount.toLocaleString()),
     },
     {
       value:       'group' as AudienceType,

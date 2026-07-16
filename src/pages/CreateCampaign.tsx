@@ -454,11 +454,34 @@ const CreateCampaign: React.FC = () => {
           break;
       }
 
-      // ✅ FIX Bug4: variableMapping - send plain strings, not {type, value}
+      // ─── Build variableMapping payload ─────────────────────────
       const variableMapping: Record<string, string> = {};
-      Object.entries(formData.variableMapping).forEach(([k, v]) => {
-        variableMapping[k] = String(v).trim();
+
+      Object.entries(formData.variableMapping).forEach(([key, value]) => {
+        const trimmed = String(value ?? '').trim();
+        if (trimmed) {
+          variableMapping[key] = trimmed;  // ✅ Send strings directly
+        }
       });
+
+      // ─── Validate all variables filled ─────────────────────────
+      if (selectedTemplate) {
+        const allVars = [
+          ...(selectedTemplate.variables       || []),
+          ...(selectedTemplate.headerVariables || []),
+        ];
+
+        const missing = allVars.filter(v => !variableMapping[v]?.trim());
+
+        if (missing.length > 0) {
+          setApiError(
+            `Please fill values for: ${missing.map(v => `{{${v}}}`).join(', ')}`
+          );
+          setSending(false);
+          setCurrentStep(3);  // Back to variables step
+          return;
+        }
+      }
 
       const scheduledAt =
         formData.scheduleType === "later"
@@ -831,6 +854,7 @@ const CreateCampaign: React.FC = () => {
                 availableTags={availableTags}
                 contacts={contacts}
                 totalSelected={totalRecipients}
+                allContactsCount={totalAllContactsCount}
               />
             </div>
           )}
