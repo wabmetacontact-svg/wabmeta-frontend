@@ -260,12 +260,26 @@ const processQueue = (error: any, token: string | null = null) => {
   failedQueue = [];
 };
 
+const isTokenExpired = (token: string): boolean => {
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    // 30 second buffer
+    return payload.exp * 1000 < Date.now() + 30000;
+  } catch {
+    return true;
+  }
+};
+
 export const performTokenRefresh = async (): Promise<string> => {
   // Already refreshed recently?
   const now = Date.now();
   if (now - lastRefreshTimestamp < REFRESH_DEBOUNCE_MS) {
     const token = localStorage.getItem(TOKEN_KEYS.ACCESS);
-    if (token && isValidJWT(token)) return token;
+    if (token && isValidJWT(token) && !isTokenExpired(token)) {
+      return token; // ✅ Sahi
+    }
+    // Token expired hai - refresh karo even within debounce window
+    lastRefreshTimestamp = 0;
   }
 
   // Already refreshing? Queue this request
@@ -888,8 +902,16 @@ export const whatsapp = {
   },
 
   getAccount: (id: string) => api.get<ApiResponse>(`/meta/accounts/${id}`),
-  connect: (data: { code: string; state?: string }) =>
-    api.post<ApiResponse>('/meta/connect', data),
+  connect: (data: { 
+    code: string; 
+    organizationId: string; 
+    wabaId?: string; 
+    phoneNumberId?: string; 
+  }) => api.post<ApiResponse>('/meta/connect', data, {
+    headers: {
+      'X-Organization-Id': data.organizationId
+    }
+  }),
   disconnect: (id: string) => api.delete<ApiResponse>(`/meta/accounts/${id}`),
   setDefault: (id: string) => api.post<ApiResponse>(`/meta/accounts/${id}/set-default`),
   sendText: async (data: {
@@ -958,7 +980,11 @@ export const meta = {
     wabaId?: string;
     phoneNumberId?: string;
   }) =>
-    api.post<ApiResponse<{ account: any; warning?: string; message?: string }>>('/meta/connect', data),
+    api.post<ApiResponse<{ account: any; warning?: string; message?: string }>>('/meta/connect', data, {
+      headers: {
+        'X-Organization-Id': data.organizationId
+      }
+    }),
   getOrgStatus: (organizationId: string) =>
     api.get<ApiResponse<{ status: 'CONNECTED' | 'DISCONNECTED'; connectedCount: number }>>(
       `/meta/organizations/${organizationId}/status`

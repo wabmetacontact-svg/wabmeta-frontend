@@ -10,26 +10,24 @@ declare global {
 }
 
 export const useFacebookSDK = () => {
-  const [isReady, setIsReady] = useState(
-    !!(window.FB && window.__FB_INITIALIZED__)
-  );
-  const [isLoading, setIsLoading] = useState(
-    !(window.FB && window.__FB_INITIALIZED__)
-  );
+  const checkReady = () => !!(window.FB && window.__FB_INITIALIZED__);
+  
+  const [isReady, setIsReady] = useState(checkReady);
+  const [isLoading, setIsLoading] = useState(!checkReady());
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // ✅ Already initialized
-    if (window.FB && window.__FB_INITIALIZED__) {
-      console.log('✅ SDK already ready');
+    // ✅ Re-check on mount (sync state with current reality)
+    if (checkReady()) {
       setIsReady(true);
       setIsLoading(false);
       return;
     }
 
-    // ✅ Listen for SDK ready event from HTML
+    let mounted = true; // ✅ Prevent state updates after unmount
+
     const handleSDKReady = () => {
-      console.log('✅ Received fb-sdk-ready event');
+      if (!mounted) return;
       setIsReady(true);
       setIsLoading(false);
       setError(null);
@@ -37,37 +35,31 @@ export const useFacebookSDK = () => {
 
     window.addEventListener('fb-sdk-ready', handleSDKReady);
 
-    // ✅ Polling fallback (check every 200ms)
     const pollInterval = setInterval(() => {
-      if (window.FB && window.__FB_INITIALIZED__) {
-        console.log('✅ SDK detected via polling');
+      if (!mounted) return;
+      if (checkReady()) {
         setIsReady(true);
         setIsLoading(false);
         clearInterval(pollInterval);
       }
     }, 200);
 
-    // ✅ Timeout after 20 seconds
     const timeout = setTimeout(() => {
+      if (!mounted) return;
       clearInterval(pollInterval);
-      if (!window.__FB_INITIALIZED__) {
-        console.error('❌ SDK initialization timeout');
+      if (!checkReady()) {
         setError('Facebook SDK failed to load. Please refresh the page.');
         setIsLoading(false);
       }
     }, 20000);
 
     return () => {
+      mounted = false; // ✅ Cleanup
       window.removeEventListener('fb-sdk-ready', handleSDKReady);
       clearInterval(pollInterval);
       clearTimeout(timeout);
     };
-  }, []);
+  }, []); // ✅ Only on mount
 
-  return {
-    isReady,
-    isLoading,
-    error,
-    FB: window.FB,
-  };
+  return { isReady, isLoading, error, FB: window.FB };
 };

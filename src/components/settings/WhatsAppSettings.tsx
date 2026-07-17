@@ -116,9 +116,15 @@ export default function WhatsAppSettings() {
   const [syncingAccountId, setSyncingAccountId] = useState<string | null>(null);
   const [lastSyncTime, setLastSyncTime] = useState<Date | null>(null);
   const [showSetupWarning, setShowSetupWarning] = useState(false); // ✅ Warning Modal state
+  const [disconnectModal, setDisconnectModal] = useState<{
+    open: boolean;
+    accountId: string;
+    phoneNumber: string;
+  } | null>(null);
   const mountedRef = useRef(true);
 
-  const getOrgId = (): string => {
+  // ✅ Once on mount, phir stable
+  const [orgId] = useState<string>(() => {
     try {
       const raw = localStorage.getItem('wabmeta_org');
       const org = raw ? JSON.parse(raw) : null;
@@ -126,7 +132,14 @@ export default function WhatsAppSettings() {
     } catch {
       return localStorage.getItem('currentOrganizationId') || '';
     }
-  };
+  });
+
+  // ✅ Guard: orgId nahi mila
+  useEffect(() => {
+    if (!orgId) {
+      toast.error('Organization not found. Please refresh.');
+    }
+  }, [orgId]);
 
   const fetchAccounts = useCallback(async (silent = false) => {
     try {
@@ -254,7 +267,7 @@ export default function WhatsAppSettings() {
   }, [syncAllQuality]);
 
   const { connect, loading: connectLoading, progress, sdkReady, sdkLoading } = useMetaConnect({
-    organizationId: getOrgId(),
+    organizationId: orgId,
     onSuccess: async (data: any) => {
       // ✅ Check for registration warning in data
       if (data?.warning === 'PHONE_NOT_REGISTERED') {
@@ -279,11 +292,16 @@ export default function WhatsAppSettings() {
     connect();
   };
 
-  const handleDisconnect = async (accountId: string) => {
-    if (!confirm('Are you sure you want to disconnect this account?')) return;
+  const handleDisconnect = (accountId: string, phoneNumber: string) => {
+    setDisconnectModal({ open: true, accountId, phoneNumber });
+  };
+
+  const confirmDisconnect = async () => {
+    if (!disconnectModal) return;
     try {
-      await api.post(`/meta/accounts/${accountId}/disconnect`);
+      await api.post(`/meta/accounts/${disconnectModal.accountId}/disconnect`);
       toast.success('Account disconnected');
+      setDisconnectModal(null);
       fetchAccounts();
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Failed to disconnect');
@@ -466,7 +484,7 @@ export default function WhatsAppSettings() {
                       </button>
                     )}
                     <button
-                      onClick={() => handleDisconnect(account.id)}
+                      onClick={() => handleDisconnect(account.id, account.phoneNumber)}
                       className="flex items-center gap-1.5 px-3 py-1.5 text-red-600 bg-red-50 rounded-lg hover:bg-red-100 text-sm font-medium transition-colors"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
@@ -603,6 +621,55 @@ export default function WhatsAppSettings() {
                            rounded-xl hover:bg-gray-50 transition-colors"
               >
                 Later
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Disconnect Warning Modal */}
+      {disconnectModal?.open && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 mx-4">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <AlertTriangle className="w-6 h-6 text-red-600" />
+              </div>
+              <h3 className="text-lg font-bold text-gray-900">Disconnect WhatsApp?</h3>
+            </div>
+            
+            <p className="text-gray-600 mb-4">
+              Disconnecting <strong>{disconnectModal.phoneNumber}</strong> will:
+            </p>
+            
+            <ul className="space-y-2 mb-6 text-sm text-gray-700">
+              {[
+                '⏸️ Pause all active campaigns',
+                '🤖 Stop all chatbot flows', 
+                '⚡ Disable all automations',
+                '📥 Block new inbox messages',
+                '🔕 Disable webhook notifications',
+              ].map(item => (
+                <li key={item} className="flex items-center gap-2">
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+
+            <div className="flex gap-3">
+              <button
+                onClick={confirmDisconnect}
+                className="flex-1 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-xl 
+                           font-medium transition-colors"
+              >
+                Yes, Disconnect
+              </button>
+              <button
+                onClick={() => setDisconnectModal(null)}
+                className="flex-1 py-2.5 border border-gray-200 text-gray-700 
+                           rounded-xl font-medium hover:bg-gray-50 transition-colors"
+              >
+                Cancel
               </button>
             </div>
           </div>

@@ -57,6 +57,7 @@ export const useMetaConnect = ({
               sessionReceived: true,
             };
             console.log('✅ Session captured:', { waba_id, phone_number_id });
+            window.dispatchEvent(new Event('wa_session_received')); // ✅ Event fire karo
           } else if (data.event === 'CANCEL') {
             console.log('❌ User cancelled Embedded Signup');
             setLoading(false);
@@ -155,6 +156,28 @@ export const useMetaConnect = ({
       return;
     }
 
+    const waitForSessionInfo = (): Promise<void> => {
+      return new Promise((resolve) => {
+        if (sessionInfoRef.current.sessionReceived) {
+          resolve();
+          return;
+        }
+
+        const handler = () => {
+          window.removeEventListener('wa_session_received', handler);
+          resolve();
+        };
+
+        window.addEventListener('wa_session_received', handler);
+
+        // 3 second timeout (was 2s)
+        setTimeout(() => {
+          window.removeEventListener('wa_session_received', handler);
+          resolve(); // Timeout pe bhi proceed karo
+        }, 3000);
+      });
+    };
+
     setLoading(true);
     setProgress('Opening Meta WhatsApp Setup...');
     sessionInfoRef.current = {};
@@ -175,14 +198,7 @@ export const useMetaConnect = ({
               const code = response.authResponse.code;
               setProgress('Verifying your WhatsApp setup...');
 
-              // Wait up to 2s for WA_EMBEDDED_SIGNUP FINISH event
-              // (carries wabaId + phoneNumberId for more reliable connection)
-              let waited = 0;
-              while (!sessionInfoRef.current.sessionReceived && waited < 2000) {
-                await new Promise(resolve => setTimeout(resolve, 200));
-                waited += 200;
-              }
-
+              await waitForSessionInfo(); // ✅ Event-driven wait
               await handleCodeCallback(code);
             } else {
               setLoading(false);
