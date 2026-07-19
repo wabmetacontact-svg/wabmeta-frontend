@@ -242,57 +242,61 @@ api.interceptors.request.use(
 // ✅ SINGLE-FLIGHT TOKEN REFRESH (PRODUCTION)
 // ============================================
 
-let lastRefreshTimestamp = 0;
-const REFRESH_DEBOUNCE_MS = 5000; // 5 sec tak same token return karo
-
-// ─── Fix 2: Token Refresh - Queue based ─────
+// State
 let isRefreshing = false;
-let failedQueue: Array<{
+let lastRefreshTimestamp = 0;
+
+// Queue for concurrent requests
+type QueueItem = {
   resolve: (token: string) => void;
   reject: (error: any) => void;
-}> = [];
+};
 
-const processQueue = (error: any, token: string | null = null) => {
-  failedQueue.forEach(({ resolve, reject }) => {
-    if (error) reject(error);
-    else resolve(token!);
+let refreshQueue: QueueItem[] = [];
+
+const REFRESH_DEBOUNCE_MS = 3000; // 3 second debounce
+
+// ─── Process queued requests ────────────────────────────
+const processQueue = (error: any, token: string | null = null): void => {
+  refreshQueue.forEach(({ resolve, reject }) => {
+    if (error) {
+      reject(error);
+    } else if (token) {
+      resolve(token);
+    }
   });
-  failedQueue = [];
+  refreshQueue = [];
 };
 
-const isTokenExpired = (token: string): boolean => {
-  try {
-    const payload = JSON.parse(atob(token.split('.')[1]));
-    // 30 second buffer
-    return payload.exp * 1000 < Date.now() + 30000;
-  } catch {
-    return true;
-  }
-};
-
+// ─── Main refresh function ──────────────────────────────
 export const performTokenRefresh = async (): Promise<string> => {
-  // Already refreshed recently?
   const now = Date.now();
+
+  // ✅ FIX 1: Debounce - return recent token if within window
   if (now - lastRefreshTimestamp < REFRESH_DEBOUNCE_MS) {
     const token = localStorage.getItem(TOKEN_KEYS.ACCESS);
-    if (token && isValidJWT(token) && !isTokenExpired(token)) {
-      return token; // ✅ Sahi
+    if (token && isValidJWT(token)) {
+      console.log('✅ [Refresh] Debounce - returning recent token');
+      return token;
     }
-    // Token expired hai - refresh karo even within debounce window
-    lastRefreshTimestamp = 0;
   }
 
-  // Already refreshing? Queue this request
+  // ✅ FIX 2: If already refreshing, WAIT for it (single-flight)
   if (isRefreshing) {
-    return new Promise((resolve, reject) => {
-      failedQueue.push({ resolve, reject });
+    console.log('⏳ [Refresh] Already in progress, queueing...');
+    return new Promise<string>((resolve, reject) => {
+      refreshQueue.push({ resolve, reject });
     });
   }
 
   const refreshToken = getRefreshToken();
-  if (!refreshToken) throw new Error('No refresh token available');
+  if (!refreshToken) {
+    throw new Error('No refresh token available');
+  }
 
+  // ✅ Lock the refresh
   isRefreshing = true;
+  console.log('🔄 [Refresh] Starting single-flight refresh...');
 
   try {
     const response = await axios.post<ApiResponse<RefreshTokenResponse>>(
@@ -305,29 +309,41 @@ export const performTokenRefresh = async (): Promise<string> => {
       }
     );
 
-    const newAccessToken = response.data?.data?.accessToken;
+    const newAccessToken  = response.data?.data?.accessToken;
     const newRefreshToken = response.data?.data?.refreshToken;
 
     if (!newAccessToken || !isValidJWT(newAccessToken)) {
-      throw new Error('Invalid access token from refresh');
+      throw new Error('Invalid access token received from refresh');
     }
 
+    // Save new tokens
     setAuthTokens(newAccessToken, newRefreshToken);
     lastRefreshTimestamp = Date.now();
-    
-    processQueue(null, newAccessToken); // ✅ Queued requests resolve karo
+
+    // ✅ Resolve ALL queued requests with new token
+    console.log(`✅ [Refresh] Success - resolving ${refreshQueue.length} queued requests`);
+    processQueue(null, newAccessToken);
+
     return newAccessToken;
 
   } catch (error: any) {
-    processQueue(error, null); // ✅ Queued requests reject karo
-    
+    console.error('❌ [Refresh] Failed:', error?.response?.data?.message || error.message);
+
+    // ✅ Reject ALL queued requests
+    processQueue(error, null);
+
+    // If refresh token invalid, clear everything
     if (error?.response?.status === 401) {
+      console.error('❌ [Refresh] Refresh token invalid - clearing session');
       clearAuthData();
       lastRefreshTimestamp = 0;
     }
+
     throw error;
+
   } finally {
-    isRefreshing = false; // ✅ Always reset
+    // ✅ CRITICAL: Always release the lock
+    isRefreshing = false;
   }
 };
 
@@ -340,74 +356,76 @@ api.interceptors.response.use(
     // ✅ Server se naya token aaye toh save karo
     const newAccessToken = response.headers['x-new-access-token'];
     if (newAccessToken && isValidJWT(newAccessToken)) {
-      console.log('🛡️ Auto-healing: token updated from header');
+      console.log('🛡️ [Auto-heal] Token updated from response header');
       setAuthTokens(newAccessToken);
-      lastRefreshTimestamp = Date.now(); // ✅ Debounce update karo
+      lastRefreshTimestamp = Date.now();
     }
     return response;
   },
-  
+
   async (error: AxiosError<ApiError>) => {
     const originalRequest = error.config as InternalAxiosRequestConfig & {
       _retry?: boolean;
-      _retryCount?: number; // ✅ FIX: count track karo
+      _retryCount?: number;
     };
 
     const status = error.response?.status;
-    const url = originalRequest?.url || '';
+    const url    = originalRequest?.url || '';
 
-    // Network errors
+    // ─── Network errors ───────────────────────────────────
     if (error.code === 'ERR_NETWORK') {
       return Promise.reject({
-        message: 'Cannot connect to server. Please check your internet connection.',
-        code: 'NETWORK_ERROR',
+        message: 'Cannot connect to server. Please check your internet.',
+        code:    'NETWORK_ERROR',
       });
     }
 
     if (error.code === 'ECONNABORTED') {
       return Promise.reject({
         message: 'Request timed out. Please try again.',
-        code: 'TIMEOUT',
+        code:    'TIMEOUT',
       });
     }
 
-    // ✅ 503 - Server busy, retry once
+    // ─── 503 - Server busy, retry once ────────────────────
     if (status === 503 && originalRequest && !originalRequest._retry) {
       originalRequest._retry = true;
-      console.log('⏳ Server busy (503), retrying in 2s...');
+      console.log('⏳ [503] Server busy, retrying in 2s...');
       await new Promise(r => setTimeout(r, 2000));
       return api(originalRequest);
     }
 
-    // 402 - Plan limit
+    // ─── 402 - Plan limit ─────────────────────────────────
     if (status === 402) {
       const errorData = error.response?.data as any;
       window.dispatchEvent(new CustomEvent('planLimitExceeded', {
         detail: {
           limitType: errorData?.data?.limitType,
-          used: errorData?.data?.used,
-          limit: errorData?.data?.limit,
-          message: errorData?.message,
-        }
+          used:      errorData?.data?.used,
+          limit:     errorData?.data?.limit,
+          message:   errorData?.message,
+        },
       }));
       return Promise.reject({
         ...error,
         isLimitExceeded: true,
-        limitData: errorData?.data,
+        limitData:       errorData?.data,
       });
     }
 
-    // Skip refresh for these routes
+    // ─── Skip refresh for auth routes ─────────────────────
     const skipRefresh =
-      url.includes('/auth/login') ||
+      url.includes('/auth/login')   ||
       url.includes('/auth/register') ||
       url.includes('/auth/refresh') ||
-      url.includes('/auth/google') ||
+      url.includes('/auth/google')  ||
       url.includes('/auth/verify');
 
+    // ─── 401 - Auto refresh flow ──────────────────────────
     if (status === 401 && originalRequest && !originalRequest._retry) {
       const isAdminRoute = url.includes('/admin');
 
+      // Admin routes - separate handling
       if (isAdminRoute) {
         localStorage.removeItem(TOKEN_KEYS.ADMIN);
         if (window.location.pathname.startsWith('/manage-wabmeta-admin')) {
@@ -416,6 +434,7 @@ api.interceptors.response.use(
         return Promise.reject(error);
       }
 
+      // Skip for auth routes
       if (skipRefresh) {
         return Promise.reject(error);
       }
@@ -426,40 +445,43 @@ api.interceptors.response.use(
         clearAuthData();
         window.dispatchEvent(new CustomEvent('force_logout', {
           detail: {
-            title: 'Session Expired',
+            title:   'Session Expired',
             message: 'Please sign in to continue.',
           },
         }));
         return Promise.reject(error);
       }
 
-      // ✅ FIX: _retry flag set karo PEHLE - race condition prevent
+      // ✅ Mark as retried
       originalRequest._retry = true;
 
       try {
+        // ✅ Uses single-flight refresh
         const newAccessToken = await performTokenRefresh();
-        
+
+        // Update the failed request with new token
         if (originalRequest.headers) {
           originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
         }
-        
-        // ✅ Retry original request with new token
-        return api(originalRequest);
-        
-      } catch (refreshError: any) {
-        console.error('❌ Token refresh failed completely:', refreshError.message);
 
-        // ✅ Sirf clear karo agar actually invalid hai
+        // ✅ Retry original request
+        console.log(`🔄 [Retry] Original request with new token: ${url}`);
+        return api(originalRequest);
+
+      } catch (refreshError: any) {
+        console.error('❌ [Auth] Token refresh failed:', refreshError?.message);
+
+        // Only force logout if refresh actually failed with 401
         if (refreshError?.response?.status === 401) {
           clearAuthData();
           window.dispatchEvent(new CustomEvent('force_logout', {
             detail: {
-              title: 'Session Expired',
+              title:   'Session Expired',
               message: 'Your session has ended. Please sign in again.',
             },
           }));
         }
-        
+
         return Promise.reject(refreshError);
       }
     }

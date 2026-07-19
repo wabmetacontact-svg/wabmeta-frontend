@@ -280,16 +280,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
   }, [triggerForceLogout]);
 
-
-
   const verifySession = useCallback(
     async (attempt = 1): Promise<boolean> => {
       const MAX_ATTEMPTS = 2;
       const accessToken  = getAccessToken();
 
-      if (!accessToken) return false;
+      if (!accessToken) {
+        console.log('⚠️ [Verify] No access token');
+        return false;
+      }
 
       try {
+        // Single call - check user
         const userResponse = await auth.me();
 
         if (!userResponse.data?.success || !userResponse.data?.data) {
@@ -299,21 +301,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const user = userResponse.data.data;
         let org: Organization | null = null;
 
+        // Try to fetch org - non-blocking
         try {
           const orgResponse = await api.get('/organizations/current');
           if (orgResponse.data?.success && orgResponse.data?.data) {
             org = orgResponse.data.data;
           }
         } catch (orgError: any) {
-          console.warn('⚠️ Org fetch failed, using saved org');
+          console.warn('⚠️ [Verify] Org fetch failed, using saved org');
           const saved = loadSavedData();
           org = saved.org;
         }
 
         saveToStorage(user, org);
+
         setState({
-          user, organization: org,
-          isAuthenticated: true, isLoading: false, error: null,
+          user,
+          organization:    org,
+          isAuthenticated: true,
+          isLoading:       false,
+          error:           null,
         });
 
         return true;
@@ -321,21 +328,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       } catch (error: any) {
         const status = error?.response?.status;
 
-        // ✅ FIX: Bounded retry - max 2 attempts
+        // ✅ Bounded retry - max 2 attempts to avoid infinite loop
         if (status === 401 && attempt < MAX_ATTEMPTS) {
-          console.log(`🔄 Token expired, refresh attempt ${attempt}/${MAX_ATTEMPTS}`);
+          console.log(`🔄 [Verify] Token expired, refresh attempt ${attempt}/${MAX_ATTEMPTS}`);
+
           try {
+            // ✅ Uses single-flight refresh from api.ts
             await performTokenRefresh();
             return await verifySession(attempt + 1);
           } catch (refreshError) {
-            console.error('❌ Refresh failed in verifySession');
+            console.error('❌ [Verify] Refresh failed');
             return false;
           }
         }
 
-        // Network / 5xx errors - keep session
+        // ✅ Network/5xx errors - keep session
         if (!status || status >= 500) {
-          console.warn('⚠️ Server error - keeping session');
+          console.warn('⚠️ [Verify] Server error - keeping session');
           const saved = loadSavedData();
           if (saved.user) {
             setState(prev => ({
