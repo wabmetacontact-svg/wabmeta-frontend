@@ -82,15 +82,13 @@ const SocialFollowCard: React.FC = () => {
   return (
     <div
       className={`relative overflow-hidden rounded-2xl border transition-all duration-500
-        ${
-          closing
-            ? 'opacity-0 max-h-0 scale-[0.98] mb-0'
-            : 'opacity-100 max-h-[280px] scale-100 mb-6'
+        ${closing
+          ? 'opacity-0 max-h-0 scale-[0.98] mb-0'
+          : 'opacity-100 max-h-[280px] scale-100 mb-6'
         }
-        ${
-          completed
-            ? 'bg-emerald-50 border-emerald-200'
-            : 'bg-gradient-to-r from-emerald-50 via-white to-blue-50 border-emerald-100'
+        ${completed
+          ? 'bg-emerald-50 border-emerald-200'
+          : 'bg-gradient-to-r from-emerald-50 via-white to-blue-50 border-emerald-100'
         }
       `}
     >
@@ -105,10 +103,9 @@ const SocialFollowCard: React.FC = () => {
           <div className="flex items-start gap-4">
             <div
               className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0
-                ${
-                  completed
-                    ? 'bg-emerald-100 text-emerald-600'
-                    : 'bg-white border border-emerald-100 text-emerald-600 shadow-sm'
+                ${completed
+                  ? 'bg-emerald-100 text-emerald-600'
+                  : 'bg-white border border-emerald-100 text-emerald-600 shadow-sm'
                 }
               `}
             >
@@ -148,10 +145,9 @@ const SocialFollowCard: React.FC = () => {
                 onClick={() => handleConnect('instagram')}
                 disabled={state.instagram}
                 className={`flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-semibold transition-all
-                  ${
-                    state.instagram
-                      ? 'bg-emerald-100 text-emerald-700 border border-emerald-200 cursor-default'
-                      : 'bg-gradient-to-r from-purple-600 via-pink-600 to-orange-500 text-white hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0'
+                  ${state.instagram
+                    ? 'bg-emerald-100 text-emerald-700 border border-emerald-200 cursor-default'
+                    : 'bg-gradient-to-r from-purple-600 via-pink-600 to-orange-500 text-white hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0'
                   }
                 `}
               >
@@ -174,10 +170,9 @@ const SocialFollowCard: React.FC = () => {
                 onClick={() => handleConnect('facebook')}
                 disabled={state.facebook}
                 className={`flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-semibold transition-all
-                  ${
-                    state.facebook
-                      ? 'bg-emerald-100 text-emerald-700 border border-emerald-200 cursor-default'
-                      : 'bg-[#1877F2] text-white hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0'
+                  ${state.facebook
+                    ? 'bg-emerald-100 text-emerald-700 border border-emerald-200 cursor-default'
+                    : 'bg-[#1877F2] text-white hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0'
                   }
                 `}
               >
