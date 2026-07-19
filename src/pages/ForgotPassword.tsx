@@ -1,6 +1,6 @@
 // src/pages/ForgotPassword.tsx
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { Mail, ArrowRight, CheckCircle2, AlertCircle, ArrowLeft } from 'lucide-react';
 import AuthLayout from '../components/auth/AuthLayout';
@@ -15,6 +15,16 @@ const ForgotPassword: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
+
+  // ─── Use useRef to track interval ────────────────────────
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // ✅ Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
+  }, []);
 
   const validateEmail = () => {
     if (!email) {
@@ -59,11 +69,16 @@ const ForgotPassword: React.FC = () => {
   };
 
   const startResendCooldown = () => {
+    // ✅ Clear existing interval first
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+    }
+
     setResendCooldown(60);
-    const interval = setInterval(() => {
+    intervalRef.current = setInterval(() => {
       setResendCooldown((prev) => {
         if (prev <= 1) {
-          clearInterval(interval);
+          if (intervalRef.current) clearInterval(intervalRef.current);
           return 0;
         }
         return prev - 1;

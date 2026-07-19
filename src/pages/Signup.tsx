@@ -11,9 +11,54 @@ import SocialLoginButtons from '../components/auth/SocialLoginButtons';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const PWD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#]).{8,}$/;
-
 const STEPS = ['You', 'Organization', 'Security'] as const;
+
+const COUNTRIES = [
+  { code: '+91',  name: 'India',        flag: '🇮🇳', digits: 10 },
+  { code: '+1',   name: 'USA/Canada',   flag: '🇺🇸', digits: 10 },
+  { code: '+44',  name: 'UK',           flag: '🇬🇧', digits: 10 },
+  { code: '+971', name: 'UAE',          flag: '🇦🇪', digits: 9  },
+  { code: '+966', name: 'Saudi Arabia', flag: '🇸🇦', digits: 9  },
+  { code: '+65',  name: 'Singapore',    flag: '🇸🇬', digits: 8  },
+  { code: '+92',  name: 'Pakistan',     flag: '🇵🇰', digits: 10 },
+  { code: '+880', name: 'Bangladesh',   flag: '🇧🇩', digits: 10 },
+  { code: '+94',  name: 'Sri Lanka',    flag: '🇱🇰', digits: 9  },
+  { code: '+977', name: 'Nepal',        flag: '🇳🇵', digits: 10 },
+  { code: '+60',  name: 'Malaysia',     flag: '🇲🇾', digits: 10 },
+  { code: '+62',  name: 'Indonesia',    flag: '🇮🇩', digits: 10 },
+  { code: '+63',  name: 'Philippines',  flag: '🇵🇭', digits: 10 },
+  { code: '+66',  name: 'Thailand',     flag: '🇹🇭', digits: 9  },
+  { code: '+61',  name: 'Australia',    flag: '🇦🇺', digits: 9  },
+  { code: '+49',  name: 'Germany',      flag: '🇩🇪', digits: 11 },
+  { code: '+33',  name: 'France',       flag: '🇫🇷', digits: 9  },
+  { code: '+81',  name: 'Japan',        flag: '🇯🇵', digits: 10 },
+  { code: '+82',  name: 'South Korea',  flag: '🇰🇷', digits: 10 },
+];
+
+// ─── Password validator (matches backend) ─────────────────
+const validatePasswordStrength = (pwd: string): string | null => {
+  if (!pwd) return 'Password is required';
+  if (pwd.length < 8) return 'At least 8 characters';
+  if (pwd.length > 128) return 'Too long (max 128 characters)';
+
+  let score = 0;
+  if (/[a-z]/.test(pwd))        score++;
+  if (/[A-Z]/.test(pwd))        score++;
+  if (/\d/.test(pwd))           score++;
+  if (/[^a-zA-Z0-9]/.test(pwd)) score++;
+
+  if (score < 3) {
+    return 'Use at least 3 of: uppercase, lowercase, numbers, special characters';
+  }
+
+  // Reject common weak passwords
+  const common = ['password', 'password123', '12345678', 'qwerty123', 'admin123'];
+  if (common.includes(pwd.toLowerCase())) {
+    return 'This password is too common';
+  }
+
+  return null;
+};
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -239,6 +284,7 @@ const Signup: React.FC = () => {
   const [apiError, setApiError] = useState<string | null>(null);
   const [showPass, setShowPass] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [countryCode, setCountryCode] = useState('+91');
 
   const [form, setForm] = useState<FormData>({
     firstName: '', lastName: '', email: '',
@@ -267,9 +313,17 @@ const Signup: React.FC = () => {
     if (!email)                           e.email = 'Email is required';
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) e.email = 'Enter a valid email';
 
+    // ✅ FIX: Universal phone validation
     const digits = phone.replace(/\D/g, '');
-    if (!phone)                           e.phone = 'Phone number is required';
-    else if (!/^[6-9]\d{9}$/.test(digits)) e.phone = 'Enter a valid 10-digit Indian mobile';
+    const country = COUNTRIES.find(c => c.code === countryCode);
+
+    if (!phone) {
+      e.phone = 'Phone number is required';
+    } else if (!country) {
+      e.phone = 'Invalid country';
+    } else if (digits.length !== country.digits) {
+      e.phone = `${country.name} numbers must be ${country.digits} digits`;
+    }
 
     setErrors(e);
     return !Object.keys(e).length;
@@ -290,8 +344,8 @@ const Signup: React.FC = () => {
     const e: Record<string, string> = {};
     const { password, confirmPassword, agreeToTerms } = form;
 
-    if (!password)                     e.password = 'Password is required';
-    else if (!PWD_REGEX.test(password)) e.password = 'Use 8+ chars with upper, lower, number & symbol';
+    const pwdError = validatePasswordStrength(password);
+    if (pwdError) e.password = pwdError;
 
     if (!confirmPassword)              e.confirmPassword = 'Please confirm your password';
     else if (password !== confirmPassword) e.confirmPassword = 'Passwords do not match';
@@ -321,7 +375,8 @@ const Signup: React.FC = () => {
         firstName:        form.firstName.trim(),
         lastName:         form.lastName.trim() || undefined,
         email:            form.email.trim().toLowerCase(),
-        phone:            `+91${form.phone.replace(/\D/g, '')}`,
+        // ✅ FIX: Use dynamic country code
+        phone:            `${countryCode}${form.phone.replace(/\D/g, '')}`,
         password:         form.password,
         confirmPassword:  form.confirmPassword,
         organizationName: form.companyName.trim(),
@@ -443,32 +498,40 @@ const Signup: React.FC = () => {
                 WhatsApp number <span className="text-red-500">*</span>
               </label>
               <div className="flex">
-                {/* Country prefix */}
-                <div className="flex items-center gap-1.5 px-3.5 min-w-[90px]
-                  bg-gray-50 border border-r-0 border-gray-200
-                  rounded-l-xl text-sm font-semibold text-gray-700">
-                  🇮🇳 <span>+91</span>
-                </div>
-                {/* Input */}
+                {/* ✅ Country selector */}
+                <select
+                  value={countryCode}
+                  onChange={e => setCountryCode(e.target.value)}
+                  className="h-11 px-3 text-sm bg-gray-50 border border-r-0
+                             border-gray-200 rounded-l-xl focus:outline-none
+                             focus:ring-2 focus:ring-primary-100 min-w-[130px]"
+                >
+                  {COUNTRIES.map(c => (
+                    <option key={c.code} value={c.code}>
+                      {c.flag} {c.code}
+                    </option>
+                  ))}
+                </select>
+
                 <input
                   type="tel"
                   inputMode="numeric"
-                  placeholder="9876543210"
+                  placeholder={`${COUNTRIES.find(c => c.code === countryCode)?.digits || 10} digits`}
                   value={form.phone}
                   onChange={e => {
-                    const v = e.target.value.replace(/\D/g, '').slice(0, 10);
+                    const country = COUNTRIES.find(c => c.code === countryCode);
+                    const maxLen  = country?.digits || 15;
+                    const v = e.target.value.replace(/\D/g, '').slice(0, maxLen);
                     update('phone', v);
                   }}
-                  maxLength={10}
-                  className={`flex-1 h-11 px-4 text-sm rounded-r-xl
-                    border bg-white text-gray-900
-                    placeholder:text-gray-400
-                    focus:outline-none focus:ring-2
-                    transition-all duration-200
-                    ${errors.phone
-                      ? 'border-red-300 focus:border-red-400 focus:ring-red-100'
-                      : 'border-gray-200 hover:border-gray-300 focus:border-primary-400 focus:ring-primary-100'
-                    }`}
+                  maxLength={15}
+                  className={`flex-1 h-11 px-4 text-sm rounded-r-xl border bg-white
+                              text-gray-900 placeholder:text-gray-400
+                              focus:outline-none focus:ring-2 transition-all
+                              ${errors.phone
+                                ? 'border-red-300 focus:border-red-400 focus:ring-red-100'
+                                : 'border-gray-200 hover:border-gray-300 focus:border-primary-400 focus:ring-primary-100'
+                              }`}
                 />
               </div>
               {errors.phone ? (

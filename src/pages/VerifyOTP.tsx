@@ -54,10 +54,12 @@ const VerifyOTP: React.FC = () => {
     return () => clearTimeout(timer);
   }, [countdown]);
 
-  const handleVerify = async () => {
+  const handleVerify = async (autoOtp?: string) => {
     if (!email) return;
 
-    if (otp.length !== 6) {
+    const otpToVerify = autoOtp || otp;
+
+    if (otpToVerify.length !== 6) {
       setError('Please enter a valid 6-digit OTP');
       return;
     }
@@ -67,18 +69,18 @@ const VerifyOTP: React.FC = () => {
     setSuccess(null);
 
     try {
-      const res = await auth.verifyOTP({ email, otp });
-
+      const res     = await auth.verifyOTP({ email, otp: otpToVerify });
       const payload = res.data?.data;
-      const tokens = payload?.tokens;
+      const tokens  = payload?.tokens;
 
       if (!tokens?.accessToken) {
         throw new Error('Access token not received');
       }
 
-      // ✅ setAuthToken use karo (instead of manual localStorage)
+      // ✅ setAuthToken handles all storage
       setAuthToken(tokens.accessToken, tokens.refreshToken);
 
+      // ✅ Store user + org (this is fine, mirrors what login() does)
       if (payload?.user) {
         localStorage.setItem('wabmeta_user', JSON.stringify(payload.user));
       }
@@ -90,39 +92,27 @@ const VerifyOTP: React.FC = () => {
 
       setSuccess('Email verified! Welcome to WabMeta 🎉');
 
-      // ✅ Auth context update karo taaki ProtectedRoute login pe na bheje
+      // ✅ Refresh auth context (this updates isAuthenticated)
       await refreshSession();
 
+      // ✅ Then navigate
       setTimeout(() => {
         navigate('/dashboard', { replace: true });
       }, 1200);
+
     } catch (err: any) {
-      const message =
-        err?.response?.data?.message ||
-        err?.response?.data?.error;
-      const status = err?.response?.status;
+      const message = err?.response?.data?.message || err?.response?.data?.error;
+      const status  = err?.response?.status;
 
       if (status === 429) {
-        setError(
-          'Too many attempts. Please request a new OTP.'
-        );
-      } else if (
-        message?.toLowerCase().includes('expired')
-      ) {
-        setError(
-          'OTP has expired. Please request a new one.'
-        );
-      } else if (
-        message?.toLowerCase().includes('invalid')
-      ) {
-        setError(
-          'Invalid OTP. Please check and try again.'
-        );
+        setError('Too many attempts. Please request a new OTP.');
+      } else if (message?.toLowerCase().includes('expired')) {
+        setError('OTP has expired. Please request a new one.');
+      } else if (message?.toLowerCase().includes('invalid')) {
+        setError('Invalid OTP. Please check and try again.');
+        setOtp('');  // ✅ Clear on invalid
       } else {
-        setError(
-          message ||
-            'Verification failed. Please try again.'
-        );
+        setError(message || 'Verification failed. Please try again.');
       }
     } finally {
       setLoading(false);
@@ -219,6 +209,7 @@ const VerifyOTP: React.FC = () => {
               setOtp(val);
               setError(null);
             }}
+            onComplete={handleVerify}  // ✅ Auto-submit on 6 digits!
             error={!!error}
             disabled={loading || !!success}
           />
@@ -227,7 +218,7 @@ const VerifyOTP: React.FC = () => {
         {/* Verify Button */}
         <Button
           fullWidth
-          onClick={handleVerify}
+          onClick={() => handleVerify()}
           loading={loading}
           disabled={
             otp.length !== 6 || !!success

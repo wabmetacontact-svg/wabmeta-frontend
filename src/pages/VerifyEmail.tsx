@@ -42,18 +42,30 @@ const VerifyEmail: React.FC = () => {
     }
   }, [token]);
 
-  // Poll for verification status if pending and user exists
+  // ✅ Replace wasteful polling with smart polling
   useEffect(() => {
-    let interval: ReturnType<typeof setInterval>;
-    if (state === 'pending' && user && !user.emailVerified) {
-      interval = setInterval(() => {
-        refreshSession();
-      }, 5000);
-    }
-    return () => {
-      if (interval) clearInterval(interval);
-    };
-  }, [state, user, refreshSession]);
+    if (state !== 'pending' || !user || user.emailVerified) return;
+
+    let attempts = 0;
+    const MAX_ATTEMPTS = 20;      // ✅ Max 20 attempts
+    const INTERVAL_MS  = 15_000;  // ✅ 15 seconds (not 5!)
+
+    const interval = setInterval(async () => {
+      attempts++;
+
+      if (attempts > MAX_ATTEMPTS) {
+        clearInterval(interval);
+        console.log('⏱️ Verification polling stopped after 5 minutes');
+        return;
+      }
+
+      try {
+        await refreshSession();
+      } catch { /* silent - try again */ }
+    }, INTERVAL_MS);
+
+    return () => clearInterval(interval);
+  }, [state, user?.emailVerified, refreshSession]);
 
   // Update state if user becomes verified via polling
   useEffect(() => {

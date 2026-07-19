@@ -8,8 +8,24 @@ import Input from '../components/common/Input';
 import Button from '../components/common/Button';
 import { auth } from '../services/api';
 
-// ✅ Must match backend validation
-const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#]).{8,}$/;
+// ✅ NEW (Match backend 3-of-4 rule):
+const validatePassword = (pwd: string): string | null => {
+  if (!pwd) return 'Password is required';
+  if (pwd.length < 8) return 'At least 8 characters';
+  if (pwd.length > 128) return 'Too long (max 128)';
+
+  let score = 0;
+  if (/[a-z]/.test(pwd))        score++;
+  if (/[A-Z]/.test(pwd))        score++;
+  if (/\d/.test(pwd))           score++;
+  if (/[^a-zA-Z0-9]/.test(pwd)) score++;
+
+  if (score < 3) {
+    return 'Use at least 3 of: uppercase, lowercase, numbers, special characters';
+  }
+
+  return null;
+};
 
 // ─── Password Strength (inline) ──────────────────────────────────────────────
 
@@ -20,12 +36,13 @@ interface StrengthResult {
   textColor: string;   // tailwind text class
 }
 
+// Update PWD_RULES to be less strict:
 const PWD_RULES = [
   { label: 'At least 8 characters',        test: (p: string) => p.length >= 8 },
-  { label: 'One uppercase letter (A–Z)',    test: (p: string) => /[A-Z]/.test(p) },
-  { label: 'One lowercase letter (a–z)',    test: (p: string) => /[a-z]/.test(p) },
-  { label: 'One number (0–9)',              test: (p: string) => /\d/.test(p) },
-  { label: 'One special char (@$!%*?&#)',   test: (p: string) => /[@$!%*?&#]/.test(p) },
+  { label: 'Uppercase letter (A–Z)',        test: (p: string) => /[A-Z]/.test(p) },
+  { label: 'Lowercase letter (a–z)',        test: (p: string) => /[a-z]/.test(p) },
+  { label: 'Number (0–9)',                  test: (p: string) => /\d/.test(p) },
+  { label: 'Special character (optional)',  test: (p: string) => /[^a-zA-Z0-9]/.test(p) },
 ];
 
 const getStrength = (score: number): StrengthResult => {
@@ -116,14 +133,8 @@ const ResetPassword: React.FC = () => {
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
-    if (!password) {
-      newErrors.password = 'Password is required';
-    } else if (password.length < 8) {
-      newErrors.password = 'Password must be at least 8 characters';
-    } else if (!PASSWORD_REGEX.test(password)) {
-      newErrors.password =
-        'Password must contain uppercase, lowercase, number, and special character (@$!%*?&#)';
-    }
+    const passwordError = validatePassword(password);
+    if (passwordError) newErrors.password = passwordError;
 
     if (!confirmPassword) {
       newErrors.confirmPassword = 'Please confirm your password';

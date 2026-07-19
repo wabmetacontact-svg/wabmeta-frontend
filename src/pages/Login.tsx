@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import {
   Mail, Lock, ArrowRight,
@@ -115,11 +115,30 @@ const Login: React.FC = () => {
   const [showPass, setShowPass] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
 
+  // ─── Remember Me actual implementation ─────────────────────
+  useEffect(() => {
+    // Auto-fill email if user chose "remember me" before
+    const rememberedEmail = localStorage.getItem('remembered_email');
+    if (rememberedEmail) {
+      setForm(prev => ({ ...prev, email: rememberedEmail }));
+      setRememberMe(true);
+    }
+  }, []);
+
+  // ─── Clear error on unmount only ──────────────────────────
+  useEffect(() => {
+    return () => {
+      clearError();
+    };
+  }, [clearError]);
+
   const update = (field: keyof FormState, value: string) => {
     setForm(prev => ({ ...prev, [field]: value }));
     setErrors(prev => ({ ...prev, [field]: undefined }));
-    setApiError(null);
-    clearError();
+
+    // ✅ FIX: Only clear if error exists
+    if (apiError) setApiError(null);
+    // Don't call clearError() on every keystroke
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -137,9 +156,11 @@ const Login: React.FC = () => {
       );
 
       if (result.success) {
-        rememberMe
-          ? localStorage.setItem('remember_me', 'true')
-          : localStorage.removeItem('remember_me');
+        if (rememberMe) {
+          localStorage.setItem('remembered_email', form.email.trim().toLowerCase());
+        } else {
+          localStorage.removeItem('remembered_email');
+        }
 
         toast.success('Welcome back!');
         const from = (location.state as any)?.from || '/dashboard';

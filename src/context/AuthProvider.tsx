@@ -4,7 +4,7 @@
 // ✅ FIX 2: verifySession no longer force-logs-out a VALID session just because
 //    /organizations/current failed transiently (cold start / network blip)
 
-import React, { useEffect, useState, useCallback, useRef } from 'react';
+import React, { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext, type User, type Organization } from './AuthContext';
 import api, { auth, setAuthToken, removeAuthToken, performTokenRefresh } from '../services/api'; // ✅ FIX: import performTokenRefresh
@@ -282,84 +282,78 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
 
 
-  const verifySession = useCallback(async (): Promise<boolean> => {
-    const accessToken = getAccessToken();
-    if (!accessToken) {
-      console.log('⚠️ No access token found');
-      return false;
-    }
+  const verifySession = useCallback(
+    async (attempt = 1): Promise<boolean> => {
+      const MAX_ATTEMPTS = 2;
+      const accessToken  = getAccessToken();
 
-    try {
-      // ✅ FIX: Ek hi call karo /auth/me
-      const userResponse = await auth.me();
+      if (!accessToken) return false;
 
-      if (!userResponse.data?.success || !userResponse.data?.data) {
-        return false;
-      }
-
-      const user = userResponse.data.data;
-      let org: Organization | null = null;
-
-      // ✅ FIX: Org fetch fail hone par logout MAT karo
       try {
-        const orgResponse = await api.get('/organizations/current');
-        if (orgResponse.data?.success && orgResponse.data?.data) {
-          org = orgResponse.data.data;
-        }
-      } catch (orgError: any) {
-        // ✅ Saved org use karo - transient failure pe logout nahi
-        console.warn('⚠️ Org fetch failed, using saved org');
-        const saved = loadSavedData();
-        org = saved.org;
-      }
+        const userResponse = await auth.me();
 
-      saveToStorage(user, org);
-
-      setState({
-        user,
-        organization: org,
-        isAuthenticated: true,
-        isLoading: false,
-        error: null,
-      });
-
-      return true;
-
-    } catch (error: any) {
-      const status = error?.response?.status;
-      
-      // ✅ FIX: Sirf 401 pe refresh try karo
-      if (status === 401) {
-        console.log('🔄 Token expired, attempting refresh...');
-        try {
-          await performTokenRefresh();
-          // ✅ Ek baar retry karo
-          return await verifySession();
-        } catch (refreshError) {
-          console.error('❌ Refresh failed in verifySession');
+        if (!userResponse.data?.success || !userResponse.data?.data) {
           return false;
         }
-      }
-      
-      // ✅ FIX: Network error / 5xx pe logout NAHI karo
-      if (!status || status >= 500) {
-        console.warn('⚠️ Server error during verify - keeping session');
-        const saved = loadSavedData();
-        if (saved.user) {
-          setState(prev => ({
-            ...prev,
-            user: saved.user,
-            organization: saved.org,
-            isAuthenticated: true,
-            isLoading: false,
-          }));
-          return true;
+
+        const user = userResponse.data.data;
+        let org: Organization | null = null;
+
+        try {
+          const orgResponse = await api.get('/organizations/current');
+          if (orgResponse.data?.success && orgResponse.data?.data) {
+            org = orgResponse.data.data;
+          }
+        } catch (orgError: any) {
+          console.warn('⚠️ Org fetch failed, using saved org');
+          const saved = loadSavedData();
+          org = saved.org;
         }
+
+        saveToStorage(user, org);
+        setState({
+          user, organization: org,
+          isAuthenticated: true, isLoading: false, error: null,
+        });
+
+        return true;
+
+      } catch (error: any) {
+        const status = error?.response?.status;
+
+        // ✅ FIX: Bounded retry - max 2 attempts
+        if (status === 401 && attempt < MAX_ATTEMPTS) {
+          console.log(`🔄 Token expired, refresh attempt ${attempt}/${MAX_ATTEMPTS}`);
+          try {
+            await performTokenRefresh();
+            return await verifySession(attempt + 1);
+          } catch (refreshError) {
+            console.error('❌ Refresh failed in verifySession');
+            return false;
+          }
+        }
+
+        // Network / 5xx errors - keep session
+        if (!status || status >= 500) {
+          console.warn('⚠️ Server error - keeping session');
+          const saved = loadSavedData();
+          if (saved.user) {
+            setState(prev => ({
+              ...prev,
+              user:            saved.user,
+              organization:    saved.org,
+              isAuthenticated: true,
+              isLoading:       false,
+            }));
+            return true;
+          }
+        }
+
+        return false;
       }
-      
-      return false;
-    }
-  }, [getAccessToken, loadSavedData, saveToStorage]);
+    },
+    [getAccessToken, loadSavedData, saveToStorage]
+  );
 
   useEffect(() => {
     let isMounted = true;
@@ -568,7 +562,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return await verifySession();
   }, [verifySession]);
 
-  const value = {
+  const value = useMemo(() => ({
     ...state,
     login,
     register,
@@ -579,7 +573,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setOrganization,
     clearError,
     refreshSession,
-  };
+  }), [
+    state,
+    login,
+    register,
+    googleLogin,
+    logout,
+    updateUser,
+    updateOrganization,
+    setOrganization,
+    clearError,
+    refreshSession,
+  ]);
 
   return (
     <AuthContext.Provider value={value}>

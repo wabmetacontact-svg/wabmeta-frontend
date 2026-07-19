@@ -84,93 +84,111 @@ const SocialLoginButtons: React.FC<SocialLoginButtonsProps> = ({
     }
   }, [googleLogin, navigate, onSuccess, mode]);
 
-  // ✅ Load and initialize Google Sign-In SDK
+  // ✅ FIX: Simpler script loading
   useEffect(() => {
     if (!GOOGLE_CLIENT_ID) {
-      console.warn('⚠️ VITE_GOOGLE_CLIENT_ID not configured in .env');
+      console.warn('⚠️ VITE_GOOGLE_CLIENT_ID not configured');
       return;
     }
 
-    if (initializedRef.current) {
-      return;
-    }
+    if (initializedRef.current) return;
+
+    let mounted = true;
 
     const initGoogle = () => {
+      if (!mounted) return;
+
       if (!window.google?.accounts?.id) {
         console.error('❌ Google SDK not available');
         return;
       }
 
       try {
-        console.log('🔧 Initializing Google Sign-In with client ID:', GOOGLE_CLIENT_ID.substring(0, 20) + '...');
-
         window.google.accounts.id.initialize({
-          client_id: GOOGLE_CLIENT_ID,
-          callback: handleGoogleCallback,
-          auto_select: false,
-          cancel_on_tap_outside: true,
-          use_fedcm_for_prompt: false,
-          context: mode === 'signup' ? 'signup' : 'signin',
+          client_id:                 GOOGLE_CLIENT_ID,
+          callback:                  handleGoogleCallback,
+          auto_select:               false,
+          cancel_on_tap_outside:     true,
+          use_fedcm_for_prompt:      false,
+          context:                   mode === 'signup' ? 'signup' : 'signin',
         });
 
-        // Render the button
-        if (buttonContainerRef.current) {
+        if (buttonContainerRef.current && mounted) {
           const width = buttonContainerRef.current.offsetWidth || 320;
-          
+
           window.google.accounts.id.renderButton(buttonContainerRef.current, {
-            type: 'standard',
-            theme: 'outline',
-            size: 'large',
-            width: Math.min(width, 400),
-            text: mode === 'signup' ? 'signup_with' : 'continue_with',
-            shape: 'rectangular',
-            logo_alignment: 'left',
+            type:            'standard',
+            theme:           'outline',
+            size:            'large',
+            width:           Math.min(width, 400),
+            text:            mode === 'signup' ? 'signup_with' : 'continue_with',
+            shape:           'rectangular',
+            logo_alignment:  'left',
           });
 
           setIsReady(true);
           initializedRef.current = true;
-          console.log('✅ Google Sign-In button rendered');
         }
-      } catch (err: any) {
+      } catch (err) {
         console.error('❌ Google init error:', err);
       }
     };
 
-    // Load Google script if not already loaded
-    const existingScript = document.getElementById('google-signin-script');
-    
-    if (existingScript && window.google?.accounts?.id) {
-      // Script already loaded
+    if (window.google?.accounts?.id) {
       initGoogle();
-    } else if (!existingScript) {
-      // Load fresh
-      const script = document.createElement('script');
-      script.id = 'google-signin-script';
-      script.src = 'https://accounts.google.com/gsi/client';
-      script.async = true;
-      script.defer = true;
-      script.onload = () => {
-        console.log('✅ Google SDK loaded');
-        // Wait a tick for SDK to be ready
-        setTimeout(initGoogle, 100);
-      };
-      script.onerror = () => {
-        console.error('❌ Failed to load Google Sign-In script');
-        toast.error('Failed to load Google Sign-In. Please check your internet connection.');
-      };
-      document.head.appendChild(script);
     } else {
-      // Script tag exists but SDK not ready - wait
-      const checkInterval = setInterval(() => {
-        if (window.google?.accounts?.id) {
-          clearInterval(checkInterval);
-          initGoogle();
-        }
-      }, 100);
+      // Wait for script to load
+      const existingScript = document.getElementById('google-signin-script');
 
-      // Timeout after 5 seconds
-      setTimeout(() => clearInterval(checkInterval), 5000);
+      if (existingScript) {
+        // Script tag exists, wait for SDK
+        const checkInterval = setInterval(() => {
+          if (window.google?.accounts?.id) {
+            clearInterval(checkInterval);
+            initGoogle();
+          }
+        }, 100);
+
+        // ✅ Cleanup on timeout
+        const timeout = setTimeout(() => {
+          clearInterval(checkInterval);
+          if (mounted) {
+            console.error('❌ Google SDK load timeout');
+            toast.error('Failed to load Google Sign-In');
+          }
+        }, 10_000);
+
+        return () => {
+          mounted = false;
+          clearInterval(checkInterval);
+          clearTimeout(timeout);
+        };
+      } else {
+        // No script tag - add one
+        const script = document.createElement('script');
+        script.id     = 'google-signin-script';
+        script.src    = 'https://accounts.google.com/gsi/client';
+        script.async  = true;
+        script.defer  = true;
+
+        script.onload = () => {
+          if (mounted) setTimeout(initGoogle, 100);
+        };
+
+        script.onerror = () => {
+          if (mounted) {
+            console.error('❌ Failed to load Google Sign-In');
+            toast.error('Failed to load Google Sign-In');
+          }
+        };
+
+        document.head.appendChild(script);
+      }
     }
+
+    return () => {
+      mounted = false;
+    };
   }, [handleGoogleCallback, mode]);
 
   // ─── Not Configured State ───

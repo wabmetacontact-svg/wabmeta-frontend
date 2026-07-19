@@ -41,6 +41,12 @@ export interface AuthContextType {
     refreshSession: () => Promise<boolean>;
 }
 
+/**
+ * ⚠️ IMPORTANT: Context value must be memoized in Provider to prevent
+ * unnecessary re-renders in all consumer components.
+ * 
+ * See AuthProvider.tsx - useMemo wrapping the value object.
+ */
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const useAuth = (): AuthContextType => {
