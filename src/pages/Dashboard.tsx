@@ -2,38 +2,33 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import {
-  Users,
   MessageSquare,
   Send,
   CheckCircle,
   XCircle,
-  TrendingUp,
-  TrendingDown,
   Zap,
   RefreshCw,
   ArrowUpRight,
   Mail,
   FileText,
   BarChart3,
-  ChevronDown,
   Bot,
   Workflow,
-  PlusCircle,
   Radio,
   UserPlus,
-  BrainCircuit,
   Sparkles,
   Inbox,
   Phone,
   Instagram,
   Target,
 } from 'lucide-react';
-import api, { dashboard } from '../services/api';
+import { dashboard } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useSocket } from '../context/SocketContext';
 import toast from 'react-hot-toast';
 import { Link, useNavigate } from 'react-router-dom';
 import { FaWhatsapp } from "react-icons/fa";
+import SocialFollowCard from '../components/dashboard/SocialFollowCard';
 
 // ============================================
 // HELPERS
@@ -265,7 +260,6 @@ const Dashboard: React.FC = () => {
               </button>
             ))}
           </div>
-
           <button
             onClick={handleRefresh}
             disabled={refreshing}
@@ -275,6 +269,8 @@ const Dashboard: React.FC = () => {
           </button>
         </div>
       </div>
+
+      <SocialFollowCard />
 
       {/* ✅ NEW USER ONBOARDING CARD */}
       {!loadingStats && !hasAnyData && (
