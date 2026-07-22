@@ -1,4 +1,4 @@
-// src/pages/Inbox.tsx - ENTERPRISE FIXED VERSION
+// src/pages/Inbox.tsx - WORLD-CLASS CHAT UI
 import React, {
   useState,
   useEffect,
@@ -81,20 +81,46 @@ const loadQuickReplies = (): QuickReply[] => {
   try {
     const data = localStorage.getItem(QR_STORAGE_KEY);
     if (data) return JSON.parse(data);
-  } catch { }
+  } catch {}
+  // Default quick replies
   return [
-    { id: 'qr-1', shortcut: 'welcome', text: 'Hello! 👋 Thanks for reaching out. How can I help you today?', category: 'Greetings' },
-    { id: 'qr-2', shortcut: 'thanks', text: 'Thank you for your message. We appreciate your patience!', category: 'Greetings' },
-    { id: 'qr-3', shortcut: 'hours', text: 'Our business hours are Monday to Friday, 9 AM to 6 PM IST.', category: 'Info' },
-    { id: 'qr-4', shortcut: 'pricing', text: 'You can find our pricing details on our website. Would you like me to send you the link?', category: 'Sales' },
-    { id: 'qr-5', shortcut: 'bye', text: 'Thank you for chatting with us! Have a great day! 🙌', category: 'Greetings' },
+    {
+      id: 'qr-1',
+      shortcut: 'welcome',
+      text: 'Hello! 👋 Thanks for reaching out. How can I help you today?',
+      category: 'Greetings',
+    },
+    {
+      id: 'qr-2',
+      shortcut: 'thanks',
+      text: 'Thank you for your message. We appreciate your patience!',
+      category: 'Greetings',
+    },
+    {
+      id: 'qr-3',
+      shortcut: 'hours',
+      text: 'Our business hours are Monday to Friday, 9 AM to 6 PM IST.',
+      category: 'Info',
+    },
+    {
+      id: 'qr-4',
+      shortcut: 'pricing',
+      text: 'You can find our pricing details on our website. Would you like me to send you the link?',
+      category: 'Sales',
+    },
+    {
+      id: 'qr-5',
+      shortcut: 'bye',
+      text: 'Thank you for chatting with us! Have a great day! 🙌',
+      category: 'Greetings',
+    },
   ];
 };
 
 const saveQuickReplies = (qrs: QuickReply[]) => {
   try {
     localStorage.setItem(QR_STORAGE_KEY, JSON.stringify(qrs));
-  } catch { }
+  } catch {}
 };
 
 // ============================================
@@ -106,14 +132,14 @@ const loadNotes = (convId: string): Note[] => {
   try {
     const data = localStorage.getItem(NOTES_KEY(convId));
     if (data) return JSON.parse(data);
-  } catch { }
+  } catch {}
   return [];
 };
 
 const saveNotes = (convId: string, notes: Note[]) => {
   try {
     localStorage.setItem(NOTES_KEY(convId), JSON.stringify(notes));
-  } catch { }
+  } catch {}
 };
 
 // ============================================
@@ -132,9 +158,6 @@ const Inbox: React.FC = () => {
   const lastFetchedConvId = useRef<string | null>(null);
   const sentMessageIds = useRef<Set<string>>(new Set());
   const tempToRealIdMap = useRef<Map<string, string>>(new Map());
-  const messagesRef = useRef<Message[]>([]); // FIX Bug#5: stale closure fix
-  const filterRef = useRef<FilterTab>('all');
-  const fetchConversationsInitialized = useRef(false); // FIX Bug#4: double fetch
 
   // ============================================
   // STATE
@@ -149,7 +172,7 @@ const Inbox: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filter, setFilter] = useState<FilterTab>('all');
   const [whatsappAccountId, setWhatsappAccountId] = useState<string | null>(null);
-  const [labels, setLabels] = useState<{ label: string; count: number; color?: string }[]>([]);
+  const [labels, setLabels] = useState<{label: string, count: number, color?: string}[]>([]);
 
   // UI State
   const [showContactInfo, setShowContactInfo] = useState(false);
@@ -160,7 +183,7 @@ const Inbox: React.FC = () => {
   const [showQuickReplies, setShowQuickReplies] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
-  // Reply
+  // Reply / forward
   const [replyTo, setReplyTo] = useState<Message | null>(null);
 
   // Message search
@@ -174,15 +197,13 @@ const Inbox: React.FC = () => {
   // Notes (per conversation)
   const [notes, setNotes] = useState<Note[]>([]);
 
-  // Typing indicator
+  // Typing indicator (for current conversation)
   const [isContactTyping, setIsContactTyping] = useState(false);
 
   // ============================================
-  // SYNC REFS - FIX Bug#5: messages ref update
+  // SYNC REFS
   // ============================================
-  useEffect(() => {
-    messagesRef.current = messages;
-  }, [messages]);
+  const filterRef = useRef<FilterTab>(filter);
 
   useEffect(() => {
     filterRef.current = filter;
@@ -229,7 +250,7 @@ const Inbox: React.FC = () => {
   // ============================================
   // FETCH LABELS
   // ============================================
-  const fetchLabels = useCallback(async () => {
+  const fetchLabels = async () => {
     try {
       const res = await inboxApi.getLabels();
       if (res.data.success) {
@@ -238,13 +259,13 @@ const Inbox: React.FC = () => {
     } catch (e) {
       console.error('Failed to fetch labels:', e);
     }
-  }, []);
+  };
 
   useEffect(() => {
     fetchLabels();
-  }, [fetchLabels]);
+  }, []);
 
-  const handleCreateCustomLabel = useCallback(async (label: string, color?: string) => {
+  const handleCreateCustomLabel = async (label: string, color?: string) => {
     try {
       await inboxApi.createCustomLabel(label, color);
       fetchLabels();
@@ -252,11 +273,10 @@ const Inbox: React.FC = () => {
       console.error('Failed to create custom label:', e);
       toast.error('Failed to create label');
     }
-  }, [fetchLabels]);
+  };
 
   // ============================================
   // FETCH CONVERSATIONS
-  // FIX Bug#4: Single source of truth, no double fetch
   // ============================================
   const fetchConversations = useCallback(
     async (silent = false) => {
@@ -266,21 +286,17 @@ const Inbox: React.FC = () => {
           setError(null);
         }
 
-        const currentFilter = filterRef.current;
         const params: any = { limit: 200 };
-
-        // Get search from state via closure - safe because fetchConversations
-        // is called with current searchQuery
         if (searchQuery?.trim()) params.search = searchQuery.trim();
 
-        if (currentFilter === 'unread') {
+        if (filter === 'unread') {
           params.isRead = false;
           params.isArchived = false;
-        } else if (currentFilter === 'archived') {
+        } else if (filter === 'archived') {
           params.isArchived = true;
-        } else if (currentFilter !== 'all') {
+        } else if (filter !== 'all') {
           params.isArchived = false;
-          params.labels = currentFilter;
+          params.labels = filter;
         } else {
           params.isArchived = false;
         }
@@ -308,41 +324,16 @@ const Inbox: React.FC = () => {
         setRefreshing(false);
       }
     },
-    [searchQuery] // FIX: removed 'filter' - use filterRef.current inside
+    [searchQuery, filter]
   );
 
   // ============================================
-  // FIX Bug#4: Single mount effect, no double fetch
-  // ============================================
-  useEffect(() => {
-    if (!fetchConversationsInitialized.current) {
-      fetchConversationsInitialized.current = true;
-      fetchConversations();
-    }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Filter change - re-fetch (not on mount since already fetched above)
-  useEffect(() => {
-    if (!fetchConversationsInitialized.current) return;
-    fetchConversations();
-  }, [filter]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Search debounce
-  useEffect(() => {
-    if (!fetchConversationsInitialized.current) return;
-    const t = setTimeout(() => fetchConversations(), 400);
-    return () => clearTimeout(t);
-  }, [searchQuery]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // ============================================
   // FETCH MESSAGES
-  // FIX Bug#2: No messages.length dependency
   // ============================================
   const fetchMessages = useCallback(
     async (convId: string, force = false) => {
       if (fetchingMessagesRef.current && !force) return;
-      // FIX: Use ref instead of state to check
-      if (lastFetchedConvId.current === convId && !force) return;
+      if (lastFetchedConvId.current === convId && messages.length > 0 && !force) return;
 
       try {
         fetchingMessagesRef.current = true;
@@ -373,7 +364,7 @@ const Inbox: React.FC = () => {
           lastFetchedConvId.current = convId;
 
           // Mark as read
-          inboxApi.markAsRead(convId).catch(() => { });
+          inboxApi.markAsRead(convId).catch(() => {});
           setConversations((prev) =>
             prev.map((c) =>
               c.id === convId ? { ...c, unreadCount: 0, isRead: true } : c
@@ -389,12 +380,11 @@ const Inbox: React.FC = () => {
         fetchingMessagesRef.current = false;
       }
     },
-    [] // FIX Bug#2: Empty deps - no messages.length
+    [messages.length]
   );
 
   // ============================================
   // SELECT CONVERSATION
-  // FIX Bug#3: fetchMessages stable now
   // ============================================
   const selectConversation = useCallback(
     (conv: Conversation) => {
@@ -424,23 +414,7 @@ const Inbox: React.FC = () => {
   );
 
   // ============================================
-  // URL SYNC
-  // FIX Bug#8: Stable fetchMessages, no re-trigger on message updates
-  // ============================================
-  useEffect(() => {
-    if (!urlConvId || conversations.length === 0) return;
-    if (selectedConvRef.current?.id === urlConvId) return;
-
-    const conv = conversations.find((c) => c.id === urlConvId);
-    if (conv) {
-      setSelectedConversation(conv);
-      fetchMessages(urlConvId);
-    }
-  }, [urlConvId, conversations]); // FIX: removed fetchMessages dep
-
-  // ============================================
   // SEND TEXT MESSAGE
-  // FIX Bug#5: Use messagesRef instead of messages state
   // ============================================
   const handleSendMessage = useCallback(
     async (text: string, options?: { replyToId?: string }) => {
@@ -450,10 +424,10 @@ const Inbox: React.FC = () => {
       const tempId = `temp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
       const now = new Date().toISOString();
 
-      // FIX Bug#5: Use ref for current messages - no stale closure
+      // Build reply info if replying
       let replyToData: Message['replyTo'] | undefined;
       if (options?.replyToId) {
-        const repliedMsg = messagesRef.current.find((m) => m.id === options.replyToId);
+        const repliedMsg = messages.find((m) => m.id === options.replyToId);
         if (repliedMsg) {
           replyToData = {
             id: repliedMsg.id,
@@ -519,12 +493,12 @@ const Inbox: React.FC = () => {
               prev.map((c) =>
                 c.id === conv.id
                   ? {
-                    ...c,
-                    lastMessagePreview: text.substring(0, 60),
-                    lastMessageAt: now,
-                    lastMessageDirection: 'OUTBOUND',
-                    lastMessageStatus: 'SENT',
-                  }
+                      ...c,
+                      lastMessagePreview: text.substring(0, 60),
+                      lastMessageAt: now,
+                      lastMessageDirection: 'OUTBOUND',
+                      lastMessageStatus: 'SENT',
+                    }
                   : c
               )
             )
@@ -546,20 +520,15 @@ const Inbox: React.FC = () => {
         sentMessageIds.current.delete(tempId);
       }
     },
-    [whatsappAccountId] // FIX Bug#5: removed 'messages' dep
+    [whatsappAccountId, messages]
   );
 
   // ============================================
   // SEND MEDIA
-  // FIX Bug#14: Added whatsappAccountId check
   // ============================================
   const handleUploadAndSendMedia = useCallback(
     async (file: File) => {
       if (!selectedConvRef.current) return;
-      if (!whatsappAccountId) {
-        toast.error('No WhatsApp account connected');
-        return;
-      }
 
       const conv = selectedConvRef.current;
       const tempId = `temp-media-${Date.now()}`;
@@ -568,10 +537,10 @@ const Inbox: React.FC = () => {
       const tempType: Message['type'] = mime.startsWith('image/')
         ? 'IMAGE'
         : mime.startsWith('video/')
-          ? 'VIDEO'
-          : mime.startsWith('audio/')
-            ? 'AUDIO'
-            : 'DOCUMENT';
+        ? 'VIDEO'
+        : mime.startsWith('audio/')
+        ? 'AUDIO'
+        : 'DOCUMENT';
 
       const tempMsg: Message = {
         id: tempId,
@@ -641,54 +610,71 @@ const Inbox: React.FC = () => {
         sentMessageIds.current.delete(tempId);
       }
     },
-    [whatsappAccountId] // FIX Bug#14: added dep
+    []
   );
 
   // ============================================
-  // SEND VOICE
+  // SEND VOICE MESSAGE
   // ============================================
   const handleSendVoice = useCallback(
     async (blob: Blob, duration: number) => {
       if (!selectedConvRef.current) return;
-
-      let extension = 'ogg';
+      
+      // ✅ Determine correct file extension from blob type
+      let extension = 'ogg'; // default
       const mimeType = blob.type;
+      
       if (mimeType.includes('ogg')) extension = 'ogg';
       else if (mimeType.includes('mp4')) extension = 'm4a';
       else if (mimeType.includes('mpeg')) extension = 'mp3';
       else if (mimeType.includes('webm')) extension = 'webm';
-
+      
       const fileName = `voice-${Date.now()}.${extension}`;
-      const file = new File([blob], fileName, { type: blob.type });
-
+      
+      // ✅ Create file with correct extension AND audio mime type
+      const file = new File([blob], fileName, { 
+        type: blob.type 
+      });
+      
+      console.log('🎤 Sending voice:', { 
+        fileName, 
+        mimeType: blob.type, 
+        size: blob.size,
+        duration 
+      });
+      
       await handleUploadAndSendMedia(file);
     },
     [handleUploadAndSendMedia]
   );
 
   // ============================================
-  // TYPING INDICATOR
-  // FIX Bug#10: Single unified timer
+  // TYPING INDICATOR (AGENT)
   // ============================================
   const typingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const handleTyping = useCallback(async (isTyping: boolean) => {
-    if (!isTyping || !selectedConvRef.current) return;
-    if (typingTimerRef.current) return; // 10s cooldown - already sent
-
-    try {
-      await api.post(`/inbox/conversations/${selectedConvRef.current.id}/typing`);
-    } catch (err) {
-      // Silent fail - typing indicator not critical
-    }
-
-    typingTimerRef.current = setTimeout(() => {
-      typingTimerRef.current = null;
-    }, 10000);
-  }, []);
+  const handleTyping = useCallback(
+    async (isTyping: boolean) => {
+      if (!isTyping || !selectedConvRef.current) return;
+      
+      // Prevent spamming the API, only send once every 10 seconds
+      if (typingTimerRef.current) return;
+      
+      try {
+        await api.post(`/inbox/conversations/${selectedConvRef.current.id}/typing`);
+      } catch (err) {
+        console.error('Failed to send typing indicator', err);
+      }
+      
+      typingTimerRef.current = setTimeout(() => {
+        typingTimerRef.current = null;
+      }, 10000); // 10s cooldown
+    },
+    []
+  );
 
   // ============================================
-  // PIN / ARCHIVE
+  // PIN / ARCHIVE / LABELS
   // ============================================
   const handlePinConversation = useCallback(
     async (conv: Conversation, e: React.MouseEvent) => {
@@ -739,22 +725,13 @@ const Inbox: React.FC = () => {
     [fetchConversations, navigate]
   );
 
-  // FIX Bug#15: handleClearChat - honest message
   const handleClearChat = useCallback(async (_conv: Conversation) => {
-    if (
-      window.confirm(
-        'Clear chat view? Messages will reload if you refresh. This does not permanently delete messages.'
-      )
-    ) {
+    if (window.confirm('Are you sure you want to clear this chat? This will only remove messages locally.')) {
       setMessages([]);
-      lastFetchedConvId.current = null; // Allow re-fetch
-      toast.success('Chat view cleared');
+      toast.success('Chat cleared locally');
     }
   }, []);
 
-  // ============================================
-  // SELECTION / BULK
-  // ============================================
   const handleToggleSelection = useCallback((id: string) => {
     setSelectedConversationIds((prev) =>
       prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
@@ -769,30 +746,27 @@ const Inbox: React.FC = () => {
     setSelectedConversationIds([]);
   }, []);
 
-  const handleBulkArchive = useCallback(
-    async (isArchived: boolean) => {
-      if (selectedConversationIds.length === 0) return;
-      try {
-        await inboxApi.bulkUpdate({ conversationIds: selectedConversationIds, isArchived });
-        setConversations((prev) =>
-          prev.map((c) =>
-            selectedConversationIds.includes(c.id) ? { ...c, isArchived } : c
-          )
-        );
-        handleClearSelection();
-        toast.success(`Conversations ${isArchived ? 'archived' : 'unarchived'}`);
-      } catch {
-        toast.error('Failed to update conversations');
-      }
-    },
-    [selectedConversationIds, handleClearSelection]
-  );
+  const handleBulkArchive = useCallback(async (isArchived: boolean) => {
+    if (selectedConversationIds.length === 0) return;
+    try {
+      await inboxApi.bulkUpdate({ conversationIds: selectedConversationIds, isArchived });
+      setConversations((prev) =>
+        prev.map((c) =>
+          selectedConversationIds.includes(c.id) ? { ...c, isArchived } : c
+        )
+      );
+      handleClearSelection();
+      toast.success(`Conversations ${isArchived ? 'archived' : 'unarchived'}`);
+    } catch (err) {
+      toast.error('Failed to update conversations');
+    }
+  }, [selectedConversationIds, handleClearSelection]);
 
   const handleBulkDelete = useCallback(async () => {
     if (selectedConversationIds.length === 0) return;
     if (
       window.confirm(
-        `Delete ${selectedConversationIds.length} conversation(s)? This cannot be undone.`
+        `Are you sure you want to delete ${selectedConversationIds.length} conversation(s)? This action cannot be undone.`
       )
     ) {
       try {
@@ -800,49 +774,39 @@ const Inbox: React.FC = () => {
         setConversations((prev) =>
           prev.filter((c) => !selectedConversationIds.includes(c.id))
         );
-        if (
-          selectedConversation?.id &&
-          selectedConversationIds.includes(selectedConversation.id)
-        ) {
+        if (selectedConversation?.id && selectedConversationIds.includes(selectedConversation.id)) {
           setSelectedConversation(null);
           setMessages([]);
-          navigate('/dashboard/inbox');
         }
         handleClearSelection();
         toast.success('Conversations deleted');
-      } catch {
+      } catch (err) {
         toast.error('Failed to delete conversations');
       }
     }
-  }, [selectedConversationIds, handleClearSelection, selectedConversation, navigate]);
+  }, [selectedConversationIds, handleClearSelection, selectedConversation]);
 
-  // ============================================
-  // LABELS
-  // FIX Bug#7: Preserve existing labels when adding
-  // ============================================
-  const handleAddLabel = useCallback(
-    async (conv: Conversation, label: string) => {
-      try {
-        await inboxApi.addLabels(conv.id, [label]);
-        // FIX Bug#7: Don't replace all labels, append/dedupe
-        const updatedLabels = [...new Set([...(conv.labels || []), label])];
-        setConversations((prev) =>
-          prev.map((c) =>
-            c.id === conv.id ? { ...c, labels: updatedLabels } : c
-          )
+  const handleAddLabel = useCallback(async (conv: Conversation, label: string) => {
+    try {
+      await inboxApi.addLabels(conv.id, [label]);
+      setConversations((prev) =>
+        prev.map((c) =>
+          c.id === conv.id
+            ? { ...c, labels: [label] }
+            : c
+        )
+      );
+      if (selectedConversation?.id === conv.id) {
+        setSelectedConversation((prev) =>
+          prev ? { ...prev, labels: [label] } : prev
         );
-        if (selectedConversation?.id === conv.id) {
-          setSelectedConversation((prev) =>
-            prev ? { ...prev, labels: updatedLabels } : prev
-          );
-        }
-        fetchLabels();
-      } catch {
-        toast.error('Failed to add label');
       }
-    },
-    [selectedConversation?.id, fetchLabels]
-  );
+      fetchLabels(); // refresh counts
+    } catch (err) {
+      console.error('Add label failed:', err);
+      toast.error('Failed to add label');
+    }
+  }, []);
 
   const handleRemoveLabel = useCallback(
     async (conv: Conversation, label: string, e?: React.MouseEvent) => {
@@ -858,75 +822,87 @@ const Inbox: React.FC = () => {
             prev ? { ...prev, labels: updatedLabels } : prev
           );
         }
-        fetchLabels();
+        fetchLabels(); // refresh counts
       } catch {
         toast.error('Failed to remove label');
       }
     },
-    [fetchLabels]
+    []
   );
 
   // ============================================
-  // MESSAGE ACTIONS
+  // MESSAGE ACTIONS (Reply, Forward, Star, React)
   // ============================================
   const handleReplyMessage = useCallback((msg: Message) => {
     setReplyTo(msg);
   }, []);
 
   const handleForwardMessage = useCallback((msg: Message) => {
+    // TODO: Open forward modal with conversation picker
     toast('Forward feature coming soon!', { icon: '🚧' });
+    console.log('Forward:', msg);
   }, []);
 
-  const handleStarMessage = useCallback(async (msg: Message) => {
-    if (!selectedConvRef.current) return;
-    const newStarred = !msg.isStarred;
-    setMessages((prev) =>
-      prev.map((m) => (m.id === msg.id ? { ...m, isStarred: newStarred } : m))
-    );
-    try {
-      await api.patch(
-        `/inbox/conversations/${selectedConvRef.current.id}/messages/${msg.id}/star`,
-        { starred: newStarred }
-      );
-      toast.success(newStarred ? '⭐ Starred' : 'Unstarred');
-    } catch {
+  const handleStarMessage = useCallback(
+    async (msg: Message) => {
+      if (!selectedConvRef.current) return;
+      const newStarred = !msg.isStarred;
       setMessages((prev) =>
-        prev.map((m) => (m.id === msg.id ? { ...m, isStarred: msg.isStarred } : m))
+        prev.map((m) => (m.id === msg.id ? { ...m, isStarred: newStarred } : m))
       );
-    }
-  }, []);
+      try {
+        await api.patch(
+          `/inbox/conversations/${selectedConvRef.current.id}/messages/${msg.id}/star`,
+          { starred: newStarred }
+        );
+        toast.success(newStarred ? '⭐ Starred' : 'Unstarred');
+      } catch {
+        // Revert
+        setMessages((prev) =>
+          prev.map((m) => (m.id === msg.id ? { ...m, isStarred: msg.isStarred } : m))
+        );
+      }
+    },
+    []
+  );
 
-  const handleReactMessage = useCallback(async (msg: Message, emoji: string) => {
-    if (!selectedConvRef.current) return;
+  const handleReactMessage = useCallback(
+    async (msg: Message, emoji: string) => {
+      if (!selectedConvRef.current) return;
 
-    const existingReactions = msg.reactions || [];
-    const userReaction = existingReactions.find((r) => r.userId === 'self');
+      const existingReactions = msg.reactions || [];
+      const userReaction = existingReactions.find((r) => r.userId === 'self');
 
-    let newReactions;
-    if (userReaction?.emoji === emoji) {
-      newReactions = existingReactions.filter((r) => r.userId !== 'self');
-    } else {
-      newReactions = existingReactions.filter((r) => r.userId !== 'self');
-      newReactions.push({ emoji, userId: 'self' });
-    }
+      let newReactions;
+      if (userReaction?.emoji === emoji) {
+        // Toggle off
+        newReactions = existingReactions.filter((r) => r.userId !== 'self');
+      } else {
+        // Replace or add
+        newReactions = existingReactions.filter((r) => r.userId !== 'self');
+        newReactions.push({ emoji, userId: 'self' });
+      }
 
-    setMessages((prev) =>
-      prev.map((m) => (m.id === msg.id ? { ...m, reactions: newReactions } : m))
-    );
-
-    try {
-      await api.post(
-        `/inbox/conversations/${selectedConvRef.current.id}/messages/${msg.id}/react`,
-        { emoji: userReaction?.emoji === emoji ? null : emoji }
-      );
-    } catch {
       setMessages((prev) =>
-        prev.map((m) =>
-          m.id === msg.id ? { ...m, reactions: existingReactions } : m
-        )
+        prev.map((m) => (m.id === msg.id ? { ...m, reactions: newReactions } : m))
       );
-    }
-  }, []);
+
+      try {
+        await api.post(
+          `/inbox/conversations/${selectedConvRef.current.id}/messages/${msg.id}/react`,
+          { emoji: userReaction?.emoji === emoji ? null : emoji }
+        );
+      } catch {
+        // Revert
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === msg.id ? { ...m, reactions: existingReactions } : m
+          )
+        );
+      }
+    },
+    []
+  );
 
   const handleJumpToMessage = useCallback((messageId: string) => {
     const el = document.querySelector(`[data-message-id="${messageId}"]`);
@@ -941,7 +917,6 @@ const Inbox: React.FC = () => {
 
   // ============================================
   // MESSAGE SEARCH
-  // FIX Bug#11: Auto-scroll on search index change
   // ============================================
   const searchResults = useMemo(() => {
     if (!messageSearchQuery.trim()) return [];
@@ -950,17 +925,6 @@ const Inbox: React.FC = () => {
       .filter((m) => m.content?.toLowerCase().includes(q))
       .map((m) => m.id);
   }, [messageSearchQuery, messages]);
-
-  // FIX Bug#11: Scroll to highlighted message when index changes
-  useEffect(() => {
-    if (currentSearchIndex >= 0 && searchResults[currentSearchIndex]) {
-      const msgId = searchResults[currentSearchIndex];
-      const el = document.querySelector(`[data-message-id="${msgId}"]`);
-      if (el) {
-        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
-    }
-  }, [currentSearchIndex, searchResults]);
 
   const handleSearchNext = useCallback(() => {
     if (searchResults.length === 0) return;
@@ -983,7 +947,7 @@ const Inbox: React.FC = () => {
   }, [searchResults.length, currentSearchIndex]);
 
   // ============================================
-  // NOTES
+  // NOTES HANDLERS
   // ============================================
   const handleAddNote = useCallback(async (text: string) => {
     const newNote: Note = {
@@ -1011,7 +975,7 @@ const Inbox: React.FC = () => {
   }, []);
 
   // ============================================
-  // QUICK REPLIES
+  // QUICK REPLIES HANDLERS
   // ============================================
   const handleAddQuickReply = useCallback(async (qr: Omit<QuickReply, 'id'>) => {
     const newQR: QuickReply = { ...qr, id: `qr-${Date.now()}` };
@@ -1034,12 +998,10 @@ const Inbox: React.FC = () => {
     toast.success('Quick reply deleted');
   }, []);
 
-  const handleQuickReplySelect = useCallback(
-    (qr: QuickReply) => {
-      handleSendMessage(qr.text);
-    },
-    [handleSendMessage]
-  );
+  const handleQuickReplySelect = useCallback((qr: QuickReply) => {
+    // Send directly or insert into input
+    handleSendMessage(qr.text);
+  }, [handleSendMessage]);
 
   // ============================================
   // SOCKET HANDLERS
@@ -1048,64 +1010,62 @@ const Inbox: React.FC = () => {
     selectedConversation?.id || null,
 
     // NEW MESSAGE
-    useCallback((newMsg: InboundMessage) => {
-      if (!newMsg) return;
-      const convId = newMsg.conversationId;
-      const msgId = newMsg.id;
-      const waId = newMsg.waMessageId || newMsg.wamId;
-      const direction = newMsg.direction;
+    useCallback(
+      (newMsg: InboundMessage) => {
+        if (!newMsg) return;
+        const convId = newMsg.conversationId;
+        const msgId = newMsg.id;
+        const waId = newMsg.waMessageId || newMsg.wamId;
+        const direction = newMsg.direction;
 
-      if (!convId) return;
+        if (!convId) return;
 
-      const isCurrentConv = selectedConvRef.current?.id === convId;
+        const isCurrentConv = selectedConvRef.current?.id === convId;
 
-      if (isCurrentConv) {
-        setMessages((prev) => {
-          const isDup = prev.some(
-            (m) =>
-              m.id === msgId ||
-              (waId && (m.waMessageId === waId || m.wamId === waId))
-          );
-          if (isDup) return prev;
-          return [
-            ...prev,
-            {
-              ...(newMsg as any),
-              createdAt: newMsg.createdAt || new Date().toISOString(),
-            },
-          ];
+        if (isCurrentConv) {
+          setMessages((prev) => {
+            const isDup = prev.some(
+              (m) =>
+                m.id === msgId || (waId && (m.waMessageId === waId || m.wamId === waId))
+            );
+            if (isDup) return prev;
+            return [
+              ...prev,
+              {
+                ...(newMsg as any),
+                createdAt: newMsg.createdAt || new Date().toISOString(),
+              },
+            ];
+          });
+          
+          if (direction === 'INBOUND') {
+            inboxApi.markAsRead(convId).catch(() => {});
+            setIsContactTyping(false);
+          }
+        }
+
+        // Always update conversation list
+        setConversations((prev) => {
+          const idx = prev.findIndex((c) => c.id === convId);
+          const updated = [...prev];
+
+          if (idx !== -1) {
+            updated[idx] = {
+              ...updated[idx],
+              lastMessagePreview: (newMsg.content || 'New message').substring(0, 60),
+              lastMessageAt: newMsg.createdAt || new Date().toISOString(),
+              lastMessageType: newMsg.type,
+              lastMessageDirection: direction,
+              unreadCount: (isCurrentConv || direction === 'OUTBOUND') ? 0 : (updated[idx].unreadCount || 0) + 1,
+              ...(direction === 'INBOUND' ? { lastCustomerMessageAt: newMsg.createdAt || new Date().toISOString() } : {})
+            };
+          }
+
+          return sortConversations(updated);
         });
-
-        if (direction === 'INBOUND') {
-          inboxApi.markAsRead(convId).catch(() => { });
-          setIsContactTyping(false);
-        }
-      }
-
-      setConversations((prev) => {
-        const idx = prev.findIndex((c) => c.id === convId);
-        const updated = [...prev];
-
-        if (idx !== -1) {
-          updated[idx] = {
-            ...updated[idx],
-            lastMessagePreview: (newMsg.content || 'New message').substring(0, 60),
-            lastMessageAt: newMsg.createdAt || new Date().toISOString(),
-            lastMessageType: newMsg.type,
-            lastMessageDirection: direction,
-            unreadCount:
-              isCurrentConv || direction === 'OUTBOUND'
-                ? 0
-                : (updated[idx].unreadCount || 0) + 1,
-            ...(direction === 'INBOUND'
-              ? { lastCustomerMessageAt: newMsg.createdAt || new Date().toISOString() }
-              : {}),
-          };
-        }
-
-        return sortConversations(updated);
-      });
-    }, []),
+      },
+      []
+    ),
 
     // CONVERSATION UPDATE
     useCallback((updatedConv: ConversationUpdate) => {
@@ -1126,25 +1086,27 @@ const Inbox: React.FC = () => {
 
         const updated = [...prev];
         const isCurrentlyOpen = selectedConvRef.current?.id === updatedConv.id;
-
+        
+        // Remove if it no longer matches the current filter
         if (currentFilter === 'archived' && !updatedConv.isArchived) {
-          return sortConversations(updated.filter((c) => c.id !== updatedConv.id));
+          return sortConversations(updated.filter(c => c.id !== updatedConv.id));
         }
         if (currentFilter !== 'archived' && updatedConv.isArchived) {
-          return sortConversations(updated.filter((c) => c.id !== updatedConv.id));
+          return sortConversations(updated.filter(c => c.id !== updatedConv.id));
         }
 
-        updated[idx] = {
-          ...updated[idx],
+        updated[idx] = { 
+          ...updated[idx], 
           ...updatedConv,
-          ...(isCurrentlyOpen ? { unreadCount: 0, isRead: true } : {}),
+          // Prevent backend webhook from overriding unread count if the chat is actively open
+          ...(isCurrentlyOpen ? { unreadCount: 0, isRead: true } : {})
         };
         return sortConversations(updated);
       });
 
       if (selectedConvRef.current?.id === updatedConv.id) {
         setSelectedConversation((prev) =>
-          prev ? { ...prev, ...updatedConv, unreadCount: 0 } : prev
+          prev ? { ...prev, ...updatedConv, unreadCount: 0, isRead: true } : prev
         );
       }
     }, []),
@@ -1189,14 +1151,16 @@ const Inbox: React.FC = () => {
         })
       );
 
+      // Update conversation's last message status for the sidebar
       if (statusUpdate.conversationId) {
         setConversations((prev) =>
           prev.map((c) => {
-            if (c.id !== statusUpdate.conversationId) return c;
-            const curRank = rank[c.lastMessageStatus || 'PENDING'] ?? 0;
-            const newRank = rank[newStatus || 'PENDING'] ?? 0;
-            if (newRank >= curRank || newStatus === 'FAILED') {
-              return { ...c, lastMessageStatus: newStatus };
+            if (c.id === statusUpdate.conversationId) {
+              const curRank = rank[c.lastMessageStatus || 'PENDING'] ?? 0;
+              const newRank = rank[newStatus || 'PENDING'] ?? 0;
+              if (newRank >= curRank || newStatus === 'FAILED') {
+                return { ...c, lastMessageStatus: newStatus };
+              }
             }
             return c;
           })
@@ -1206,18 +1170,48 @@ const Inbox: React.FC = () => {
   );
 
   // ============================================
+  // EFFECTS
+  // ============================================
+  useEffect(() => {
+    fetchConversations();
+  }, [filter]);
+
+  useEffect(() => {
+    const t = setTimeout(() => fetchConversations(), 400);
+    return () => clearTimeout(t);
+  }, [searchQuery]);
+
+  useEffect(() => {
+    if (!urlConvId || conversations.length === 0) return;
+    if (selectedConvRef.current?.id === urlConvId) return;
+
+    const conv = conversations.find((c) => c.id === urlConvId);
+    if (conv) {
+      setSelectedConversation(conv);
+      if (lastFetchedConvId.current !== urlConvId) {
+        fetchMessages(urlConvId);
+      }
+    }
+  }, [urlConvId, conversations, fetchMessages]);
+
+  // ============================================
   // KEYBOARD SHORTCUTS
   // ============================================
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
+      // Ctrl/Cmd + F = Search messages
       if ((e.metaKey || e.ctrlKey) && e.key === 'f' && selectedConversation) {
         e.preventDefault();
         setShowMessageSearch(true);
       }
+
+      // Ctrl/Cmd + / = Quick replies
       if ((e.metaKey || e.ctrlKey) && e.key === '/') {
         e.preventDefault();
         setShowQuickReplies(true);
       }
+
+      // Esc = Close panels
       if (e.key === 'Escape') {
         if (showMessageSearch) setShowMessageSearch(false);
         else if (replyTo) setReplyTo(null);
@@ -1227,14 +1221,6 @@ const Inbox: React.FC = () => {
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
   }, [selectedConversation, showMessageSearch, replyTo, showContactInfo]);
-
-  // ============================================
-  // MOBILE BACK: FIX Issue#1
-  // ============================================
-  const handleMobileBack = useCallback(() => {
-    setShowMobileChat(false);
-    navigate('/dashboard/inbox');
-  }, [navigate]);
 
   // ============================================
   // LOADING / ERROR STATES
@@ -1273,15 +1259,13 @@ const Inbox: React.FC = () => {
   // ============================================
   return (
     <div className="flex h-full overflow-hidden relative chat-bg">
-      {/* ─── Left: Conversation List ──────────────────────────────────── */}
-      <div
-        className={`
-          flex-shrink-0
-          w-full md:w-[340px] lg:w-[380px]
-          h-full
-          ${showMobileChat ? 'hidden md:block' : 'block'}
-        `}
-      >
+      {/* ─── Left Sidebar: Conversation List ─────────────────────────────── */}
+      <div className={`
+        flex-shrink-0
+        w-full md:w-[340px] lg:w-[380px]
+        h-full
+        ${showMobileChat ? 'hidden md:block' : 'block'}
+      `}>
         <ConversationList
           conversations={conversations}
           selectedId={selectedConversation?.id}
@@ -1289,10 +1273,7 @@ const Inbox: React.FC = () => {
           refreshing={refreshing}
           filter={filter}
           searchQuery={searchQuery}
-          onFilterChange={(f) => {
-            setFilter(f);
-            filterRef.current = f; // Sync ref immediately
-          }}
+          onFilterChange={setFilter}
           onSearchChange={setSearchQuery}
           onRefresh={() => {
             setRefreshing(true);
@@ -1314,20 +1295,19 @@ const Inbox: React.FC = () => {
         />
       </div>
 
-      {/* ─── Center: Chat Window ──────────────────────────────────────── */}
-      <div
-        className={`
-          flex-1 flex flex-col h-full overflow-hidden min-w-0 w-full
-          ${!showMobileChat ? 'hidden md:flex' : 'flex'}
-        `}
-      >
+      {/* ─── Center: Chat Window ─────────────────────────────────────────── */}
+      <div className={`
+        flex-1 flex flex-col h-full overflow-hidden min-w-0 w-full
+        ${!showMobileChat ? 'hidden md:flex' : 'flex'}
+      `}>
         {selectedConversation ? (
           <>
+            {/* Chat Header */}
             <ChatHeader
               conversation={selectedConversation}
               showContactInfo={showContactInfo}
               isMobile={true}
-              onBack={handleMobileBack} // FIX Issue#1
+              onBack={() => setShowMobileChat(false)}
               onToggleContactInfo={() => setShowContactInfo(!showContactInfo)}
               onCall={() => setShowCallScreen(true)}
               onSearchMessages={() => setShowMessageSearch(true)}
@@ -1338,6 +1318,7 @@ const Inbox: React.FC = () => {
               onClearChat={() => handleClearChat(selectedConversation)}
             />
 
+            {/* Message Search Bar */}
             <MessageSearchBar
               isOpen={showMessageSearch}
               query={messageSearchQuery}
@@ -1347,17 +1328,18 @@ const Inbox: React.FC = () => {
               onClose={() => {
                 setShowMessageSearch(false);
                 setMessageSearchQuery('');
-                setCurrentSearchIndex(-1);
               }}
               onNext={handleSearchNext}
               onPrev={handleSearchPrev}
             />
 
+            {/* Window Status */}
             <WindowStatus
               windowExpiresAt={selectedConversation.windowExpiresAt || null}
               isWindowOpen={selectedConversation.isWindowOpen || false}
             />
 
+            {/* Messages Container */}
             <ChatWindow
               messages={messages}
               conversationId={selectedConversation.id}
@@ -1383,12 +1365,14 @@ const Inbox: React.FC = () => {
               onJumpToMessage={handleJumpToMessage}
             />
 
+            {/* Typing indicator */}
             {isContactTyping && (
               <TypingIndicator
                 contactName={getContactName(selectedConversation.contact)}
               />
             )}
 
+            {/* Chat Input */}
             <ChatInput
               onSendMessage={handleSendMessage}
               onSendVoice={handleSendVoice}
@@ -1408,7 +1392,7 @@ const Inbox: React.FC = () => {
         )}
       </div>
 
-      {/* ─── Right: Contact Info ─────────────────────────────────────── */}
+      {/* ─── Right Sidebar: Contact Info ─────────────────────────────────── */}
       {showContactInfo && selectedConversation && (
         <ContactInfoPanel
           conversation={selectedConversation}
@@ -1433,7 +1417,9 @@ const Inbox: React.FC = () => {
         />
       )}
 
-      {/* ─── Modals ──────────────────────────────────────────────────── */}
+      {/* ─── Modals ─────────────────────────────────────────────────────── */}
+
+      {/* Template Modal */}
       {showTemplateModal && selectedConversation && (
         <SendTemplateModal
           isOpen={showTemplateModal}
@@ -1451,6 +1437,7 @@ const Inbox: React.FC = () => {
         />
       )}
 
+      {/* Call Screen */}
       {showCallScreen && selectedConversation && (
         <CallScreen
           contact={selectedConversation.contact}
@@ -1459,6 +1446,7 @@ const Inbox: React.FC = () => {
         />
       )}
 
+      {/* Quick Replies Manager */}
       <QuickRepliesPanel
         isOpen={showQuickReplies}
         quickReplies={quickReplies}
@@ -1469,12 +1457,13 @@ const Inbox: React.FC = () => {
         onDelete={handleDeleteQuickReply}
       />
 
+      {/* Upgrade Modal */}
       <UpgradeModal
         isOpen={showUpgradeModal}
         onClose={() => setShowUpgradeModal(false)}
         feature="10+ Contacts"
         minimumPlan="MONTHLY"
-        message="You have reached your free demo limit. Please upgrade to continue."
+        message="You have reached your free demo limit of chatting with 10 contacts. Please upgrade your plan to continue."
       />
     </div>
   );
@@ -1485,49 +1474,78 @@ const Inbox: React.FC = () => {
 // ============================================
 const EmptyState: React.FC<{ onOpenQuickReplies: () => void }> = ({
   onOpenQuickReplies,
-}) => (
-  <div className="flex-1 flex items-center justify-center chat-bg p-6">
-    <div className="text-center max-w-md">
-      <div className="w-24 h-24 mx-auto mb-6 bg-emerald-50 border border-emerald-200 rounded-3xl flex items-center justify-center shadow-lg shadow-emerald-500/5">
-        <MessageSquare className="w-12 h-12 text-emerald-600" />
-      </div>
-      <h3 className="text-xl font-bold text-gray-900 mb-2">Welcome to your Inbox</h3>
-      <p className="text-sm text-gray-600 mb-6">
-        Select a conversation from the left to start chatting.
-      </p>
-      <div className="grid grid-cols-2 gap-2 mb-6">
-        {[
-          { keys: ['Ctrl', 'F'], label: 'Search messages' },
-          { keys: ['Ctrl', '/'], label: 'Quick replies' },
-          { keys: ['Esc'], label: 'Close panel' },
-          { keys: ['/'], label: 'Insert reply' },
-        ].map((tip, i) => (
-          <div
-            key={i}
-            className="flex items-center gap-2 p-2.5 bg-white border border-gray-200/50 rounded-lg shadow-sm"
-          >
-            <div className="flex items-center gap-0.5">
-              {tip.keys.map((k, ki) => (
-                <React.Fragment key={ki}>
-                  {ki > 0 && <span className="text-gray-400 text-[10px]">+</span>}
-                  <kbd className="px-1.5 py-0.5 bg-gray-100 border border-gray-200 rounded text-[10px] font-mono text-gray-600">
-                    {k}
-                  </kbd>
-                </React.Fragment>
-              ))}
+}) => {
+  return (
+    <div className="flex-1 flex items-center justify-center chat-bg p-6">
+      <div className="text-center max-w-md">
+        <div className="
+          w-24 h-24 mx-auto mb-6
+          bg-emerald-50 border border-emerald-200
+          rounded-3xl flex items-center justify-center
+          shadow-lg shadow-emerald-500/5
+        ">
+          <MessageSquare className="w-12 h-12 text-emerald-600" />
+        </div>
+
+        <h3 className="text-xl font-bold text-gray-900 mb-2">
+          Welcome to your Inbox
+        </h3>
+        <p className="text-sm text-gray-600 mb-6">
+          Select a conversation from the left to start chatting, or use keyboard
+          shortcuts to navigate faster.
+        </p>
+
+        {/* Quick tips */}
+        <div className="grid grid-cols-2 gap-2 mb-6">
+          {[
+            { keys: ['Ctrl', 'F'], label: 'Search messages' },
+            { keys: ['Ctrl', '/'], label: 'Quick replies' },
+            { keys: ['Esc'], label: 'Close panel' },
+            { keys: ['/'], label: 'Insert reply' },
+          ].map((tip, i) => (
+            <div
+              key={i}
+              className="
+                flex items-center gap-2 p-2.5
+                bg-white border border-gray-200/50
+                rounded-lg shadow-sm
+              "
+            >
+              <div className="flex items-center gap-0.5">
+                {tip.keys.map((k, ki) => (
+                  <React.Fragment key={ki}>
+                    {ki > 0 && <span className="text-gray-400 text-[10px]">+</span>}
+                    <kbd className="
+                      px-1.5 py-0.5
+                      bg-gray-100 border border-gray-200
+                      rounded text-[10px] font-mono text-gray-600
+                    ">
+                      {k}
+                    </kbd>
+                  </React.Fragment>
+                ))}
+              </div>
+              <span className="text-[11px] text-gray-500 truncate">{tip.label}</span>
             </div>
-            <span className="text-[11px] text-gray-500 truncate">{tip.label}</span>
-          </div>
-        ))}
+          ))}
+        </div>
+
+        <button
+          onClick={onOpenQuickReplies}
+          className="
+            inline-flex items-center gap-2 px-4 py-2
+            bg-white hover:bg-gray-50
+            border border-gray-200
+            rounded-xl
+            text-sm text-gray-700 hover:text-gray-950
+            transition-all shadow-sm
+          "
+        >
+          Manage Quick Replies
+        </button>
       </div>
-      <button
-        onClick={onOpenQuickReplies}
-        className="inline-flex items-center gap-2 px-4 py-2 bg-white hover:bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-700 hover:text-gray-950 transition-all shadow-sm"
-      >
-        Manage Quick Replies
-      </button>
     </div>
-  </div>
-);
+  );
+};
 
 export default Inbox;
