@@ -1,9 +1,10 @@
-// src/components/inbox/ChatWindow.tsx
+// src/components/inbox/ChatWindow.tsx - ENTERPRISE FIXED
 import React, { useRef, useEffect, useState, useCallback, useMemo } from 'react';
 import { ArrowDown, MessageSquare, Loader2 } from 'lucide-react';
 import MessageBubble, { type Message } from './MessageBubble';
 import { formatDateSeparator } from '../../utils/inboxHelpers';
 import toast from 'react-hot-toast';
+import api from '../../services/api';
 
 interface Props {
   messages: Message[];
@@ -44,6 +45,7 @@ const ChatWindow: React.FC<Props> = ({
   const [newMessageCount, setNewMessageCount] = useState(0);
   const lastMessageCountRef = useRef(messages.length);
   const isInitialLoadRef = useRef(true);
+  const prevConversationIdRef = useRef(conversationId);
 
   // ── Scroll to bottom ────────────────────────────────────────────────────
   const scrollToBottom = useCallback((smooth = true) => {
@@ -54,29 +56,38 @@ const ChatWindow: React.FC<Props> = ({
     setNewMessageCount(0);
   }, []);
 
-  // ── Handle scroll: show/hide scroll-to-bottom button ────────────────────
+  // ── Scroll handler ──────────────────────────────────────────────────────
   const handleScroll = useCallback(() => {
     const el = containerRef.current;
     if (!el) return;
-
     const { scrollTop, scrollHeight, clientHeight } = el;
     const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
     const isNearBottom = distanceFromBottom < 100;
-
     setShowScrollButton(!isNearBottom && scrollHeight > clientHeight + 200);
-
-    if (isNearBottom) {
-      setNewMessageCount(0);
-    }
+    if (isNearBottom) setNewMessageCount(0);
   }, []);
+
+  // ── Reset on conversation change ────────────────────────────────────────
+  useEffect(() => {
+    if (prevConversationIdRef.current !== conversationId) {
+      isInitialLoadRef.current = true;
+      setNewMessageCount(0);
+      setShowScrollButton(false);
+      lastMessageCountRef.current = 0;
+      prevConversationIdRef.current = conversationId;
+    }
+  }, [conversationId]);
 
   // ── Auto-scroll on new messages ─────────────────────────────────────────
   useEffect(() => {
     const newCount = messages.length - lastMessageCountRef.current;
+
     if (newCount > 0) {
       const el = containerRef.current;
-      if (!el) return;
-
+      if (!el) {
+        lastMessageCountRef.current = messages.length;
+        return;
+      }
       const { scrollTop, scrollHeight, clientHeight } = el;
       const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
       const isNearBottom = distanceFromBottom < 200;
@@ -84,14 +95,13 @@ const ChatWindow: React.FC<Props> = ({
       if (isInitialLoadRef.current || isNearBottom) {
         setTimeout(() => scrollToBottom(!isInitialLoadRef.current), 100);
       } else {
-        // User is scrolled up - show counter
         setNewMessageCount((prev) => prev + newCount);
       }
     }
     lastMessageCountRef.current = messages.length;
   }, [messages.length, scrollToBottom]);
 
-  // ── Initial load: instant scroll to bottom ─────────────────────────────
+  // ── Initial load scroll ─────────────────────────────────────────────────
   useEffect(() => {
     if (messages.length > 0 && isInitialLoadRef.current) {
       setTimeout(() => {
@@ -101,12 +111,21 @@ const ChatWindow: React.FC<Props> = ({
     }
   }, [messages.length, scrollToBottom]);
 
-  // ── Reset on conversation change ────────────────────────────────────────
+  // ── FIX Bug#11: Scroll to search result ────────────────────────────────
+  // This is now handled in Inbox.tsx via useEffect on currentSearchIndex
+  // But also handle via data attribute scroll here as fallback
   useEffect(() => {
-    isInitialLoadRef.current = true;
-    setNewMessageCount(0);
-    setShowScrollButton(false);
-  }, [conversationId]);
+    if (currentSearchIndex >= 0 && searchResultIds[currentSearchIndex]) {
+      const msgId = searchResultIds[currentSearchIndex];
+      // Use data-message-id attribute for scroll target
+      const el = containerRef.current?.querySelector(
+        `[data-message-id="${msgId}"]`
+      );
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+  }, [currentSearchIndex, searchResultIds]);
 
   // ── Group messages by date + sender ─────────────────────────────────────
   const groupedMessages = useMemo(() => {
@@ -128,29 +147,27 @@ const ChatWindow: React.FC<Props> = ({
       const dateKey = msgDate.toDateString();
       const msgTime = msgDate.getTime();
 
-      // Date separator
       if (dateKey !== lastDate) {
         groups.push({
           type: 'date',
           date: msg.createdAt || msg.timestamp,
-          key: `date-${dateKey}`,
+          key: `date-${dateKey}-${idx}`,
         });
         lastDate = dateKey;
         lastDirection = null;
         lastSenderTime = 0;
       }
 
-      // Same sender within 2 minutes = grouped
       const isGrouped =
         msg.direction === lastDirection &&
         msgTime - lastSenderTime < 2 * 60 * 1000;
 
-      // Show avatar on LAST message of group (for inbound)
       const nextMsg = messages[idx + 1];
       const isLastInGroup =
         !nextMsg ||
         nextMsg.direction !== msg.direction ||
-        new Date(nextMsg.createdAt || nextMsg.timestamp).getTime() - msgTime >= 2 * 60 * 1000 ||
+        new Date(nextMsg.createdAt || nextMsg.timestamp).getTime() - msgTime >=
+        2 * 60 * 1000 ||
         new Date(nextMsg.createdAt || nextMsg.timestamp).toDateString() !== dateKey;
 
       groups.push({
@@ -173,15 +190,11 @@ const ChatWindow: React.FC<Props> = ({
     navigator.clipboard.writeText(text);
     toast.success('Copied to clipboard', {
       duration: 2000,
-      style: {
-        background: '#fff',
-        color: '#1f2937',
-        border: '1px solid #e5e7eb',
-      },
+      style: { background: '#fff', color: '#1f2937', border: '1px solid #e5e7eb' },
     });
   }, []);
 
-  // ── Loading state ───────────────────────────────────────────────────────
+  // ── Loading ─────────────────────────────────────────────────────────────
   if (loading) {
     return (
       <div className="flex-1 flex items-center justify-center chat-bg">
@@ -198,11 +211,7 @@ const ChatWindow: React.FC<Props> = ({
     return (
       <div className="flex-1 flex items-center justify-center chat-bg">
         <div className="flex flex-col items-center gap-3 text-center px-6">
-          <div className="
-            w-20 h-20 rounded-full
-            bg-emerald-50 border border-emerald-250
-            flex items-center justify-center
-          ">
+          <div className="w-20 h-20 rounded-full bg-emerald-50 border border-emerald-200 flex items-center justify-center">
             <MessageSquare className="w-9 h-9 text-emerald-600" />
           </div>
           <h3 className="text-base font-semibold text-gray-800">No messages yet</h3>
@@ -220,21 +229,13 @@ const ChatWindow: React.FC<Props> = ({
       <div
         ref={containerRef}
         onScroll={handleScroll}
-        className="
-          h-full overflow-y-auto inbox-scroll chat-scroll-container
-          py-3 pb-6
-        "
+        className="h-full overflow-y-auto inbox-scroll chat-scroll-container py-3 pb-6"
       >
         {groupedMessages.map((item) => {
           if (item.type === 'date') {
             return (
               <div key={item.key} className="flex justify-center my-4">
-                <span className="
-                  px-3 py-1
-                  bg-gray-200 border-transparent
-                  text-gray-650 text-[11px] font-medium
-                  rounded-full shadow-sm
-                ">
+                <span className="px-3 py-1 bg-gray-200 border-transparent text-gray-600 text-[11px] font-medium rounded-full shadow-sm">
                   {formatDateSeparator(item.date)}
                 </span>
               </div>
@@ -248,54 +249,41 @@ const ChatWindow: React.FC<Props> = ({
             searchResultIds[currentSearchIndex] === msg.id;
 
           return (
-            <MessageBubble
-              key={item.key}
-              message={msg}
-              conversationId={conversationId}
-              contactName={contactName}
-              showAvatar={item.showAvatar}
-              isGrouped={item.isGrouped}
-              isHighlighted={isHighlighted}
-              searchQuery={searchQuery}
-              onCopy={handleCopy}
-              onReply={onReply}
-              onForward={onForward}
-              onStar={onStar}
-              onReact={onReact}
-              onDeleted={onDeleted}
-              onEdited={onEdited}
-              onJumpToMessage={onJumpToMessage}
-            />
+            // FIX Bug#11: data-message-id attribute for scroll targeting
+            <div key={item.key} data-message-id={msg.id}>
+              <MessageBubble
+                message={msg}
+                conversationId={conversationId}
+                contactName={contactName}
+                showAvatar={item.showAvatar}
+                isGrouped={item.isGrouped}
+                isHighlighted={isHighlighted}
+                searchQuery={searchQuery}
+                onCopy={handleCopy}
+                onReply={onReply}
+                onForward={onForward}
+                onStar={onStar}
+                onReact={onReact}
+                onDeleted={onDeleted}
+                onEdited={onEdited}
+                onJumpToMessage={onJumpToMessage}
+              />
+            </div>
           );
         })}
 
         <div ref={messagesEndRef} />
       </div>
 
-      {/* ── Scroll to bottom button ─────────────────────────────────────── */}
+      {/* Scroll to bottom button */}
       {showScrollButton && (
         <button
           onClick={() => scrollToBottom(true)}
-          className="
-            absolute bottom-6 right-6 z-10
-            w-11 h-11 rounded-full
-            bg-emerald-500 hover:bg-emerald-600
-            text-white shadow-lg shadow-emerald-500/30
-            flex items-center justify-center
-            transition-all hover:scale-110 active:scale-95
-            animate-fade-in
-          "
+          className="absolute bottom-6 right-6 z-10 w-11 h-11 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white shadow-lg shadow-emerald-500/30 flex items-center justify-center transition-all hover:scale-110 active:scale-95 animate-fade-in"
         >
           <ArrowDown className="w-5 h-5" />
           {newMessageCount > 0 && (
-            <span className="
-              absolute -top-1 -right-1
-              min-w-[20px] h-5 px-1.5
-              bg-red-500 text-white
-              text-[10px] font-bold
-              rounded-full flex items-center justify-center
-              ring-2 ring-white
-            ">
+            <span className="absolute -top-1 -right-1 min-w-[20px] h-5 px-1.5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center ring-2 ring-white">
               {newMessageCount > 99 ? '99+' : newMessageCount}
             </span>
           )}
