@@ -668,6 +668,14 @@ const Billing: React.FC = () => {
                 <td className="p-5 text-sm text-center text-gray-600 bg-blue-50/20">Unlimited</td>
               </tr>
               <tr>
+                <td className="p-5 text-sm font-bold text-gray-700">Bulk Paste</td>
+                <td className="p-5 text-center text-red-600">❌</td>
+                <td className="p-5 text-center text-red-600">❌</td>
+                <td className="p-5 text-center text-green-700 font-bold">✅</td>
+                <td className="p-5 text-center text-green-700 font-bold bg-green-50/50">✅</td>
+                <td className="p-5 text-center text-green-700 font-bold bg-blue-50/20">✅</td>
+              </tr>
+              <tr>
                 <td className="p-5 text-sm font-bold text-gray-700">Mobile + API Same Number</td>
                 <td className="p-5 text-center text-red-600">❌</td>
                 <td className="p-5 text-center text-red-600">❌</td>
@@ -953,6 +961,20 @@ const PricingCard: React.FC<PricingCardProps> = ({
               <Check className="w-3 h-3 text-green-700" />
             </div>
             <span className="text-gray-700">Unlimited Campaigns</span>
+          </li>
+          <li className="flex items-center text-sm">
+            {!['FREE_DEMO', 'free-demo', 'free', 'monthly', '899'].some(s => plan.slug?.toLowerCase().includes(s) || plan.type?.toLowerCase().includes(s)) ? (
+              <div className="w-5 h-5 rounded-full bg-green-50 border border-green-200 flex items-center justify-center mr-3 flex-shrink-0">
+                <Check className="w-3 h-3 text-green-700" />
+              </div>
+            ) : (
+              <div className="w-5 h-5 rounded-full bg-gray-100 flex items-center justify-center mr-3 flex-shrink-0">
+                <X className="w-3 h-3 text-gray-400" />
+              </div>
+            )}
+            <span className={!['FREE_DEMO', 'free-demo', 'free', 'monthly', '899'].some(s => plan.slug?.toLowerCase().includes(s) || plan.type?.toLowerCase().includes(s)) ? 'text-gray-700 font-medium' : 'text-gray-400'}>
+              Bulk Paste
+            </span>
           </li>
           <li className="flex items-center text-sm">
             {plan.slug.includes('6') || plan.slug.includes('year') ? (

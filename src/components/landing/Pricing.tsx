@@ -15,6 +15,7 @@ const Pricing = () => {
         { text: '100 messages', active: true },
         { text: 'Basic campaigns', active: true },
         { text: 'Number safety', active: true },
+        { text: 'Bulk paste', active: false },
         { text: 'Automation', active: false },
         { text: 'Webhooks', active: false },
       ],
@@ -32,6 +33,7 @@ const Pricing = () => {
         { text: 'Unlimited messages*', active: true },
         { text: 'Unlimited campaigns', active: true },
         { text: 'Standard safety', active: true },
+        { text: 'Bulk paste', active: false },
         { text: 'Webhooks + Flow Builder', active: true },
         { text: 'Standard support', active: true },
       ],
@@ -49,6 +51,7 @@ const Pricing = () => {
       savings: 'Save 7%',
       features: [
         { text: 'All monthly features', active: true },
+        { text: 'Bulk paste', active: true },
         { text: 'Basic automation', active: true },
         { text: 'Good number safety', active: true },
         { text: 'Standard support', active: true },
@@ -68,6 +71,7 @@ const Pricing = () => {
       savings: 'Save 7%',
       features: [
         { text: 'Advanced automation', active: true },
+        { text: 'Bulk paste', active: true },
         { text: 'Mobile + API same no.', active: true },
         { text: 'Campaign retry', active: true },
         { text: 'High safety (active)', active: true },
@@ -87,6 +91,7 @@ const Pricing = () => {
       savings: 'Save 11%',
       features: [
         { text: 'Full automation suite', active: true },
+        { text: 'Bulk paste', active: true },
         { text: 'Mobile + API same no.', active: true },
         { text: 'Campaign retry', active: true },
         { text: 'Maximum safety', active: true },
