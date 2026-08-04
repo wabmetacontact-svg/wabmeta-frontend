@@ -872,9 +872,63 @@ const UsageCard: React.FC<UsageCardProps> = ({
   );
 };
 
-// ============================================
-// PRICING CARD COMPONENT
-// ============================================
+const getPlanCardFeatures = (plan: Plan): { text: string; active: boolean }[] => {
+  const slug = (plan.slug || plan.id || plan.type || '').toLowerCase();
+
+  if (slug.includes('free')) {
+    return [
+      { text: '100 messages', active: true },
+      { text: 'Basic campaigns', active: true },
+      { text: 'Number safety', active: true },
+      { text: 'Bulk paste', active: false },
+      { text: 'Automation', active: false },
+      { text: 'Webhooks', active: false },
+    ];
+  }
+
+  if (slug.includes('3') || slug.includes('quarter')) {
+    return [
+      { text: 'All monthly features', active: true },
+      { text: 'Bulk paste', active: true },
+      { text: 'Basic automation', active: true },
+      { text: 'Good number safety', active: true },
+      { text: 'Standard support', active: true },
+      { text: 'Campaign retry', active: false },
+    ];
+  }
+
+  if (slug.includes('6') || slug.includes('biannual')) {
+    return [
+      { text: 'Advanced automation', active: true },
+      { text: 'Bulk paste', active: true },
+      { text: 'Mobile + API same no.', active: true },
+      { text: 'Campaign retry', active: true },
+      { text: 'High safety (active)', active: true },
+      { text: 'Priority support', active: true },
+    ];
+  }
+
+  if (slug.includes('year') || slug.includes('annual') || slug.includes('1-year')) {
+    return [
+      { text: 'Full automation suite', active: true },
+      { text: 'Bulk paste', active: true },
+      { text: 'Mobile + API same no.', active: true },
+      { text: 'Campaign retry', active: true },
+      { text: 'Maximum safety', active: true },
+      { text: '2 WhatsApp accounts', active: true },
+    ];
+  }
+
+  // Monthly plan (default)
+  return [
+    { text: 'Unlimited messages*', active: true },
+    { text: 'Unlimited campaigns', active: true },
+    { text: 'Standard safety', active: true },
+    { text: 'Bulk paste', active: false },
+    { text: 'Webhooks + Flow Builder', active: true },
+    { text: 'Standard support', active: true },
+  ];
+};
 
 interface PricingCardProps {
   plan: Plan;
@@ -892,6 +946,7 @@ const PricingCard: React.FC<PricingCardProps> = ({
   disabled,
 }) => {
   const price = billingCycle === 'monthly' ? (plan.monthlyPrice ?? 0) : (plan.yearlyPrice ?? 0);
+  const features = getPlanCardFeatures(plan);
 
   return (
     <div
@@ -939,65 +994,23 @@ const PricingCard: React.FC<PricingCardProps> = ({
 
       {/* Features List */}
       <div className="px-2">
-        <ul className="space-y-5 mb-10">
-          <li className="flex items-center text-sm">
-            <div className="w-5 h-5 rounded-full bg-green-50 border border-green-200 flex items-center justify-center mr-3 flex-shrink-0">
-              <Check className="w-3 h-3 text-green-700" />
-            </div>
-            <span className="text-gray-700">
-              {plan.type === 'FREE_DEMO' || plan.slug === 'free' || plan.slug === 'free-demo' ? '2 Days' : plan.slug.includes('3') ? '3 Months' : plan.slug.includes('6') ? '6 Months' : plan.slug.includes('year') ? '12 Months' : '1 Month'} Validity
-            </span>
-          </li>
-          <li className="flex items-center text-sm">
-            <div className="w-5 h-5 rounded-full bg-green-50 border border-green-200 flex items-center justify-center mr-3 flex-shrink-0">
-              <Check className="w-3 h-3 text-green-700" />
-            </div>
-            <span className="text-gray-700 font-bold">
-              {plan.maxMessagesPerMonth === -1 ? 'Unlimited*' : `${safeFormatNumber(plan.maxMessagesPerMonth)}`} Messages
-            </span>
-          </li>
-          <li className="flex items-center text-sm">
-            <div className="w-5 h-5 rounded-full bg-green-50 border border-green-200 flex items-center justify-center mr-3 flex-shrink-0">
-              <Check className="w-3 h-3 text-green-700" />
-            </div>
-            <span className="text-gray-700">Unlimited Campaigns</span>
-          </li>
-          <li className="flex items-center text-sm">
-            {!['FREE_DEMO', 'free-demo', 'free', 'monthly', '899'].some(s => plan.slug?.toLowerCase().includes(s) || plan.type?.toLowerCase().includes(s)) ? (
-              <div className="w-5 h-5 rounded-full bg-green-50 border border-green-200 flex items-center justify-center mr-3 flex-shrink-0">
-                <Check className="w-3 h-3 text-green-700" />
-              </div>
-            ) : (
-              <div className="w-5 h-5 rounded-full bg-gray-100 flex items-center justify-center mr-3 flex-shrink-0">
-                <X className="w-3 h-3 text-gray-400" />
-              </div>
-            )}
-            <span className={!['FREE_DEMO', 'free-demo', 'free', 'monthly', '899'].some(s => plan.slug?.toLowerCase().includes(s) || plan.type?.toLowerCase().includes(s)) ? 'text-gray-700 font-medium' : 'text-gray-400'}>
-              Bulk Paste
-            </span>
-          </li>
-          <li className="flex items-center text-sm">
-            {plan.slug.includes('6') || plan.slug.includes('year') ? (
-              <div className="w-5 h-5 rounded-full bg-green-500 flex items-center justify-center mr-3 flex-shrink-0 shadow-sm">
-                <Check className="w-3 h-3 text-white" />
-              </div>
-            ) : (
-              <div className="w-5 h-5 rounded-full bg-gray-100 flex items-center justify-center mr-3 flex-shrink-0">
-                <X className="w-3 h-3 text-gray-400" />
-              </div>
-            )}
-            <span className={`${plan.slug.includes('6') || plan.slug.includes('year') ? 'text-green-700 font-black' : 'text-gray-400'} text-xs`}>
-              MOBILE + API ACTIVE
-            </span>
-          </li>
-          <li className="flex items-center text-sm">
-            <div className="w-5 h-5 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center mr-3 flex-shrink-0">
-              <Shield className="w-3 h-3 text-blue-700" />
-            </div>
-            <span className="text-gray-500 text-xs font-medium uppercase tracking-tighter">
-              {plan.type === 'FREE_DEMO' || plan.slug === 'free' || plan.slug === 'free-demo' ? 'Basic' : plan.slug.includes('3') ? 'Good' : plan.slug.includes('6') ? 'High' : plan.slug.includes('year') ? 'Maximum' : 'Standard'} Safety
-            </span>
-          </li>
+        <ul className="space-y-4 mb-10 min-h-[200px]">
+          {features.map((feature, i) => (
+            <li key={i} className="flex items-center text-sm">
+              {feature.active ? (
+                <div className="w-5 h-5 rounded-full bg-green-50 border border-green-200 flex items-center justify-center mr-3 flex-shrink-0">
+                  <Check className="w-3 h-3 text-green-700" />
+                </div>
+              ) : (
+                <div className="w-5 h-5 rounded-full bg-gray-100 flex items-center justify-center mr-3 flex-shrink-0">
+                  <X className="w-3 h-3 text-gray-400" />
+                </div>
+              )}
+              <span className={feature.active ? 'text-gray-700 font-medium' : 'text-gray-400 line-through opacity-60'}>
+                {feature.text}
+              </span>
+            </li>
+          ))}
         </ul>
       </div>
 
