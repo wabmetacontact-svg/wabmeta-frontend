@@ -436,8 +436,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           throw new Error('Organization not assigned');
         }
 
+        // ✅ CRITICAL: Token PEHLE set karo, state baad mein
+        // AppProvider isAuthenticated watch karta hai
+        // Token set hone ke baad hi isAuthenticated true hona chahiye
         setAuthToken(tokens.accessToken, tokens.refreshToken);
         saveToStorage(user, organization || null);
+
+        // ✅ Small delay - ensure localStorage write complete ho
+        await new Promise(r => setTimeout(r, 50));
 
         setState({
           user,
@@ -457,6 +463,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return { success: false, error: message };
     }
   }, [saveToStorage]);
+
 
   const register = useCallback(async (
     data: any

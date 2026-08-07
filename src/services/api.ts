@@ -439,7 +439,12 @@ api.interceptors.response.use(
       url.includes('/auth/verify');
 
     // ─── 401 - Auto refresh flow ──────────────────────────
-    if (status === 401 && originalRequest && !originalRequest._retry) {
+    if (
+      status === 401 && 
+      originalRequest && 
+      !originalRequest._retry &&
+      !originalRequest._retryCount  // ✅ Extra safety
+    ) {
       const isAdminRoute = url.includes('/admin');
 
       // Admin routes - separate handling

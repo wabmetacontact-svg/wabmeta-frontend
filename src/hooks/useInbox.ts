@@ -65,16 +65,36 @@ export function useInbox(organizationId: string, accountId: string): UseInboxRet
   const loadConversations = useCallback(async () => {
     if (!organizationId || !accountId) return;
 
+    // ✅ Token check
+    const token = localStorage.getItem('accessToken') ||
+      localStorage.getItem('token');
+    if (!token) {
+      console.warn('[useInbox] No token available, skipping fetch');
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
 
     try {
-      const response = await api.get(
-        `/inbox/organizations/${organizationId}/accounts/${accountId}/conversations`
-      );
-      setConversations(response.data.data.conversations);
+      // ✅ FIXED URL - ye purana URL galat tha
+      // organizationId/accountId based URL nahi hai
+      const response = await api.get('/inbox/conversations', {
+        params: { limit: 50, page: 1 }
+      });
+      
+      const data = response.data?.data;
+      let convList: Conversation[] = [];
+      
+      if (Array.isArray(data)) convList = data;
+      else if (data?.conversations) convList = data.conversations;
+      
+      setConversations(convList);
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to load conversations');
+      if (err?.response?.status !== 401) {
+        setError(err.response?.data?.message || 'Failed to load conversations');
+      }
+      // ✅ 401 pe silently fail - interceptor handle karega
     } finally {
       setIsLoading(false);
     }

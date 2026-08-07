@@ -1,113 +1,166 @@
-// src/context/AppProvider.tsx
+// src/context/AppProvider.tsx - FIXED
+// ✅ FIX 1: Token validate karo PEHLE API call karne se
+// ✅ FIX 2: 401 pe silently fail karo - logout mat karo
+// ✅ FIX 3: Retry logic with delay
+
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { AppContext } from './AppContext';
 import { useSocket } from './SocketContext';
 import { useAuth } from './AuthContext';
 import { inbox as inboxApi, contacts as contactsApi } from '../services/api';
 
+// ✅ Token valid hai ya nahi check karo
+const isTokenCurrentlyValid = (): boolean => {
+  try {
+    const token =
+      localStorage.getItem('accessToken') ||
+      localStorage.getItem('token') ||
+      localStorage.getItem('wabmeta_token');
+
+    if (!token) return false;
+
+    const parts = token.split('.');
+    if (parts.length !== 3) return false;
+
+    const payload = JSON.parse(atob(parts[1]));
+    if (!payload.exp) return false;
+
+    // ✅ 30 second buffer - agar 30s se kam time bacha hai toh invalid maano
+    return payload.exp * 1000 > Date.now() + 30_000;
+  } catch {
+    return false;
+  }
+};
+
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [unreadCount, setUnreadCount] = useState(0);
   const [totalContacts, setTotalContacts] = useState(0);
-
-  // Track which conversations have unread messages
   const unreadConversations = useRef<Set<string>>(new Set());
+  
+  // ✅ Track fetch state to prevent duplicate calls
+  const isFetchingRef = useRef(false);
+  const fetchAttemptRef = useRef(0);
 
   const { socket } = useSocket();
   const { isAuthenticated } = useAuth();
 
   // ============================================
-  // ✅ Initial unread count fetch (on mount + login)
+  // ✅ FIXED: Initial fetch with token validation
   // ============================================
   useEffect(() => {
     if (!isAuthenticated) {
       setUnreadCount(0);
+      setTotalContacts(0);
       unreadConversations.current.clear();
+      isFetchingRef.current = false;
+      fetchAttemptRef.current = 0;
       return;
     }
 
-    const fetchInitialCounts = async () => {
+    // ✅ Prevent duplicate concurrent fetches
+    if (isFetchingRef.current) return;
+
+    const fetchWithRetry = async (attempt = 1): Promise<void> => {
+      // ✅ CRITICAL: Token valid hai tabhi call karo
+      if (!isTokenCurrentlyValid()) {
+        console.log(`⏳ [AppProvider] Token not ready (attempt ${attempt}), waiting...`);
+        
+        if (attempt <= 5) {
+          // Exponential backoff: 500ms, 1s, 2s, 4s, 8s
+          const delay = Math.min(500 * Math.pow(2, attempt - 1), 8000);
+          await new Promise(r => setTimeout(r, delay));
+          return fetchWithRetry(attempt + 1);
+        }
+        
+        console.warn('[AppProvider] Token never became valid after 5 attempts');
+        return;
+      }
+
+      isFetchingRef.current = true;
+
       try {
-        // Fetch conversations to get initial unread count
-        const convRes = await inboxApi.getConversations({ limit: 200, isArchived: false });
-        if (convRes.data.success) {
+        // ✅ Conversations fetch
+        const convRes = await inboxApi.getConversations({
+          limit: 200,
+          isArchived: false,
+        });
+
+        if (convRes.data?.success) {
           let convs: any[] = [];
           const d = convRes.data.data;
           if (Array.isArray(d)) convs = d;
           else if (d?.conversations) convs = d.conversations;
+          else if (Array.isArray(d?.data)) convs = d.data;
 
-          // ✅ Build unread set + count
           unreadConversations.current.clear();
           let count = 0;
           convs.forEach((c: any) => {
-            if (c.unreadCount > 0 && !c.isArchived) {
+            if ((c.unreadCount || 0) > 0 && !c.isArchived) {
               unreadConversations.current.add(c.id);
               count++;
             }
           });
           setUnreadCount(count);
-          console.log(`📬 Initial unread count: ${count}`);
+          console.log(`📬 [AppProvider] Initial unread: ${count}`);
         }
-      } catch (e) {
-        console.error('Failed to fetch initial unread count:', e);
+      } catch (e: any) {
+        // ✅ 401 pe retry mat karo - interceptor handle karega
+        if (e?.response?.status === 401 || e?.response?.status === 403) {
+          console.warn('[AppProvider] Auth error on conversations fetch - skipping');
+        } else {
+          console.error('[AppProvider] Conversations fetch failed:', e?.message);
+        }
       }
 
       try {
-        // Fetch total contacts from stats API (much faster and more reliable)
+        // ✅ Contacts stats fetch
         const statsRes = await contactsApi.stats();
-        if (statsRes.data.success) {
+        if (statsRes.data?.success) {
           const total = statsRes.data.data?.total || 0;
           setTotalContacts(total);
         }
-      } catch (e) {
-        console.error('Failed to fetch contact count:', e);
+      } catch (e: any) {
+        if (e?.response?.status !== 401 && e?.response?.status !== 403) {
+          console.error('[AppProvider] Contacts stats fetch failed:', e?.message);
+        }
+      } finally {
+        isFetchingRef.current = false;
       }
     };
 
-    fetchInitialCounts();
+    // ✅ Small initial delay - AuthProvider ko token set karne ka time do
+    const timer = setTimeout(() => {
+      fetchWithRetry(1);
+    }, 300);
+
+    return () => {
+      clearTimeout(timer);
+    };
   }, [isAuthenticated]);
 
   // ============================================
-  // ✅ Socket: New message → unread count badhao
+  // ✅ Socket handlers (unchanged - ye sahi tha)
   // ============================================
   useEffect(() => {
-    if (!socket) {
-      console.log('⚠️ AppProvider: No socket yet');
-      return;
-    }
-
-    console.log('✅ AppProvider: Subscribing to message:new');
+    if (!socket) return;
 
     const handleNewMessage = (data: any) => {
       const msg = data?.message || data;
       const convId = msg?.conversationId || data?.conversationId;
       const direction = msg?.direction;
 
-      console.log('📩 AppProvider received message:new:', { convId, direction });
-
-      // Sirf INBOUND messages
       if (direction !== 'INBOUND' || !convId) return;
 
-      // Check: kya user abhi us conversation mein hai?
       const currentPath = window.location.pathname;
       const isViewingThisConv = currentPath.includes(`/inbox/${convId}`);
+      if (isViewingThisConv) return;
 
-      if (isViewingThisConv) {
-        console.log('👁️ User is viewing this conv, skip unread increment');
-        return;
-      }
-
-      // Increment only if not already in set
       if (!unreadConversations.current.has(convId)) {
         unreadConversations.current.add(convId);
-        setUnreadCount(prev => {
-          const next = prev + 1;
-          console.log(`🔢 Unread: ${prev} → ${next}`);
-          return next;
-        });
+        setUnreadCount(prev => prev + 1);
       }
     };
 
-    // ✅ Conversation read hone par decrement
     const handleConversationRead = (data: any) => {
       const convId = data?.conversationId || data?.id;
       if (!convId) return;
@@ -128,7 +181,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, [socket]);
 
   // ============================================
-  // Helper methods
+  // Helpers
   // ============================================
   const incrementUnread = useCallback((conversationId?: string) => {
     if (conversationId) {
