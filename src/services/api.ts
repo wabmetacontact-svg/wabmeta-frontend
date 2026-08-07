@@ -254,7 +254,7 @@ type QueueItem = {
 
 let refreshQueue: QueueItem[] = [];
 
-const REFRESH_DEBOUNCE_MS = 3000; // 3 second debounce
+const REFRESH_DEBOUNCE_MS = 10_000; // 10s debounce (multiple tabs ke liye)
 
 // ─── Process queued requests ────────────────────────────
 const processQueue = (error: any, token: string | null = null): void => {
@@ -272,7 +272,24 @@ const processQueue = (error: any, token: string | null = null): void => {
 export const performTokenRefresh = async (): Promise<string> => {
   const now = Date.now();
 
-  // ✅ FIX 1: Debounce - return recent token if within window
+  // ✅ FIX: Pehle check karo ki current token abhi valid toh nahi
+  const currentToken = localStorage.getItem(TOKEN_KEYS.ACCESS);
+  if (currentToken && isValidJWT(currentToken)) {
+    try {
+      // Token decode karo - agar 30+ seconds bachi hai toh reuse karo
+      const parts = currentToken.split('.');
+      const payload = JSON.parse(atob(parts[1]));
+      const expiresAt = payload.exp * 1000;
+      const timeLeft = expiresAt - now;
+
+      if (timeLeft > 30_000) { // 30 seconds buffer
+        console.log(`✅ [Refresh] Token still valid (${Math.round(timeLeft/1000)}s left)`);
+        return currentToken;
+      }
+    } catch { }
+  }
+
+  // Debounce check
   if (now - lastRefreshTimestamp < REFRESH_DEBOUNCE_MS) {
     const token = localStorage.getItem(TOKEN_KEYS.ACCESS);
     if (token && isValidJWT(token)) {
