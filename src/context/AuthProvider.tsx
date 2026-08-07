@@ -282,16 +282,58 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const verifySession = useCallback(
     async (attempt = 1): Promise<boolean> => {
-      const MAX_ATTEMPTS = 2;
-      const accessToken  = getAccessToken();
+      const MAX_ATTEMPTS = 3; // ✅ 2 → 3
+      const accessToken = getAccessToken();
 
+      // ✅ FIX: Token nahi hai toh pehle refresh karo
       if (!accessToken) {
-        console.log('⚠️ [Verify] No access token');
-        return false;
+        console.log('⚠️ [Verify] No access token, trying refresh...');
+        
+        const refreshToken = localStorage.getItem('refreshToken');
+        if (!refreshToken) {
+          console.log('⚠️ [Verify] No refresh token either');
+          return false;
+        }
+        
+        try {
+          await performTokenRefresh();
+          return await verifySession(attempt + 1);
+        } catch {
+          return false;
+        }
+      }
+
+      // ✅ FIX: Token expire check PEHLE karo - unnecessary 401 avoid karo
+      try {
+        const parts = accessToken.split('.');
+        if (parts.length === 3) {
+          const payload = JSON.parse(atob(parts[1]));
+          const expiresAt = payload.exp * 1000;
+          const timeLeft = expiresAt - Date.now();
+          
+          // ✅ Agar 60 seconds se kam time bacha hai toh pehle refresh karo
+          if (timeLeft < 60_000) {
+            console.log(`⏳ [Verify] Token expires in ${Math.round(timeLeft/1000)}s, refreshing first...`);
+            try {
+              await performTokenRefresh();
+              // ✅ Fresh token ke saath retry
+              return await verifySession(attempt + 1);
+            } catch (refreshErr) {
+              if (timeLeft <= 0) {
+                // Token already expired aur refresh fail - logout
+                console.error('❌ [Verify] Token expired and refresh failed');
+                return false;
+              }
+              // Refresh fail lekin token abhi valid - continue
+              console.warn('⚠️ [Verify] Refresh failed but token still valid, continuing');
+            }
+          }
+        }
+      } catch {
+        // Token decode fail - continue with verify
       }
 
       try {
-        // Single call - check user
         const userResponse = await auth.me();
 
         if (!userResponse.data?.success || !userResponse.data?.data) {
@@ -301,26 +343,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const user = userResponse.data.data;
         let org: Organization | null = null;
 
-        // Try to fetch org - non-blocking
         try {
           const orgResponse = await api.get('/organizations/current');
           if (orgResponse.data?.success && orgResponse.data?.data) {
             org = orgResponse.data.data;
           }
-        } catch (orgError: any) {
-          console.warn('⚠️ [Verify] Org fetch failed, using saved org');
+        } catch {
           const saved = loadSavedData();
           org = saved.org;
         }
 
         saveToStorage(user, org);
-
         setState({
           user,
-          organization:    org,
+          organization: org,
           isAuthenticated: true,
-          isLoading:       false,
-          error:           null,
+          isLoading: false,
+          error: null,
         });
 
         return true;
@@ -328,31 +367,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       } catch (error: any) {
         const status = error?.response?.status;
 
-        // ✅ Bounded retry - max 2 attempts to avoid infinite loop
         if (status === 401 && attempt < MAX_ATTEMPTS) {
-          console.log(`🔄 [Verify] Token expired, refresh attempt ${attempt}/${MAX_ATTEMPTS}`);
-
+          console.log(`🔄 [Verify] 401 received, refresh attempt ${attempt}/${MAX_ATTEMPTS}`);
           try {
-            // ✅ Uses single-flight refresh from api.ts
             await performTokenRefresh();
+            // ✅ Thoda wait karo token propagate hone ke liye
+            await new Promise(r => setTimeout(r, 100));
             return await verifySession(attempt + 1);
-          } catch (refreshError) {
-            console.error('❌ [Verify] Refresh failed');
+          } catch (refreshError: any) {
+            console.error('❌ [Verify] Refresh failed:', refreshError?.message);
             return false;
           }
         }
 
-        // ✅ Network/5xx errors - keep session
         if (!status || status >= 500) {
           console.warn('⚠️ [Verify] Server error - keeping session');
           const saved = loadSavedData();
           if (saved.user) {
             setState(prev => ({
               ...prev,
-              user:            saved.user,
-              organization:    saved.org,
+              user: saved.user,
+              organization: saved.org,
               isAuthenticated: true,
-              isLoading:       false,
+              isLoading: false,
             }));
             return true;
           }
@@ -361,7 +398,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return false;
       }
     },
-    [getAccessToken, loadSavedData, saveToStorage]
+    [getAccessToken, loadSavedData, saveToStorage, performTokenRefresh]
   );
 
   useEffect(() => {
