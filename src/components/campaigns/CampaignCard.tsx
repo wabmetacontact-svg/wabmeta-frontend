@@ -11,9 +11,10 @@ import {
   AlertTriangle,
   BarChart2,
   Send,
-  Users
+  Users,
+  XCircle,
 } from 'lucide-react';
-import type { Campaign, CampaignStatus } from '../../types/campaign';
+import type { Campaign } from '../../types/campaign';
 
 interface CampaignCardProps {
   campaign: Campaign & { _id?: string };
@@ -46,29 +47,35 @@ const CampaignCard: React.FC<CampaignCardProps> = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const getStatusColor = (status: CampaignStatus) => {
-    switch (status) {
+  const getStatusColor = (status: string) => {
+    const s = status?.toLowerCase();
+    switch (s) {
       case 'running': return 'bg-green-100 text-green-700';
       case 'completed': return 'bg-blue-100 text-blue-700';
       case 'scheduled': return 'bg-purple-100 text-purple-700';
       case 'paused': return 'bg-yellow-100 text-yellow-700';
       case 'failed': return 'bg-red-100 text-red-700';
+      case 'cancelled': return 'bg-gray-100 text-gray-500';
+      case 'draft': return 'bg-gray-100 text-gray-700';
       default: return 'bg-gray-100 text-gray-700';
     }
   };
 
-  const getStatusIcon = (status: CampaignStatus) => {
-    switch (status) {
+  const getStatusIcon = (status: string) => {
+    const s = status?.toLowerCase();
+    switch (s) {
       case 'running': return <Play className="w-3 h-3" />;
       case 'completed': return <CheckCircle2 className="w-3 h-3" />;
       case 'scheduled': return <Clock className="w-3 h-3" />;
       case 'paused': return <Pause className="w-3 h-3" />;
       case 'failed': return <AlertTriangle className="w-3 h-3" />;
+      case 'cancelled': return <XCircle className="w-3 h-3" />;
       default: return null;
     }
   };
 
   const campaignId = campaign._id || campaign.id;
+  const statusLower = campaign.status?.toLowerCase();
 
   return (
     <div className="bg-white rounded-xl border border-gray-200 p-5 hover:shadow-md hover:border-emerald-300 transition-all group relative">
@@ -108,7 +115,7 @@ const CampaignCard: React.FC<CampaignCardProps> = ({
                 <span>View Analytics</span>
               </Link>
               
-              {campaign.status === 'draft' && onStart && (
+              {statusLower === 'draft' && onStart && (
                 <button
                   onClick={() => {
                     onStart(campaignId, campaign.name);
@@ -121,7 +128,7 @@ const CampaignCard: React.FC<CampaignCardProps> = ({
                 </button>
               )}
               
-              {campaign.status === 'running' && onPause && (
+              {statusLower === 'running' && onPause && (
                 <button
                   onClick={() => {
                     onPause(campaignId);
@@ -134,7 +141,7 @@ const CampaignCard: React.FC<CampaignCardProps> = ({
                 </button>
               )}
 
-              {campaign.status === 'paused' && onResume && (
+              {statusLower === 'paused' && onResume && (
                 <button
                   onClick={() => {
                     onResume(campaignId);
@@ -205,7 +212,7 @@ const CampaignCard: React.FC<CampaignCardProps> = ({
         <div className="flex items-center space-x-1">
           <Clock className="w-3 h-3" />
           <span>
-            {campaign.status === 'scheduled' 
+            {statusLower === 'scheduled' 
               ? `Scheduled: ${campaign.scheduledAt}`
               : `Created: ${new Date(campaign.createdAt).toLocaleDateString()}`
             }

@@ -57,6 +57,34 @@ export const useCampaignRealtime = (campaignId: string | null) => {
   // ✅ FIX Bug4: Track count to enforce limit
   const contactCountRef = useRef(0);
 
+  // ✅ ADD: Initial state sync from API
+  useEffect(() => {
+    if (!campaignId) return;
+
+    // Jab bhi campaign join karo, latest state lo
+    import('../services/api').then(({ campaigns: campaignsApi }) => {
+      campaignsApi.getById(campaignId).then((res: any) => {
+        const c = res.data?.data;
+        if (!c) return;
+
+        if (c.status === 'RUNNING') {
+          setIsProcessing(true);
+          setProgress({
+            sent: c.sentCount || 0,
+            failed: c.failedCount || 0,
+            delivered: c.deliveredCount || 0,
+            read: c.readCount || 0,
+            total: c.totalContacts || 0,
+            percentage: c.totalContacts > 0
+              ? Math.round((c.sentCount / c.totalContacts) * 100)
+              : 0,
+            status: 'RUNNING',
+          });
+        }
+      }).catch(() => {});
+    });
+  }, [campaignId]);
+
   // ─── Join/leave campaign room ─────────────────────────────
   // ✅ FIX Bug2: Re-join on socket reconnect (isConnected in deps)
   useEffect(() => {
