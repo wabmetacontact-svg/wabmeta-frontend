@@ -1,6 +1,4 @@
-// src/utils/csvContacts.ts - FIXED
-// ✅ INTERNATIONAL SUPPORT - Indian restriction hatao
-
+// src/utils/csvContacts.ts - FINAL COMPLETE
 import Papa from 'papaparse';
 
 // ============================================
@@ -8,8 +6,8 @@ import Papa from 'papaparse';
 // ============================================
 
 export type ParsedContact = {
-  phone: string;       // E.164: +919876543210
-  countryCode: string; // +91, +1, +44 etc.
+  phone: string;
+  countryCode: string;
   firstName?: string | null;
   lastName?: string | null;
   email?: string | null;
@@ -34,8 +32,7 @@ export type ParseError = {
 };
 
 // ============================================
-// ✅ INTERNATIONAL PHONE NORMALIZE
-// Frontend version of toCanonicalPhone
+// PHONE NORMALIZE
 // ============================================
 
 export const toCanonicalPhone = (input: string): string | null => {
@@ -50,17 +47,14 @@ export const toCanonicalPhone = (input: string): string | null => {
   const digits = cleaned.replace(/\D/g, '');
   if (!digits || digits.length < 7) return null;
 
-  // Has + prefix
   if (cleaned.startsWith('+')) {
     if (digits.length < 7 || digits.length > 15) return null;
 
-    // Indian double-91 fix
     if (digits.startsWith('9191') && digits.length === 14) {
       const nat = digits.slice(4);
       if (/^[6-9]\d{9}$/.test(nat)) return `+91${nat}`;
     }
 
-    // Indian validation
     if (digits.startsWith('91') && digits.length === 12) {
       const nat = digits.slice(2);
       if (!/^[6-9]\d{9}$/.test(nat)) return null;
@@ -69,30 +63,25 @@ export const toCanonicalPhone = (input: string): string | null => {
     return `+${digits}`;
   }
 
-  // Indian 10-digit
   if (digits.length === 10 && /^[6-9]\d{9}$/.test(digits)) {
     return `+91${digits}`;
   }
 
-  // Indian 0-prefix
   if (digits.length === 11 && digits.startsWith('0')) {
     const nat = digits.slice(1);
     if (/^[6-9]\d{9}$/.test(nat)) return `+91${nat}`;
   }
 
-  // Indian 91 prefix
   if (digits.length === 12 && digits.startsWith('91')) {
     const nat = digits.slice(2);
     if (/^[6-9]\d{9}$/.test(nat)) return `+91${nat}`;
   }
 
-  // Indian double-91
   if (digits.length === 14 && digits.startsWith('9191')) {
     const nat = digits.slice(4);
     if (/^[6-9]\d{9}$/.test(nat)) return `+91${nat}`;
   }
 
-  // International (7-15 digits with known format)
   if (digits.length >= 7 && digits.length <= 15) {
     return `+${digits}`;
   }
@@ -100,21 +89,16 @@ export const toCanonicalPhone = (input: string): string | null => {
   return null;
 };
 
-/**
- * ✅ Extract country code from E.164
- */
 export const extractCountryCode = (canonical: string): string => {
   if (!canonical?.startsWith('+')) return '+91';
 
   const digits = canonical.slice(1);
 
-  // 3-digit codes (check first - more specific)
   const cc3 = ['971', '966', '974', '973', '968', '880', '977', '852', '855'];
   for (const cc of cc3) {
     if (digits.startsWith(cc)) return `+${cc}`;
   }
 
-  // 2-digit codes
   const cc2 = [
     '91', '44', '61', '49', '33', '86', '81', '82', '55',
     '52', '39', '34', '31', '46', '47', '45', '41', '43',
@@ -125,19 +109,35 @@ export const extractCountryCode = (canonical: string): string => {
     if (digits.startsWith(cc)) return `+${cc}`;
   }
 
-  return '+1'; // US/Canada fallback
+  return '+1';
 };
 
 // ============================================
-// ✅ UNIVERSAL PHONE VALIDATION
+// ✅ FORMAT PHONE FOR DISPLAY
+// ============================================
+
+export const formatPhoneForDisplay = (phone: string): string => {
+  if (!phone) return '';
+
+  const canonical = toCanonicalPhone(String(phone).trim());
+  if (canonical) return canonical;
+
+  // Fallback
+  const clean = String(phone).replace(/[\s\-\(\)]/g, '');
+  if (/^\d{10}$/.test(clean)) return `+91${clean}`;
+  if (/^91\d{10}$/.test(clean)) return `+${clean}`;
+
+  return phone;
+};
+
+// ============================================
+// VALIDATION
 // ============================================
 
 export const validatePhone = (phone: string): boolean => {
-  const canonical = toCanonicalPhone(phone);
-  return canonical !== null;
+  return toCanonicalPhone(phone) !== null;
 };
 
-// Keep for backward compat
 export const validateIndianPhone = (phone: string): boolean => {
   if (!phone) return false;
   const clean = String(phone).replace(/[\s\-\(\)]/g, '');
@@ -149,8 +149,35 @@ export const validateIndianPhone = (phone: string): boolean => {
 };
 
 export const validateInternationalPhone = (phone: string): boolean => {
+  return toCanonicalPhone(phone) !== null;
+};
+
+export const validatePhoneInput = (
+  phone: string
+): { valid: boolean; message: string; normalized?: string } => {
+  if (!phone?.trim()) {
+    return { valid: false, message: 'Phone number is required' };
+  }
+
   const canonical = toCanonicalPhone(phone);
-  return canonical !== null;
+
+  if (!canonical) {
+    return {
+      valid: false,
+      message: 'Invalid phone number. Include country code (e.g., +91XXXXXXXXXX, +1XXXXXXXXXX)',
+    };
+  }
+
+  return {
+    valid: true,
+    message: 'Valid phone number',
+    normalized: canonical,
+  };
+};
+
+export const validateEmail = (email: string): boolean => {
+  if (!email) return true;
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
 };
 
 // ============================================
@@ -172,34 +199,6 @@ export function normalizePhone(
     countryCode: extractCountryCode(canonical),
   };
 }
-
-// ============================================
-// VALIDATE PHONE INPUT (for AddContactModal)
-// ============================================
-
-export const validatePhoneInput = (
-  phone: string
-): { valid: boolean; message: string; normalized?: string } => {
-  if (!phone?.trim()) {
-    return { valid: false, message: 'Phone number is required' };
-  }
-
-  const canonical = toCanonicalPhone(phone);
-
-  if (!canonical) {
-    return {
-      valid: false,
-      message:
-        'Invalid phone number. Include country code (e.g., +91XXXXXXXXXX, +1XXXXXXXXXX)',
-    };
-  }
-
-  return {
-    valid: true,
-    message: 'Valid phone number',
-    normalized: canonical,
-  };
-};
 
 // ============================================
 // NAME PARSING
@@ -236,16 +235,7 @@ export function parseTags(tagValue: string | undefined): string[] {
 }
 
 // ============================================
-// EMAIL VALIDATION
-// ============================================
-
-export function validateEmail(email: string): boolean {
-  if (!email) return true;
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
-}
-
-// ============================================
-// ✅ CSV PARSING - FIXED
+// CSV PARSING
 // ============================================
 
 export async function parseCsvFile(file: File): Promise<ParseResult> {
@@ -254,7 +244,6 @@ export async function parseCsvFile(file: File): Promise<ParseResult> {
 }
 
 export function parseCsvText(text: string): ParseResult {
-  // Remove BOM
   const cleanText = text.replace(/^\uFEFF/, '');
 
   const result = Papa.parse<any>(cleanText, {
@@ -279,7 +268,6 @@ export function parseCsvText(text: string): ParseResult {
   rows.forEach((row: any, idx: number) => {
     const rowNum = idx + 2;
 
-    // ✅ Case-insensitive key lookup
     const getVal = (keys: string[]): string => {
       for (const key of keys) {
         for (const rk of Object.keys(row)) {
@@ -311,15 +299,12 @@ export function parseCsvText(text: string): ParseResult {
     const emailRaw = getVal(['email', 'mail', 'email_address']);
     const tagRaw = getVal(['tag', 'tags', 'labels', 'label']);
 
-    // ✅ Phone required
     if (!phoneRaw) {
       errors.push({ row: rowNum, phone: '', error: 'Phone number is required' });
       return;
     }
 
-    // ✅ Validate using universal validator
     const canonical = toCanonicalPhone(phoneRaw);
-
     if (!canonical) {
       errors.push({
         row: rowNum,
@@ -329,23 +314,16 @@ export function parseCsvText(text: string): ParseResult {
       return;
     }
 
-    // ✅ Email optional validation
     const emailTrim = emailRaw.trim();
     if (emailTrim && !validateEmail(emailTrim)) {
-      errors.push({
-        row: rowNum,
-        phone: phoneRaw,
-        error: 'Invalid email format',
-      });
+      errors.push({ row: rowNum, phone: phoneRaw, error: 'Invalid email format' });
       return;
     }
 
-    // Parse name
     const { firstName: fn, lastName: ln } = splitName(nameRaw);
     const firstName = fn;
     const lastName = lastNameRaw || ln;
 
-    // Custom fields
     const standardKeys = [
       'name', 'phone', 'mobile', 'number', 'email',
       'tag', 'tags', 'firstname', 'lastname',
@@ -366,8 +344,7 @@ export function parseCsvText(text: string): ParseResult {
       lastName,
       email: emailTrim || null,
       tags: parseTags(tagRaw),
-      customFields:
-        Object.keys(customFields).length > 0 ? customFields : undefined,
+      customFields: Object.keys(customFields).length > 0 ? customFields : undefined,
     });
   });
 
@@ -455,7 +432,7 @@ export function findDuplicates(contacts: ParsedContact[]): {
 }
 
 // ============================================
-// EXPORT
+// CSV EXPORT
 // ============================================
 
 export function contactsToCsv(contacts: ParsedContact[]): string {
@@ -485,23 +462,37 @@ export function downloadContactsCsv(
   URL.revokeObjectURL(url);
 }
 
+// ============================================
+// DEFAULT EXPORT
+// ============================================
+
 export default {
+  // Validation
   validateIndianPhone,
   validateInternationalPhone,
   validatePhone,
   validatePhoneInput,
   validateEmail,
   validatePhoneBatch,
+
+  // Normalization
   normalizePhone,
   toCanonicalPhone,
   extractCountryCode,
+  formatPhoneForDisplay,  // ✅ ADDED
+
+  // Parsing
   parseCsvFile,
   parseCsvText,
   splitName,
   parseTags,
+
+  // Export
   contactsToCsv,
   downloadContactsCsv,
   generateSampleCsv,
   downloadSampleCsv,
+
+  // Utilities
   findDuplicates,
 };
