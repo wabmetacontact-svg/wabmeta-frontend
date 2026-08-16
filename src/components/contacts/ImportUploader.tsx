@@ -214,19 +214,21 @@ const ImportUploader: React.FC<ImportUploaderProps> = ({
 
         {/* Content */}
         <div className="p-6 space-y-6 overflow-y-auto flex-1">
-          {/* Important Notice */}
+          {/* ✅ FIXED - Indian only restriction hatao */}
           <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
             <div className="flex items-start gap-3">
               <Info className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" />
               <div className="space-y-2 text-sm">
                 <p className="font-semibold text-amber-900">
-                  ⚠️ Important Information
+                  📋 Phone Number Format
                 </p>
                 <ul className="text-amber-800 space-y-1 list-disc list-inside">
-                  <li>Only Indian phone numbers (+91) starting with 6-9 are accepted</li>
-                  <li>Supported formats: 9876543210, 919876543210, +919876543210</li>
+                  <li>Include country code in phone column</li>
+                  <li>India: +919876543210 or 9876543210</li>
+                  <li>USA: +14155551234</li>
+                  <li>UAE: +971501234567</li>
+                  <li>UK: +447911123456</li>
                   <li>Duplicate numbers will be skipped automatically</li>
-                  <li>Email is optional</li>
                 </ul>
               </div>
             </div>
