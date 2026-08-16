@@ -1,4 +1,6 @@
-// src/utils/csvContacts.ts - FINAL COMPLETE
+// src/utils/csvContacts.ts - FINAL FIXED
+// ✅ Strict validation - matches backend behavior
+
 import Papa from 'papaparse';
 
 // ============================================
@@ -32,6 +34,50 @@ export type ParseError = {
 };
 
 // ============================================
+// KNOWN COUNTRY CODES
+// ============================================
+
+const KNOWN_COUNTRY_CODES = [
+  // 3-digit
+  '971', '966', '974', '973', '968', '967', '965', '962', '972',
+  '880', '852', '853', '855', '856', '886', '850', '960', '977',
+  '992', '993', '994', '995', '996', '998',
+  '212', '213', '216', '218', '220', '221', '222', '223', '224',
+  '225', '226', '227', '228', '229', '230', '231', '232', '233',
+  '234', '235', '236', '237', '238', '239', '240', '241', '242',
+  '243', '244', '245', '246', '248', '249', '250', '251', '252',
+  '253', '254', '255', '256', '257', '258', '260', '261', '262',
+  '263', '264', '265', '266', '267', '268', '269',
+  '350', '351', '352', '353', '354', '355', '356', '357', '358',
+  '359', '370', '371', '372', '373', '374', '375', '376', '377',
+  '378', '380', '381', '382', '385', '386', '387', '389',
+  '420', '421', '423',
+  '501', '502', '503', '504', '505', '506', '507', '509',
+  '591', '592', '593', '594', '595', '597', '598',
+  '673', '674', '675', '676', '677', '678', '679', '680',
+  '682', '685', '686', '687', '688', '689', '691', '692',
+  // 2-digit
+  '20', '27', '30', '31', '32', '33', '34', '36', '39',
+  '40', '41', '43', '44', '45', '46', '47', '48', '49',
+  '51', '52', '53', '54', '55', '56', '57', '58',
+  '60', '61', '62', '63', '64', '65', '66',
+  '81', '82', '84', '86',
+  '90', '91', '92', '93', '94', '95', '98',
+  // 1-digit
+  '1', '7',
+].sort((a, b) => b.length - a.length);
+
+const hasValidCountryCode = (digits: string): boolean => {
+  for (const cc of KNOWN_COUNTRY_CODES) {
+    if (digits.startsWith(cc)) {
+      const remaining = digits.length - cc.length;
+      if (remaining >= 6 && remaining <= 12) return true;
+    }
+  }
+  return false;
+};
+
+// ============================================
 // PHONE NORMALIZE
 // ============================================
 
@@ -45,75 +91,102 @@ export const toCanonicalPhone = (input: string): string | null => {
   if (!cleaned) return null;
 
   const digits = cleaned.replace(/\D/g, '');
-  if (!digits || digits.length < 7) return null;
+  if (!digits || digits.length < 10) return null;
 
+  // ─── HAS + PREFIX ──────────────────────────────────
   if (cleaned.startsWith('+')) {
-    if (digits.length < 7 || digits.length > 15) return null;
+    if (digits.length < 10 || digits.length > 15) return null;
 
+    // Indian double-91 fix
     if (digits.startsWith('9191') && digits.length === 14) {
       const nat = digits.slice(4);
       if (/^[6-9]\d{9}$/.test(nat)) return `+91${nat}`;
     }
 
+    // Indian validation
     if (digits.startsWith('91') && digits.length === 12) {
       const nat = digits.slice(2);
       if (!/^[6-9]\d{9}$/.test(nat)) return null;
+      return `+${digits}`;
     }
 
-    return `+${digits}`;
+    // International with + - must have known CC
+    if (hasValidCountryCode(digits)) {
+      return `+${digits}`;
+    }
+
+    return null;
   }
 
+  // ─── NO + PREFIX ────────────────────────────────────
+
+  // Indian 10-digit
   if (digits.length === 10 && /^[6-9]\d{9}$/.test(digits)) {
     return `+91${digits}`;
   }
 
+  // Indian 0-prefix (11 digits)
   if (digits.length === 11 && digits.startsWith('0')) {
     const nat = digits.slice(1);
     if (/^[6-9]\d{9}$/.test(nat)) return `+91${nat}`;
+    return null;
   }
 
+  // Indian 91 prefix (12 digits)
   if (digits.length === 12 && digits.startsWith('91')) {
     const nat = digits.slice(2);
     if (/^[6-9]\d{9}$/.test(nat)) return `+91${nat}`;
+    return null;
   }
 
+  // Indian 091 prefix (13 digits)
+  if (digits.length === 13 && digits.startsWith('091')) {
+    const nat = digits.slice(3);
+    if (/^[6-9]\d{9}$/.test(nat)) return `+91${nat}`;
+  }
+
+  // Indian double-91 (14 digits)
   if (digits.length === 14 && digits.startsWith('9191')) {
     const nat = digits.slice(4);
     if (/^[6-9]\d{9}$/.test(nat)) return `+91${nat}`;
   }
 
-  if (digits.length >= 7 && digits.length <= 15) {
-    return `+${digits}`;
+  // ✅ 11 digits without valid prefix = REJECT
+  if (digits.length === 11) {
+    return null;
+  }
+
+  // ✅ 12-15 digits without + = must have known CC
+  if (digits.length >= 12 && digits.length <= 15) {
+    if (hasValidCountryCode(digits)) {
+      return `+${digits}`;
+    }
+    return null;
   }
 
   return null;
 };
+
+// ============================================
+// EXTRACT COUNTRY CODE
+// ============================================
 
 export const extractCountryCode = (canonical: string): string => {
   if (!canonical?.startsWith('+')) return '+91';
 
   const digits = canonical.slice(1);
 
-  const cc3 = ['971', '966', '974', '973', '968', '880', '977', '852', '855'];
-  for (const cc of cc3) {
-    if (digits.startsWith(cc)) return `+${cc}`;
-  }
-
-  const cc2 = [
-    '91', '44', '61', '49', '33', '86', '81', '82', '55',
-    '52', '39', '34', '31', '46', '47', '45', '41', '43',
-    '48', '90', '92', '93', '94', '95', '98', '60', '65',
-    '66', '63', '62', '64', '20', '27', '30', '36', '40',
-  ];
-  for (const cc of cc2) {
-    if (digits.startsWith(cc)) return `+${cc}`;
+  for (const cc of KNOWN_COUNTRY_CODES) {
+    if (digits.startsWith(cc)) {
+      return `+${cc}`;
+    }
   }
 
   return '+1';
 };
 
 // ============================================
-// ✅ FORMAT PHONE FOR DISPLAY
+// FORMAT PHONE FOR DISPLAY
 // ============================================
 
 export const formatPhoneForDisplay = (phone: string): string => {
@@ -124,8 +197,8 @@ export const formatPhoneForDisplay = (phone: string): string => {
 
   // Fallback
   const clean = String(phone).replace(/[\s\-\(\)]/g, '');
-  if (/^\d{10}$/.test(clean)) return `+91${clean}`;
-  if (/^91\d{10}$/.test(clean)) return `+${clean}`;
+  if (/^\d{10}$/.test(clean) && /^[6-9]/.test(clean)) return `+91${clean}`;
+  if (/^91[6-9]\d{9}$/.test(clean)) return `+${clean}`;
 
   return phone;
 };
@@ -164,7 +237,7 @@ export const validatePhoneInput = (
   if (!canonical) {
     return {
       valid: false,
-      message: 'Invalid phone number. Include country code (e.g., +91XXXXXXXXXX, +1XXXXXXXXXX)',
+      message: 'Invalid phone number. Use +91XXXXXXXXXX (India) or +1XXXXXXXXXX (USA) etc.',
     };
   }
 
@@ -309,7 +382,7 @@ export function parseCsvText(text: string): ParseResult {
       errors.push({
         row: rowNum,
         phone: phoneRaw,
-        error: `Invalid phone: "${phoneRaw}". Use format: +91XXXXXXXXXX, +1XXXXXXXXXX etc.`,
+        error: `Invalid phone: "${phoneRaw}". Use +91XXXXXXXXXX (India) or +1XXXXXXXXXX etc.`,
       });
       return;
     }
@@ -467,32 +540,23 @@ export function downloadContactsCsv(
 // ============================================
 
 export default {
-  // Validation
   validateIndianPhone,
   validateInternationalPhone,
   validatePhone,
   validatePhoneInput,
   validateEmail,
   validatePhoneBatch,
-
-  // Normalization
   normalizePhone,
   toCanonicalPhone,
   extractCountryCode,
-  formatPhoneForDisplay,  // ✅ ADDED
-
-  // Parsing
+  formatPhoneForDisplay,
   parseCsvFile,
   parseCsvText,
   splitName,
   parseTags,
-
-  // Export
   contactsToCsv,
   downloadContactsCsv,
   generateSampleCsv,
   downloadSampleCsv,
-
-  // Utilities
   findDuplicates,
 };
