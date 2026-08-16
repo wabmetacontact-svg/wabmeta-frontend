@@ -1,10 +1,10 @@
-// src/components/contacts/CsvUploadModal.tsx - FINAL FIXED
+// src/components/contacts/CsvUploadModal.tsx - FINAL WITH BATCHING
 
 import React, { useState, useEffect } from 'react';
 import Papa from 'papaparse';
 import {
     X, FileSpreadsheet, Upload, Download, CheckCircle,
-    Loader2, Phone, Plus, FolderPlus, AlertTriangle, XCircle,
+    Loader2, Phone, Plus, FolderPlus, XCircle,
 } from 'lucide-react';
 import api from '../../services/api';
 import toast from 'react-hot-toast';
@@ -18,12 +18,12 @@ interface Props {
 }
 
 interface ValidatedContact {
-    phone: string;           // Canonical: +919876543210
-    countryCode: string;     // +91
+    phone: string;
+    countryCode: string;
     firstName?: string;
     lastName?: string;
     email?: string;
-    originalPhone: string;   // Original for error display
+    originalPhone: string;
 }
 
 interface ValidationError {
@@ -31,6 +31,11 @@ interface ValidationError {
     phone: string;
     reason: string;
 }
+
+// ✅ Batch config
+const BATCH_SIZE = 200;      // 200 contacts per batch
+const BATCH_TIMEOUT = 60000; // 60 seconds per batch
+const BATCH_DELAY = 300;     // 300ms between batches
 
 export default function CsvUploadModal({ isOpen, onClose, onSuccess, groups = [] }: Props) {
     const [file, setFile] = useState<File | null>(null);
@@ -42,7 +47,15 @@ export default function CsvUploadModal({ isOpen, onClose, onSuccess, groups = []
     const [result, setResult] = useState<any>(null);
     const [showInvalidList, setShowInvalidList] = useState(false);
 
-    // Create Group States
+    // Progress state
+    const [uploadProgress, setUploadProgress] = useState({
+        current: 0,
+        total: 0,
+        batchesDone: 0,
+        totalBatches: 0,
+    });
+
+    // Create Group
     const [showCreateGroup, setShowCreateGroup] = useState(false);
     const [newGroupName, setNewGroupName] = useState('');
     const [creatingGroup, setCreatingGroup] = useState(false);
@@ -67,7 +80,6 @@ export default function CsvUploadModal({ isOpen, onClose, onSuccess, groups = []
         parseCSV(selectedFile);
     };
 
-    // ✅ FIXED: Frontend validation + normalization
     const parseCSV = (file: File) => {
         Papa.parse(file, {
             header: true,
@@ -80,9 +92,7 @@ export default function CsvUploadModal({ isOpen, onClose, onSuccess, groups = []
                 const seenPhones = new Set<string>();
 
                 rows.forEach((row: any, idx: number) => {
-                    const rowNum = idx + 2; // +2 for header + 0-index
-
-                    // Get phone from various column names
+                    const rowNum = idx + 2;
                     const rawPhone = String(
                         row.phone || row.phonenumber || row.mobile ||
                         row.number || row['phone number'] || row.contact ||
@@ -90,54 +100,31 @@ export default function CsvUploadModal({ isOpen, onClose, onSuccess, groups = []
                     ).trim();
 
                     if (!rawPhone) {
-                        invalid.push({
-                            row: rowNum,
-                            phone: '(empty)',
-                            reason: 'Phone number is missing',
-                        });
+                        invalid.push({ row: rowNum, phone: '(empty)', reason: 'Phone missing' });
                         return;
                     }
 
-                    // ✅ VALIDATE using toCanonicalPhone
                     const canonical = toCanonicalPhone(rawPhone);
-
                     if (!canonical) {
                         invalid.push({
-                            row: rowNum,
-                            phone: rawPhone,
-                            reason: 'Invalid format. Use +91XXXXXXXXXX or +1XXXXXXXXXX',
+                            row: rowNum, phone: rawPhone,
+                            reason: 'Invalid format',
                         });
                         return;
                     }
 
-                    // ✅ Check duplicates within CSV
                     if (seenPhones.has(canonical)) {
-                        invalid.push({
-                            row: rowNum,
-                            phone: rawPhone,
-                            reason: 'Duplicate in CSV',
-                        });
+                        invalid.push({ row: rowNum, phone: rawPhone, reason: 'Duplicate in CSV' });
                         return;
                     }
                     seenPhones.add(canonical);
 
-                    // Get other fields
-                    const firstName = String(
-                        row.firstname || row['first name'] || row.name || row.fullname || ''
-                    ).trim();
-                    const lastName = String(
-                        row.lastname || row['last name'] || row.surname || ''
-                    ).trim();
-                    const email = String(
-                        row.email || row.mail || row['email address'] || ''
-                    ).trim();
-
                     valid.push({
                         phone: canonical,
                         countryCode: extractCountryCode(canonical),
-                        firstName: firstName || undefined,
-                        lastName: lastName || undefined,
-                        email: email || undefined,
+                        firstName: String(row.firstname || row['first name'] || row.name || row.fullname || '').trim() || undefined,
+                        lastName: String(row.lastname || row['last name'] || row.surname || '').trim() || undefined,
+                        email: String(row.email || row.mail || '').trim() || undefined,
                         originalPhone: rawPhone,
                     });
                 });
@@ -145,37 +132,27 @@ export default function CsvUploadModal({ isOpen, onClose, onSuccess, groups = []
                 setValidContacts(valid);
                 setInvalidContacts(invalid);
 
-                if (valid.length === 0 && invalid.length === 0) {
-                    toast.error('No data found in CSV');
-                } else if (valid.length === 0) {
+                if (valid.length === 0) {
                     toast.error(`All ${invalid.length} numbers are invalid!`);
                 } else if (invalid.length > 0) {
-                    toast.success(
-                        `${valid.length} valid, ${invalid.length} invalid numbers found`,
-                        { duration: 4000 }
-                    );
+                    toast.success(`${valid.length} valid, ${invalid.length} invalid`);
                 } else {
-                    toast.success(`${valid.length} valid contacts ready to import`);
+                    toast.success(`${valid.length} contacts ready`);
                 }
             },
-            error: (error) => {
-                toast.error(`Failed to parse CSV: ${error.message}`);
-            }
+            error: (error) => toast.error(`Parse failed: ${error.message}`)
         });
     };
 
     const handleCreateGroup = async () => {
         if (!newGroupName.trim()) {
-            toast.error('Please enter group name');
+            toast.error('Enter group name');
             return;
         }
 
         setCreatingGroup(true);
         try {
-            const response = await api.post('/contacts/groups', {
-                name: newGroupName.trim()
-            });
-
+            const response = await api.post('/contacts/groups', { name: newGroupName.trim() });
             const newGroup = response.data.data;
             setLocalGroups(prev => [...prev, newGroup]);
             setSelectedGroup(newGroup.id);
@@ -189,6 +166,7 @@ export default function CsvUploadModal({ isOpen, onClose, onSuccess, groups = []
         }
     };
 
+    // ✅ BATCH UPLOAD
     const handleSubmit = async () => {
         if (validContacts.length === 0) {
             toast.error('No valid contacts to upload');
@@ -198,47 +176,124 @@ export default function CsvUploadModal({ isOpen, onClose, onSuccess, groups = []
         setLoading(true);
         setResult(null);
 
+        const totalBatches = Math.ceil(validContacts.length / BATCH_SIZE);
+        setUploadProgress({
+            current: 0,
+            total: validContacts.length,
+            batchesDone: 0,
+            totalBatches,
+        });
+
+        const totals = {
+            created: 0,
+            updated: 0,
+            restored: 0,
+            skipped: 0,
+            errors: [] as string[],
+        };
+
+        // Progress toast
+        const progressToast = toast.loading(
+            `Uploading batch 1 of ${totalBatches}...`,
+            { duration: Infinity }
+        );
+
         try {
-            // ✅ Send ONLY validated contacts with canonical phones
-            const payload = {
-                contacts: validContacts.map(c => ({
-                    phone: c.phone,             // Canonical format
-                    countryCode: c.countryCode,
-                    firstName: c.firstName,
-                    lastName: c.lastName,
-                    email: c.email,
-                })),
-                groupId: selectedGroup || undefined,
-                tags: tags.split(',').map(t => t.trim()).filter(Boolean),
-            };
+            for (let i = 0; i < totalBatches; i++) {
+                const start = i * BATCH_SIZE;
+                const end = Math.min(start + BATCH_SIZE, validContacts.length);
+                const batch = validContacts.slice(start, end);
 
-            console.log('📤 Sending', payload.contacts.length, 'validated contacts');
+                // Update progress
+                toast.loading(
+                    `Uploading batch ${i + 1}/${totalBatches} (${batch.length} contacts)...`,
+                    { id: progressToast }
+                );
 
-            const response = await api.post('/contacts/csv-upload', payload);
+                setUploadProgress({
+                    current: start + batch.length,
+                    total: validContacts.length,
+                    batchesDone: i,
+                    totalBatches,
+                });
 
-            console.log('✅ Response:', response.data);
+                const payload = {
+                    contacts: batch.map(c => ({
+                        phone: c.phone,
+                        countryCode: c.countryCode,
+                        firstName: c.firstName,
+                        lastName: c.lastName,
+                        email: c.email,
+                    })),
+                    groupId: selectedGroup || undefined,
+                    tags: tags.split(',').map(t => t.trim()).filter(Boolean),
+                };
+
+                try {
+                    console.log(`📤 Batch ${i + 1}/${totalBatches}:`, batch.length);
+
+                    const response = await api.post('/contacts/csv-upload', payload, {
+                        timeout: BATCH_TIMEOUT,
+                    });
+
+                    const data = response.data?.data || {};
+                    totals.created += data.created || 0;
+                    totals.updated += data.updated || 0;
+                    totals.restored += data.restored || 0;
+                    totals.skipped += data.skipped || 0;
+
+                    console.log(`✅ Batch ${i + 1} done:`, data);
+
+                } catch (batchError: any) {
+                    console.error(`❌ Batch ${i + 1} failed:`, batchError);
+                    const msg = batchError.code === 'ECONNABORTED'
+                        ? 'Timeout'
+                        : batchError.response?.data?.message || batchError.message;
+                    totals.errors.push(`Batch ${i + 1}: ${msg}`);
+                }
+
+                // Delay between batches (except last)
+                if (i < totalBatches - 1) {
+                    await new Promise(r => setTimeout(r, BATCH_DELAY));
+                }
+            }
+
+            // Update final progress
+            setUploadProgress(prev => ({
+                ...prev,
+                current: validContacts.length,
+                batchesDone: totalBatches,
+            }));
+
+            toast.dismiss(progressToast);
 
             setResult({
-                ...response.data.data,
+                created: totals.created,
+                updated: totals.updated,
+                restored: totals.restored,
+                skipped: totals.skipped,
                 invalidFromCsv: invalidContacts.length,
+                errors: totals.errors,
             });
 
-            toast.success(response.data.message || 'Upload successful');
+            const totalSuccess = totals.created + totals.updated + totals.restored;
 
-            if (response.data.data?.created > 0) {
+            if (totals.errors.length === 0) {
+                toast.success(`✅ ${totalSuccess} contacts imported successfully!`, { duration: 5000 });
+            } else if (totalSuccess > 0) {
+                toast.success(`⚠️ ${totalSuccess} imported, ${totals.errors.length} batches failed`, { duration: 5000 });
+            } else {
+                toast.error(`❌ Import failed for all batches`, { duration: 5000 });
+            }
+
+            if (totalSuccess > 0) {
                 onSuccess();
             }
 
         } catch (error: any) {
-            console.error('❌ Upload error:', error.response?.data);
-
-            const errorMsg =
-                error.response?.data?.message ||
-                error.response?.data?.error ||
-                error.message ||
-                'Upload failed';
-
-            toast.error(errorMsg, { duration: 5000 });
+            toast.dismiss(progressToast);
+            console.error('❌ Upload error:', error);
+            toast.error(error.message || 'Upload failed');
         } finally {
             setLoading(false);
         }
@@ -252,6 +307,7 @@ export default function CsvUploadModal({ isOpen, onClose, onSuccess, groups = []
         setShowCreateGroup(false);
         setNewGroupName('');
         setShowInvalidList(false);
+        setUploadProgress({ current: 0, total: 0, batchesDone: 0, totalBatches: 0 });
         onClose();
     };
 
@@ -260,7 +316,6 @@ export default function CsvUploadModal({ isOpen, onClose, onSuccess, groups = []
             'phone,firstName,lastName,email\n' +
             '+919876543210,John,Doe,john@example.com\n' +
             '+14155551234,Jane,Smith,jane@example.com\n' +
-            '+447911123456,Bob,Wilson,bob@example.com\n' +
             '9876543211,Priya,Sharma,priya@example.com';
         const blob = new Blob([template], { type: 'text/csv' });
         const url = URL.createObjectURL(blob);
@@ -285,27 +340,29 @@ export default function CsvUploadModal({ isOpen, onClose, onSuccess, groups = []
         URL.revokeObjectURL(url);
     };
 
+    // Progress bar %
+    const progressPercent = uploadProgress.total > 0
+        ? Math.round((uploadProgress.current / uploadProgress.total) * 100)
+        : 0;
+
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div className="absolute inset-0 bg-black/50" onClick={handleClose} />
+            <div className="absolute inset-0 bg-black/50" onClick={loading ? undefined : handleClose} />
 
             <div className="relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col">
                 {/* Header */}
-                <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20">
+                <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-purple-50 to-pink-50">
                     <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/50 rounded-xl flex items-center justify-center">
+                        <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
                             <FileSpreadsheet className="w-6 h-6 text-purple-600" />
                         </div>
                         <div>
-                            <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-                                Import CSV
-                            </h2>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">
-                                Upload contacts from CSV file
-                            </p>
+                            <h2 className="text-xl font-bold text-gray-900">Import CSV</h2>
+                            <p className="text-sm text-gray-500">Upload contacts from CSV</p>
                         </div>
                     </div>
-                    <button onClick={handleClose} className="p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg">
+                    <button onClick={handleClose} disabled={loading}
+                        className="p-2 hover:bg-gray-200 rounded-lg disabled:opacity-50">
                         <X className="w-5 h-5" />
                     </button>
                 </div>
@@ -314,28 +371,26 @@ export default function CsvUploadModal({ isOpen, onClose, onSuccess, groups = []
                 <div className="p-6 space-y-5 overflow-y-auto flex-1">
 
                     {/* Notice */}
-                    <div className="flex items-start gap-3 p-4 bg-purple-50 dark:bg-purple-900/20 rounded-xl border border-purple-200 dark:border-purple-800">
+                    <div className="flex items-start gap-3 p-4 bg-purple-50 rounded-xl border border-purple-200">
                         <Phone className="w-5 h-5 text-purple-600 shrink-0 mt-0.5" />
-                        <div>
-                            <p className="font-medium text-purple-800 dark:text-purple-300">
-                                Phone Number Formats
-                            </p>
-                            <p className="text-sm text-purple-600 dark:text-purple-400 mt-1">
-                                India: <code className="bg-white px-1 rounded">9876543210</code> or <code className="bg-white px-1 rounded">+919876543210</code><br />
-                                USA: <code className="bg-white px-1 rounded">+14155551234</code><br />
+                        <div className="text-sm">
+                            <p className="font-medium text-purple-800">Phone Formats</p>
+                            <p className="text-purple-600 mt-1">
+                                India: <code className="bg-white px-1 rounded">9876543210</code> or <code className="bg-white px-1 rounded">+919876543210</code>{' '}•{' '}
+                                USA: <code className="bg-white px-1 rounded">+14155551234</code>{' '}•{' '}
                                 UK: <code className="bg-white px-1 rounded">+447911123456</code>
                             </p>
                         </div>
                     </div>
 
-                    {/* Download Template */}
-                    <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-900/50 rounded-xl">
+                    {/* Template */}
+                    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
                         <div>
-                            <p className="font-medium text-gray-900 dark:text-white">Need a template?</p>
+                            <p className="font-medium text-gray-900">Need a template?</p>
                             <p className="text-sm text-gray-500">Download sample CSV</p>
                         </div>
                         <button onClick={downloadTemplate}
-                            className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700">
+                            className="flex items-center gap-2 px-4 py-2 bg-white border rounded-xl hover:bg-gray-50">
                             <Download className="w-4 h-4" />
                             Download
                         </button>
@@ -343,13 +398,13 @@ export default function CsvUploadModal({ isOpen, onClose, onSuccess, groups = []
 
                     {/* File Upload */}
                     <div>
-                        <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">
                             CSV File <span className="text-red-500">*</span>
                         </label>
                         <div
                             className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-colors ${file
-                                ? 'border-green-300 bg-green-50 dark:border-green-700 dark:bg-green-900/20'
-                                : 'border-gray-300 dark:border-gray-600 hover:border-purple-400'}`}
+                                ? 'border-green-300 bg-green-50'
+                                : 'border-gray-300 hover:border-purple-400'}`}
                             onClick={() => document.getElementById('csv-input')?.click()}
                         >
                             <input id="csv-input" type="file" accept=".csv" onChange={handleFileSelect} className="hidden" />
@@ -371,30 +426,25 @@ export default function CsvUploadModal({ isOpen, onClose, onSuccess, groups = []
                         </div>
                     </div>
 
-                    {/* ✅ VALIDATION SUMMARY */}
-                    {(validContacts.length > 0 || invalidContacts.length > 0) && (
+                    {/* Summary Cards */}
+                    {(validContacts.length > 0 || invalidContacts.length > 0) && !result && (
                         <div className="grid grid-cols-2 gap-3">
-                            {/* Valid */}
-                            <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-xl border border-green-200">
+                            <div className="p-4 bg-green-50 rounded-xl border border-green-200">
                                 <div className="flex items-center gap-2 mb-1">
                                     <CheckCircle className="w-5 h-5 text-green-600" />
                                     <p className="text-2xl font-bold text-green-700">{validContacts.length}</p>
                                 </div>
-                                <p className="text-sm text-green-600">Valid contacts</p>
+                                <p className="text-sm text-green-600">Valid</p>
                             </div>
-
-                            {/* Invalid */}
-                            <div className="p-4 bg-red-50 dark:bg-red-900/20 rounded-xl border border-red-200">
+                            <div className="p-4 bg-red-50 rounded-xl border border-red-200">
                                 <div className="flex items-center gap-2 mb-1">
                                     <XCircle className="w-5 h-5 text-red-600" />
                                     <p className="text-2xl font-bold text-red-700">{invalidContacts.length}</p>
                                 </div>
-                                <p className="text-sm text-red-600">Invalid numbers</p>
+                                <p className="text-sm text-red-600">Invalid</p>
                                 {invalidContacts.length > 0 && (
-                                    <button
-                                        onClick={() => setShowInvalidList(!showInvalidList)}
-                                        className="text-xs text-red-700 underline mt-1 font-medium"
-                                    >
+                                    <button onClick={() => setShowInvalidList(!showInvalidList)}
+                                        className="text-xs text-red-700 underline mt-1 font-medium">
                                         {showInvalidList ? 'Hide' : 'View'} details
                                     </button>
                                 )}
@@ -402,43 +452,55 @@ export default function CsvUploadModal({ isOpen, onClose, onSuccess, groups = []
                         </div>
                     )}
 
-                    {/* ✅ INVALID LIST */}
+                    {/* Invalid list */}
                     {showInvalidList && invalidContacts.length > 0 && (
                         <div className="bg-red-50 border border-red-200 rounded-xl p-4">
                             <div className="flex items-center justify-between mb-3">
                                 <h3 className="font-semibold text-red-800 text-sm">
                                     Invalid Numbers ({invalidContacts.length})
                                 </h3>
-                                <button
-                                    onClick={downloadInvalidList}
-                                    className="text-xs text-red-700 underline font-medium flex items-center gap-1"
-                                >
+                                <button onClick={downloadInvalidList}
+                                    className="text-xs text-red-700 underline font-medium flex items-center gap-1">
                                     <Download className="w-3 h-3" /> Download
                                 </button>
                             </div>
                             <div className="max-h-40 overflow-y-auto space-y-1">
                                 {invalidContacts.slice(0, 50).map((item, i) => (
-                                    <div key={i} className="text-xs font-mono text-red-700 flex justify-between border-b border-red-100 py-1">
+                                    <div key={i} className="text-xs font-mono text-red-700 flex justify-between py-1 border-b border-red-100">
                                         <span>Row {item.row}: {item.phone}</span>
-                                        <span className="text-red-500">{item.reason}</span>
+                                        <span>{item.reason}</span>
                                     </div>
                                 ))}
-                                {invalidContacts.length > 50 && (
-                                    <p className="text-xs text-red-500 mt-2 italic">
-                                        + {invalidContacts.length - 50} more (download CSV to see all)
-                                    </p>
-                                )}
                             </div>
                         </div>
                     )}
 
-                    {/* Preview */}
-                    {validContacts.length > 0 && !result && (
-                        <div>
-                            <p className="text-sm font-semibold text-gray-700 mb-2">
-                                Preview (first 5 valid):
+                    {/* ✅ PROGRESS BAR (during upload) */}
+                    {loading && uploadProgress.total > 0 && (
+                        <div className="p-4 bg-blue-50 border border-blue-200 rounded-xl">
+                            <div className="flex justify-between text-sm font-medium text-blue-900 mb-2">
+                                <span>
+                                    Uploading batch {uploadProgress.batchesDone + 1} of {uploadProgress.totalBatches}
+                                </span>
+                                <span>{progressPercent}%</span>
+                            </div>
+                            <div className="w-full bg-blue-200 rounded-full h-2 overflow-hidden">
+                                <div
+                                    className="bg-blue-600 h-2 transition-all duration-300"
+                                    style={{ width: `${progressPercent}%` }}
+                                />
+                            </div>
+                            <p className="text-xs text-blue-700 mt-2">
+                                {uploadProgress.current} of {uploadProgress.total} contacts processed
                             </p>
-                            <div className="overflow-x-auto rounded-lg border border-gray-200">
+                        </div>
+                    )}
+
+                    {/* Preview */}
+                    {validContacts.length > 0 && !loading && !result && (
+                        <div>
+                            <p className="text-sm font-semibold text-gray-700 mb-2">Preview (first 5):</p>
+                            <div className="overflow-x-auto rounded-lg border">
                                 <table className="w-full text-sm">
                                     <thead className="bg-gray-50">
                                         <tr>
@@ -463,61 +525,42 @@ export default function CsvUploadModal({ isOpen, onClose, onSuccess, groups = []
                         </div>
                     )}
 
-                    {/* Group Selection */}
-                    {validContacts.length > 0 && !result && (
+                    {/* Group */}
+                    {validContacts.length > 0 && !loading && !result && (
                         <div>
-                            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">
                                 Add to Group (Optional)
                             </label>
                             {!showCreateGroup ? (
                                 <div className="flex gap-2">
-                                    <select
-                                        value={selectedGroup}
-                                        onChange={(e) => setSelectedGroup(e.target.value)}
-                                        className="flex-1 px-4 py-2.5 border border-gray-300 rounded-xl bg-white focus:ring-2 focus:ring-purple-500"
-                                    >
+                                    <select value={selectedGroup} onChange={(e) => setSelectedGroup(e.target.value)}
+                                        className="flex-1 px-4 py-2.5 border rounded-xl focus:ring-2 focus:ring-purple-500">
                                         <option value="">No group</option>
-                                        {localGroups.map(group => (
-                                            <option key={group.id} value={group.id}>{group.name}</option>
-                                        ))}
+                                        {localGroups.map(g => <option key={g.id} value={g.id}>{g.name}</option>)}
                                     </select>
-                                    <button
-                                        type="button"
-                                        onClick={() => setShowCreateGroup(true)}
-                                        className="flex items-center gap-2 px-4 py-2.5 bg-purple-50 text-purple-600 border border-purple-200 rounded-xl hover:bg-purple-100"
-                                    >
+                                    <button type="button" onClick={() => setShowCreateGroup(true)}
+                                        className="flex items-center gap-2 px-4 py-2.5 bg-purple-50 text-purple-600 border border-purple-200 rounded-xl hover:bg-purple-100">
                                         <FolderPlus className="w-4 h-4" />
-                                        <span className="hidden sm:inline">New Group</span>
+                                        <span className="hidden sm:inline">New</span>
                                     </button>
                                 </div>
                             ) : (
                                 <div className="flex gap-2">
-                                    <input
-                                        type="text"
-                                        value={newGroupName}
-                                        onChange={(e) => setNewGroupName(e.target.value)}
-                                        placeholder="Enter group name..."
+                                    <input type="text" value={newGroupName} onChange={(e) => setNewGroupName(e.target.value)}
+                                        placeholder="Group name..." autoFocus
                                         className="flex-1 px-4 py-2.5 border border-purple-300 rounded-xl focus:ring-2 focus:ring-purple-500"
-                                        autoFocus
                                         onKeyDown={(e) => {
                                             if (e.key === 'Enter') handleCreateGroup();
                                             if (e.key === 'Escape') setShowCreateGroup(false);
-                                        }}
-                                    />
-                                    <button
-                                        type="button"
-                                        onClick={handleCreateGroup}
+                                        }} />
+                                    <button type="button" onClick={handleCreateGroup}
                                         disabled={creatingGroup || !newGroupName.trim()}
-                                        className="flex items-center gap-2 px-4 py-2.5 bg-purple-600 text-white rounded-xl hover:bg-purple-700 disabled:opacity-50"
-                                    >
+                                        className="flex items-center gap-2 px-4 py-2.5 bg-purple-600 text-white rounded-xl hover:bg-purple-700 disabled:opacity-50">
                                         {creatingGroup ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
                                         Create
                                     </button>
-                                    <button
-                                        type="button"
-                                        onClick={() => { setShowCreateGroup(false); setNewGroupName(''); }}
-                                        className="px-3 py-2.5 text-gray-500 hover:bg-gray-100 rounded-xl"
-                                    >
+                                    <button type="button" onClick={() => { setShowCreateGroup(false); setNewGroupName(''); }}
+                                        className="px-3 py-2.5 text-gray-500 hover:bg-gray-100 rounded-xl">
                                         <X className="w-4 h-4" />
                                     </button>
                                 </div>
@@ -526,18 +569,14 @@ export default function CsvUploadModal({ isOpen, onClose, onSuccess, groups = []
                     )}
 
                     {/* Tags */}
-                    {validContacts.length > 0 && !result && (
+                    {validContacts.length > 0 && !loading && !result && (
                         <div>
                             <label className="block text-sm font-semibold text-gray-700 mb-2">
                                 Tags (Optional)
                             </label>
-                            <input
-                                type="text"
-                                value={tags}
-                                onChange={(e) => setTags(e.target.value)}
+                            <input type="text" value={tags} onChange={(e) => setTags(e.target.value)}
                                 placeholder="e.g., csv-import, leads"
-                                className="w-full px-4 py-2.5 border border-gray-300 rounded-xl bg-white focus:ring-2 focus:ring-purple-500"
-                            />
+                                className="w-full px-4 py-2.5 border rounded-xl focus:ring-2 focus:ring-purple-500" />
                         </div>
                     )}
 
@@ -560,33 +599,50 @@ export default function CsvUploadModal({ isOpen, onClose, onSuccess, groups = []
                                 </div>
                                 <div className="text-center p-3 bg-white rounded-lg">
                                     <p className="text-2xl font-bold text-yellow-600">{result.skipped || 0}</p>
-                                    <p className="text-xs text-gray-500">Duplicates</p>
+                                    <p className="text-xs text-gray-500">Skipped</p>
                                 </div>
                                 <div className="text-center p-3 bg-white rounded-lg">
                                     <p className="text-2xl font-bold text-red-600">{result.invalidFromCsv || 0}</p>
                                     <p className="text-xs text-gray-500">Invalid</p>
                                 </div>
                             </div>
+
+                            {result.restored > 0 && (
+                                <div className="mt-3 text-sm text-green-700 text-center">
+                                    ♻️ {result.restored} deleted contacts restored
+                                </div>
+                            )}
+
+                            {result.errors && result.errors.length > 0 && (
+                                <div className="mt-4 p-3 bg-red-50 rounded-lg border border-red-200">
+                                    <p className="text-sm font-semibold text-red-800 mb-2">
+                                        Failed Batches ({result.errors.length}):
+                                    </p>
+                                    <div className="text-xs text-red-700 space-y-1 max-h-24 overflow-y-auto">
+                                        {result.errors.map((err: string, i: number) => (
+                                            <div key={i}>• {err}</div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     )}
                 </div>
 
                 {/* Footer */}
-                <div className="flex items-center justify-end gap-3 p-6 border-t border-gray-200 bg-gray-50">
-                    <button onClick={handleClose}
-                        className="px-5 py-2.5 text-gray-700 hover:bg-gray-200 rounded-xl font-medium">
+                <div className="flex items-center justify-end gap-3 p-6 border-t bg-gray-50">
+                    <button onClick={handleClose} disabled={loading}
+                        className="px-5 py-2.5 text-gray-700 hover:bg-gray-200 rounded-xl font-medium disabled:opacity-50">
                         {result ? 'Close' : 'Cancel'}
                     </button>
                     {!result && (
-                        <button
-                            onClick={handleSubmit}
+                        <button onClick={handleSubmit}
                             disabled={loading || validContacts.length === 0}
-                            className="flex items-center gap-2 px-6 py-2.5 bg-purple-600 text-white rounded-xl hover:bg-purple-700 disabled:opacity-50 font-semibold"
-                        >
+                            className="flex items-center gap-2 px-6 py-2.5 bg-purple-600 text-white rounded-xl hover:bg-purple-700 disabled:opacity-50 font-semibold">
                             {loading ? (
                                 <>
                                     <Loader2 className="w-4 h-4 animate-spin" />
-                                    Importing...
+                                    Uploading... ({progressPercent}%)
                                 </>
                             ) : (
                                 <>
