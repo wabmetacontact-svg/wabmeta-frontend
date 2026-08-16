@@ -1,18 +1,14 @@
+// src/components/contacts/CsvUploadModal.tsx - FINAL FIXED
+
 import React, { useState, useEffect } from 'react';
 import Papa from 'papaparse';
 import {
-    X,
-    FileSpreadsheet,
-    Upload,
-    Download,
-    CheckCircle,
-    Loader2,
-    Phone,
-    Plus,
-    FolderPlus
+    X, FileSpreadsheet, Upload, Download, CheckCircle,
+    Loader2, Phone, Plus, FolderPlus, AlertTriangle, XCircle,
 } from 'lucide-react';
 import api from '../../services/api';
 import toast from 'react-hot-toast';
+import { toCanonicalPhone, extractCountryCode } from '../../utils/csvContacts';
 
 interface Props {
     isOpen: boolean;
@@ -21,15 +17,32 @@ interface Props {
     groups?: Array<{ id: string; name: string }>;
 }
 
+interface ValidatedContact {
+    phone: string;           // Canonical: +919876543210
+    countryCode: string;     // +91
+    firstName?: string;
+    lastName?: string;
+    email?: string;
+    originalPhone: string;   // Original for error display
+}
+
+interface ValidationError {
+    row: number;
+    phone: string;
+    reason: string;
+}
+
 export default function CsvUploadModal({ isOpen, onClose, onSuccess, groups = [] }: Props) {
     const [file, setFile] = useState<File | null>(null);
-    const [parsedData, setParsedData] = useState<any[]>([]);
+    const [validContacts, setValidContacts] = useState<ValidatedContact[]>([]);
+    const [invalidContacts, setInvalidContacts] = useState<ValidationError[]>([]);
     const [selectedGroup, setSelectedGroup] = useState('');
     const [tags, setTags] = useState('');
     const [loading, setLoading] = useState(false);
     const [result, setResult] = useState<any>(null);
+    const [showInvalidList, setShowInvalidList] = useState(false);
 
-    // ✅ Create Group States
+    // Create Group States
     const [showCreateGroup, setShowCreateGroup] = useState(false);
     const [newGroupName, setNewGroupName] = useState('');
     const [creatingGroup, setCreatingGroup] = useState(false);
@@ -54,32 +67,96 @@ export default function CsvUploadModal({ isOpen, onClose, onSuccess, groups = []
         parseCSV(selectedFile);
     };
 
+    // ✅ FIXED: Frontend validation + normalization
     const parseCSV = (file: File) => {
         Papa.parse(file, {
             header: true,
             skipEmptyLines: true,
+            transformHeader: (h) => h.replace(/^\uFEFF/, '').trim().toLowerCase(),
             complete: (results) => {
                 const rows = results.data || [];
-                // Standardize keys to lowercase and trim values
-                const data = rows.map((row: any) => {
-                    const normalizedRow: any = {};
-                    Object.keys(row).forEach(key => {
-                        normalizedRow[key.trim().toLowerCase()] = String(row[key] ?? '').trim();
+                const valid: ValidatedContact[] = [];
+                const invalid: ValidationError[] = [];
+                const seenPhones = new Set<string>();
+
+                rows.forEach((row: any, idx: number) => {
+                    const rowNum = idx + 2; // +2 for header + 0-index
+
+                    // Get phone from various column names
+                    const rawPhone = String(
+                        row.phone || row.phonenumber || row.mobile ||
+                        row.number || row['phone number'] || row.contact ||
+                        row.whatsapp || row.mob || ''
+                    ).trim();
+
+                    if (!rawPhone) {
+                        invalid.push({
+                            row: rowNum,
+                            phone: '(empty)',
+                            reason: 'Phone number is missing',
+                        });
+                        return;
+                    }
+
+                    // ✅ VALIDATE using toCanonicalPhone
+                    const canonical = toCanonicalPhone(rawPhone);
+
+                    if (!canonical) {
+                        invalid.push({
+                            row: rowNum,
+                            phone: rawPhone,
+                            reason: 'Invalid format. Use +91XXXXXXXXXX or +1XXXXXXXXXX',
+                        });
+                        return;
+                    }
+
+                    // ✅ Check duplicates within CSV
+                    if (seenPhones.has(canonical)) {
+                        invalid.push({
+                            row: rowNum,
+                            phone: rawPhone,
+                            reason: 'Duplicate in CSV',
+                        });
+                        return;
+                    }
+                    seenPhones.add(canonical);
+
+                    // Get other fields
+                    const firstName = String(
+                        row.firstname || row['first name'] || row.name || row.fullname || ''
+                    ).trim();
+                    const lastName = String(
+                        row.lastname || row['last name'] || row.surname || ''
+                    ).trim();
+                    const email = String(
+                        row.email || row.mail || row['email address'] || ''
+                    ).trim();
+
+                    valid.push({
+                        phone: canonical,
+                        countryCode: extractCountryCode(canonical),
+                        firstName: firstName || undefined,
+                        lastName: lastName || undefined,
+                        email: email || undefined,
+                        originalPhone: rawPhone,
                     });
-                    return normalizedRow;
-                }).filter(row => {
-                    const phone = row.phone || row.phonenumber || row.mobile || row.number;
-                    return phone && phone.length > 0;
                 });
 
-                if (data.length === 0) {
-                    toast.error('No valid contacts found in CSV (must contain phone column)');
-                    setParsedData([]);
-                    return;
-                }
+                setValidContacts(valid);
+                setInvalidContacts(invalid);
 
-                setParsedData(data);
-                toast.success(`${data.length} contacts found in CSV`);
+                if (valid.length === 0 && invalid.length === 0) {
+                    toast.error('No data found in CSV');
+                } else if (valid.length === 0) {
+                    toast.error(`All ${invalid.length} numbers are invalid!`);
+                } else if (invalid.length > 0) {
+                    toast.success(
+                        `${valid.length} valid, ${invalid.length} invalid numbers found`,
+                        { duration: 4000 }
+                    );
+                } else {
+                    toast.success(`${valid.length} valid contacts ready to import`);
+                }
             },
             error: (error) => {
                 toast.error(`Failed to parse CSV: ${error.message}`);
@@ -87,7 +164,6 @@ export default function CsvUploadModal({ isOpen, onClose, onSuccess, groups = []
         });
     };
 
-    // ✅ CREATE NEW GROUP
     const handleCreateGroup = async () => {
         if (!newGroupName.trim()) {
             toast.error('Please enter group name');
@@ -101,12 +177,10 @@ export default function CsvUploadModal({ isOpen, onClose, onSuccess, groups = []
             });
 
             const newGroup = response.data.data;
-
             setLocalGroups(prev => [...prev, newGroup]);
             setSelectedGroup(newGroup.id);
             setNewGroupName('');
             setShowCreateGroup(false);
-
             toast.success(`Group "${newGroupName}" created`);
         } catch (error: any) {
             toast.error(error.response?.data?.message || 'Failed to create group');
@@ -116,7 +190,7 @@ export default function CsvUploadModal({ isOpen, onClose, onSuccess, groups = []
     };
 
     const handleSubmit = async () => {
-        if (parsedData.length === 0) {
+        if (validContacts.length === 0) {
             toast.error('No valid contacts to upload');
             return;
         }
@@ -125,22 +199,46 @@ export default function CsvUploadModal({ isOpen, onClose, onSuccess, groups = []
         setResult(null);
 
         try {
-            const response = await api.post('/contacts/csv-upload', {
-                contacts: parsedData,
-                // ❌ No defaultCountryCode - auto detect
+            // ✅ Send ONLY validated contacts with canonical phones
+            const payload = {
+                contacts: validContacts.map(c => ({
+                    phone: c.phone,             // Canonical format
+                    countryCode: c.countryCode,
+                    firstName: c.firstName,
+                    lastName: c.lastName,
+                    email: c.email,
+                })),
                 groupId: selectedGroup || undefined,
-                tags: tags.split(',').map(t => t.trim()).filter(t => t)
+                tags: tags.split(',').map(t => t.trim()).filter(Boolean),
+            };
+
+            console.log('📤 Sending', payload.contacts.length, 'validated contacts');
+
+            const response = await api.post('/contacts/csv-upload', payload);
+
+            console.log('✅ Response:', response.data);
+
+            setResult({
+                ...response.data.data,
+                invalidFromCsv: invalidContacts.length,
             });
 
-            setResult(response.data.data);
-            toast.success(response.data.message);
+            toast.success(response.data.message || 'Upload successful');
 
-            if (response.data.data.created > 0) {
+            if (response.data.data?.created > 0) {
                 onSuccess();
             }
 
         } catch (error: any) {
-            toast.error(error.response?.data?.message || 'Upload failed');
+            console.error('❌ Upload error:', error.response?.data);
+
+            const errorMsg =
+                error.response?.data?.message ||
+                error.response?.data?.error ||
+                error.message ||
+                'Upload failed';
+
+            toast.error(errorMsg, { duration: 5000 });
         } finally {
             setLoading(false);
         }
@@ -148,15 +246,22 @@ export default function CsvUploadModal({ isOpen, onClose, onSuccess, groups = []
 
     const handleClose = () => {
         setFile(null);
-        setParsedData([]);
+        setValidContacts([]);
+        setInvalidContacts([]);
         setResult(null);
         setShowCreateGroup(false);
         setNewGroupName('');
+        setShowInvalidList(false);
         onClose();
     };
 
     const downloadTemplate = () => {
-        const template = 'phone,firstName,lastName,email\n+919876543210,John,Doe,john@example.com\n+14155551234,Jane,Smith,jane@example.com\n+447911123456,Bob,Wilson,bob@example.com';
+        const template =
+            'phone,firstName,lastName,email\n' +
+            '+919876543210,John,Doe,john@example.com\n' +
+            '+14155551234,Jane,Smith,jane@example.com\n' +
+            '+447911123456,Bob,Wilson,bob@example.com\n' +
+            '9876543211,Priya,Sharma,priya@example.com';
         const blob = new Blob([template], { type: 'text/csv' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -166,11 +271,25 @@ export default function CsvUploadModal({ isOpen, onClose, onSuccess, groups = []
         URL.revokeObjectURL(url);
     };
 
+    const downloadInvalidList = () => {
+        if (invalidContacts.length === 0) return;
+        const csv = 'row,phone,reason\n' + invalidContacts
+            .map(i => `${i.row},"${i.phone}","${i.reason}"`)
+            .join('\n');
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'invalid_contacts.csv';
+        a.click();
+        URL.revokeObjectURL(url);
+    };
+
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div className="absolute inset-0 bg-black/50" onClick={handleClose} />
 
-            <div className="relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden">
+            <div className="relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col">
                 {/* Header */}
                 <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20">
                     <div className="flex items-center gap-3">
@@ -192,18 +311,19 @@ export default function CsvUploadModal({ isOpen, onClose, onSuccess, groups = []
                 </div>
 
                 {/* Body */}
-                <div className="p-6 space-y-5 overflow-y-auto max-h-[60vh]">
+                <div className="p-6 space-y-5 overflow-y-auto flex-1">
 
-                    {/* ✅ Auto Detect Notice */}
+                    {/* Notice */}
                     <div className="flex items-start gap-3 p-4 bg-purple-50 dark:bg-purple-900/20 rounded-xl border border-purple-200 dark:border-purple-800">
                         <Phone className="w-5 h-5 text-purple-600 shrink-0 mt-0.5" />
                         <div>
                             <p className="font-medium text-purple-800 dark:text-purple-300">
-                                Auto Country Detection
+                                Phone Number Formats
                             </p>
                             <p className="text-sm text-purple-600 dark:text-purple-400 mt-1">
-                                Include country code in phone column (e.g., +91, +1, +44).
-                                Numbers will be automatically validated.
+                                India: <code className="bg-white px-1 rounded">9876543210</code> or <code className="bg-white px-1 rounded">+919876543210</code><br />
+                                USA: <code className="bg-white px-1 rounded">+14155551234</code><br />
+                                UK: <code className="bg-white px-1 rounded">+447911123456</code>
                             </p>
                         </div>
                     </div>
@@ -212,12 +332,10 @@ export default function CsvUploadModal({ isOpen, onClose, onSuccess, groups = []
                     <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-900/50 rounded-xl">
                         <div>
                             <p className="font-medium text-gray-900 dark:text-white">Need a template?</p>
-                            <p className="text-sm text-gray-500">Download sample CSV with correct format</p>
+                            <p className="text-sm text-gray-500">Download sample CSV</p>
                         </div>
-                        <button
-                            onClick={downloadTemplate}
-                            className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                        >
+                        <button onClick={downloadTemplate}
+                            className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700">
                             <Download className="w-4 h-4" />
                             Download
                         </button>
@@ -230,65 +348,113 @@ export default function CsvUploadModal({ isOpen, onClose, onSuccess, groups = []
                         </label>
                         <div
                             className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-colors ${file
-                                    ? 'border-green-300 bg-green-50 dark:border-green-700 dark:bg-green-900/20'
-                                    : 'border-gray-300 dark:border-gray-600 hover:border-purple-400 dark:hover:border-purple-500'
-                                }`}
+                                ? 'border-green-300 bg-green-50 dark:border-green-700 dark:bg-green-900/20'
+                                : 'border-gray-300 dark:border-gray-600 hover:border-purple-400'}`}
                             onClick={() => document.getElementById('csv-input')?.click()}
                         >
-                            <input
-                                id="csv-input"
-                                type="file"
-                                accept=".csv"
-                                onChange={handleFileSelect}
-                                className="hidden"
-                            />
+                            <input id="csv-input" type="file" accept=".csv" onChange={handleFileSelect} className="hidden" />
                             {file ? (
                                 <div>
                                     <CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-3" />
-                                    <p className="font-semibold text-green-700 dark:text-green-400">{file.name}</p>
-                                    <p className="text-sm text-green-600 dark:text-green-500 mt-1">
-                                        {parsedData.length} contacts ready to import
+                                    <p className="font-semibold text-green-700">{file.name}</p>
+                                    <p className="text-sm text-green-600 mt-1">
+                                        {validContacts.length + invalidContacts.length} rows parsed
                                     </p>
                                 </div>
                             ) : (
                                 <div>
                                     <Upload className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-                                    <p className="font-medium text-gray-700 dark:text-gray-300">
-                                        Click to upload or drag & drop
-                                    </p>
-                                    <p className="text-sm text-gray-500 mt-1">
-                                        CSV files only (max 10,000 rows)
-                                    </p>
+                                    <p className="font-medium text-gray-700">Click to upload CSV</p>
+                                    <p className="text-sm text-gray-500 mt-1">Max 10,000 rows</p>
                                 </div>
                             )}
                         </div>
                     </div>
 
+                    {/* ✅ VALIDATION SUMMARY */}
+                    {(validContacts.length > 0 || invalidContacts.length > 0) && (
+                        <div className="grid grid-cols-2 gap-3">
+                            {/* Valid */}
+                            <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-xl border border-green-200">
+                                <div className="flex items-center gap-2 mb-1">
+                                    <CheckCircle className="w-5 h-5 text-green-600" />
+                                    <p className="text-2xl font-bold text-green-700">{validContacts.length}</p>
+                                </div>
+                                <p className="text-sm text-green-600">Valid contacts</p>
+                            </div>
+
+                            {/* Invalid */}
+                            <div className="p-4 bg-red-50 dark:bg-red-900/20 rounded-xl border border-red-200">
+                                <div className="flex items-center gap-2 mb-1">
+                                    <XCircle className="w-5 h-5 text-red-600" />
+                                    <p className="text-2xl font-bold text-red-700">{invalidContacts.length}</p>
+                                </div>
+                                <p className="text-sm text-red-600">Invalid numbers</p>
+                                {invalidContacts.length > 0 && (
+                                    <button
+                                        onClick={() => setShowInvalidList(!showInvalidList)}
+                                        className="text-xs text-red-700 underline mt-1 font-medium"
+                                    >
+                                        {showInvalidList ? 'Hide' : 'View'} details
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* ✅ INVALID LIST */}
+                    {showInvalidList && invalidContacts.length > 0 && (
+                        <div className="bg-red-50 border border-red-200 rounded-xl p-4">
+                            <div className="flex items-center justify-between mb-3">
+                                <h3 className="font-semibold text-red-800 text-sm">
+                                    Invalid Numbers ({invalidContacts.length})
+                                </h3>
+                                <button
+                                    onClick={downloadInvalidList}
+                                    className="text-xs text-red-700 underline font-medium flex items-center gap-1"
+                                >
+                                    <Download className="w-3 h-3" /> Download
+                                </button>
+                            </div>
+                            <div className="max-h-40 overflow-y-auto space-y-1">
+                                {invalidContacts.slice(0, 50).map((item, i) => (
+                                    <div key={i} className="text-xs font-mono text-red-700 flex justify-between border-b border-red-100 py-1">
+                                        <span>Row {item.row}: {item.phone}</span>
+                                        <span className="text-red-500">{item.reason}</span>
+                                    </div>
+                                ))}
+                                {invalidContacts.length > 50 && (
+                                    <p className="text-xs text-red-500 mt-2 italic">
+                                        + {invalidContacts.length - 50} more (download CSV to see all)
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+                    )}
+
                     {/* Preview */}
-                    {parsedData.length > 0 && (
+                    {validContacts.length > 0 && !result && (
                         <div>
-                            <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                                Preview (first 5 rows):
+                            <p className="text-sm font-semibold text-gray-700 mb-2">
+                                Preview (first 5 valid):
                             </p>
-                            <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
+                            <div className="overflow-x-auto rounded-lg border border-gray-200">
                                 <table className="w-full text-sm">
-                                    <thead className="bg-gray-50 dark:bg-gray-900/50">
+                                    <thead className="bg-gray-50">
                                         <tr>
-                                            {Object.keys(parsedData[0] || {}).slice(0, 4).map(key => (
-                                                <th key={key} className="px-3 py-2 text-left font-medium text-gray-600 dark:text-gray-400">
-                                                    {key}
-                                                </th>
-                                            ))}
+                                            <th className="px-3 py-2 text-left font-medium text-gray-600">Phone</th>
+                                            <th className="px-3 py-2 text-left font-medium text-gray-600">Name</th>
+                                            <th className="px-3 py-2 text-left font-medium text-gray-600">Email</th>
                                         </tr>
                                     </thead>
-                                    <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-                                        {parsedData.slice(0, 5).map((row, i) => (
+                                    <tbody className="divide-y divide-gray-100">
+                                        {validContacts.slice(0, 5).map((c, i) => (
                                             <tr key={i}>
-                                                {Object.values(row).slice(0, 4).map((val: any, j) => (
-                                                    <td key={j} className="px-3 py-2 text-gray-900 dark:text-gray-100">
-                                                        {val || '-'}
-                                                    </td>
-                                                ))}
+                                                <td className="px-3 py-2 font-mono text-gray-900">{c.phone}</td>
+                                                <td className="px-3 py-2 text-gray-900">
+                                                    {[c.firstName, c.lastName].filter(Boolean).join(' ') || '-'}
+                                                </td>
+                                                <td className="px-3 py-2 text-gray-600">{c.email || '-'}</td>
                                             </tr>
                                         ))}
                                     </tbody>
@@ -297,117 +463,108 @@ export default function CsvUploadModal({ isOpen, onClose, onSuccess, groups = []
                         </div>
                     )}
 
-                    {/* ✅ Group Selection with Create Option */}
-                    <div>
-                        <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                            Add to Group (Optional)
-                        </label>
-
-                        {!showCreateGroup ? (
-                            <div className="flex gap-2">
-                                <select
-                                    value={selectedGroup}
-                                    onChange={(e) => setSelectedGroup(e.target.value)}
-                                    className="flex-1 px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                                >
-                                    <option value="">No group</option>
-                                    {localGroups.map(group => (
-                                        <option key={group.id} value={group.id}>{group.name}</option>
-                                    ))}
-                                </select>
-
-                                {/* ✅ Create Group Button */}
-                                <button
-                                    type="button"
-                                    onClick={() => setShowCreateGroup(true)}
-                                    className="flex items-center gap-2 px-4 py-2.5 bg-purple-50 dark:bg-purple-900/20 text-purple-600 border border-purple-200 dark:border-purple-800 rounded-xl hover:bg-purple-100 dark:hover:bg-purple-900/40 transition-colors"
-                                >
-                                    <FolderPlus className="w-4 h-4" />
-                                    <span className="hidden sm:inline">New Group</span>
-                                </button>
-                            </div>
-                        ) : (
-                            // ✅ Create Group Form
-                            <div className="flex gap-2">
-                                <input
-                                    type="text"
-                                    value={newGroupName}
-                                    onChange={(e) => setNewGroupName(e.target.value)}
-                                    placeholder="Enter group name..."
-                                    className="flex-1 px-4 py-2.5 border border-purple-300 dark:border-purple-700 rounded-xl bg-white dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                                    autoFocus
-                                    onKeyDown={(e) => {
-                                        if (e.key === 'Enter') handleCreateGroup();
-                                        if (e.key === 'Escape') setShowCreateGroup(false);
-                                    }}
-                                />
-                                <button
-                                    type="button"
-                                    onClick={handleCreateGroup}
-                                    disabled={creatingGroup || !newGroupName.trim()}
-                                    className="flex items-center gap-2 px-4 py-2.5 bg-purple-600 text-white rounded-xl hover:bg-purple-700 disabled:opacity-50 transition-colors"
-                                >
-                                    {creatingGroup ? (
-                                        <Loader2 className="w-4 h-4 animate-spin" />
-                                    ) : (
-                                        <Plus className="w-4 h-4" />
-                                    )}
-                                    Create
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        setShowCreateGroup(false);
-                                        setNewGroupName('');
-                                    }}
-                                    className="px-3 py-2.5 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl transition-colors"
-                                >
-                                    <X className="w-4 h-4" />
-                                </button>
-                            </div>
-                        )}
-                    </div>
+                    {/* Group Selection */}
+                    {validContacts.length > 0 && !result && (
+                        <div>
+                            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                                Add to Group (Optional)
+                            </label>
+                            {!showCreateGroup ? (
+                                <div className="flex gap-2">
+                                    <select
+                                        value={selectedGroup}
+                                        onChange={(e) => setSelectedGroup(e.target.value)}
+                                        className="flex-1 px-4 py-2.5 border border-gray-300 rounded-xl bg-white focus:ring-2 focus:ring-purple-500"
+                                    >
+                                        <option value="">No group</option>
+                                        {localGroups.map(group => (
+                                            <option key={group.id} value={group.id}>{group.name}</option>
+                                        ))}
+                                    </select>
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowCreateGroup(true)}
+                                        className="flex items-center gap-2 px-4 py-2.5 bg-purple-50 text-purple-600 border border-purple-200 rounded-xl hover:bg-purple-100"
+                                    >
+                                        <FolderPlus className="w-4 h-4" />
+                                        <span className="hidden sm:inline">New Group</span>
+                                    </button>
+                                </div>
+                            ) : (
+                                <div className="flex gap-2">
+                                    <input
+                                        type="text"
+                                        value={newGroupName}
+                                        onChange={(e) => setNewGroupName(e.target.value)}
+                                        placeholder="Enter group name..."
+                                        className="flex-1 px-4 py-2.5 border border-purple-300 rounded-xl focus:ring-2 focus:ring-purple-500"
+                                        autoFocus
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter') handleCreateGroup();
+                                            if (e.key === 'Escape') setShowCreateGroup(false);
+                                        }}
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={handleCreateGroup}
+                                        disabled={creatingGroup || !newGroupName.trim()}
+                                        className="flex items-center gap-2 px-4 py-2.5 bg-purple-600 text-white rounded-xl hover:bg-purple-700 disabled:opacity-50"
+                                    >
+                                        {creatingGroup ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+                                        Create
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => { setShowCreateGroup(false); setNewGroupName(''); }}
+                                        className="px-3 py-2.5 text-gray-500 hover:bg-gray-100 rounded-xl"
+                                    >
+                                        <X className="w-4 h-4" />
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    )}
 
                     {/* Tags */}
-                    <div>
-                        <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                            Tags (Optional)
-                        </label>
-                        <input
-                            type="text"
-                            value={tags}
-                            onChange={(e) => setTags(e.target.value)}
-                            placeholder="e.g., csv-import, leads"
-                            className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                        />
-                    </div>
+                    {validContacts.length > 0 && !result && (
+                        <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                Tags (Optional)
+                            </label>
+                            <input
+                                type="text"
+                                value={tags}
+                                onChange={(e) => setTags(e.target.value)}
+                                placeholder="e.g., csv-import, leads"
+                                className="w-full px-4 py-2.5 border border-gray-300 rounded-xl bg-white focus:ring-2 focus:ring-purple-500"
+                            />
+                        </div>
+                    )}
 
                     {/* Result */}
                     {result && (
-                        <div className="p-5 bg-green-50 dark:bg-green-900/20 rounded-xl border border-green-200 dark:border-green-800">
+                        <div className="p-5 bg-green-50 rounded-xl border border-green-200">
                             <div className="flex items-center gap-2 mb-4">
                                 <CheckCircle className="w-6 h-6 text-green-600" />
-                                <span className="font-bold text-green-800 dark:text-green-400 text-lg">
-                                    Import Complete!
-                                </span>
+                                <span className="font-bold text-green-800 text-lg">Upload Complete!</span>
                             </div>
 
-                            <div className="grid grid-cols-4 gap-3">
-                                <div className="text-center p-3 bg-white dark:bg-gray-800 rounded-lg">
-                                    <p className="text-2xl font-bold text-gray-900 dark:text-white">{result.totalProcessed || 0}</p>
-                                    <p className="text-xs text-gray-500">Processed</p>
-                                </div>
-                                <div className="text-center p-3 bg-white dark:bg-gray-800 rounded-lg">
+                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                                <div className="text-center p-3 bg-white rounded-lg">
                                     <p className="text-2xl font-bold text-green-600">{result.created || 0}</p>
                                     <p className="text-xs text-gray-500">Created</p>
                                 </div>
-                                <div className="text-center p-3 bg-white dark:bg-gray-800 rounded-lg">
+                                <div className="text-center p-3 bg-white rounded-lg">
                                     <p className="text-2xl font-bold text-blue-600">{result.updated || 0}</p>
                                     <p className="text-xs text-gray-500">Updated</p>
                                 </div>
-                                <div className="text-center p-3 bg-white dark:bg-gray-800 rounded-lg">
+                                <div className="text-center p-3 bg-white rounded-lg">
                                     <p className="text-2xl font-bold text-yellow-600">{result.skipped || 0}</p>
-                                    <p className="text-xs text-gray-500">Skipped</p>
+                                    <p className="text-xs text-gray-500">Duplicates</p>
+                                </div>
+                                <div className="text-center p-3 bg-white rounded-lg">
+                                    <p className="text-2xl font-bold text-red-600">{result.invalidFromCsv || 0}</p>
+                                    <p className="text-xs text-gray-500">Invalid</p>
                                 </div>
                             </div>
                         </div>
@@ -415,15 +572,16 @@ export default function CsvUploadModal({ isOpen, onClose, onSuccess, groups = []
                 </div>
 
                 {/* Footer */}
-                <div className="flex items-center justify-end gap-3 p-6 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
-                    <button onClick={handleClose} className="px-5 py-2.5 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-xl font-medium">
+                <div className="flex items-center justify-end gap-3 p-6 border-t border-gray-200 bg-gray-50">
+                    <button onClick={handleClose}
+                        className="px-5 py-2.5 text-gray-700 hover:bg-gray-200 rounded-xl font-medium">
                         {result ? 'Close' : 'Cancel'}
                     </button>
                     {!result && (
                         <button
                             onClick={handleSubmit}
-                            disabled={loading || parsedData.length === 0}
-                            className="flex items-center gap-2 px-6 py-2.5 bg-purple-600 text-white rounded-xl hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
+                            disabled={loading || validContacts.length === 0}
+                            className="flex items-center gap-2 px-6 py-2.5 bg-purple-600 text-white rounded-xl hover:bg-purple-700 disabled:opacity-50 font-semibold"
                         >
                             {loading ? (
                                 <>
@@ -433,7 +591,7 @@ export default function CsvUploadModal({ isOpen, onClose, onSuccess, groups = []
                             ) : (
                                 <>
                                     <Upload className="w-4 h-4" />
-                                    Import {parsedData.length > 0 ? `(${parsedData.length})` : ''}
+                                    Import {validContacts.length > 0 ? `(${validContacts.length})` : ''}
                                 </>
                             )}
                         </button>
