@@ -605,33 +605,6 @@ const CampaignDetails: React.FC = () => {
         </div>
       )}
 
-      {/* ✅ NEW: Success Message for Good Campaigns */}
-      {displayStats && displayStats.totalContacts > 300 && (
-        <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-xl p-4">
-          <div className="flex items-start gap-3">
-            <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
-              <CheckCircle className="w-5 h-5 text-blue-600" />
-            </div>
-            <div className="flex-1">
-              <h3 className="font-bold text-blue-900">
-                Delivery Report
-              </h3>
-              <p className="text-sm text-blue-800 mt-1">
-                Successfully delivered to <strong>{displayStats.delivered.toLocaleString()}</strong> recipients
-                {displayStats.failed > 0 && (
-                  <> • Failed messages have been <strong>auto-refunded</strong> to your wallet</>
-                )}
-              </p>
-              {displayStats.failed > 0 && (
-                <div className="mt-2 text-xs text-blue-700">
-                  💰 Refunded: ₹{(displayStats.failed * 0.19).toFixed(2)} 
-                  ({displayStats.failed} messages × ₹0.19)
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* ── Search & Filters ── */}
       <div className="bg-white rounded-2xl border border-gray-200 p-4 shadow-sm">
