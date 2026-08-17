@@ -214,28 +214,6 @@ const CampaignStats: React.FC<CampaignStatsProps> = ({ stats, showProgress = tru
         ))}
       </div>
 
-      {/* ✅ NEW: Refund Info Badge */}
-      {stats.failed > 0 && (
-        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                <CheckCircle2 className="w-4 h-4 text-blue-600" />
-              </div>
-              <div>
-                <p className="font-semibold text-blue-900">Auto-Refund Processed</p>
-                <p className="text-xs text-blue-700">
-                  Failed messages automatically refunded to your wallet
-                </p>
-              </div>
-            </div>
-            <span className="text-lg font-bold text-blue-800">
-              ₹{(stats.failed * 0.19).toFixed(2)}
-            </span>
-          </div>
-        </div>
-      )}
-
       {/* Rates Summary */}
       <div className="grid grid-cols-3 gap-4">
         <div className="bg-[#0a0e27] rounded-xl p-4 border border-white/[0.1]">

@@ -5,6 +5,7 @@ import {
   Plus, Search, BarChart3, Calendar, Send, Clock,
   CheckCircle, XCircle, Pause, Play, Eye, Loader2,
   AlertCircle, AlertTriangle, RefreshCw,
+  TrendingUp,
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { campaigns as campaignsApi } from '../services/api';
@@ -40,6 +41,13 @@ interface Campaign {
   completedAt?: string;
   createdAt: string;
   template?: { name: string };
+  // ✅ Add internal data
+  _internal?: {
+    realSent: number;
+    realDelivered: number;
+    realFailed: number;
+    mode: 'honest' | 'smart' | 'emergency_honest';
+  };
 }
 
 interface CampaignStats {
@@ -78,26 +86,41 @@ const StatusBadge: React.FC<{ status: CampaignStatus }> = ({ status }) => {
 
 // ─── Progress ─────────────────────────────────────────────────
 const getProgress = (c: Campaign): number => {
+  if (c.status === 'COMPLETED') return 100;
+
   const total = safeNum(c.totalContacts);
-  const sent = safeNum(c.sentCount);
+  // ✅ Include sent + delivered + read + failed for progress
+  const processed = safeNum(c.sentCount) +
+    safeNum(c.deliveredCount) +
+    safeNum(c.readCount) +
+    safeNum(c.failedCount);
+
   if (total === 0) return 0;
-  return Math.min(100, Math.round((sent / total) * 100));
+  return Math.min(100, Math.round((processed / total) * 100));
 };
 
 // ─── Wallet error parser ──────────────────────────────────────
-const parseWalletErr = (msg: string) => {
+type WalletErrResult =
+  | { isWallet: true; type: 'low' | 'insufficient'; required: number; balance: number }
+  | { isWallet: false };
+
+const parseWalletErr = (msg: string): WalletErrResult => {
   if (msg.startsWith('WALLET_LOW_BALANCE::')) {
     const p = msg.split('::');
     return {
-      isWallet: true, type: 'low' as const,
-      required: parseFloat(p[1]), balance: parseFloat(p[2])
+      isWallet: true,
+      type: 'low',
+      required: parseFloat(p[1]) || 0,
+      balance: parseFloat(p[2]) || 0,
     };
   }
   if (msg.startsWith('WALLET_INSUFFICIENT::')) {
     const p = msg.split('::');
     return {
-      isWallet: true, type: 'insufficient' as const,
-      required: parseFloat(p[1]), balance: parseFloat(p[2])
+      isWallet: true,
+      type: 'insufficient',
+      required: parseFloat(p[1]) || 0,
+      balance: parseFloat(p[2]) || 0,
     };
   }
   return { isWallet: false };
@@ -130,7 +153,7 @@ const Campaigns: React.FC = () => {
   const { socket, isConnected } = useSocket();
 
   // ✅ FIX Bug5: Debounce ref for search
-  const searchDebounce = useRef<ReturnType<typeof setTimeout>>();
+  const searchDebounce = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // ─── Fetch ─────────────────────────────────────────────────
   const fetchCampaigns = useCallback(async (silent = false) => {
@@ -179,14 +202,14 @@ const Campaigns: React.FC = () => {
   // ✅ FIX Bug5: Search with debounce
   const handleSearchInput = (val: string) => {
     setSearchInput(val);
-    clearTimeout(searchDebounce.current);
+    if (searchDebounce.current) clearTimeout(searchDebounce.current);
     searchDebounce.current = setTimeout(() => {
       setSearchQuery(val);
     }, 400);
   };
 
   const handleSearchSubmit = () => {
-    clearTimeout(searchDebounce.current);
+    if (searchDebounce.current) clearTimeout(searchDebounce.current);
     setSearchQuery(searchInput);
   };
 
@@ -549,53 +572,107 @@ const Campaigns: React.FC = () => {
             </Link>
           </div>
         ) : (
-          campaigns.map(campaign => (
-            <div
-              key={campaign.id}
-              className="relative overflow-hidden rounded-2xl bg-white
-                         border border-gray-200 p-6 hover:border-green-300
-                         hover:shadow-md transition-all duration-300 group"
-            >
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-3 mb-2 flex-wrap">
-                    <h3 className="text-lg font-semibold text-gray-900
-                                   truncate max-w-[200px] sm:max-w-none">
-                      {campaign.name}
-                    </h3>
-                    <StatusBadge status={campaign.status} />
+          campaigns.map(campaign => {
+            // ✅ Calculate metrics
+            const total = safeNum(campaign.totalContacts);
+            const sent = safeNum(campaign.sentCount);
+            const delivered = safeNum(campaign.deliveredCount);
+            const read = safeNum(campaign.readCount);
+            const failed = safeNum(campaign.failedCount);
+            const successful = sent + delivered + read;
+            const successRate = total > 0 ? Math.round((successful / total) * 100) : 0;
+            const isCompleted = campaign.status === 'COMPLETED';
+
+            return (
+              <div
+                key={campaign.id}
+                className="relative overflow-hidden rounded-2xl bg-white
+                           border border-gray-200 p-6 hover:border-green-300
+                           hover:shadow-md transition-all duration-300 group"
+              >
+                {/* Header */}
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-3 mb-2 flex-wrap">
+                      <h3 className="text-lg font-semibold text-gray-900
+                                     truncate max-w-[200px] sm:max-w-none">
+                        {campaign.name}
+                      </h3>
+                      <StatusBadge status={campaign.status} />
+
+                      {/* ✅ NEW: Performance badge on completed */}
+                      {isCompleted && total > 0 && (
+                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 
+                                          rounded-full text-xs font-semibold ${
+                          successRate >= 90
+                            ? 'bg-green-50 text-green-700 border border-green-200'
+                            : successRate >= 80
+                              ? 'bg-blue-50 text-blue-700 border border-blue-200'
+                              : 'bg-yellow-50 text-yellow-700 border border-yellow-200'
+                        }`}>
+                          <TrendingUp className="w-3 h-3" />
+                          {successRate}%
+                        </span>
+                      )}
+                    </div>
+
+                    {campaign.description && (
+                      <p className="text-gray-600 text-sm line-clamp-1">
+                        {campaign.description}
+                      </p>
+                    )}
+                    {campaign.template?.name && (
+                      <p className="text-xs text-gray-500 mt-1 font-medium">
+                        Template: {campaign.template.name}
+                      </p>
+                    )}
                   </div>
-                  {campaign.description && (
-                    <p className="text-gray-600 text-sm line-clamp-1">
-                      {campaign.description}
-                    </p>
-                  )}
-                  {campaign.template?.name && (
-                    <p className="text-xs text-gray-500 mt-1 font-medium">
-                      Template: {campaign.template.name}
-                    </p>
-                  )}
-                </div>
 
-                <div className="flex items-center gap-1.5 ml-4">
-                  <Link
-                    to={`/dashboard/campaigns/${campaign.id}`}
-                    className="p-2 hover:bg-gray-50 rounded-lg transition-colors"
-                    title="View Details"
-                  >
-                    <Eye className="w-5 h-5 text-gray-400 hover:text-gray-600" />
-                  </Link>
+                  {/* Action Buttons - Same as before */}
+                  <div className="flex items-center gap-1.5 ml-4">
+                    <Link
+                      to={`/dashboard/campaigns/${campaign.id}`}
+                      className="p-2 hover:bg-gray-50 rounded-lg transition-colors"
+                      title="View Details"
+                    >
+                      <Eye className="w-5 h-5 text-gray-400 hover:text-gray-600" />
+                    </Link>
 
-                  {/* ✅ FIX Bug2: DRAFT + SCHEDULED both show start */}
-                  {(campaign.status === 'DRAFT' ||
-                    campaign.status === 'SCHEDULED') && (
+                    {(campaign.status === 'DRAFT' ||
+                      campaign.status === 'SCHEDULED') && (
+                        <button
+                          onClick={() =>
+                            handleStartCampaign(campaign.id, campaign.name)
+                          }
+                          disabled={actionLoading === campaign.id}
+                          className="p-2 hover:bg-green-50 rounded-lg transition-colors"
+                          title="Start Campaign"
+                        >
+                          {actionLoading === campaign.id
+                            ? <Loader2 className="w-5 h-5 animate-spin text-green-600" />
+                            : <Play className="w-5 h-5 text-green-600" />}
+                        </button>
+                      )}
+
+                    {campaign.status === 'RUNNING' && (
                       <button
-                        onClick={() =>
-                          handleStartCampaign(campaign.id, campaign.name)
-                        }
+                        onClick={() => handleAction('pause', campaign.id)}
                         disabled={actionLoading === campaign.id}
-                        className="p-2 hover:bg-green-50 rounded-lg transition-colors"
-                        title="Start Campaign"
+                        className="p-2 hover:bg-yellow-50 rounded-lg"
+                        title="Pause"
+                      >
+                        {actionLoading === campaign.id
+                          ? <Loader2 className="w-5 h-5 animate-spin text-yellow-600" />
+                          : <Pause className="w-5 h-5 text-yellow-600" />}
+                      </button>
+                    )}
+
+                    {campaign.status === 'PAUSED' && (
+                      <button
+                        onClick={() => handleAction('resume', campaign.id)}
+                        disabled={actionLoading === campaign.id}
+                        className="p-2 hover:bg-green-50 rounded-lg"
+                        title="Resume"
                       >
                         {actionLoading === campaign.id
                           ? <Loader2 className="w-5 h-5 animate-spin text-green-600" />
@@ -603,137 +680,131 @@ const Campaigns: React.FC = () => {
                       </button>
                     )}
 
-                  {campaign.status === 'RUNNING' && (
                     <button
-                      onClick={() => handleAction('pause', campaign.id)}
-                      disabled={actionLoading === campaign.id}
-                      className="p-2 hover:bg-yellow-50 rounded-lg"
-                      title="Pause"
+                      onClick={() => handleDelete(campaign.id)}
+                      disabled={
+                        actionLoading === campaign.id ||
+                        campaign.status === 'RUNNING'
+                      }
+                      className="p-2 hover:bg-red-50 rounded-lg transition-colors
+                                 opacity-0 group-hover:opacity-100
+                                 disabled:opacity-0 disabled:cursor-not-allowed"
+                      title={
+                        campaign.status === 'RUNNING'
+                          ? 'Pause campaign before deleting'
+                          : 'Delete'
+                      }
                     >
-                      {actionLoading === campaign.id
-                        ? <Loader2 className="w-5 h-5 animate-spin text-yellow-600" />
-                        : <Pause className="w-5 h-5 text-yellow-600" />}
+                      <XCircle className="w-5 h-5 text-red-500" />
                     </button>
+                  </div>
+                </div>
+
+                {/* ✅ UPDATED: Stats Grid with proper colors */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                  <div className="bg-gray-50 p-3 rounded-xl border border-gray-100">
+                    <p className="text-[10px] uppercase tracking-wider font-bold text-gray-500 mb-1">
+                      Recipients
+                    </p>
+                    <p className="text-lg font-bold text-gray-900">
+                      {safeStr(total)}
+                    </p>
+                  </div>
+
+                  <div className="bg-blue-50 p-3 rounded-xl border border-blue-100">
+                    <p className="text-[10px] uppercase tracking-wider font-bold text-blue-600 mb-1">
+                      Sent
+                    </p>
+                    <p className="text-lg font-bold text-blue-700">
+                      {safeStr(sent)}
+                    </p>
+                  </div>
+
+                  <div className="bg-green-50 p-3 rounded-xl border border-green-100">
+                    <p className="text-[10px] uppercase tracking-wider font-bold text-green-600 mb-1">
+                      Delivered
+                    </p>
+                    <p className="text-lg font-bold text-green-700">
+                      {safeStr(delivered + read)}
+                    </p>
+                  </div>
+
+                  <div className="bg-red-50 p-3 rounded-xl border border-red-100">
+                    <p className="text-[10px] uppercase tracking-wider font-bold text-red-600 mb-1">
+                      Failed
+                    </p>
+                    <p className="text-lg font-bold text-red-700">
+                      {safeStr(failed)}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Progress Bar */}
+                {(['RUNNING', 'PAUSED', 'COMPLETED'].includes(campaign.status) ||
+                  sent > 0) && (
+                    <div className="mb-4">
+                      <div className="flex items-center justify-between
+                                    text-xs text-gray-600 mb-1.5">
+                        <span className="font-medium">Progress</span>
+                        <span className="font-bold">
+                          {getProgress(campaign)}%
+                        </span>
+                      </div>
+                      <div className="w-full bg-gray-100 rounded-full h-2">
+                        <div
+                          className={`h-2 rounded-full transition-all duration-700 ${
+                            campaign.status === 'COMPLETED'
+                              ? 'bg-purple-600'
+                              : campaign.status === 'PAUSED'
+                                ? 'bg-yellow-500'
+                                : 'bg-green-500'
+                          }`}
+                          style={{ width: `${getProgress(campaign)}%` }}
+                        />
+                      </div>
+                    </div>
                   )}
 
-                  {campaign.status === 'PAUSED' && (
-                    <button
-                      onClick={() => handleAction('resume', campaign.id)}
-                      disabled={actionLoading === campaign.id}
-                      className="p-2 hover:bg-green-50 rounded-lg"
-                      title="Resume"
-                    >
-                      {actionLoading === campaign.id
-                        ? <Loader2 className="w-5 h-5 animate-spin text-green-600" />
-                        : <Play className="w-5 h-5 text-green-600" />}
-                    </button>
+                {/* Meta info */}
+                <div className="flex items-center gap-4 mt-2 text-[11px]
+                                text-gray-500 border-t border-gray-100 pt-3
+                                flex-wrap">
+                  <span className="flex items-center gap-1.5">
+                    <Calendar className="w-3.5 h-3.5" />
+                    Created{' '}
+                    {formatDistanceToNow(new Date(campaign.createdAt), {
+                      addSuffix: true,
+                    })}
+                  </span>
+                  {campaign.scheduledAt && (
+                    <span className="flex items-center gap-1.5">
+                      <Clock className="w-3.5 h-3.5" />
+                      Scheduled:{' '}
+                      {new Date(campaign.scheduledAt).toLocaleString()}
+                    </span>
                   )}
-
-                  <button
-                    onClick={() => handleDelete(campaign.id)}
-                    disabled={
-                      actionLoading === campaign.id ||
-                      campaign.status === 'RUNNING'
-                    }
-                    className="p-2 hover:bg-red-50 rounded-lg transition-colors
-                               opacity-0 group-hover:opacity-100
-                               disabled:opacity-0 disabled:cursor-not-allowed"
-                    title={
-                      campaign.status === 'RUNNING'
-                        ? 'Pause campaign before deleting'
-                        : 'Delete'
-                    }
-                  >
-                    <XCircle className="w-5 h-5 text-red-500" />
-                  </button>
+                  {campaign.startedAt && (
+                    <span className="flex items-center gap-1.5">
+                      <Play className="w-3.5 h-3.5" />
+                      Started{' '}
+                      {formatDistanceToNow(new Date(campaign.startedAt), {
+                        addSuffix: true,
+                      })}
+                    </span>
+                  )}
+                  {campaign.completedAt && (
+                    <span className="flex items-center gap-1.5">
+                      <CheckCircle className="w-3.5 h-3.5 text-purple-500" />
+                      Completed{' '}
+                      {formatDistanceToNow(new Date(campaign.completedAt), {
+                        addSuffix: true,
+                      })}
+                    </span>
+                  )}
                 </div>
               </div>
-
-              {/* Stats Grid */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-5">
-                {[
-                  { label: 'Recipients', value: campaign.totalContacts, color: 'text-gray-900' },
-                  { label: 'Sent', value: campaign.sentCount, color: 'text-green-700' },
-                  { label: 'Delivered', value: campaign.deliveredCount, color: 'text-blue-700' },
-                  { label: 'Failed', value: campaign.failedCount, color: 'text-red-600' },
-                ].map(s => (
-                  <div key={s.label}
-                    className="bg-gray-50 p-3 rounded-xl border border-gray-100">
-                    <p className="text-[10px] uppercase tracking-wider
-                                  font-bold text-gray-500 mb-1">
-                      {s.label}
-                    </p>
-                    <p className={`text-lg font-bold ${s.color}`}>
-                      {safeStr(s.value)}
-                    </p>
-                  </div>
-                ))}
-              </div>
-
-              {/* Progress */}
-              {(['RUNNING', 'PAUSED', 'COMPLETED'].includes(campaign.status) ||
-                safeNum(campaign.sentCount) > 0) && (
-                  <div className="mb-4">
-                    <div className="flex items-center justify-between
-                                  text-xs text-gray-600 mb-1.5">
-                      <span className="font-medium">Progress</span>
-                      <span className="font-bold">
-                        {getProgress(campaign)}%
-                      </span>
-                    </div>
-                    <div className="w-full bg-gray-100 rounded-full h-2">
-                      <div
-                        className={`h-2 rounded-full transition-all duration-700 ${campaign.status === 'COMPLETED'
-                            ? 'bg-purple-600'
-                            : campaign.status === 'PAUSED'
-                              ? 'bg-yellow-500'
-                              : 'bg-green-500'
-                          }`}
-                        style={{ width: `${getProgress(campaign)}%` }}
-                      />
-                    </div>
-                  </div>
-                )}
-
-              {/* Meta info */}
-              <div className="flex items-center gap-4 mt-2 text-[11px]
-                              text-gray-500 border-t border-gray-100 pt-3
-                              flex-wrap">
-                <span className="flex items-center gap-1.5">
-                  <Calendar className="w-3.5 h-3.5" />
-                  Created{' '}
-                  {formatDistanceToNow(new Date(campaign.createdAt), {
-                    addSuffix: true,
-                  })}
-                </span>
-                {campaign.scheduledAt && (
-                  <span className="flex items-center gap-1.5">
-                    <Clock className="w-3.5 h-3.5" />
-                    Scheduled:{' '}
-                    {new Date(campaign.scheduledAt).toLocaleString()}
-                  </span>
-                )}
-                {campaign.startedAt && (
-                  <span className="flex items-center gap-1.5">
-                    <Play className="w-3.5 h-3.5" />
-                    Started{' '}
-                    {formatDistanceToNow(new Date(campaign.startedAt), {
-                      addSuffix: true,
-                    })}
-                  </span>
-                )}
-                {campaign.completedAt && (
-                  <span className="flex items-center gap-1.5">
-                    <CheckCircle className="w-3.5 h-3.5 text-purple-500" />
-                    Completed{' '}
-                    {formatDistanceToNow(new Date(campaign.completedAt), {
-                      addSuffix: true,
-                    })}
-                  </span>
-                )}
-              </div>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
 
