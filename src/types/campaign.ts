@@ -18,6 +18,10 @@ export interface CampaignStats {
   replied: number;
   failed: number;
   pending: number;
+  _internal?: {
+    mode?: string;
+    [key: string]: any;
+  };
 }
 
 export interface Campaign {

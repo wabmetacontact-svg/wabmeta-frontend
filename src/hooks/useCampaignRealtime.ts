@@ -23,13 +23,17 @@ interface CompletedStats {
   totalRecipients: number;
 }
 
-interface ContactStatusUpdate {
+export interface ContactStatusUpdate {
   contactId: string;
   phone: string;
   status: string;
   messageId?: string;
   error?: string;
   timestamp: string;
+  sentAt?: string;
+  deliveredAt?: string;
+  readAt?: string;
+  failedAt?: string;
 }
 
 // ✅ FIX Bug1: Use plain object instead of Map for React state
@@ -169,6 +173,10 @@ export const useCampaignRealtime = (campaignId: string | null) => {
             messageId: data.messageId,
             error: data.error,
             timestamp: data.timestamp || new Date().toISOString(),
+            sentAt: data.sentAt,
+            deliveredAt: data.deliveredAt,
+            readAt: data.readAt,
+            failedAt: data.failedAt,
           },
         };
       });

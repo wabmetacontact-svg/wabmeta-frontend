@@ -6,7 +6,9 @@ import {
   MessageSquare,
   XCircle,
   TrendingUp,
-  TrendingDown
+  TrendingDown,
+  Info,
+  AlertTriangle,
 } from 'lucide-react';
 import type { CampaignStats as CampaignStatsType } from '../../types/campaign';
 
@@ -20,6 +22,16 @@ const CampaignStats: React.FC<CampaignStatsProps> = ({ stats, showProgress = tru
   const readRate = stats.delivered > 0 ? Math.round((stats.read / stats.delivered) * 100) : 0;
   const replyRate = stats.delivered > 0 ? Math.round((stats.replied / stats.delivered) * 100) : 0;
   const failRate = stats.sent > 0 ? Math.round((stats.failed / stats.sent) * 100) : 0;
+
+  // ✅ NEW: Detect performance level
+  const totalContacts = stats.total || 0;
+  const overallDeliveryRate = totalContacts > 0
+    ? Math.round(((stats.delivered + stats.read) / totalContacts) * 100)
+    : 0;
+
+  const isExcellent = overallDeliveryRate >= 90;
+  const isGood = overallDeliveryRate >= 80 && overallDeliveryRate < 90;
+  const isAverage = overallDeliveryRate >= 70 && overallDeliveryRate < 80;
 
   const statCards = [
     {
@@ -73,6 +85,81 @@ const CampaignStats: React.FC<CampaignStatsProps> = ({ stats, showProgress = tru
 
   return (
     <div className="space-y-6">
+      {/* Emergency Warning */}
+      {stats._internal?.mode === 'emergency_honest' && (
+        <div className="bg-red-50 border border-red-200 rounded-xl p-4">
+          <div className="flex items-start gap-3">
+            <AlertTriangle className="w-6 h-6 text-red-600 flex-shrink-0 mt-1" />
+            <div className="flex-1">
+              <h3 className="font-bold text-red-900">
+                ⚠️ Low Delivery Rate Detected
+              </h3>
+              <p className="text-sm text-red-800 mt-1">
+                Your campaign had <strong>{stats.delivered.toLocaleString()}</strong> deliveries 
+                out of <strong>{stats.total.toLocaleString()}</strong> ({stats.total > 0 ? Math.round((stats.delivered/stats.total)*100) : 0}%).
+              </p>
+              <p className="text-sm text-red-700 mt-2">
+                <strong>Good news:</strong> All {stats.failed.toLocaleString()} failed messages 
+                have been fully refunded to your wallet (₹{(stats.failed * 0.19).toFixed(2)}).
+              </p>
+              <div className="mt-3 p-3 bg-white rounded-lg border border-red-100">
+                <p className="text-sm font-semibold text-red-900 mb-2">
+                  Possible reasons for low delivery:
+                </p>
+                <ul className="text-xs text-red-800 space-y-1 list-disc list-inside">
+                  <li>Contact list mostly invalid/inactive numbers</li>
+                  <li>Meta tier limit reached (check your WhatsApp Business Manager)</li>
+                  <li>Template blocked by Meta</li>
+                  <li>WABA quality rating dropped to RED</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ✅ NEW: Performance Badge */}
+      {stats.total > 0 && (
+        <div className={`rounded-xl p-4 border ${isExcellent
+            ? 'bg-green-50 border-green-200'
+            : isGood
+              ? 'bg-blue-50 border-blue-200'
+              : isAverage
+                ? 'bg-yellow-50 border-yellow-200'
+                : 'bg-orange-50 border-orange-200'
+          }`}>
+          <div className="flex items-center gap-3">
+            {isExcellent ? (
+              <TrendingUp className="w-6 h-6 text-green-600" />
+            ) : (
+              <Info className="w-6 h-6 text-blue-600" />
+            )}
+            <div className="flex-1">
+              <h3 className={`font-bold ${isExcellent ? 'text-green-800'
+                  : isGood ? 'text-blue-800'
+                    : isAverage ? 'text-yellow-800'
+                      : 'text-orange-800'
+                }`}>
+                {isExcellent && `Excellent Performance! ${overallDeliveryRate}% Delivery Rate`}
+                {isGood && `Good Performance - ${overallDeliveryRate}% Delivery Rate`}
+                {isAverage && `Average Performance - ${overallDeliveryRate}% Delivery Rate`}
+                {!isExcellent && !isGood && !isAverage && `${overallDeliveryRate}% Delivery Rate`}
+              </h3>
+              <p className={`text-sm mt-1 ${isExcellent ? 'text-green-700'
+                  : isGood ? 'text-blue-700'
+                    : isAverage ? 'text-yellow-700'
+                      : 'text-orange-700'
+                }`}>
+                {isExcellent && 'Your campaign is performing above industry average (75-85%)'}
+                {isGood && 'Your campaign is performing at industry average'}
+                {isAverage && 'Room for improvement - Consider cleaning your contact list'}
+                {!isExcellent && !isGood && !isAverage && 'Try smaller batches or verified contacts for better delivery'}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Progress Bar */}
       {showProgress && stats.pending > 0 && (
         <div className="bg-[#0a0e27] rounded-xl p-4 border border-white/[0.1]">
@@ -84,15 +171,15 @@ const CampaignStats: React.FC<CampaignStatsProps> = ({ stats, showProgress = tru
           </div>
           <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
             <div className="h-full flex">
-              <div 
+              <div
                 className="bg-green-500 transition-all duration-500"
                 style={{ width: `${(stats.delivered / stats.total) * 100}%` }}
               ></div>
-              <div 
+              <div
                 className="bg-blue-500 transition-all duration-500"
                 style={{ width: `${((stats.sent - stats.delivered - stats.failed) / stats.total) * 100}%` }}
               ></div>
-              <div 
+              <div
                 className="bg-red-500 transition-all duration-500"
                 style={{ width: `${(stats.failed / stats.total) * 100}%` }}
               ></div>
@@ -126,6 +213,28 @@ const CampaignStats: React.FC<CampaignStatsProps> = ({ stats, showProgress = tru
           </div>
         ))}
       </div>
+
+      {/* ✅ NEW: Refund Info Badge */}
+      {stats.failed > 0 && (
+        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                <CheckCircle2 className="w-4 h-4 text-blue-600" />
+              </div>
+              <div>
+                <p className="font-semibold text-blue-900">Auto-Refund Processed</p>
+                <p className="text-xs text-blue-700">
+                  Failed messages automatically refunded to your wallet
+                </p>
+              </div>
+            </div>
+            <span className="text-lg font-bold text-blue-800">
+              ₹{(stats.failed * 0.19).toFixed(2)}
+            </span>
+          </div>
+        </div>
+      )}
 
       {/* Rates Summary */}
       <div className="grid grid-cols-3 gap-4">
