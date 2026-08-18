@@ -82,30 +82,100 @@ interface Props {
   onJumpToMessage?: (messageId: string) => void;
 }
 
-const API_BASE = 'https://wabmeta-api.onrender.com/api';
+const API_BASE = import.meta.env.VITE_API_URL || 'https://api.wabmeta.com/api';
 const QUICK_REACTIONS = ['👍', '❤️', '😂', '😮', '😢', '🙏'];
 
 // ✅ HOVER TIMING CONSTANTS
 const HIDE_DELAY_MS = 250;       // Toolbar hide karne se pehle wait
 const REACTION_HIDE_MS = 300;    // Reaction picker hide delay
 
-const forceDownload = async (url: string, filename: string, e: React.MouseEvent) => {
+// ✅ NEW - With auth token support
+const forceDownload = async (
+  url: string, 
+  filename: string, 
+  e: React.MouseEvent
+) => {
   e.preventDefault();
   e.stopPropagation();
+  
+  const loadingToast = toast.loading('Downloading...');
+  
   try {
+    // ✅ Cloudinary URLs - direct download (no auth needed)
+    if (url.includes('cloudinary.com') || url.startsWith('data:')) {
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename || 'download';
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      toast.dismiss(loadingToast);
+      toast.success('Download started');
+      return;
+    }
+    
+    // ✅ Backend proxy - use api instance (has auth token)
+    if (url.includes('/inbox/media/')) {
+      // Extract mediaId from URL
+      const mediaId = url.split('/inbox/media/')[1]?.split('?')[0];
+      
+      if (!mediaId) throw new Error('Invalid media URL');
+      
+      // ✅ Use api instance with auth
+      const response = await api.get(`/inbox/media/${mediaId}`, {
+        responseType: 'blob',
+      });
+      
+      const blob = new Blob([response.data]);
+      const blobUrl = window.URL.createObjectURL(blob);
+      
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      a.download = filename || `file_${mediaId}`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      
+      // Cleanup
+      setTimeout(() => window.URL.revokeObjectURL(blobUrl), 1000);
+      
+      toast.dismiss(loadingToast);
+      toast.success('Download complete');
+      return;
+    }
+    
+    // ✅ Other URLs - try direct fetch
     const response = await fetch(url);
+    if (!response.ok) throw new Error('Fetch failed');
+    
     const blob = await response.blob();
     const blobUrl = window.URL.createObjectURL(blob);
+    
     const a = document.createElement('a');
     a.href = blobUrl;
     a.download = filename || 'download';
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
-    window.URL.revokeObjectURL(blobUrl);
-  } catch (error) {
-    console.error("Download failed, opening in new tab", error);
-    window.open(url, '_blank');
+    
+    setTimeout(() => window.URL.revokeObjectURL(blobUrl), 1000);
+    
+    toast.dismiss(loadingToast);
+    toast.success('Download complete');
+    
+  } catch (error: any) {
+    console.error('Download error:', error);
+    toast.dismiss(loadingToast);
+    
+    // ✅ Fallback - open in new tab
+    try {
+      window.open(url, '_blank', 'noopener,noreferrer');
+      toast.success('Opened in new tab');
+    } catch {
+      toast.error('Download failed. Please try again.');
+    }
   }
 };
 
@@ -175,12 +245,38 @@ function normalizeButtons(raw: any[]): Array<{ type: string; text: string; url?:
 function getMediaSrc(msg: Message): string | null {
   const url = msg.mediaUrl;
   if (!url) return null;
+  
+  // ✅ Data URL (base64)
   if (url.startsWith('data:')) return url;
+  
+  // ✅ Cloudinary URL - direct use
   if (url.includes('cloudinary.com')) return url;
-  if (url.startsWith('https://') && !url.includes('lookaside.fbsbx.com') && !url.includes('mmg.whatsapp.net')) return url;
-  if (msg.mediaId && /^\d+$/.test(msg.mediaId.trim())) return `${API_BASE}/inbox/media/${msg.mediaId.trim()}`;
-  if (url && !url.startsWith('http') && /^\d+$/.test(url.trim())) return `${API_BASE}/inbox/media/${url.trim()}`;
-  if (url?.startsWith('http') && msg.mediaId) return `${API_BASE}/inbox/media/${msg.mediaId}`;
+  
+  // ✅ Other HTTPS URLs (not Meta CDN)
+  if (
+    url.startsWith('https://') && 
+    !url.includes('lookaside.fbsbx.com') && 
+    !url.includes('mmg.whatsapp.net') &&
+    !url.includes('scontent')  // ✅ Add Meta scontent CDN
+  ) {
+    return url;
+  }
+  
+  // ✅ Media ID - proxy through backend
+  if (msg.mediaId && /^\d+$/.test(msg.mediaId.trim())) {
+    return `${API_BASE}/inbox/media/${msg.mediaId.trim()}`;
+  }
+  
+  // ✅ URL that is actually mediaId
+  if (url && !url.startsWith('http') && /^\d+$/.test(url.trim())) {
+    return `${API_BASE}/inbox/media/${url.trim()}`;
+  }
+  
+  // ✅ Expired Meta URL with mediaId - use proxy
+  if (url?.startsWith('http') && msg.mediaId) {
+    return `${API_BASE}/inbox/media/${msg.mediaId}`;
+  }
+  
   return null;
 }
 
