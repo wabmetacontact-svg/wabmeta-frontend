@@ -89,45 +89,59 @@ const QUICK_REACTIONS = ['👍', '❤️', '😂', '😮', '😢', '🙏'];
 const HIDE_DELAY_MS = 250;       // Toolbar hide karne se pehle wait
 const REACTION_HIDE_MS = 300;    // Reaction picker hide delay
 
-// ✅ NEW - With auth token support
+// ✅ NEW - With auth token and real-time progress support
 const forceDownload = async (
   url: string, 
   filename: string, 
-  e: React.MouseEvent
+  e?: React.MouseEvent,
+  onProgress?: (progress: number | null) => void
 ) => {
-  e.preventDefault();
-  e.stopPropagation();
+  if (e) {
+    e.preventDefault();
+    e.stopPropagation();
+  }
   
+  onProgress?.(0);
   const loadingToast = toast.loading('Downloading...');
   
   try {
-    // ✅ Cloudinary URLs - direct download (no auth needed)
-    if (url.includes('cloudinary.com') || url.startsWith('data:')) {
+    // ✅ Data URLs - direct download
+    if (url.startsWith('data:')) {
       const a = document.createElement('a');
       a.href = url;
       a.download = filename || 'download';
-      a.target = '_blank';
-      a.rel = 'noopener noreferrer';
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
+      onProgress?.(100);
       toast.dismiss(loadingToast);
-      toast.success('Download started');
+      toast.success('Download complete');
       return;
     }
     
-    // ✅ Backend proxy - use api instance (has auth token)
+    // ✅ Backend proxy - use api instance (has auth token) with live download progress
     if (url.includes('/inbox/media/')) {
       // Extract mediaId from URL
       const mediaId = url.split('/inbox/media/')[1]?.split('?')[0];
       
       if (!mediaId) throw new Error('Invalid media URL');
       
-      // ✅ Use api instance with auth
-      const response = await api.get(`/inbox/media/${mediaId}`, {
+      const queryParams = url.includes('?') ? `?${url.split('?')[1]}` : '';
+      
+      const response = await api.get(`/inbox/media/${mediaId}${queryParams}`, {
         responseType: 'blob',
+        onDownloadProgress: (progressEvent) => {
+          if (progressEvent.total && progressEvent.total > 0) {
+            const percent = Math.min(99, Math.round((progressEvent.loaded * 100) / progressEvent.total));
+            onProgress?.(percent);
+            toast.loading(`Downloading ${percent}%...`, { id: loadingToast });
+          } else if (progressEvent.loaded) {
+            onProgress?.(null);
+          }
+        },
       });
       
+      onProgress?.(100);
       const blob = new Blob([response.data]);
       const blobUrl = window.URL.createObjectURL(blob);
       
@@ -146,11 +160,36 @@ const forceDownload = async (
       return;
     }
     
-    // ✅ Other URLs - try direct fetch
+    // ✅ Other URLs / Cloudinary URLs - fetch with ReadableStream for real-time progress
     const response = await fetch(url);
     if (!response.ok) throw new Error('Fetch failed');
     
-    const blob = await response.blob();
+    const contentLength = response.headers.get('content-length');
+    const totalBytes = contentLength ? parseInt(contentLength, 10) : 0;
+    
+    let blob: Blob;
+    if (response.body && totalBytes > 0) {
+      const reader = response.body.getReader();
+      let receivedBytes = 0;
+      const chunks: BlobPart[] = [];
+      
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        chunks.push(value);
+        receivedBytes += value.length;
+        const percent = Math.min(99, Math.round((receivedBytes * 100) / totalBytes));
+        onProgress?.(percent);
+        toast.loading(`Downloading ${percent}%...`, { id: loadingToast });
+      }
+      
+      const mimeType = response.headers.get('content-type') || 'application/octet-stream';
+      blob = new Blob(chunks, { type: mimeType });
+    } else {
+      blob = await response.blob();
+    }
+    
+    onProgress?.(100);
     const blobUrl = window.URL.createObjectURL(blob);
     
     const a = document.createElement('a');
@@ -176,6 +215,7 @@ const forceDownload = async (
     } catch {
       toast.error('Download failed. Please try again.');
     }
+    throw error;
   }
 };
 
@@ -368,6 +408,38 @@ const MessageBubble: React.FC<Props> = ({
   const [editText, setEditText] = useState(message.content || '');
   const [deleting, setDeleting] = useState(false);
   const [editSaving, setEditSaving] = useState(false);
+
+  // ✅ Real-time download progress states
+  const [downloadState, setDownloadState] = useState<'idle' | 'downloading' | 'completed' | 'error'>('idle');
+  const [downloadProgress, setDownloadProgress] = useState<number | null>(null);
+
+  const handleDownload = async (url: string, filename: string, e?: React.MouseEvent) => {
+    if (e) {
+      e.stopPropagation();
+      e.preventDefault();
+    }
+    if (downloadState === 'downloading') return;
+
+    setDownloadState('downloading');
+    setDownloadProgress(0);
+
+    try {
+      await forceDownload(url, filename, e, (progress) => {
+        setDownloadProgress(progress);
+      });
+      setDownloadState('completed');
+      setTimeout(() => {
+        setDownloadState('idle');
+        setDownloadProgress(null);
+      }, 2500);
+    } catch {
+      setDownloadState('error');
+      setTimeout(() => {
+        setDownloadState('idle');
+        setDownloadProgress(null);
+      }, 3000);
+    }
+  };
 
   // ✅ Refs for timers and DOM
   const hideTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -618,8 +690,19 @@ const MessageBubble: React.FC<Props> = ({
               <X className="w-5 h-5" />
             </button>
             <img src={imgSrc} alt="Full" className="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl" onClick={(e) => e.stopPropagation()} />
-            <button className="absolute bottom-4 right-4 p-2.5 bg-black/10 hover:bg-black/20 rounded-full text-white backdrop-blur-sm" onClick={(e) => forceDownload(imgSrc, 'image.jpg', e)}>
-              <Download className="w-5 h-5" />
+            <button 
+              className="absolute bottom-4 right-4 p-2.5 bg-black/40 hover:bg-black/60 rounded-full text-white backdrop-blur-sm transition-all" 
+              onClick={(e) => handleDownload(imgSrc, 'image.jpg', e)}
+              disabled={downloadState === 'downloading'}
+              title={downloadState === 'downloading' ? `Downloading ${downloadProgress !== null ? `${downloadProgress}%` : '...'}` : 'Download'}
+            >
+              {downloadState === 'downloading' ? (
+                <RefreshCw className="w-5 h-5 animate-spin text-emerald-400" />
+              ) : downloadState === 'completed' ? (
+                <Check className="w-5 h-5 text-emerald-400" />
+              ) : (
+                <Download className="w-5 h-5" />
+              )}
             </button>
           </div>,
           document.body
@@ -694,18 +777,56 @@ const MessageBubble: React.FC<Props> = ({
     const colorClass = getDocIconClass();
     return (
       <div className="flex items-center gap-3 min-w-[260px] py-1">
-        <div className={`w-12 h-14 rounded-lg bg-gradient-to-br ${colorClass} border flex flex-col items-center justify-center flex-shrink-0`}>
-          <FileText className="w-5 h-5" />
-          {ext && <span className="text-[9px] font-bold uppercase mt-0.5">{ext}</span>}
+        <div className={`w-12 h-14 rounded-lg bg-gradient-to-br ${colorClass} border flex flex-col items-center justify-center flex-shrink-0 relative overflow-hidden`}>
+          {downloadState === 'downloading' ? (
+            <div className="flex flex-col items-center justify-center">
+              <RefreshCw className="w-4 h-4 animate-spin" />
+              <span className="text-[8px] font-bold mt-0.5 font-mono">
+                {downloadProgress !== null ? `${downloadProgress}%` : '...'}
+              </span>
+            </div>
+          ) : (
+            <>
+              <FileText className="w-5 h-5" />
+              {ext && <span className="text-[9px] font-bold uppercase mt-0.5">{ext}</span>}
+            </>
+          )}
         </div>
         
         <div className="flex-1 min-w-0">
           <p className={`text-sm font-medium truncate ${isOutbound ? 'text-white' : 'text-gray-900'}`}>
             {fileName}
           </p>
-          <p className={`text-[10px] mt-0.5 uppercase tracking-wider ${isOutbound ? 'text-white/60' : 'text-gray-500'}`}>
-            {ext || 'File'} Document
-          </p>
+          {downloadState === 'downloading' ? (
+            <div className="mt-1 space-y-1">
+              <div className="flex items-center justify-between text-[10px]">
+                <span className={`font-medium ${isOutbound ? 'text-white/80' : 'text-emerald-600'}`}>
+                  Downloading...
+                </span>
+                <span className={`font-mono font-bold ${isOutbound ? 'text-white' : 'text-emerald-700'}`}>
+                  {downloadProgress !== null ? `${downloadProgress}%` : ''}
+                </span>
+              </div>
+              <div className={`w-full h-1.5 rounded-full overflow-hidden ${isOutbound ? 'bg-black/20' : 'bg-gray-200'}`}>
+                <div 
+                  className={`h-full transition-all duration-150 rounded-full ${
+                    isOutbound 
+                      ? 'bg-white shadow-[0_0_8px_rgba(255,255,255,0.6)]' 
+                      : 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]'
+                  } ${downloadProgress === null ? 'w-1/2 animate-pulse' : ''}`}
+                  style={{ width: downloadProgress !== null ? `${downloadProgress}%` : undefined }}
+                />
+              </div>
+            </div>
+          ) : downloadState === 'completed' ? (
+            <p className={`text-[10px] mt-0.5 font-medium flex items-center gap-1 ${isOutbound ? 'text-emerald-300' : 'text-emerald-600'}`}>
+              <Check className="w-3 h-3" /> Download complete
+            </p>
+          ) : (
+            <p className={`text-[10px] mt-0.5 uppercase tracking-wider ${isOutbound ? 'text-white/60' : 'text-gray-500'}`}>
+              {ext || 'File'} Document
+            </p>
+          )}
         </div>
         
         {docSrc && (
@@ -724,19 +845,38 @@ const MessageBubble: React.FC<Props> = ({
               </button>
             )}
             
-            {/* Download button - uses ?download=true */}
+            {/* Download button - uses ?download=true with realtime progress */}
             <button 
               onClick={(e) => {
-                // ✅ Force download via query param
+                // ✅ Force download via query param with live progress
                 const downloadUrl = docSrc.includes('?') 
                   ? `${docSrc}&download=true`
                   : `${docSrc}?download=true`;
-                forceDownload(downloadUrl, fileName, e);
+                handleDownload(downloadUrl, fileName, e);
               }}
-              className={`p-2 rounded-full ${isOutbound ? 'bg-white/10 hover:bg-white/20 text-white/90' : 'bg-gray-100 hover:bg-gray-200 text-gray-700'} transition-colors`}
-              title="Download"
+              disabled={downloadState === 'downloading'}
+              className={`p-2 rounded-full transition-all relative ${
+                isOutbound 
+                  ? 'bg-white/10 hover:bg-white/20 text-white/90' 
+                  : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+              } ${downloadState === 'downloading' ? 'cursor-wait ring-2 ring-emerald-400/50' : ''}`}
+              title={
+                downloadState === 'downloading'
+                  ? `Downloading ${downloadProgress !== null ? `${downloadProgress}%` : '...'}`
+                  : downloadState === 'completed'
+                    ? 'Downloaded'
+                    : 'Download'
+              }
             >
-              <Download className="w-4 h-4" />
+              {downloadState === 'downloading' ? (
+                <div className="relative w-4 h-4 flex items-center justify-center">
+                  <RefreshCw className="w-4 h-4 animate-spin text-emerald-400" />
+                </div>
+              ) : downloadState === 'completed' ? (
+                <Check className="w-4 h-4 text-emerald-400 animate-scale-in" />
+              ) : (
+                <Download className="w-4 h-4" />
+              )}
             </button>
           </div>
         )}
