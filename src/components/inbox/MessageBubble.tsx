@@ -246,33 +246,43 @@ function getMediaSrc(msg: Message): string | null {
   const url = msg.mediaUrl;
   if (!url) return null;
   
-  // ✅ Data URL (base64)
+  // Data URL
   if (url.startsWith('data:')) return url;
   
-  // ✅ Cloudinary URL - direct use
+  // ✅ FIX: For Cloudinary PDFs/DOCs - ALWAYS go through backend proxy
+  // This solves PDF loading issues
+  const mimeType = msg.mediaMimeType?.toLowerCase() || '';
+  const isDocument = mimeType === 'application/pdf' || 
+                     mimeType.includes('document') ||
+                     mimeType.includes('sheet') ||
+                     mimeType.includes('presentation');
+  
+  if (isDocument && msg.mediaId) {
+    return `${API_BASE}/inbox/media/${msg.mediaId.trim()}`;
+  }
+  
+  // Cloudinary for images/videos - direct
   if (url.includes('cloudinary.com')) return url;
   
-  // ✅ Other HTTPS URLs (not Meta CDN)
+  // Other HTTPS URLs (not Meta CDN)
   if (
     url.startsWith('https://') && 
     !url.includes('lookaside.fbsbx.com') && 
     !url.includes('mmg.whatsapp.net') &&
-    !url.includes('scontent')  // ✅ Add Meta scontent CDN
+    !url.includes('scontent')
   ) {
     return url;
   }
   
-  // ✅ Media ID - proxy through backend
+  // Media ID - proxy through backend
   if (msg.mediaId && /^\d+$/.test(msg.mediaId.trim())) {
     return `${API_BASE}/inbox/media/${msg.mediaId.trim()}`;
   }
   
-  // ✅ URL that is actually mediaId
   if (url && !url.startsWith('http') && /^\d+$/.test(url.trim())) {
     return `${API_BASE}/inbox/media/${url.trim()}`;
   }
   
-  // ✅ Expired Meta URL with mediaId - use proxy
   if (url?.startsWith('http') && msg.mediaId) {
     return `${API_BASE}/inbox/media/${msg.mediaId}`;
   }
@@ -688,14 +698,47 @@ const MessageBubble: React.FC<Props> = ({
           <FileText className="w-5 h-5" />
           {ext && <span className="text-[9px] font-bold uppercase mt-0.5">{ext}</span>}
         </div>
+        
         <div className="flex-1 min-w-0">
-          <p className={`text-sm font-medium truncate ${isOutbound ? 'text-white' : 'text-gray-900'}`}>{fileName}</p>
-          <p className={`text-[10px] mt-0.5 uppercase tracking-wider ${isOutbound ? 'text-white/60' : 'text-gray-500'}`}>{ext || 'File'} Document</p>
+          <p className={`text-sm font-medium truncate ${isOutbound ? 'text-white' : 'text-gray-900'}`}>
+            {fileName}
+          </p>
+          <p className={`text-[10px] mt-0.5 uppercase tracking-wider ${isOutbound ? 'text-white/60' : 'text-gray-500'}`}>
+            {ext || 'File'} Document
+          </p>
         </div>
+        
         {docSrc && (
-          <button onClick={(e) => forceDownload(docSrc, fileName, e)} className={`p-2 rounded-full ${isOutbound ? 'bg-white/10 hover:bg-white/20 text-white/90 hover:text-white' : 'bg-gray-100 hover:bg-gray-200 text-gray-700 hover:text-gray-900'} transition-colors flex-shrink-0`}>
-            <Download className="w-4 h-4" />
-          </button>
+          <div className="flex items-center gap-1">
+            {/* ✅ NEW: View button (opens PDF inline) */}
+            {ext === 'pdf' && (
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  window.open(docSrc, '_blank', 'noopener,noreferrer');
+                }}
+                className={`p-2 rounded-full ${isOutbound ? 'bg-white/10 hover:bg-white/20 text-white/90' : 'bg-gray-100 hover:bg-gray-200 text-gray-700'} transition-colors`}
+                title="View PDF"
+              >
+                <ExternalLink className="w-4 h-4" />
+              </button>
+            )}
+            
+            {/* Download button - uses ?download=true */}
+            <button 
+              onClick={(e) => {
+                // ✅ Force download via query param
+                const downloadUrl = docSrc.includes('?') 
+                  ? `${docSrc}&download=true`
+                  : `${docSrc}?download=true`;
+                forceDownload(downloadUrl, fileName, e);
+              }}
+              className={`p-2 rounded-full ${isOutbound ? 'bg-white/10 hover:bg-white/20 text-white/90' : 'bg-gray-100 hover:bg-gray-200 text-gray-700'} transition-colors`}
+              title="Download"
+            >
+              <Download className="w-4 h-4" />
+            </button>
+          </div>
         )}
       </div>
     );
