@@ -701,11 +701,13 @@ export const contacts = {
   search: (query: string, limit = 30) =>
     api.get<ApiResponse<{
       contacts: Array<{
-        id:    string;
-        name:  string;
+        id: string;
+        name?: string;
+        firstName?: string;
+        lastName?: string;
         phone: string;
-        email: string;
-        tags:  string[];
+        email?: string;
+        tags: string[];
       }>;
       total: number;
     }>>(
@@ -848,6 +850,10 @@ export const campaigns = {
     api.post<ApiResponse>(`/campaigns/${id}/duplicate`, { name }),
 
   getContacts: (id: string, params?: any) =>
+    api.get<ApiResponse>(`/campaigns/${id}/contacts`, { params }),
+
+  // ✅ Add missing getContacts alias
+  getRecipientsList: (id: string, params?: any) =>
     api.get<ApiResponse>(`/campaigns/${id}/contacts`, { params }),
 
   getAnalytics: (id: string) =>

@@ -142,22 +142,46 @@ const CampaignDetails: React.FC = () => {
   } = useCampaignRealtime(id || null);
 
   // ─── Live stats merge ──────────────────────────────────────
+  // ✅ FIX 1: liveStats mein bounds check properly
   const liveStats = useMemo((): Stats | null => {
     if (!stats) return null;
     if (!progress || !isProcessing) return stats;
 
-    const total = Math.max(progress.total, stats.totalContacts, 1);
-    const sent = Math.min(progress.sent, total);
-    const failed = Math.min(progress.failed, Math.max(0, total - sent));
-    // ✅ FIX Bug5: delivered should not exceed sent
-    const delivered = Math.min(progress.delivered, sent);
-    const read = Math.min(progress.read, delivered);
-    const pending = Math.max(0, total - sent - failed);
+    const total = Math.max(progress.total || 0, stats.totalContacts || 1);
+    
+    // ✅ Bounds check properly
+    const read = Math.max(0, Math.min(progress.read || 0, total));
+    const delivered = Math.max(0, Math.min(
+      progress.delivered || 0,
+      total - read  // delivered = delivered (excluding read)
+    ));
+    const failed = Math.max(0, Math.min(progress.failed || 0, total));
+    const sent = Math.max(0, Math.min(
+      progress.sent || 0,
+      total - delivered - read - failed
+    ));
+    const pending = Math.max(0, total - sent - delivered - read - failed);
 
     return {
       ...stats,
       totalContacts: total,
-      sent, failed, delivered, read, pending, queued: 0,
+      sent,
+      delivered,
+      read,
+      failed,
+      pending,
+      queued: 0,
+      // Keep failure reasons from DB stats
+      failureReasons: stats.failureReasons,
+      successRate: total > 0
+        ? Math.round(((delivered + read) / total) * 100)
+        : 0,
+      deliveryRate: (sent + delivered + read + failed) > 0
+        ? Math.round(((delivered + read) / (sent + delivered + read + failed)) * 100)
+        : 0,
+      readRate: (delivered + read) > 0
+        ? Math.round((read / (delivered + read)) * 100)
+        : 0,
     };
   }, [stats, progress, isProcessing]);
 
@@ -341,21 +365,40 @@ const CampaignDetails: React.FC = () => {
     }
   };
 
+  // ✅ FIX 2: Contacts table mein status filter change hone pe page 1 pe jaao
+  const handleFilterChange = (newStatus: string) => {
+    setFilterStatus(newStatus);
+    setPageMeta(prev => ({ ...prev, page: 1 })); // ✅ Reset to page 1
+  };
+
+  // ✅ FIX 3: Export function mein blob response handle
   const handleExport = async () => {
     try {
-      const res = await campaignsApi.exportRecipients(
-        id!,
-        filterStatus !== 'all' ? filterStatus : undefined
+      const status = filterStatus !== 'all' ? filterStatus : undefined;
+      const res = await campaignsApi.exportRecipients(id!, status);
+      
+      // ✅ Check if response has data
+      if (!res.data || (res.data instanceof Blob && res.data.size === 0)) {
+        toast.error('No data to export');
+        return;
+      }
+      
+      const url = URL.createObjectURL(
+        new Blob([res.data], { type: 'text/csv' })
       );
-      const url = URL.createObjectURL(new Blob([res.data]));
       const link = document.createElement('a');
       link.href = url;
-      link.download = `campaign-${id}.csv`;
+      link.download = `campaign-${campaign?.name || id}-${
+        status || 'all'
+      }-${new Date().toISOString().split('T')[0]}.csv`;
+      document.body.appendChild(link);
       link.click();
+      document.body.removeChild(link);
       URL.revokeObjectURL(url);
       toast.success('Export downloaded!');
-    } catch {
-      toast.error('Export failed');
+    } catch (e: any) {
+      console.error('Export failed:', e);
+      toast.error('Export failed. Please try again.');
     }
   };
 
@@ -443,7 +486,9 @@ const CampaignDetails: React.FC = () => {
                          font-bold text-sm"
             >
               <RotateCcw className="w-4 h-4" />
-              Retry Failed ({selectedContacts.length || displayStats?.failed})
+              {selectedContacts.length > 0
+                ? `Retry Selected (${selectedContacts.length})`
+                : `Retry All Failed (${displayStats?.failed || 0})`}
             </button>
           )}
         </div>
@@ -526,39 +571,39 @@ const CampaignDetails: React.FC = () => {
           <StatCard
             label="Total" value={displayStats.totalContacts}
             icon={Users} iconColor="text-blue-600"
-            onClick={() => setFilterStatus('all')}
+            onClick={() => handleFilterChange('all')}
             active={filterStatus === 'all'}
           />
           <StatCard
             label="Pending"
             value={displayStats.pending + (displayStats.queued || 0)}
             icon={Clock} iconColor="text-yellow-500"
-            onClick={() => setFilterStatus('PENDING')}
+            onClick={() => handleFilterChange('PENDING')}
             active={filterStatus === 'PENDING'}
             pulse={isProcessing && displayStats.pending > 0}
           />
           <StatCard
             label="Sent" value={displayStats.sent}
             icon={Send} iconColor="text-purple-600"
-            onClick={() => setFilterStatus('SENT')}
+            onClick={() => handleFilterChange('SENT')}
             active={filterStatus === 'SENT'}
           />
           <StatCard
             label="Delivered" value={displayStats.delivered}
             icon={CheckCircle} iconColor="text-green-600"
-            onClick={() => setFilterStatus('DELIVERED')}
+            onClick={() => handleFilterChange('DELIVERED')}
             active={filterStatus === 'DELIVERED'}
           />
           <StatCard
             label="Read" value={displayStats.read}
             icon={Eye} iconColor="text-blue-600"
-            onClick={() => setFilterStatus('READ')}
+            onClick={() => handleFilterChange('READ')}
             active={filterStatus === 'READ'}
           />
           <StatCard
             label="Failed" value={displayStats.failed}
             icon={XCircle} iconColor="text-red-600"
-            onClick={() => setFilterStatus('FAILED')}
+            onClick={() => handleFilterChange('FAILED')}
             active={filterStatus === 'FAILED'}
           />
         </div>
@@ -626,7 +671,7 @@ const CampaignDetails: React.FC = () => {
           </div>
           <select
             value={filterStatus}
-            onChange={e => setFilterStatus(e.target.value)}
+            onChange={e => handleFilterChange(e.target.value)}
             className="px-4 py-2.5 bg-white border border-gray-200
                        rounded-xl text-gray-700 focus:outline-none
                        focus:border-emerald-500 focus:ring-2

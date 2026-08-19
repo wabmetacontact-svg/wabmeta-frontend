@@ -193,11 +193,14 @@ const Campaigns: React.FC = () => {
     } catch { /* silent */ }
   }, []);
 
-  // ✅ FIX Bug1: Single effect, not double fetch
+  // ✅ FIX: Consolidate effects - fetchStats only on mount
   useEffect(() => {
     fetchCampaigns();
-    fetchStats();
   }, [statusFilter, searchQuery]);
+
+  useEffect(() => {
+    fetchStats();
+  }, []);
 
   // ✅ FIX Bug5: Search with debounce
   const handleSearchInput = (val: string) => {
@@ -369,9 +372,12 @@ const Campaigns: React.FC = () => {
   };
 
   // ─── Delete ────────────────────────────────────────────────
-  // ✅ FIX Bug3: No optimistic update - just delete then refetch
-  const handleDelete = async (campaignId: string) => {
-    if (!confirm('Delete this campaign? This cannot be undone.')) return;
+  // ✅ FIX: handleDelete - confirm dialog with campaign name
+  const handleDelete = async (campaignId: string, campaignName: string) => {
+    if (!window.confirm(
+      `Delete "${campaignName}"?\n\nThis will permanently delete the campaign and all its data.`
+    )) return;
+
     try {
       setActionLoading(campaignId);
       await campaignsApi.delete(campaignId);
@@ -681,7 +687,7 @@ const Campaigns: React.FC = () => {
                     )}
 
                     <button
-                      onClick={() => handleDelete(campaign.id)}
+                      onClick={() => handleDelete(campaign.id, campaign.name)}
                       disabled={
                         actionLoading === campaign.id ||
                         campaign.status === 'RUNNING'

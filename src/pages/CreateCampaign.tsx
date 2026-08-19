@@ -369,36 +369,64 @@ const CreateCampaign: React.FC = () => {
           !!selectedAccountId
         );
       case 2:
-        if (formData.audienceType === "group")
-          return !!formData.selectedGroup && totalRecipients > 0;
-        if (formData.audienceType === "csv")
+        if (formData.audienceType === 'group')
+          return !!formData.selectedGroup;
+        if (formData.audienceType === 'csv')
           return !!(formData.csvContacts && formData.csvContacts.length > 0);
-        if (formData.audienceType === "tags")
-          return formData.selectedTags.length > 0 && totalRecipients > 0;
-        if (formData.audienceType === "manual")
+        if (formData.audienceType === 'tags')
+          return formData.selectedTags.length > 0;
+        if (formData.audienceType === 'manual')
           return formData.selectedContacts.length > 0;
-        return contacts.length > 0; // "all"
+        return true; // 'all' = always valid
       case 3:
         if (!selectedTemplate) return true;
-        // ✅ FIX Bug6: Check both body + header variables
         const allVars = [
           ...(selectedTemplate.variables || []),
           ...(selectedTemplate.headerVariables || []),
         ];
-        return allVars.every(v => formData.variableMapping[v]?.trim());
+        // ✅ FIX: Empty template = no vars = valid
+        if (allVars.length === 0) return true;
+        return allVars.every(v => {
+          const val = formData.variableMapping[v];
+          return val && String(val).trim().length > 0;
+        });
       case 4:
-        if (formData.scheduleType === "later") {
+        if (formData.scheduleType === 'later') {
           if (!formData.scheduledDate || !formData.scheduledTime) return false;
-          // ✅ FIX Bug5: Reject past time
+          // ✅ FIX 5: Proper timezone handling
           const scheduled = new Date(
             `${formData.scheduledDate}T${formData.scheduledTime}:00`
           );
-          return scheduled > new Date();
+          const now = new Date();
+          // 2 minute buffer
+          return scheduled.getTime() > now.getTime() + 2 * 60 * 1000;
         }
         return true;
       default:
         return true;
     }
+  };
+
+  // ─── FIX 4: Template media validation ─────────────────────────
+  const validateTemplateMedia = (template: any): string | null => {
+    const headerType = template.headerType?.toLowerCase();
+    if (!['image', 'video', 'document'].includes(headerType)) return null;
+
+    const content = template.headerContent;
+    if (!content) {
+      return `Template "${template.name}" has no media. Please re-upload media in Templates section.`;
+    }
+
+    // Meta CDN URLs (scontent.whatsapp.net) - ye expire ho jati hain
+    if (
+      content.includes('scontent.whatsapp') ||
+      content.includes('scontent-') ||
+      content.includes('lookaside.fbsbx.com')
+    ) {
+      return `Template "${template.name}" media has expired. Please re-upload in Templates.`;
+    }
+
+    return null;
   };
 
   const handleNext = () => {
@@ -408,6 +436,21 @@ const CreateCampaign: React.FC = () => {
   };
   const handleBack = () => {
     if (currentStep > 1) setCurrentStep(s => s - 1);
+  };
+
+  // ─── FIX 2: Back button handler ───────────────────────────────
+  const handleBack5 = async () => {
+    if (createdCampaignId) {
+      try {
+        // ✅ Delete the draft campaign
+        await campaignApi.delete(createdCampaignId);
+      } catch {
+        // Silent - campaign delete fail hona ok hai
+      }
+      setCreatedCampaignId(null);
+      setWalletEstimate(null);
+    }
+    setCurrentStep(4);
   };
 
   // ─── Create Campaign (DRAFT first, then start) ─────────────
@@ -423,6 +466,16 @@ const CreateCampaign: React.FC = () => {
       const account = whatsappAccounts.find(a => a.id === selectedAccountId);
       if (!account?.id) throw new Error("Invalid WhatsApp account.");
       if (!formData.templateId) throw new Error("Please select a template.");
+
+      // ✅ FIX 4: Validate template media before creating campaign
+      if (selectedTemplate) {
+        const mediaError = validateTemplateMedia(selectedTemplate);
+        if (mediaError) {
+          setApiError(mediaError);
+          setSending(false);
+          return;
+        }
+      }
 
       // Build audience
       let contactIds: string[] | undefined;
@@ -1144,10 +1197,7 @@ const CreateCampaign: React.FC = () => {
           <button
             onClick={() => {
               if (currentStep === 5) {
-                // Back to step 4, keep created campaign
-                setCurrentStep(4);
-                setCreatedCampaignId(null);
-                setWalletEstimate(null);
+                handleBack5();
               } else {
                 handleBack();
               }
