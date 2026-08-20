@@ -585,8 +585,7 @@ const Campaigns: React.FC = () => {
             const delivered = safeNum(campaign.deliveredCount);
             const read = safeNum(campaign.readCount);
             const failed = safeNum(campaign.failedCount);
-            const successful = sent + delivered + read;
-            const successRate = total > 0 ? Math.round((successful / total) * 100) : 0;
+            const successRate = total > 0 ? Math.min(100, Math.round(((total - failed) / total) * 100)) : 0;
             const isCompleted = campaign.status === 'COMPLETED';
 
             return (
