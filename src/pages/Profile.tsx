@@ -17,7 +17,7 @@ import {
   Smartphone,
   Monitor
 } from 'lucide-react';
-import api, { auth, users } from '../services/api';
+import { auth, users } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import PageSkeleton from '../components/common/PageSkeleton';
 
@@ -177,7 +177,7 @@ const Profile: React.FC = () => {
   };
 
   // ==========================================
-  // HANDLE AVATAR CHANGE (UPLOAD)
+  // HANDLE AVATAR CHANGE
   // ==========================================
   const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -193,53 +193,37 @@ const Profile: React.FC = () => {
       return;
     }
 
-    // Local preview only (base64 sirf UI ke liye)
     const reader = new FileReader();
-    reader.onloadend = () => {
-      setFormData((prev) => ({ ...prev, avatar: reader.result as string }));
+    reader.onloadend = async () => {
+      const base64 = reader.result as string;
+      setFormData((prev) => ({ ...prev, avatar: base64 }));
+
+      try {
+        setSaving(true);
+        setError(null);
+
+        // ✅ Call backend's actual avatar endpoint (PUT /api/users/avatar)
+        const response = await users.updateAvatar(base64);
+        const resData = response.data as any;
+        const updatedAvatar = resData?.data?.avatar || resData?.avatar || resData?.data?.url || resData?.url || base64;
+
+        setProfile((prev) => (prev ? { ...prev, avatar: updatedAvatar } : prev));
+        updateUser({ avatar: updatedAvatar });
+
+        setSuccess(true);
+        setTimeout(() => setSuccess(false), 3000);
+      } catch (err: any) {
+        console.error('Avatar update failed:', err);
+        setError(
+          err?.response?.data?.message ||
+          err?.message ||
+          'Failed to update avatar'
+        );
+      } finally {
+        setSaving(false);
+      }
     };
     reader.readAsDataURL(file);
-
-    // ✅ Actual upload
-    try {
-      setSaving(true);
-      setError(null);
-
-      const form = new FormData();
-      form.append('file', file);
-      form.append('folder', 'avatars');
-
-      const uploadRes = await api.post('/upload', form, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
-
-      const avatarUrl =
-        uploadRes.data?.data?.url ||
-        uploadRes.data?.data?.secure_url ||
-        uploadRes.data?.data?.cloudinaryUrl;
-
-      if (!avatarUrl || avatarUrl.length > 500) {
-        throw new Error('Invalid avatar URL returned from upload');
-      }
-
-      // ✅ Sirf short URL save karo
-      await users.updateAvatar(avatarUrl);
-
-      setFormData((prev) => ({ ...prev, avatar: avatarUrl }));
-      setProfile((prev) => (prev ? { ...prev, avatar: avatarUrl } : prev));
-      updateUser({ avatar: avatarUrl });
-      setSuccess(true);
-      setTimeout(() => setSuccess(false), 3000);
-    } catch (err: any) {
-      console.error('Avatar upload failed:', err);
-      setError(
-        err?.response?.data?.message ||
-        err?.message ||
-        'Failed to upload avatar'
-      );
-    } finally {
-      setSaving(false);
-    }
   };
 
   // ==========================================
