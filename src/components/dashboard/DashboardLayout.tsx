@@ -37,7 +37,7 @@ const DashboardLayout: React.FC = () => {
 
   const isInbox = location.pathname.startsWith('/dashboard/inbox');
 
-  // ✅ Close mobile menu instantly on route changes
+  // Close mobile menu on route changes
   useEffect(() => {
     setMobileSidebarOpen(false);
   }, [location.pathname]);
@@ -46,12 +46,14 @@ const DashboardLayout: React.FC = () => {
     <div className={`relative bg-gray-50 ${isInbox ? 'h-screen max-md:h-[100dvh] overflow-hidden' : 'min-h-screen'}`}>
       <GlobalNotificationHandler />
 
-      {/* ✅ UNIFIED SIDEBAR HOUSING - Zero double render triggers, responsive container bounds */}
-      <div className={`
-        fixed inset-y-0 left-0 z-50 transition-transform duration-300 ease-in-out
-        lg:translate-x-0 lg:static lg:block
-        ${mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
-      `}>
+      {/* Sidebar - Fixed on both mobile and desktop */}
+      <div
+        className={`
+          fixed inset-y-0 left-0 z-50 transition-transform duration-300 ease-in-out
+          lg:translate-x-0
+          ${mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+        `}
+      >
         <Sidebar
           collapsed={sidebarCollapsed}
           setCollapsed={setSidebarCollapsed}
