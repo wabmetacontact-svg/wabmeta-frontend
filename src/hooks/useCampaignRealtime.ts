@@ -1,10 +1,7 @@
-// src/hooks/useCampaignRealtime.ts - FIXED
-import {
-  useEffect, useState, useCallback, useRef,
-} from 'react';
+// src/hooks/useCampaignRealtime.ts
+import { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import { useSocket } from '../context/SocketContext';
 
-// ─── Types ───────────────────────────────────────────────────
 interface CampaignProgress {
   sent: number;
   failed: number;
@@ -36,38 +33,30 @@ export interface ContactStatusUpdate {
   failedAt?: string;
 }
 
-// ✅ FIX Bug1: Use plain object instead of Map for React state
 type ContactStatusRecord = Record<string, ContactStatusUpdate>;
-
-// ✅ FIX Bug4: Max contacts to track in memory
 const MAX_CONTACT_UPDATES = 500;
 
-// ─── Hook ─────────────────────────────────────────────────────
 export const useCampaignRealtime = (campaignId: string | null) => {
   const { socket, isConnected } = useSocket();
 
   const [progress, setProgress] = useState<CampaignProgress | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [completedStats, setCompletedStats] = useState<CompletedStats | null>(null);
-  // ✅ FIX Bug1: Plain object instead of Map
   const [contactStatusRec, setContactStatusRec] = useState<ContactStatusRecord>({});
-  const [campaignError, setCampaignError] = useState<{
-    message: string; code?: string;
-  } | null>(null);
+  const [campaignError, setCampaignError] = useState<{ message: string; code?: string } | null>(null);
 
-  // Track join state
   const joinedCampaignRef = useRef<string | null>(null);
-
-  // ✅ FIX Bug4: Track count to enforce limit
   const contactCountRef = useRef(0);
 
-  // ✅ ADD: Initial state sync from API
+  // ✅ Initial Sync - Added Unmounted components leak validation checks
   useEffect(() => {
     if (!campaignId) return;
+    let isMounted = true;
 
-    // Jab bhi campaign join karo, latest state lo
     import('../services/api').then(({ campaigns: campaignsApi }) => {
+      if (!isMounted) return;
       campaignsApi.getById(campaignId).then((res: any) => {
+        if (!isMounted) return;
         const c = res.data?.data;
         if (!c) return;
 
@@ -79,62 +68,68 @@ export const useCampaignRealtime = (campaignId: string | null) => {
             delivered: c.deliveredCount || 0,
             read: c.readCount || 0,
             total: c.totalContacts || 0,
-            percentage: c.totalContacts > 0
-              ? Math.round((c.sentCount / c.totalContacts) * 100)
-              : 0,
+            percentage: c.totalContacts > 0 ? Math.round((c.sentCount / c.totalContacts) * 100) : 0,
             status: 'RUNNING',
           });
         }
-      }).catch(() => {});
+      }).catch(() => { });
     });
+
+    return () => { isMounted = false; };
   }, [campaignId]);
 
-  // ─── Join/leave campaign room ─────────────────────────────
-  // ✅ FIX Bug2: Re-join on socket reconnect (isConnected in deps)
+  // ✅ FIXED: Room Joining Engine — Re-registers room subscription on connections drop restoral!
   useEffect(() => {
     if (!socket || !isConnected || !campaignId) return;
 
-    // Leave old room if campaign changed
-    if (
-      joinedCampaignRef.current &&
-      joinedCampaignRef.current !== campaignId
-    ) {
-      socket.emit('campaign:leave', joinedCampaignRef.current);
-      joinedCampaignRef.current = null;
-    }
+    const performRoomJoin = () => {
+      // Leave pre-existing room if it doesn't match current ID
+      if (joinedCampaignRef.current && joinedCampaignRef.current !== campaignId) {
+        socket.emit('campaign:leave', joinedCampaignRef.current);
+        joinedCampaignRef.current = null;
+      }
 
-    // Join new room
-    socket.emit('campaign:join', campaignId);
-    joinedCampaignRef.current = campaignId;
+      // Re-emit room sync parameters safely
+      socket.emit('campaign:join', campaignId);
+      joinedCampaignRef.current = campaignId;
+      console.log(`🔌 [Socket Room] Safely registered room subscription: ${campaignId}`);
+    };
+
+    performRoomJoin();
+
+    // Re-join room explicitly when socket establishes reconnect handshakes
+    const handleReconnect = () => {
+      console.log('🔄 [Socket Reconnect] Re-establishing campaign room subscription...');
+      performRoomJoin();
+    };
+
+    socket.on('reconnect', handleReconnect);
 
     return () => {
+      socket.off('reconnect', handleReconnect);
       if (joinedCampaignRef.current) {
         socket.emit('campaign:leave', joinedCampaignRef.current);
         joinedCampaignRef.current = null;
       }
     };
-  }, [socket, isConnected, campaignId]); // ✅ isConnected = rejoin on reconnect
+  }, [socket, isConnected, campaignId]);
 
-  // ─── Event listeners ──────────────────────────────────────
+  // Listening loops
   useEffect(() => {
     if (!socket || !campaignId) return;
 
     const onUpdate = (data: any) => {
       if (data.campaignId !== campaignId) return;
-
       const status = data.status;
       if (status === 'RUNNING') {
         setIsProcessing(true);
-      } else if (
-        ['COMPLETED', 'FAILED', 'PAUSED', 'CANCELLED'].includes(status)
-      ) {
+      } else if (['COMPLETED', 'FAILED', 'PAUSED', 'CANCELLED'].includes(status)) {
         setIsProcessing(false);
       }
     };
 
     const onProgress = (data: any) => {
       if (data.campaignId !== campaignId) return;
-
       setProgress({
         sent: Math.max(0, data.sent || 0),
         failed: Math.max(0, data.failed || 0),
@@ -144,7 +139,6 @@ export const useCampaignRealtime = (campaignId: string | null) => {
         percentage: Math.min(100, Math.max(0, data.percentage || 0)),
         status: data.status || 'RUNNING',
       });
-
       if (data.status === 'RUNNING') setIsProcessing(true);
     };
 
@@ -152,15 +146,9 @@ export const useCampaignRealtime = (campaignId: string | null) => {
       if (data.campaignId !== campaignId) return;
       if (!data.contactId) return;
 
-      // ✅ FIX Bug4: Enforce memory limit
-      if (contactCountRef.current >= MAX_CONTACT_UPDATES) {
-        // Stop tracking new contacts to prevent memory leak
-        return;
-      }
+      if (contactCountRef.current >= MAX_CONTACT_UPDATES) return;
 
-      // ✅ FIX Bug1 & Bug3: Plain object update (no Map)
       setContactStatusRec(prev => {
-        // If contact already exists, update; else increment count
         if (!prev[data.contactId]) {
           contactCountRef.current++;
         }
@@ -184,7 +172,6 @@ export const useCampaignRealtime = (campaignId: string | null) => {
 
     const onCompleted = (data: any) => {
       if (data.campaignId !== campaignId) return;
-
       setCompletedStats({
         sentCount: Math.max(0, data.sentCount || 0),
         failedCount: Math.max(0, data.failedCount || 0),
@@ -221,7 +208,6 @@ export const useCampaignRealtime = (campaignId: string | null) => {
     };
   }, [socket, campaignId]);
 
-  // ─── Helpers ──────────────────────────────────────────────
   const resetStats = useCallback(() => {
     setProgress(null);
     setCompletedStats(null);
@@ -236,21 +222,21 @@ export const useCampaignRealtime = (campaignId: string | null) => {
     contactCountRef.current = 0;
   }, []);
 
-  // ✅ FIX Bug1: Convert to Map only when needed (memoized)
-  // CampaignDetails uses contactStatusMap (Map type)
-  // We expose a getter that converts lazily
-  const contactStatusMap = new Map(
-    Object.entries(contactStatusRec)
-  );
+  // ✅ FIXED: Memoized Map Builder — Saves UI thread stutters, stops continuous runtime memory thrash!
+  const contactStatusMap = useMemo(() => {
+    return new Map(Object.entries(contactStatusRec));
+  }, [contactStatusRec]);
+
+  const contactUpdates = useMemo(() => {
+    return Object.values(contactStatusRec);
+  }, [contactStatusRec]);
 
   return {
     progress,
     isProcessing,
     completedStats,
-    // ✅ Map for CampaignDetails.tsx compatibility
     contactStatusMap,
-    // ✅ Array for any component that needs array
-    contactUpdates: Object.values(contactStatusRec),
+    contactUpdates,
     campaignError,
     isConnected,
     resetStats,

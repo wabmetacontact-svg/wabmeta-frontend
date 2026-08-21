@@ -20,6 +20,7 @@ import UpgradeModal from './components/common/UpgradeModal';
 // Layouts
 import DashboardLayout from './components/dashboard/DashboardLayout';
 import AdminLayout from './components/admin/AdminLayout';
+import AdminProtectedRoute from './components/admin/AdminProtectedRoute';
 
 // ============================================
 // LAZY LOADED PAGES
@@ -151,20 +152,6 @@ const PublicRoute: React.FC<PublicRouteProps> = ({ children, redirectTo = '/dash
   return <>{children}</>;
 };
 
-interface AdminRouteProps {
-  children: React.ReactNode;
-}
-
-const AdminRoute: React.FC<AdminRouteProps> = ({ children }) => {
-  const adminToken = localStorage.getItem('wabmeta_admin_token');
-  const location = useLocation();
-
-  if (!adminToken) {
-    return <Navigate to="/manage-wabmeta-admin/login" state={{ from: location }} replace />;
-  }
-
-  return <>{children}</>;
-};
 
 // ============================================
 // SCROLL TO TOP
@@ -413,9 +400,9 @@ const AppRoutes: React.FC = () => {
         <Route path="/manage-wabmeta-admin/login" element={<AdminLogin />} />
         <Route
           element={
-            <AdminRoute>
+            <AdminProtectedRoute>
               <AdminLayout />
-            </AdminRoute>
+            </AdminProtectedRoute>
           }
         >
           <Route path="/manage-wabmeta-admin" element={<Navigate to="/manage-wabmeta-admin/dashboard" replace />} />

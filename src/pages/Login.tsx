@@ -1,15 +1,11 @@
+// src/pages/Login.tsx
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import {
-  Mail, Lock, ArrowRight,
-  AlertCircle, Eye, EyeOff,
-} from 'lucide-react';
+import { Mail, Lock, ArrowRight, AlertCircle, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import AuthLayout from '../components/auth/AuthLayout';
 import toast from 'react-hot-toast';
 import SocialLoginButtons from '../components/auth/SocialLoginButtons';
-
-// ─── Types ───────────────────────────────────────────────────────────────────
 
 interface FormState {
   email: string;
@@ -21,20 +17,21 @@ interface FieldErrors {
   password?: string;
 }
 
-// ─── Validation ───────────────────────────────────────────────────────────────
-
 const validate = (form: FormState): FieldErrors => {
   const errs: FieldErrors = {};
-  if (!form.email)
+  if (!form.email) {
     errs.email = 'Email is required';
-  else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email))
+  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
     errs.email = 'Enter a valid email address';
-  if (!form.password)
+  }
+
+  if (!form.password) {
     errs.password = 'Password is required';
+  } else if (form.password.length < 6) {
+    errs.password = 'Password must be at least 6 characters';
+  }
   return errs;
 };
-
-// ─── Sub-components ───────────────────────────────────────────────────────────
 
 interface FieldProps {
   label: string;
@@ -57,7 +54,7 @@ const Field: React.FC<FieldProps> = ({
   autoComplete, disabled, icon, rightElement,
 }) => (
   <div>
-    <label htmlFor={id} className="block text-sm font-medium text-gray-700 mb-1.5">
+    <label htmlFor={id} className="block text-sm font-semibold text-gray-700 mb-1.5">
       {label}
     </label>
     <div className="relative">
@@ -83,7 +80,7 @@ const Field: React.FC<FieldProps> = ({
           ${rightElement ? 'pr-11' : ''}
           ${error
             ? 'border-red-300 focus:border-red-400 focus:ring-red-100'
-            : 'border-gray-200 hover:border-gray-300 focus:border-primary-400 focus:ring-primary-100'
+            : 'border-gray-200 hover:border-gray-300 focus:border-emerald-500 focus:ring-emerald-100'
           }
         `}
       />
@@ -102,22 +99,18 @@ const Field: React.FC<FieldProps> = ({
   </div>
 );
 
-// ─── Login Page ───────────────────────────────────────────────────────────────
-
 const Login: React.FC = () => {
-  const navigate    = useNavigate();
-  const location    = useLocation();
+  const navigate = useNavigate();
+  const location = useLocation();
   const { login, isLoading, clearError } = useAuth();
 
-  const [form, setForm]         = useState<FormState>({ email: '', password: '' });
-  const [errors, setErrors]     = useState<FieldErrors>({});
+  const [form, setForm] = useState<FormState>({ email: '', password: '' });
+  const [errors, setErrors] = useState<FieldErrors>({});
   const [apiError, setApiError] = useState<string | null>(null);
   const [showPass, setShowPass] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
 
-  // ─── Remember Me actual implementation ─────────────────────
   useEffect(() => {
-    // Auto-fill email if user chose "remember me" before
     const rememberedEmail = localStorage.getItem('remembered_email');
     if (rememberedEmail) {
       setForm(prev => ({ ...prev, email: rememberedEmail }));
@@ -125,7 +118,6 @@ const Login: React.FC = () => {
     }
   }, []);
 
-  // ─── Clear error on unmount only ──────────────────────────
   useEffect(() => {
     return () => {
       clearError();
@@ -135,17 +127,17 @@ const Login: React.FC = () => {
   const update = (field: keyof FormState, value: string) => {
     setForm(prev => ({ ...prev, [field]: value }));
     setErrors(prev => ({ ...prev, [field]: undefined }));
-
-    // ✅ FIX: Only clear if error exists
     if (apiError) setApiError(null);
-    // Don't call clearError() on every keystroke
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     const errs = validate(form);
-    if (Object.keys(errs).length) { setErrors(errs); return; }
+    if (Object.keys(errs).length) {
+      setErrors(errs);
+      return;
+    }
 
     setApiError(null);
 
@@ -169,37 +161,35 @@ const Login: React.FC = () => {
         setApiError(result.error || 'Login failed. Please try again.');
       }
     } catch (err: any) {
-      const status  = err?.response?.status;
+      const status = err?.response?.status;
       const message = err?.response?.data?.message || err?.message;
 
-      if (status === 401)      setApiError('Invalid email or password.');
-      else if (status === 403) setApiError(message?.toLowerCase().includes('verify')
-        ? 'Please verify your email before signing in.'
-        : message?.toLowerCase().includes('suspend')
-          ? 'Account suspended. Contact support.'
-          : message || 'Access denied.');
-      else if (status === 429) setApiError('Too many attempts. Try again later.');
-      else                     setApiError(message || 'Login failed. Check credentials.');
+      if (status === 401) setApiError('Invalid email or password.');
+      else if (status === 403) {
+        setApiError(message?.toLowerCase().includes('verify')
+          ? 'Please verify your email before signing in.'
+          : message?.toLowerCase().includes('suspend')
+            ? 'Account suspended. Contact support.'
+            : message || 'Access denied.'
+        );
+      } else if (status === 429) {
+        setApiError('Too many attempts. Try again later.');
+      } else {
+        setApiError(message || 'Login failed. Check credentials.');
+      }
     }
   };
 
   return (
-    <AuthLayout
-      title="Welcome back"
-      subtitle="Sign in to your WabMeta account"
-    >
-      {/* API Error Banner */}
+    <AuthLayout title="Welcome back" subtitle="Sign in to your WabMeta account">
       {apiError && (
-        <div className="mb-5 p-3.5 rounded-xl flex items-start gap-3
-          bg-red-50 border border-red-200 animate-fadeIn">
+        <div className="mb-5 p-3.5 rounded-xl flex items-start gap-3 bg-red-50 border border-red-200 animate-fade-in">
           <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
           <p className="text-sm text-red-600 font-medium">{apiError}</p>
         </div>
       )}
 
       <form onSubmit={handleSubmit} className="space-y-4" noValidate>
-
-        {/* Email */}
         <Field
           label="Email address"
           id="email"
@@ -214,7 +204,6 @@ const Login: React.FC = () => {
           icon={<Mail className="w-4 h-4" />}
         />
 
-        {/* Password */}
         <Field
           label="Password"
           id="password"
@@ -234,31 +223,22 @@ const Login: React.FC = () => {
               tabIndex={-1}
               aria-label={showPass ? 'Hide password' : 'Show password'}
             >
-              {showPass
-                ? <EyeOff className="w-4 h-4" />
-                : <Eye className="w-4 h-4" />
-              }
+              {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
             </button>
           }
         />
 
-        {/* Remember + Forgot */}
         <div className="flex items-center justify-between pt-1">
           <label className="flex items-center gap-2 cursor-pointer select-none">
             <input
               type="checkbox"
               checked={rememberMe}
               onChange={e => setRememberMe(e.target.checked)}
-              className="w-4 h-4 rounded border-gray-300 text-primary-500
-                focus:ring-primary-400 focus:ring-offset-0 cursor-pointer"
+              className="w-4 h-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 focus:ring-offset-0 cursor-pointer"
             />
-            <span className="text-sm text-gray-600">Keep me signed in</span>
+            <span className="text-sm text-gray-600 font-medium">Keep me signed in</span>
           </label>
-          <Link
-            to="/forgot-password"
-            className="text-sm font-medium text-primary-600
-              hover:text-primary-700 transition-colors"
-          >
+          <Link to="/forgot-password" className="text-sm font-semibold text-emerald-600 hover:text-emerald-700 transition-colors">
             Forgot password?
           </Link>
         </div>
@@ -267,20 +247,11 @@ const Login: React.FC = () => {
         <button
           type="submit"
           disabled={isLoading}
-          className="w-full h-11 flex items-center justify-center gap-2
-            bg-primary-500 hover:bg-primary-600
-            text-white text-sm font-semibold
-            rounded-xl shadow-sm
-            hover:-translate-y-0.5 hover:shadow-md
-            active:translate-y-0
-            transition-all duration-200
-            disabled:opacity-50 disabled:cursor-not-allowed
-            disabled:hover:translate-y-0 disabled:hover:shadow-none"
+          className="w-full h-11 flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold rounded-xl shadow-sm hover:shadow-md active:scale-95 transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none"
         >
           {isLoading ? (
             <>
-              <div className="w-4 h-4 border-2 border-white/30
-                border-t-white rounded-full animate-spin" />
+              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
               <span>Signing in…</span>
             </>
           ) : (
@@ -291,29 +262,22 @@ const Login: React.FC = () => {
           )}
         </button>
 
-        {/* Divider */}
         <div className="relative py-1">
           <div className="absolute inset-0 flex items-center">
             <div className="w-full border-t border-gray-200" />
           </div>
           <div className="relative flex justify-center">
-            <span className="px-3 bg-white text-xs text-gray-400 uppercase tracking-wider">
+            <span className="px-3 bg-white text-xs text-gray-400 uppercase tracking-wider font-semibold">
               or continue with
             </span>
           </div>
         </div>
 
-        {/* Google SSO */}
         <SocialLoginButtons loading={isLoading} mode="login" />
 
-        {/* Signup link */}
         <p className="text-center text-sm text-gray-500 pt-1">
           New to WabMeta?{' '}
-          <Link
-            to="/signup"
-            className="font-semibold text-primary-600
-              hover:text-primary-700 transition-colors"
-          >
+          <Link to="/signup" className="font-bold text-emerald-600 hover:text-emerald-700 transition-colors">
             Create free account →
           </Link>
         </p>

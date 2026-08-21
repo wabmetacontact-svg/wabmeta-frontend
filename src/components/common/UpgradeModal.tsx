@@ -1,3 +1,4 @@
+// src/components/common/UpgradeModal.tsx
 import { X, Crown, Check, ArrowRight, Star } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -43,7 +44,7 @@ export default function UpgradeModal({ isOpen, onClose, feature, minimumPlan, me
                 '2 WhatsApp Accounts',
                 'Priority Support'
             ],
-            highlight: minimumPlan === 'QUARTERLY',
+            highlight: minimumPlan === 'QUARTERLY' || !minimumPlan,
             popular: true
         },
         {
@@ -64,27 +65,29 @@ export default function UpgradeModal({ isOpen, onClose, feature, minimumPlan, me
     ];
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div className="absolute inset-0 bg-black/60" onClick={onClose} />
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+            {/* Overlay backdrop */}
+            <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={onClose} />
 
-            <div className="relative bg-white dark:bg-gray-800 rounded-3xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
-                {/* Header */}
-                <div className="text-center p-8 bg-gradient-to-br from-purple-600 via-blue-600 to-green-500 text-white">
-                    <div className="w-20 h-20 bg-white/20 rounded-3xl flex items-center justify-center mx-auto mb-4 backdrop-blur-sm">
-                        <Crown className="w-10 h-10" />
+            <div className="relative bg-white rounded-3xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto z-10 animate-in zoom-in-95 duration-200">
+
+                {/* Header - Styled using the brand emerald scheme */}
+                <div className="text-center p-8 bg-gradient-to-br from-emerald-600 via-emerald-700 to-green-600 text-white relative">
+                    <div className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center mx-auto mb-4 backdrop-blur-md border border-white/20">
+                        <Crown className="w-8 h-8 text-yellow-300" />
                     </div>
-                    <h2 className="text-3xl font-bold mb-2">Upgrade Your Plan</h2>
-                    <p className="text-white/80 text-lg">
+                    <h2 className="text-2xl font-bold mb-2">Upgrade Your Plan</h2>
+                    <p className="text-emerald-50 text-sm max-w-md mx-auto">
                         {message ? message : (
-                            <>Unlock <span className="font-bold text-yellow-300">{feature || 'powerful features'}</span> to level up your business</>
+                            <>Unlock <span className="font-bold text-yellow-300">{feature || 'powerful features'}</span> to level up your business operations</>
                         )}
                     </p>
 
                     <button
                         onClick={onClose}
-                        className="absolute top-4 right-4 p-2 hover:bg-white/20 rounded-xl transition-colors"
+                        className="absolute top-4 right-4 p-2 hover:bg-white/10 rounded-xl transition-all"
                     >
-                        <X className="w-6 h-6" />
+                        <X className="w-5 h-5" />
                     </button>
                 </div>
 
@@ -94,57 +97,59 @@ export default function UpgradeModal({ isOpen, onClose, feature, minimumPlan, me
                         {plans.map((plan) => (
                             <div
                                 key={plan.id}
-                                className={`relative p-6 rounded-2xl border-2 transition-all ${plan.popular
-                                    ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20 shadow-xl scale-105'
-                                    : plan.highlight
-                                        ? 'border-green-500 bg-green-50 dark:bg-green-900/20'
-                                        : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'
+                                className={`relative p-6 rounded-2xl border transition-all duration-200 flex flex-col justify-between ${plan.popular
+                                        ? 'border-emerald-500 bg-emerald-50/40 shadow-lg md:scale-105'
+                                        : plan.highlight
+                                            ? 'border-green-400 bg-green-50/20'
+                                            : 'border-gray-200 hover:border-gray-300 bg-white'
                                     }`}
                             >
                                 {plan.popular && (
-                                    <div className="absolute -top-4 left-1/2 -translate-x-1/2 flex items-center gap-1 px-4 py-1.5 bg-gradient-to-r from-purple-600 to-blue-600 text-white text-sm font-bold rounded-full shadow-lg">
-                                        <Star className="w-4 h-4 fill-yellow-300 text-yellow-300" />
+                                    <div className="absolute -top-4 left-1/2 -translate-x-1/2 flex items-center gap-1 px-4 py-1.5 bg-gradient-to-r from-emerald-600 to-green-600 text-white text-xs font-bold rounded-full shadow-md">
+                                        <Star className="w-3.5 h-3.5 fill-yellow-300 text-yellow-300" />
                                         MOST POPULAR
                                     </div>
                                 )}
 
                                 {plan.highlight && !plan.popular && (
-                                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-green-600 text-white text-xs font-bold rounded-full">
+                                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-green-600 text-white text-[10px] font-bold rounded-full shadow-sm">
                                         MINIMUM REQUIRED
                                     </div>
                                 )}
 
-                                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-                                    {plan.name}
-                                </h3>
-                                <div className="mb-4">
-                                    <span className="text-3xl font-bold text-gray-900 dark:text-white">
-                                        {plan.price}
-                                    </span>
-                                    <span className="text-gray-500">{plan.period}</span>
+                                <div>
+                                    <h3 className="text-lg font-bold text-gray-900 mb-1">
+                                        {plan.name}
+                                    </h3>
+                                    <div className="mb-4">
+                                        <span className="text-2xl font-black text-gray-900">
+                                            {plan.price}
+                                        </span>
+                                        <span className="text-gray-500 text-xs">{plan.period}</span>
+                                    </div>
+
+                                    <ul className="space-y-2.5 mb-6">
+                                        {plan.features.map((feat, i) => (
+                                            <li key={i} className="flex items-start gap-2 text-xs">
+                                                <Check className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                                                <span className="text-gray-600">{feat}</span>
+                                            </li>
+                                        ))}
+                                    </ul>
                                 </div>
 
-                                <ul className="space-y-3 mb-6">
-                                    {plan.features.map((feat, i) => (
-                                        <li key={i} className="flex items-center gap-2 text-sm">
-                                            <Check className="w-4 h-4 text-green-500 shrink-0" />
-                                            <span className="text-gray-700 dark:text-gray-300">{feat}</span>
-                                        </li>
-                                    ))}
-                                </ul>
-
                                 <Link
-                                    to="/dashboard/billing"
+                                    to="/dashboard/settings/billing"
                                     onClick={onClose}
-                                    className={`w-full flex items-center justify-center gap-2 py-3 rounded-xl font-bold transition-all ${plan.popular
-                                        ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:shadow-lg hover:scale-[1.02]'
-                                        : plan.highlight
-                                            ? 'bg-green-600 text-white hover:bg-green-700'
-                                            : 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-600'
+                                    className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold transition-all ${plan.popular
+                                            ? 'bg-emerald-600 text-white hover:bg-emerald-700 shadow-md active:scale-95'
+                                            : plan.highlight
+                                                ? 'bg-green-600 text-white hover:bg-green-700 active:scale-95'
+                                                : 'bg-gray-100 text-gray-800 hover:bg-gray-200 active:scale-95'
                                         }`}
                                 >
                                     Select Plan
-                                    <ArrowRight className="w-4 h-4" />
+                                    <ArrowRight className="w-3.5 h-3.5" />
                                 </Link>
                             </div>
                         ))}
@@ -152,9 +157,9 @@ export default function UpgradeModal({ isOpen, onClose, feature, minimumPlan, me
                 </div>
 
                 {/* Footer */}
-                <div className="p-6 border-t border-gray-200 dark:border-gray-700 text-center bg-gray-50 dark:bg-gray-900/50">
-                    <p className="text-sm text-gray-500">
-                        💳 Secure payment via Razorpay • 📧 Questions? <a href="mailto:support@wabmeta.com" className="text-purple-600 hover:underline font-medium">Contact Support</a>
+                <div className="p-6 border-t border-gray-100 text-center bg-gray-50">
+                    <p className="text-xs text-gray-400">
+                        💳 Secure payment verification via Razorpay • 📧 Need custom limits? <a href="mailto:support@wabmeta.com" className="text-emerald-600 hover:underline font-semibold">Contact Support</a>
                     </p>
                 </div>
             </div>

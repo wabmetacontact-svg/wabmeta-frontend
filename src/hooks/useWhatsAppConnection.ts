@@ -1,9 +1,4 @@
-// src/hooks/useWhatsAppConnection.ts - FIXED VERSION
-// ✅ FIX B1 + B2: Exported refreshAllWhatsAppConnections() so that after a successful
-// Meta OAuth connect (in useMetaConnect.ts), ALL hook instances across the app
-// can be told to re-fetch — instead of only the WhatsAppSettings component knowing
-// about the new account. Previously, the global app state never updated after connect.
-
+// src/hooks/useWhatsAppConnection.ts
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { whatsapp } from '../services/api';
 
@@ -33,19 +28,8 @@ interface UseWhatsAppConnectionReturn {
   setDefault: (accountId: string) => Promise<void>;
 }
 
-// ============================================
-// ✅ GLOBAL REFRESH REGISTRY
-// All mounted useWhatsAppConnection instances
-// register their refresh functions here.
-// refreshAllWhatsAppConnections() calls them all.
-// ============================================
 const refreshRegistry = new Set<() => Promise<void>>();
 
-/**
- * Call this after a successful Meta OAuth connection to force
- * ALL mounted useWhatsAppConnection hooks to re-fetch accounts.
- * Import and call from useMetaConnect.ts after backend responds OK.
- */
 export const refreshAllWhatsAppConnections = async (): Promise<void> => {
   console.log(`🔄 Global refresh: notifying ${refreshRegistry.size} hook instance(s)`);
   const promises = Array.from(refreshRegistry).map((fn) => fn().catch(() => { }));
@@ -57,33 +41,37 @@ export const useWhatsAppConnection = (): UseWhatsAppConnectionReturn => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchAccounts = useCallback(async () => {
+  const fetchAccounts = useCallback(async (isMounted = { current: true }) => {
     try {
-      setIsLoading(true);
+      if (isMounted.current) setIsLoading(true);
       const res = await whatsapp.accounts();
+
+      if (!isMounted.current) return;
       setError(null);
 
       const data = res.data?.data || res.data;
       const list = (data?.accounts || (Array.isArray(data) ? data : [])) as any;
       setAccounts(Array.isArray(list) ? list : []);
     } catch (e: any) {
+      if (!isMounted.current) return;
       setAccounts([]);
       setError(e?.response?.data?.message || e?.message || null);
     } finally {
-      setIsLoading(false);
+      if (isMounted.current) setIsLoading(false);
     }
   }, []);
 
-  // ✅ Register this instance in the global registry
   useEffect(() => {
-    refreshRegistry.add(fetchAccounts);
-    return () => {
-      refreshRegistry.delete(fetchAccounts);
-    };
-  }, [fetchAccounts]);
+    const isMounted = { current: true };
+    const boundFetch = () => fetchAccounts(isMounted);
 
-  useEffect(() => {
-    fetchAccounts();
+    refreshRegistry.add(boundFetch);
+    boundFetch();
+
+    return () => {
+      isMounted.current = false;
+      refreshRegistry.delete(boundFetch);
+    };
   }, [fetchAccounts]);
 
   const connectedAccounts = useMemo(
@@ -121,7 +109,7 @@ export const useWhatsAppConnection = (): UseWhatsAppConnectionReturn => {
     error,
     accounts,
     defaultAccount,
-    refresh: fetchAccounts,
+    refresh: () => fetchAccounts(),
     disconnect,
     setDefault,
   };
