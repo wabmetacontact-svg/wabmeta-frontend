@@ -17,10 +17,12 @@ import {
   Smartphone,
   Monitor,
 } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { auth, users } from '../services/api';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
+import { useConfirm } from '../context/ConfirmContext';
 interface UserProfile {
   id: string;
   email: string;
@@ -44,6 +46,7 @@ interface Session {
 }
 
 const Profile: React.FC = () => {
+  const confirm = useConfirm();
   const { updateUser } = useAuth();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -275,12 +278,17 @@ const Profile: React.FC = () => {
   // REVOKE SESSION
   // ==========================================
   const handleRevokeSession = async (sessionId: string) => {
-    if (!window.confirm('Revoke this session?')) return;
+    if (!(await confirm({
+      title: 'Revoke this session?',
+      message: 'That device will be signed out immediately.',
+      confirmLabel: 'Revoke',
+      tone: 'danger',
+    }))) return;
     try {
       await users.revokeSession(sessionId);
       setSessions((prev) => prev.filter((s) => s.id !== sessionId));
     } catch {
-      alert('Failed to revoke session');
+      toast.error('Failed to revoke session');
     }
   };
 

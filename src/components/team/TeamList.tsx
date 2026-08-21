@@ -1,193 +1,194 @@
-import React, { useState } from 'react';
-import {
-  MoreVertical,
-  Edit2,
-  Trash2,
-  RefreshCw,
-  Search,
-  Filter
-} from 'lucide-react';
+import React, { useMemo, useState } from 'react';
+import { MoreVertical, Edit2, Trash2, Search, Clock } from 'lucide-react';
 import RoleBadge from './RoleBadge';
-import type { TeamMember } from '../../types/team';
+import { isPending, memberName, type TeamMember, type TeamRole } from '../../types/team';
+import { useConfirm } from '../../context/ConfirmContext';
 
 interface TeamListProps {
   members: TeamMember[];
-  onRemove: (id: string) => void;
-  onResendInvite: (id: string) => void;
-  onEditRole: (id: string) => void;
-  currentUserRole: string;
+  onRemove: (member: TeamMember) => void;
+  onEditRole: (member: TeamMember) => void;
+  /** Role of the signed-in user — only OWNER and ADMIN may manage the team. */
+  currentUserRole: TeamRole;
+  /** Membership id of the signed-in user, so they can't act on themselves. */
+  currentMemberId?: string;
 }
 
 const TeamList: React.FC<TeamListProps> = ({
   members,
   onRemove,
-  onResendInvite,
   onEditRole,
-  currentUserRole
+  currentUserRole,
+  currentMemberId,
 }) => {
+  const confirm = useConfirm();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
 
-  const filteredMembers = members.filter(member => 
-    member.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    member.email.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const canManage = currentUserRole === 'OWNER' || currentUserRole === 'ADMIN';
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
+  const filtered = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return members;
+    return members.filter(
+      (m) => memberName(m).toLowerCase().includes(q) || m.email.toLowerCase().includes(q)
+    );
+  }, [members, searchQuery]);
+
+  const handleRemove = async (member: TeamMember) => {
+    setActiveMenu(null);
+    const ok = await confirm({
+      title: `Remove ${memberName(member)}?`,
+      message: 'They lose access to this workspace immediately.',
+      confirmLabel: 'Remove',
+      tone: 'danger',
     });
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'active': return 'bg-green-100 text-green-700';
-      case 'pending': return 'bg-yellow-100 text-yellow-700';
-      case 'suspended': return 'bg-red-100 text-red-700';
-      default: return 'bg-gray-100 text-gray-700';
-    }
-  };
-
-  // Check if current user can edit the target member
-  const canManage = (targetMember: TeamMember) => {
-    if (currentUserRole === 'owner') return targetMember.role !== 'owner';
-    if (currentUserRole === 'admin') return !['owner', 'admin'].includes(targetMember.role);
-    return false;
+    if (ok) onRemove(member);
   };
 
   return (
-    <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
-      {/* Search Bar */}
-      <div className="p-4 border-b border-gray-200 flex items-center justify-between bg-gray-50">
-        <div className="relative max-w-md w-full">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+    <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
+      <div className="p-4 border-b border-gray-100">
+        <div className="relative max-w-sm">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input
             type="text"
-            placeholder="Search by name or email..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500"
+            placeholder="Search by name or email"
+            aria-label="Search team members"
+            className="w-full pl-9 pr-3 py-2 bg-white border border-gray-200 rounded-xl text-sm text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none"
           />
         </div>
-        <button className="flex items-center space-x-2 px-3 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 text-sm font-medium text-gray-700">
-          <Filter className="w-4 h-4" />
-          <span>Filter</span>
-        </button>
       </div>
 
-      {/* Table */}
-      <div className="overflow-x-auto">
-        <table className="w-full">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Member</th>
-              <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Role</th>
-              <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
-              <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Joined</th>
-              <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Last Active</th>
-              <th className="px-6 py-4 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-100">
-            {filteredMembers.map((member) => (
-              <tr key={member.id} className="hover:bg-gray-50 transition-colors">
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="flex items-center">
-                    <div className="shrink-0 h-10 w-10">
-                      {member.avatar ? (
-                        <img className="h-10 w-10 rounded-full object-cover" src={member.avatar} alt="" />
-                      ) : (
-                        <div className="h-10 w-10 rounded-full bg-linear-to-br from-primary-500 to-whatsapp-teal flex items-center justify-center text-white font-bold text-sm">
-                          {member.name.charAt(0).toUpperCase()}
-                        </div>
-                      )}
-                    </div>
-                    <div className="ml-4">
-                      <div className="text-sm font-medium text-gray-900">{member.name}</div>
-                      <div className="text-sm text-gray-500">{member.email}</div>
-                    </div>
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <RoleBadge role={member.role} />
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(member.status)}`}>
-                    {member.status.charAt(0).toUpperCase() + member.status.slice(1)}
-                  </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {formatDate(member.joinedAt)}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {member.lastActive || 'Never'}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium relative">
-                  {canManage(member) && (
-                    <>
-                      <button
-                        onClick={() => setActiveMenu(activeMenu === member.id ? null : member.id)}
-                        className="p-2 hover:bg-gray-100 rounded-full text-gray-400 hover:text-gray-600"
-                      >
-                        <MoreVertical className="w-5 h-5" />
-                      </button>
-
-                      {activeMenu === member.id && (
-                        <>
-                          <div 
-                            className="fixed inset-0 z-10"
-                            onClick={() => setActiveMenu(null)}
-                          ></div>
-                          <div className="absolute right-0 top-full -mt-2.5 w-48 bg-white rounded-xl shadow-lg border border-gray-100 py-1 z-20 animate-fade-in">
-                            <button
-                              onClick={() => {
-                                onEditRole(member.id);
-                                setActiveMenu(null);
-                              }}
-                              className="w-full flex items-center space-x-2 px-4 py-2 text-gray-700 hover:bg-gray-50"
-                            >
-                              <Edit2 className="w-4 h-4" />
-                              <span>Edit Role</span>
-                            </button>
-                            
-                            {member.status === 'pending' && (
-                              <button
-                                onClick={() => {
-                                  onResendInvite(member.id);
-                                  setActiveMenu(null);
-                                }}
-                                className="w-full flex items-center space-x-2 px-4 py-2 text-gray-700 hover:bg-gray-50"
-                              >
-                                <RefreshCw className="w-4 h-4" />
-                                <span>Resend Invite</span>
-                              </button>
-                            )}
-
-                            <button
-                              onClick={() => {
-                                if (confirm('Remove this team member?')) {
-                                  onRemove(member.id);
-                                }
-                                setActiveMenu(null);
-                              }}
-                              className="w-full flex items-center space-x-2 px-4 py-2 text-red-600 hover:bg-red-50"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                              <span>Remove</span>
-                            </button>
-                          </div>
-                        </>
-                      )}
-                    </>
-                  )}
-                </td>
+      {filtered.length === 0 ? (
+        <div className="text-center py-16 px-6">
+          <p className="text-gray-900 font-semibold mb-1">
+            {searchQuery ? 'No matches' : 'No team members yet'}
+          </p>
+          <p className="text-sm text-gray-500">
+            {searchQuery
+              ? 'Try a different name or email.'
+              : 'Invite a teammate to share this workspace.'}
+          </p>
+        </div>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-gray-100 bg-gray-50">
+                <th className="text-left font-medium text-gray-500 px-4 py-3">Member</th>
+                <th className="text-left font-medium text-gray-500 px-4 py-3">Role</th>
+                <th className="text-left font-medium text-gray-500 px-4 py-3">Status</th>
+                {canManage && <th className="w-12 px-4 py-3" />}
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              {filtered.map((member) => {
+                const pending = isPending(member);
+                const isSelf = member.id === currentMemberId;
+                // Ownership can only change through a transfer, not from this menu.
+                const actionable = canManage && !isSelf && member.role !== 'OWNER';
+
+                return (
+                  <tr key={member.id} className="border-b border-gray-100 last:border-0">
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-3">
+                        {member.avatar ? (
+                          <img
+                            src={member.avatar}
+                            alt=""
+                            className="w-9 h-9 rounded-full object-cover flex-shrink-0"
+                          />
+                        ) : (
+                          <div className="w-9 h-9 rounded-full bg-emerald-50 text-emerald-700 flex items-center justify-center text-xs font-bold flex-shrink-0">
+                            {memberName(member).slice(0, 2).toUpperCase()}
+                          </div>
+                        )}
+                        <div className="min-w-0">
+                          <p className="font-medium text-gray-900 truncate">
+                            {memberName(member)}
+                            {isSelf && <span className="text-gray-400 font-normal"> (you)</span>}
+                          </p>
+                          <p className="text-xs text-gray-500 truncate">{member.email}</p>
+                        </div>
+                      </div>
+                    </td>
+
+                    <td className="px-4 py-3">
+                      <RoleBadge role={member.role} />
+                    </td>
+
+                    <td className="px-4 py-3">
+                      {pending ? (
+                        <span className="inline-flex items-center gap-1 text-xs font-medium text-amber-700 bg-amber-50 border border-amber-200 rounded-full px-2.5 py-0.5">
+                          <Clock className="w-3 h-3" />
+                          Invite pending
+                        </span>
+                      ) : (
+                        <span className="text-xs text-gray-500">
+                          Joined {new Date(member.joinedAt as string).toLocaleDateString()}
+                        </span>
+                      )}
+                    </td>
+
+                    {canManage && (
+                      <td className="px-4 py-3 text-right relative">
+                        {actionable && (
+                          <>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setActiveMenu(activeMenu === member.id ? null : member.id)
+                              }
+                              aria-label={`Actions for ${memberName(member)}`}
+                              aria-expanded={activeMenu === member.id}
+                              className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-colors"
+                            >
+                              <MoreVertical className="w-4 h-4" />
+                            </button>
+
+                            {activeMenu === member.id && (
+                              <>
+                                <div
+                                  className="fixed inset-0 z-10"
+                                  onClick={() => setActiveMenu(null)}
+                                />
+                                <div className="absolute right-4 top-11 z-20 w-44 bg-white border border-gray-200 rounded-xl shadow-lg py-1 text-left">
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setActiveMenu(null);
+                                      onEditRole(member);
+                                    }}
+                                    className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                                  >
+                                    <Edit2 className="w-3.5 h-3.5" />
+                                    Change role
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleRemove(member)}
+                                    className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50"
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                    Remove
+                                  </button>
+                                </div>
+                              </>
+                            )}
+                          </>
+                        )}
+                      </td>
+                    )}
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 };

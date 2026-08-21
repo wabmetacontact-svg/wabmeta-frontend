@@ -5,6 +5,7 @@ import { X, User, Phone, Mail, Plus, Save, Loader2, AlertCircle, CheckCircle, Ta
 import toast from 'react-hot-toast';
 import { validatePhoneInput } from '../../utils/csvContacts';
 
+import { useModalA11y } from '../../hooks/useModalA11y';
 // ============================================
 // TYPES
 // ============================================
@@ -43,6 +44,7 @@ const AddContactModal: React.FC<AddContactModalProps> = ({
   onSave,
   editContact
 }) => {
+  const panelRef = useModalA11y(isOpen, onClose);
   const [loading, setLoading] = useState(false);
   const [newTag, setNewTag] = useState('');
   const [phoneValidation, setPhoneValidation] = useState<{
@@ -307,7 +309,8 @@ const AddContactModal: React.FC<AddContactModalProps> = ({
       />
 
       {/* Modal */}
-      <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-hidden animate-fade-in">
+      <div ref={panelRef}
+                className="relative bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-hidden animate-fade-in">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-100">
           <div>

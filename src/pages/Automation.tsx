@@ -10,6 +10,7 @@ import { automations as automationsApi } from '../services/api';
 import type { Automation } from '../types/automation';
 import toast from 'react-hot-toast';
 
+import { useConfirm } from '../context/ConfirmContext';
 const triggerIcons: Record<string, React.ReactNode> = {
   NEW_CONTACT: <Users className="w-4 h-4" />,
   KEYWORD: <MessageSquare className="w-4 h-4" />,
@@ -29,6 +30,7 @@ const triggerLabels: Record<string, string> = {
 };
 
 const AutomationPage: React.FC = () => {
+  const confirm = useConfirm();
   const navigate = useNavigate();
   const [automations, setAutomations] = useState<Automation[]>([]);
   const [loading, setLoading] = useState(true);
@@ -74,7 +76,12 @@ const AutomationPage: React.FC = () => {
   };
 
   const handleDelete = async (automation: Automation) => {
-    if (!confirm(`Delete "${automation.name}"?`)) return;
+    if (!(await confirm({
+      title: `Delete "${automation.name}"?`,
+      message: 'This automation stops running immediately and cannot be restored.',
+      confirmLabel: 'Delete',
+      tone: 'danger',
+    }))) return;
     try {
       // ✅ Optimistic
       setAutomations(prev => prev.filter(a => a.id !== automation.id));

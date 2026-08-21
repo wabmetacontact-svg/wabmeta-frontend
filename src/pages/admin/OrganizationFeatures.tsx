@@ -20,7 +20,7 @@ import {
 } from 'lucide-react';
 import { admin } from '../../services/api';
 import toast from 'react-hot-toast';
-import PageSkeleton from '../../components/common/PageSkeleton';
+import PageLoader from '../../components/common/PageLoader';
 
 // ============================================
 // TOGGLE SWITCH
@@ -187,7 +187,7 @@ export default function OrganizationFeatures() {
   };
 
   if (loading) {
-    return <PageSkeleton />;
+    return <PageLoader />;
   }
 
   return (

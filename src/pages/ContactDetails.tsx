@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import {
   ArrowLeft,
   Mail,
@@ -16,9 +17,11 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { contacts as contactApi } from '../services/api';
-import PageSkeleton from '../components/common/PageSkeleton';
+import PageLoader from '../components/common/PageLoader';
 
+import { useConfirm } from '../context/ConfirmContext';
 const ContactDetails: React.FC = () => {
+  const confirm = useConfirm();
   const { id } = useParams();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'overview' | 'messages' | 'activity'>('overview');
@@ -71,18 +74,23 @@ const ContactDetails: React.FC = () => {
   }, [id]);
 
   const handleDelete = async () => {
-    if (!window.confirm('Are you sure you want to delete this contact?')) return;
+    if (!(await confirm({
+      title: 'Delete this contact?',
+      message: 'The contact and its conversation history will be removed.',
+      confirmLabel: 'Delete',
+      tone: 'danger',
+    }))) return;
     
     try {
       await contactApi.delete(id!);
       navigate('/dashboard/contacts');
     } catch (err) {
-      alert('Failed to delete contact');
+      toast.error('Failed to delete contact');
     }
   };
 
   if (loading) {
-    return <PageSkeleton />;
+    return <PageLoader />;
   }
 
   if (error || !contact) {

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { X, Users, Check, Search, Plus } from 'lucide-react';
 import api from '../../services/api';
 
+import { useModalA11y } from '../../hooks/useModalA11y';
 interface Group {
   id: string;
   name: string;
@@ -21,6 +22,7 @@ const AddToGroupModal: React.FC<AddToGroupModalProps> = ({
   selectedContactIds,
   onSuccess,
 }) => {
+  const panelRef = useModalA11y(isOpen, onClose);
   const [groups, setGroups] = useState<Group[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -126,7 +128,8 @@ const AddToGroupModal: React.FC<AddToGroupModalProps> = ({
         onClick={submitting ? undefined : onClose}
       />
       
-      <div className="relative w-full max-w-md bg-white border border-gray-200 rounded-2xl shadow-xl animate-scale-in">
+      <div ref={panelRef}
+                className="relative w-full max-w-md bg-white border border-gray-200 rounded-2xl shadow-xl animate-scale-in">
         <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200">
           <div>
             <h2 className="text-xl font-bold text-gray-900">Add to Group</h2>

@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import { wallet as walletApi } from "../../services/api";
 import toast from "react-hot-toast";
+import { useModalA11y } from '../../hooks/useModalA11y';
 
 declare global {
   interface Window {
@@ -40,6 +41,7 @@ const WalletTopUpModal: React.FC<Props> = ({
   onClose,
   onSuccess,
 }) => {
+  const panelRef = useModalA11y(true, onClose);
   const [amount, setAmount] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const [verifying, setVerifying] = useState(false);
@@ -301,7 +303,8 @@ const WalletTopUpModal: React.FC<Props> = ({
   if (showRetry && pendingPayment) {
     return (
       <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-        <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md">
+        <div ref={panelRef}
+            className="bg-white rounded-2xl shadow-2xl w-full max-w-md">
           <div className="flex items-center justify-between p-6 border-b border-gray-200">
             <div className="flex items-center gap-2">
               <AlertCircle className="w-5 h-5 text-orange-500" />

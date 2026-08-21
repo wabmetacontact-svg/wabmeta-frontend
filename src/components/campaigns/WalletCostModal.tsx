@@ -77,7 +77,7 @@ const CountryTable: React.FC<{ breakdown: CostBreakdown }> = ({ breakdown }) => 
         Country-wise Breakdown
       </h3>
 
-      <div className="bg-gray-50 rounded-xl overflow-hidden
+      <div className="bg-gray-50 rounded-xl overflow-x-auto
                       border border-gray-200">
         <table className="w-full text-sm">
           <thead>

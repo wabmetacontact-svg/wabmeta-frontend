@@ -9,9 +9,11 @@ import {
 import { crm as crmApi } from '../services/api';
 import type { Lead, LeadNote, LeadTask, LeadActivity } from '../types/crm';
 import toast from 'react-hot-toast';
-import PageSkeleton from '../components/common/PageSkeleton';
+import PageLoader from '../components/common/PageLoader';
 
+import { useConfirm } from '../context/ConfirmContext';
 const LeadDetail: React.FC = () => {
+    const confirm = useConfirm();
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
 
@@ -99,7 +101,13 @@ const LeadDetail: React.FC = () => {
     };
 
     const handleDelete = async () => {
-        if (!lead || !confirm('Delete this lead?')) return;
+        if (!lead) return;
+        if (!(await confirm({
+            title: 'Delete this lead?',
+            message: 'This lead and its history will be permanently removed.',
+            confirmLabel: 'Delete',
+            tone: 'danger',
+        }))) return;
         try {
             await crmApi.deleteLead(lead.id);
             toast.success('Lead deleted');
@@ -118,7 +126,7 @@ const LeadDetail: React.FC = () => {
     };
 
     if (loading) {
-    return <PageSkeleton />;
+    return <PageLoader />;
   }
 
     if (!lead) {

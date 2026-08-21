@@ -204,15 +204,81 @@ Inhe convert karna cheezein todta:
 - Spinner rings (`border-white/30 border-t-white`), dark CTA buttons (`bg-gray-900 text-white`),
   modal backdrops (`bg-slate-900/40`)
 
+### Native dialogs khatam — 16 alert() + 17 confirm()
+
+- [x] **16 `alert()` → `toast`**. Native alert page block karta hai, style nahi ho sakta.
+- [x] **17 `window.confirm()` → proper dialog.** Naya `ConfirmProvider` + `useConfirm()` hook banaya
+      (`src/context/ConfirmProvider.tsx`), jo kept `Modal.tsx` ke upar bana hai.
+      Promise-based API hai to call sites ka shape same rehta hai:
+      `if (!(await confirm({ title: '...', tone: 'danger' }))) return;`
+- [x] `Contacts.tsx` ka group-delete flow: pehle OK/Cancel ko **do alag destructive choices**
+      ke liye use kar raha tha (OK = group+contacts delete, Cancel = sirf group).
+      Ab do saaf dialogs hain jinke buttons pe likha hai ki kya hoga.
+
+### a11y — modals
+
+12 me se **10 hand-rolled modals me Escape hi nahi tha, kisi me focus trap nahi,
+kisi me body scroll lock nahi.** Har modal ko rewrite karna risky tha, isliye behaviour
+ko `src/hooks/useModalA11y.ts` me nikala — 2 line ka change per modal:
+
+- [x] Escape to close, Tab/Shift+Tab focus trap, body scroll lock, focus restore — **saare 12 modals me**
+- [x] `MessageBubble` ka reply-quote (jump-to-message) sirf mouse se chalta tha —
+      ab `role="button"` + `tabIndex` + Enter/Space handler
+- [x] `WalletCostModal` ka table `overflow-hidden` me tha (mobile pe clip hota tha) → `overflow-x-auto`
+
+Clickable `<div>` me se baaki sab modal backdrops hain — wo standard pattern hai
+aur ab Escape kaam karta hai, to bug nahi.
+
+### Jo check kiya aur theek nikla (kaam nahi banaya)
+
+- **Empty states** — Templates/Contacts/Campaigns/Automation sab me proper empty states hain,
+  filtered-vs-truly-empty distinguish bhi karte hain, CTA ke saath. Mera pehla grep crude tha.
+- **Table overflow** — 17 me se 16 tables pehle se `overflow-x-auto` me wrapped the.
+
+### Loading — PageSkeleton hataya
+
+Problem ye tha ki ek page kholne pe **teen alag visuals** dikhte the:
+`LoadingScreen` (full-screen logo) → `PageSkeleton` (fake dashboard: chart + stat cards) → asli page.
+
+Aur `PageSkeleton` ek **generic dashboard skeleton** tha jo 6 aisi pages pe laga tha
+jo waisi dikhti hi nahi (CampaignDetails, ChatbotBuilder, ContactDetails, LeadDetail,
+CreateAutomation, OrganizationFeatures). Galat layout dikha ke phir badal jaana
+wait ko lamba feel karata hai.
+
+- [x] `PageSkeleton` delete (196 LOC). Naya `PageLoader` — halka spinner, **150ms delay**
+      taaki fast loads pe kuch flash hi na ho.
+- [x] `DashboardLayout` ka local `RouteLoader` bhi wahi shared component use karta hai.
+      Ab poore app me **ek hi loading visual** hai.
+
+### Unwired features — wire kiye
+
+- [x] **Team page** — 13-line stub se poora feature. List + stats + invite + role change + remove.
+      Backend me `/api/team` hai hi nahi (saare `team.*` API calls 404 karte),
+      to `organizations/:id/members` pe point kiya aur dead `team` object hata diya.
+      Roles bhi align kiye: frontend `owner/admin/manager/agent` maanta tha,
+      backend `OWNER/ADMIN/MEMBER/VIEWER` hai.
+- [x] **Landing FAQ** — Landing composition me add kiya.
+- [x] **Settings → Business Profile** tab — fields (name/logo/website/industry/timezone)
+      backend ke `updateOrganizationSchema` se exactly match karte hain.
+- [x] **Instagram DM Automation** — mock data se real API pe. List + status toggle,
+      aur naya `CreateDmRuleModal` (pehle "Create Rule" button kuch karta hi nahi tha).
+      `instagram` API object bhi add kiya, jo tha hi nahi.
+
+### Wire NAHI kiye — aur kyun
+
+- **`WebhookLogs`** — pure mock data hai, koi API call nahi. Wire karne se users ko
+  **fake webhook events asli lagenge**. Backend endpoint chahiye pehle.
+- **`CreateCommentRuleModal`** — Instagram backend me comment-rule ka koi route nahi.
+  `IgCommentRule` Prisma model exist karta hai, API nahi.
+- **`Testimonials`** — named logon ke quotes hain (Rahul Sharma/QuickMart,
+  Priya Mehta/EduLearn, Arjun Patel/TravelEasy). Agar ye real customers nahi hain
+  to live marketing site pe daalna deceptive hoga. **Tumhara call hai.**
+- **`AddPhoneModal`** — koi entry point nahi, aur kaunse flow me aana chahiye ye clear nahi.
+
 ### Baaki hai
 
-- [ ] Bache hue 46 dark hex + 38 dark-tw markers manually review (mostly upar wali intentional list)
-- [ ] **`alert()` × 21** → toast
-- [ ] Design system adopt karna (12 kept components) — 590 hardcoded hex ka root cause
-- [ ] Responsive check (375px / tablet / desktop)
-- [ ] Loading states consistency (3 alag patterns)
-- [ ] Empty states har list page pe
-- [ ] a11y: 16 clickable `<div>`, focus rings, modal focus trap
+- [ ] Design system adopt karna (11 orphan `common/` components bache hain)
+- [ ] Responsive manual check (375px / tablet / desktop)
 
 - [ ] **Design tokens**: 590 hardcoded hex colors → `index.css` tokens me consolidate.
 - [ ] **Dark mode**: sirf 32/203 files me `dark:` — baaki pages dark mode me toot rahe honge. Har page verify.

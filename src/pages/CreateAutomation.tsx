@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import { automations as automationsApi, templates as templatesApi, contacts as contactsApi } from '../services/api';
 import toast from 'react-hot-toast';
-import PageSkeleton from '../components/common/PageSkeleton';
+import PageLoader from '../components/common/PageLoader';
 
 interface Action {
   id: string;
@@ -166,7 +166,7 @@ const CreateAutomation: React.FC = () => {
   };
 
   if (loading) {
-    return <PageSkeleton />;
+    return <PageLoader />;
   }
 
   return (

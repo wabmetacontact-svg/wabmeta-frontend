@@ -14,6 +14,7 @@ import {
 import { admin, billing } from '../../services/api';
 import toast from 'react-hot-toast';
 
+import { useModalA11y } from '../../hooks/useModalA11y';
 interface Plan {
     id: string;
     name: string;
@@ -47,6 +48,7 @@ const AssignPlanModal: React.FC<AssignPlanModalProps> = ({
     onSuccess,
     organization,
 }) => {
+    const panelRef = useModalA11y(isOpen, onClose);
     const [step, setStep] = useState<'org' | 'plan' | 'confirm'>('org');
     const [loading, setLoading] = useState(false);
     const [submitting, setSubmitting] = useState(false);
@@ -193,7 +195,8 @@ const AssignPlanModal: React.FC<AssignPlanModalProps> = ({
             <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
 
             {/* Modal */}
-            <div className="relative bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden animate-fade-in">
+            <div ref={panelRef}
+                className="relative bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden animate-fade-in">
                 {/* Header */}
                 <div className="flex justify-between items-center p-6 border-b border-gray-200">
                     <div>

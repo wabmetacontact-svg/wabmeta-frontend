@@ -11,6 +11,7 @@ import { ThemeProvider } from './context/ThemeProvider';
 import { SocketProvider } from './context/SocketProvider';
 import { AppProvider } from './context/AppProvider';
 import { NotificationsProvider } from './context/NotificationsProvider';
+import { ConfirmProvider } from './context/ConfirmProvider';
 
 // Components
 import LoadingScreen from './components/common/LoadingScreen';
@@ -473,6 +474,7 @@ const App: React.FC = () => {
               {/* ✅ AppProvider yahan add karo - Router ke ANDAR */}
               <AppProvider>
                 <NotificationsProvider>
+                  <ConfirmProvider>
                   {/* Toast Notifications */}
                   <Toaster
                     position="top-right"
@@ -516,6 +518,7 @@ const App: React.FC = () => {
                     limit={upgradeModal.limit}
                     message={upgradeModal.message}
                   />
+                  </ConfirmProvider>
                 </NotificationsProvider>
               </AppProvider>
             </SocketProvider>

@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
+import { useConfirm } from '../../context/ConfirmContext';
 // ============================================
 // TOGGLE SWITCH COMPONENT
 // ============================================
@@ -40,6 +41,7 @@ const ToggleSwitch: React.FC<{
 // ============================================
 
 const SystemSettings: React.FC = () => {
+  const confirm = useConfirm();
   const [maintenance, setMaintenance] = useState(false);
   const [registration, setRegistration] = useState(true);
   const [messageLimit, setMessageLimit] = useState(1000);
@@ -61,7 +63,12 @@ const SystemSettings: React.FC = () => {
   };
 
   const handleClearCache = async () => {
-    if (!window.confirm('Are you sure you want to clear all cache? This will sign out active sessions.')) {
+    if (!(await confirm({
+      title: 'Clear all cache?',
+      message: 'Every active session will be signed out.',
+      confirmLabel: 'Clear cache',
+      tone: 'danger',
+    }))) {
       return;
     }
 

@@ -43,6 +43,7 @@ import {
 import type { Message } from '../components/inbox/MessageBubble';
 import type { Note } from '../components/inbox/ConversationNotes';
 
+import { useConfirm } from '../context/ConfirmContext';
 // Styles
 import '../components/inbox/inbox.styles.css';
 
@@ -133,6 +134,7 @@ const saveNotes = (convId: string, notes: Note[]) => {
 };
 
 const Inbox: React.FC = () => {
+  const confirm = useConfirm();
   const { conversationId: urlConvId } = useParams();
   const navigate = useNavigate();
   const { decrementUnread } = useApp();
@@ -660,7 +662,11 @@ const Inbox: React.FC = () => {
   );
 
   const handleClearChat = useCallback(async (_conv: Conversation) => {
-    if (window.confirm('Are you sure you want to clear this chat? This will only remove messages locally.')) {
+    if (await confirm({
+      title: 'Clear this chat?',
+      message: 'Messages are only removed on this device. Nothing is deleted for the contact.',
+      confirmLabel: 'Clear',
+    })) {
       setMessages([]);
       toast.success('Chat cleared locally');
     }
@@ -699,9 +705,12 @@ const Inbox: React.FC = () => {
   const handleBulkDelete = useCallback(async () => {
     if (selectedConversationIds.length === 0) return;
     if (
-      window.confirm(
-        `Are you sure you want to delete ${selectedConversationIds.length} conversation(s)? This action cannot be undone.`
-      )
+      await confirm({
+        title: `Delete ${selectedConversationIds.length} conversation(s)?`,
+        message: 'This cannot be undone.',
+        confirmLabel: 'Delete',
+        tone: 'danger',
+      })
     ) {
       try {
         await inboxApi.bulkDeleteConversations(selectedConversationIds);

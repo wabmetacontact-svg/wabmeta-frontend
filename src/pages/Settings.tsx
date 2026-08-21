@@ -11,21 +11,41 @@ import {
   Globe,
   CreditCard,
   Phone,
+  Building2,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import toast from 'react-hot-toast';
+import { organizations } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 
 // Import settings components
 import WhatsAppSettings from '../components/settings/WhatsAppSettings';
 import GeneralSettings from '../components/settings/GeneralSettings';
+import BusinessProfile from '../components/settings/BusinessProfile';
 import NotificationSettings from '../components/settings/NotificationSettings';
 import SecuritySettings from '../components/settings/SecuritySettings';
 import ApiConfig from '../components/settings/ApiConfig';
 import CallingSettings from '../components/settings/CallingSettings';
 
-type SettingsTab = 'whatsapp' | 'general' | 'notifications' | 'security' | 'api' | 'calling';
+type SettingsTab = 'whatsapp' | 'general' | 'business' | 'notifications' | 'security' | 'api' | 'calling';
 
 const Settings: React.FC = () => {
   const [activeTab, setActiveTab] = useState<SettingsTab>('whatsapp');
+  const { organization, updateOrganization } = useAuth();
+
+  const handleUpdateOrganization = async (data: any) => {
+    if (!organization?.id) return { success: false };
+    try {
+      const res = await organizations.update(organization.id, data);
+      const updated = res.data?.data;
+      if (updated) updateOrganization(updated);
+      toast.success('Business profile updated');
+      return { success: true };
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || 'Could not save your changes.');
+      return { success: false };
+    }
+  };
 
   const tabs = [
     {
@@ -39,6 +59,12 @@ const Settings: React.FC = () => {
       name: 'General',
       icon: SettingsIcon,
       description: 'Organization settings',
+    },
+    {
+      id: 'business',
+      name: 'Business Profile',
+      icon: Building2,
+      description: 'Name, logo, website & timezone',
     },
     {
       id: 'notifications',
@@ -72,6 +98,13 @@ const Settings: React.FC = () => {
         return <WhatsAppSettings />;
       case 'general':
         return <GeneralSettings />;
+      case 'business':
+        return (
+          <BusinessProfile
+            organization={organization}
+            onUpdate={handleUpdateOrganization}
+          />
+        );
       case 'notifications':
         return <NotificationSettings />;
       case 'security':

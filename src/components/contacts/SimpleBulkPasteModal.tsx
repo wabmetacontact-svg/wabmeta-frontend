@@ -11,6 +11,7 @@ import {
 import api from '../../services/api';
 import toast from 'react-hot-toast';
 
+import { useModalA11y } from '../../hooks/useModalA11y';
 interface Props {
     isOpen: boolean;
     onClose: () => void;
@@ -20,6 +21,7 @@ interface Props {
 }
 
 export default function SimpleBulkPasteModal({ isOpen, onClose, onSuccess, groups = [], initialGroupId = '' }: Props) {
+    const panelRef = useModalA11y(isOpen, onClose);
     const [phoneNumbers, setPhoneNumbers] = useState('');
     const [selectedGroup, setSelectedGroup] = useState(initialGroupId);
     const [tags, setTags] = useState('');
@@ -157,7 +159,8 @@ export default function SimpleBulkPasteModal({ isOpen, onClose, onSuccess, group
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={handleClose} />
 
-            <div className="relative bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden border border-gray-200">
+            <div ref={panelRef}
+                className="relative bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden border border-gray-200">
                 {/* Header */}
                 <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-purple-50">
                     <div className="flex items-center gap-3">

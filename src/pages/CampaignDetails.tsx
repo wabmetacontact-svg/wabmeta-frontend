@@ -12,7 +12,7 @@ import {
 import { campaigns as campaignsApi } from '../services/api';
 import useCampaignRealtime from '../hooks/useCampaignRealtime';
 import toast from 'react-hot-toast';
-import PageSkeleton from '../components/common/PageSkeleton';
+import PageLoader from '../components/common/PageLoader';
 
 // ─── Types ───────────────────────────────────────────────────
 interface CampaignContact {
@@ -409,7 +409,7 @@ const CampaignDetails: React.FC = () => {
     loadContacts(page);
   };
 
-  if (loading) return <PageSkeleton />;
+  if (loading) return <PageLoader />;
 
   const displayStats = liveStats || stats;
 

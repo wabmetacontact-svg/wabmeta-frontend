@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import toast from 'react-hot-toast';
 import Papa from "papaparse";
 import {
   ArrowLeft,
@@ -16,6 +17,7 @@ import {
 } from "lucide-react";
 import api from "../services/api";
 
+import { useConfirm } from '../context/ConfirmContext';
 interface ImportResult {
   total: number;      // total rows in CSV
   imported: number;   // created
@@ -54,6 +56,7 @@ const splitName = (full: string) => {
 };
 
 const ImportContacts: React.FC = () => {
+  const confirm = useConfirm();
   const navigate = useNavigate();
 
   const [step, setStep] = useState<Step>("upload");
@@ -140,7 +143,7 @@ const ImportContacts: React.FC = () => {
 
   const handleConfirmMapping = () => {
     if (!fieldMapping.phone) {
-      alert("Phone number mapping is required!");
+      toast.error("Map a column to the phone number field first");
       return;
     }
     setStep("preview");
@@ -204,17 +207,21 @@ const ImportContacts: React.FC = () => {
   // ✅ Update handleStartImport to check limits
   const handleStartImport = async () => {
     if (!importStats) {
-      alert('Unable to fetch import limits. Please try again.');
+      toast.error('Could not load your import limits. Try again.');
       return;
     }
 
     if (!importStats.canImport) {
-      alert(`Contact limit reached (${importStats.totalContacts}/${importStats.maxContacts}). Please upgrade your plan.`);
+      toast.error(`Contact limit reached (${importStats.totalContacts}/${importStats.maxContacts}). Upgrade your plan to add more.`);
       return;
     }
 
     if (stats.valid > importStats.remainingSlots) {
-      if (!confirm(`You can only import ${importStats.remainingSlots} more contacts. Only the first ${importStats.remainingSlots} valid contacts will be imported. Continue?`)) {
+      if (!(await confirm({
+        title: `Import only ${importStats.remainingSlots} contacts?`,
+        message: `Your plan has ${importStats.remainingSlots} slots left, so only the first ${importStats.remainingSlots} valid contacts will be imported.`,
+        confirmLabel: 'Import',
+      }))) {
         return;
       }
     }
@@ -236,7 +243,7 @@ const ImportContacts: React.FC = () => {
         }));
 
       if (contacts.length === 0) {
-        alert("No valid contacts found. Please check phone column mapping/values.");
+        toast.error("No valid contacts found — check the phone column mapping.");
         setStep("preview");
         return;
       }
@@ -278,7 +285,7 @@ const ImportContacts: React.FC = () => {
       // Refresh stats after import
       fetchImportStats();
     } catch (e: any) {
-      alert(e?.message || "Import failed");
+      toast.error(e?.message || "Import failed");
       setStep("preview");
     }
   };

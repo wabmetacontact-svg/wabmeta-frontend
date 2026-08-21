@@ -11,6 +11,7 @@ import {
 import { admin } from '../../services/api';
 import toast from 'react-hot-toast';
 
+import { useModalA11y } from '../../hooks/useModalA11y';
 interface ExtendSubscriptionModalProps {
     isOpen: boolean;
     onClose: () => void;
@@ -24,6 +25,7 @@ const ExtendSubscriptionModal: React.FC<ExtendSubscriptionModalProps> = ({
     onSuccess,
     subscription,
 }) => {
+    const panelRef = useModalA11y(isOpen, onClose);
     const [loading, setLoading] = useState(false);
     const [additionalDays, setAdditionalDays] = useState(30);
     const [reason, setReason] = useState('');
@@ -90,7 +92,8 @@ const ExtendSubscriptionModal: React.FC<ExtendSubscriptionModalProps> = ({
             <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
 
             {/* Modal */}
-            <div className="relative bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden animate-fade-in">
+            <div ref={panelRef}
+                className="relative bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden animate-fade-in">
                 {/* Header */}
                 <div className="flex justify-between items-center p-6 border-b border-gray-200">
                     <div>

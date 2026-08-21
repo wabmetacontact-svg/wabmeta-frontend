@@ -22,6 +22,7 @@ import { useNotificationsStore } from '../context/NotificationsContext';
 import type { NotificationType } from '../context/NotificationsContext';
 import { timeAgo } from '../utils/timeAgo';
 
+import { useConfirm } from '../context/ConfirmContext';
 // ============================================
 // HELPERS
 // ============================================
@@ -55,6 +56,7 @@ const getNotificationIconStyle = (type: NotificationType) => {
 // COMPONENT
 // ============================================
 const Notifications: React.FC = () => {
+  const confirm = useConfirm();
   const {
     notifications,
     unreadCount,
@@ -115,8 +117,13 @@ const Notifications: React.FC = () => {
 
   const totalCount = notifications.length;
 
-  const handleClearAll = () => {
-    if (window.confirm('Are you sure you want to clear all notifications?')) {
+  const handleClearAll = async () => {
+    if (await confirm({
+      title: 'Clear all notifications?',
+      message: 'Your notification list will be emptied.',
+      confirmLabel: 'Clear all',
+      tone: 'danger',
+    })) {
       clearAll();
     }
   };

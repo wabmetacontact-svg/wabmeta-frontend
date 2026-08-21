@@ -23,13 +23,14 @@ import {
 import { chatbots as chatbotsApi } from '../services/api';
 import toast from 'react-hot-toast';
 
-import PageSkeleton from '../components/common/PageSkeleton';
+import PageLoader from '../components/common/PageLoader';
 import {
   StartNode, MessageNode, ButtonNode, ConditionNode,
   DelayNode, ActionNode, EndNode, ListNode, AiNode,
   NodeSidebar, NodeConfigPanel
 } from '../components/chatbot';
 
+import { useConfirm } from '../context/ConfirmContext';
 const nodeTypes: NodeTypes = {
   start: StartNode,
   message: MessageNode,
@@ -253,6 +254,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ chatbot, onChange, onClos
 };
 
 const ChatbotBuilder: React.FC = () => {
+  const confirm = useConfirm();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
@@ -602,15 +604,20 @@ const ChatbotBuilder: React.FC = () => {
   };
 
   // ✅ Warn before manual routing navigation
-  const handleBackNavigation = () => {
+  const handleBackNavigation = async () => {
     if (isDirty) {
-      const confirmExit = window.confirm('You have unsaved changes. Are you sure you want to discard them and exit?');
+      const confirmExit = await confirm({
+        title: 'Discard unsaved changes?',
+        message: 'Your edits to this flow will be lost.',
+        confirmLabel: 'Discard',
+        tone: 'danger',
+      });
       if (!confirmExit) return;
     }
     navigate('/dashboard/chatbots');
   };
 
-  if (loading) return <PageSkeleton />;
+  if (loading) return <PageLoader />;
 
   return (
     <div className="h-screen flex flex-col bg-gray-50 overflow-hidden select-none">

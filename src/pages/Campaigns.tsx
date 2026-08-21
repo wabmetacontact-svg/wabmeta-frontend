@@ -13,6 +13,7 @@ import toast from 'react-hot-toast';
 import WalletCostModal from '../components/campaigns/WalletCostModal';
 import { type Campaign, type CampaignStatus, type CampaignStats } from '../types/campaign';
 
+import { useConfirm } from '../context/ConfirmContext';
 const safeNum = (v: any): number => {
   const n = Number(v);
   return isNaN(n) ? 0 : n;
@@ -82,6 +83,7 @@ const parseWalletErr = (msg: string): WalletErrResult => {
 };
 
 const Campaigns: React.FC = () => {
+  const confirm = useConfirm();
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [stats, setStats] = useState<CampaignStats>({
     total: 0, totalSent: 0, totalDelivered: 0,
@@ -321,7 +323,12 @@ const Campaigns: React.FC = () => {
   };
 
   const handleDelete = async (campaignId: string, campaignName: string) => {
-    if (!window.confirm(`Delete "${campaignName}"?\n\nThis will permanently delete the campaign and all its metrics data.`)) return;
+    if (!(await confirm({
+      title: `Delete "${campaignName}"?`,
+      message: 'The campaign and all of its metrics data will be permanently deleted.',
+      confirmLabel: 'Delete',
+      tone: 'danger',
+    }))) return;
 
     try {
       setActionLoading(campaignId);

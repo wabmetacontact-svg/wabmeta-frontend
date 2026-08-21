@@ -10,7 +10,9 @@ import { chatbots as chatbotsApi } from '../services/api';
 import type { Chatbot } from '../types/chatbot';
 import toast from 'react-hot-toast';
 
+import { useConfirm } from '../context/ConfirmContext';
 const ChatbotList: React.FC = () => {
+  const confirm = useConfirm();
   const navigate = useNavigate();
   const [chatbots, setChatbots] = useState<Chatbot[]>([]);
   const [loading, setLoading] = useState(true);
@@ -78,7 +80,12 @@ const ChatbotList: React.FC = () => {
   };
 
   const handleDelete = async (chatbot: Chatbot) => {
-    if (!confirm(`Delete "${chatbot.name}"?`)) return;
+    if (!(await confirm({
+      title: `Delete "${chatbot.name}"?`,
+      message: 'The chatbot and its flow will be permanently removed.',
+      confirmLabel: 'Delete',
+      tone: 'danger',
+    }))) return;
 
     try {
       // ✅ Optimistic delete

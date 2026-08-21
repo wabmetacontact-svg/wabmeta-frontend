@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { X, Loader2, Search } from 'lucide-react';
 import { crm as crmApi, contacts as contactsApi } from '../../services/api';
 import toast from 'react-hot-toast';
+import { useModalA11y } from '../../hooks/useModalA11y';
 
 interface Props {
     pipelineId?: string;
@@ -12,6 +13,7 @@ interface Props {
 }
 
 const CreateLeadModal: React.FC<Props> = ({ pipelineId, onClose, onCreated }) => {
+    const panelRef = useModalA11y(true, onClose);
     const [loading, setLoading] = useState(false);
     const [contacts, setContacts] = useState<any[]>([]);
     const [searchContact, setSearchContact] = useState('');
@@ -72,7 +74,8 @@ const CreateLeadModal: React.FC<Props> = ({ pipelineId, onClose, onCreated }) =>
 
     return (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-xl w-full max-w-lg">
+            <div ref={panelRef}
+                className="bg-white rounded-xl w-full max-w-lg">
                 <div className="flex items-center justify-between p-4 border-b border-gray-200">
                     <h2 className="text-lg font-semibold text-gray-900">Create New Lead</h2>
                     <button onClick={onClose} className="p-1 hover:bg-gray-50 rounded">

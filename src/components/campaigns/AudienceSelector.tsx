@@ -4,6 +4,7 @@ import {
   Users, Tag, UserPlus, Search, Check, Layers,
   Loader2, FileText, X,
 } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { contacts as contactsApi } from '../../services/api';
 import api from '../../services/api';
 
@@ -490,7 +491,7 @@ const AudienceSelector: React.FC<AudienceSelectorProps> = ({
                   const rows = text.split('\n').map(r => r.trim()).filter(Boolean);
 
                   if (rows.length < 2) {
-                    alert('CSV must contain headers and data rows.');
+                    toast.error('CSV must contain headers and data rows.');
                     return;
                   }
 
@@ -512,7 +513,7 @@ const AudienceSelector: React.FC<AudienceSelectorProps> = ({
                   onCsvContactsChange?.(formatted);
                   setCsvFileName(file.name);
                 } catch {
-                  alert('Failed to parse CSV file.');
+                  toast.error('Failed to parse CSV file.');
                 }
               };
               reader.readAsText(file);

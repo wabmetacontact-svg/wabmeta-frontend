@@ -1,5 +1,8 @@
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import toast from "react-hot-toast";
+import { instagram } from "../../services/api";
+import PageLoader from "../../components/common/PageLoader";
+import CreateDmRuleModal from "../../components/instagram/CreateDmRuleModal";
 import {
   MessageCircle,
   Plus,
@@ -14,46 +17,35 @@ import {
   Play,
 } from "lucide-react";
 
+// Mirrors IgDmAutomation in the backend Prisma schema.
+type IgTriggerType =
+  | "KEYWORD"
+  | "DM_RECEIVED"
+  | "STORY_REPLY"
+  | "COMMENT_TO_DM"
+  | "ICE_BREAKER";
+
 interface AutomationRule {
   id: string;
   name: string;
-  trigger: "keyword" | "story_reply" | "dm_received" | "comment_to_dm";
-  keywords?: string[];
-  response: string;
+  triggerType: IgTriggerType;
+  keywords: string[];
+  matchType: string;
+  responseText: string | null;
   isActive: boolean;
   repliesCount: number;
   createdAt: string;
 }
 
-// Mock data - baad mein API se replace hoga
-const mockRules: AutomationRule[] = [
-  {
-    id: "1",
-    name: "Pricing Inquiry",
-    trigger: "keyword",
-    keywords: ["price", "cost", "how much"],
-    response:
-      "Hi! Thanks for reaching out. Our pricing starts at ₹899/month. Want to know more?",
-    isActive: true,
-    repliesCount: 142,
-    createdAt: "2026-06-01",
-  },
-  {
-    id: "2",
-    name: "Story Reply Welcome",
-    trigger: "story_reply",
-    response: "Hey! Thanks for checking out my story 🙌 How can I help you?",
-    isActive: false,
-    repliesCount: 38,
-    createdAt: "2026-05-28",
-  },
-];
-
-const triggerConfig = {
-  keyword: { label: "Keyword Trigger", icon: Hash, color: "#e1306c" },
-  story_reply: { label: "Story Reply", icon: BookOpen, color: "#833ab4" },
-  dm_received: { label: "DM Received", icon: MessageCircle, color: "#fcb045" },
-  comment_to_dm: { label: "Comment → DM", icon: Heart, color: "#fd1d1d" },
+const triggerConfig: Record<
+  IgTriggerType,
+  { label: string; icon: React.ElementType; color: string }
+> = {
+  KEYWORD: { label: "Keyword Trigger", icon: Hash, color: "#e1306c" },
+  STORY_REPLY: { label: "Story Reply", icon: BookOpen, color: "#833ab4" },
+  DM_RECEIVED: { label: "DM Received", icon: MessageCircle, color: "#fcb045" },
+  COMMENT_TO_DM: { label: "Comment → DM", icon: Heart, color: "#fd1d1d" },
+  ICE_BREAKER: { label: "Ice Breaker", icon: Heart, color: "#fd1d1d" },
 };
 
 const GlassCard: React.FC<{
@@ -76,24 +68,77 @@ const GlassCard: React.FC<{
 );
 
 const DMAutomation: React.FC = () => {
-  const [rules, setRules] = useState<AutomationRule[]>(mockRules);
+  const [rules, setRules] = useState<AutomationRule[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [showCreate, setShowCreate] = useState(false);
+
+  const load = useCallback(async () => {
+    setError(null);
+    try {
+      const res = await instagram.getAutomations();
+      setRules(Array.isArray(res.data?.data) ? res.data.data : []);
+    } catch (err: any) {
+      setError(
+        err?.response?.data?.message || "Could not load your automation rules."
+      );
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    load();
+  }, [load]);
 
   const filteredRules = rules.filter((r) =>
     r.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const toggleRule = (id: string) => {
+  const toggleRule = async (id: string) => {
+    const rule = rules.find((r) => r.id === id);
+    if (!rule) return;
+    const next = !rule.isActive;
+
+    // Optimistic, rolled back if the request fails.
     setRules((prev) =>
-      prev.map((r) => (r.id === id ? { ...r, isActive: !r.isActive } : r))
+      prev.map((r) => (r.id === id ? { ...r, isActive: next } : r))
     );
+    try {
+      await instagram.toggleAutomation(id, next);
+    } catch (err: any) {
+      setRules((prev) =>
+        prev.map((r) => (r.id === id ? { ...r, isActive: !next } : r))
+      );
+      toast.error(
+        err?.response?.data?.message || "Could not change that rule's status."
+      );
+    }
   };
 
   const igGradient =
     "linear-gradient(135deg, #833ab4 0%, #fd1d1d 50%, #fcb045 100%)";
 
+  if (loading) return <PageLoader />;
+
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-10">
+
+      {error && (
+        <div className="flex items-start gap-3 p-4 bg-red-50 border border-red-200 rounded-2xl">
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-red-800">{error}</p>
+            <button
+              type="button"
+              onClick={load}
+              className="mt-2 text-sm font-semibold text-red-700 hover:text-red-800 underline"
+            >
+              Try again
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* ── Header ── */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -113,7 +158,7 @@ const DMAutomation: React.FC = () => {
         </div>
 
         <button
-          onClick={() => toast("Rule creation is not available yet.")}
+          onClick={() => setShowCreate(true)}
           className="flex items-center gap-2 px-5 py-2.5 rounded-xl
             text-gray-900 text-sm font-semibold
             hover:-translate-y-0.5 transition-all duration-300"
@@ -215,7 +260,7 @@ const DMAutomation: React.FC = () => {
                 Create your first DM automation rule
               </p>
               <button
-                onClick={() => toast("Rule creation is not available yet.")}
+                onClick={() => setShowCreate(true)}
                 className="px-4 py-2 rounded-xl text-gray-900 text-xs font-semibold"
                 style={{ background: igGradient }}
               >
@@ -224,7 +269,7 @@ const DMAutomation: React.FC = () => {
             </div>
           ) : (
             filteredRules.map((rule) => {
-              const tc = triggerConfig[rule.trigger];
+              const tc = triggerConfig[rule.triggerType] ?? triggerConfig.KEYWORD;
 
               return (
                 <div
@@ -276,7 +321,7 @@ const DMAutomation: React.FC = () => {
                     )}
 
                     <p className="text-xs text-gray-500 truncate">
-                      {rule.response}
+                      {rule.responseText}
                     </p>
                   </div>
 
@@ -328,6 +373,12 @@ const DMAutomation: React.FC = () => {
           )}
         </div>
       </GlassCard>
+
+      <CreateDmRuleModal
+        isOpen={showCreate}
+        onClose={() => setShowCreate(false)}
+        onCreated={load}
+      />
     </div>
   );
 };

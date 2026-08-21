@@ -1064,7 +1064,18 @@ const MessageBubble: React.FC<Props> = ({
   const renderReplyPreview = () => {
     if (!message.replyTo) return null;
     return (
-      <div onClick={() => onJumpToMessage?.(message.replyTo!.id)} className={`reply-quote cursor-pointer mb-1.5 mx-1 border-l-2 border-emerald-500 ${isOutbound ? 'hover:bg-white/10' : 'hover:bg-black/5'} transition-colors`}>
+      <div
+        role="button"
+        tabIndex={0}
+        aria-label="Jump to the replied message"
+        onClick={() => onJumpToMessage?.(message.replyTo!.id)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            onJumpToMessage?.(message.replyTo!.id);
+          }
+        }}
+        className={`reply-quote cursor-pointer mb-1.5 mx-1 border-l-2 border-emerald-500 ${isOutbound ? 'hover:bg-white/10' : 'hover:bg-black/5'} transition-colors`}>
         <p className={`text-[10px] font-bold mb-0.5 ${isOutbound ? 'text-emerald-300' : 'text-emerald-600'}`}>
           {message.replyTo.direction === 'OUTBOUND' ? 'You' : message.replyTo.senderName || 'Contact'}
         </p>

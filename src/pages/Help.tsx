@@ -19,6 +19,7 @@ import {
   PlayCircle
 } from 'lucide-react';
 
+import { useModalA11y } from '../hooks/useModalA11y';
 interface FAQItem {
   question: string;
   answer: string;
@@ -128,9 +129,12 @@ const Help: React.FC = () => {
   );
 
   // Video Modal Component
-  const VideoModal: React.FC<{ video: VideoTutorial; onClose: () => void }> = ({ video, onClose }) => (
+  const VideoModal: React.FC<{ video: VideoTutorial; onClose: () => void }> = ({ video, onClose }) => {
+    const panelRef = useModalA11y(true, onClose);
+    return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4" onClick={onClose}>
-      <div className="relative w-full max-w-4xl bg-white rounded-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
+      <div ref={panelRef}
+                className="relative w-full max-w-4xl bg-white rounded-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
         {/* Close Button */}
         <button
           onClick={onClose}
@@ -168,7 +172,8 @@ const Help: React.FC = () => {
         </div>
       </div>
     </div>
-  );
+    );
+  };
 
   const supportChannels = [
     {

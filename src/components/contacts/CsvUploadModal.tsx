@@ -10,6 +10,7 @@ import api from '../../services/api';
 import toast from 'react-hot-toast';
 import { toCanonicalPhone, extractCountryCode } from '../../utils/csvContacts';
 
+import { useModalA11y } from '../../hooks/useModalA11y';
 interface Props {
     isOpen: boolean;
     onClose: () => void;
@@ -38,6 +39,7 @@ const BATCH_TIMEOUT = 60000; // 60 seconds per batch
 const BATCH_DELAY = 300;     // 300ms between batches
 
 export default function CsvUploadModal({ isOpen, onClose, onSuccess, groups = [] }: Props) {
+    const panelRef = useModalA11y(isOpen, onClose);
     const [file, setFile] = useState<File | null>(null);
     const [validContacts, setValidContacts] = useState<ValidatedContact[]>([]);
     const [invalidContacts, setInvalidContacts] = useState<ValidationError[]>([]);
@@ -349,7 +351,8 @@ export default function CsvUploadModal({ isOpen, onClose, onSuccess, groups = []
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div className="absolute inset-0 bg-black/50" onClick={loading ? undefined : handleClose} />
 
-            <div className="relative bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+            <div ref={panelRef}
+                className="relative bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col">
                 {/* Header */}
                 <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-purple-50 to-pink-50">
                     <div className="flex items-center gap-3">

@@ -1265,20 +1265,29 @@ export const settings = {
     api.delete<ApiResponse>(`/settings/api-keys/${id}`),
 };
 
-// ---------- TEAM ----------
-export const team = {
-  getMembers: () => api.get<ApiResponse>('/team/members'),
-  inviteMember: (data: { email: string; role: string }) =>
-    api.post<ApiResponse>('/team/invite', data),
-  updateMemberRole: (memberId: string, role: string) =>
-    api.put<ApiResponse>(`/team/members/${memberId}`, { role }),
-  removeMember: (memberId: string) =>
-    api.delete<ApiResponse>(`/team/members/${memberId}`),
-  getInvitations: () => api.get<ApiResponse>('/team/invitations'),
-  cancelInvitation: (id: string) =>
-    api.delete<ApiResponse>(`/team/invitations/${id}`),
-  resendInvitation: (id: string) =>
-    api.post<ApiResponse>(`/team/invitations/${id}/resend`),
+// ---------- INSTAGRAM ----------
+// Backend: wabmeta-backend/src/modules/instagram/instagram.routes.ts
+// Only these five endpoints exist. Comment rules and story rules have Prisma
+// models (IgCommentRule / IgStoryRule) but no routes yet.
+export const instagram = {
+  getAccounts: () => api.get<ApiResponse>('/instagram/accounts'),
+
+  connect: (data: any) => api.post<ApiResponse>('/instagram/connect', data),
+
+  getAutomations: () => api.get<ApiResponse>('/instagram/automations'),
+
+  createAutomation: (data: {
+    name: string;
+    triggerType: 'KEYWORD' | 'DM_RECEIVED' | 'STORY_REPLY' | 'COMMENT_TO_DM' | 'ICE_BREAKER';
+    keywords?: string[];
+    matchType?: 'contains' | 'exact' | 'starts_with';
+    responseText: string;
+  }) => api.post<ApiResponse>('/instagram/automations', data),
+
+  toggleAutomation: (id: string, isActive: boolean) =>
+    api.patch<ApiResponse>(`/instagram/automations/${id}/toggle`, { isActive }),
+
+  getAnalytics: () => api.get<ApiResponse>('/instagram/analytics'),
 };
 
 // ---------- DASHBOARD ----------

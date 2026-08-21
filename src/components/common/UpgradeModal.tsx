@@ -2,6 +2,7 @@
 import { X, Crown, Check, ArrowRight, Star } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
+import { useModalA11y } from '../../hooks/useModalA11y';
 interface Props {
     isOpen: boolean;
     onClose: () => void;
@@ -14,6 +15,8 @@ interface Props {
 }
 
 export default function UpgradeModal({ isOpen, onClose, feature, minimumPlan, message }: Props) {
+    const panelRef = useModalA11y(isOpen, onClose);
+
     if (!isOpen) return null;
 
     const plans = [
@@ -69,7 +72,8 @@ export default function UpgradeModal({ isOpen, onClose, feature, minimumPlan, me
             {/* Overlay backdrop */}
             <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={onClose} />
 
-            <div className="relative bg-white rounded-3xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto z-10 animate-in zoom-in-95 duration-200">
+            <div ref={panelRef}
+                className="relative bg-white rounded-3xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto z-10 animate-in zoom-in-95 duration-200">
 
                 {/* Header - Styled using the brand emerald scheme */}
                 <div className="text-center p-8 bg-gradient-to-br from-emerald-600 via-emerald-700 to-green-600 text-white relative">

@@ -4,6 +4,7 @@ import React, {
   useEffect, useMemo, useState, useCallback, useRef,
 } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import {
   Plus, Upload, Download, Users, UserCheck, UserX,
   Clock, RefreshCw, AlertCircle, Loader2, CheckCircle,
@@ -23,6 +24,7 @@ import { useApp } from '../context/AppContext';
 import { useContactFeatures } from '../hooks/useContactFeatures';
 import { formatPhoneForDisplay } from '../utils/csvContacts';
 
+import { useConfirm } from '../context/ConfirmContext';
 // ─── Types ───────────────────────────────────────────────────
 interface Contact {
   id: string;
@@ -257,6 +259,7 @@ const ContactRow: React.FC<{
 
 // ─── Main Component ───────────────────────────────────────────
 const Contacts: React.FC = () => {
+  const confirm = useConfirm();
   const navigate = useNavigate();
   const { setTotalContacts } = useApp();
 
@@ -594,14 +597,18 @@ const Contacts: React.FC = () => {
   };
 
   const handleDeleteContact = async (id: string) => {
-    if (!window.confirm('Delete this contact?')) return;
+    if (!(await confirm({
+      title: 'Delete this contact?',
+      confirmLabel: 'Delete',
+      tone: 'danger',
+    }))) return;
     try {
       setContacts(prev => prev.filter(c => c.id !== id));
       await api.delete(`/contacts/${id}`);
       await fetchStats();
     } catch (err: any) {
       await fetchContacts(true);
-      alert(err.response?.data?.message || 'Failed to delete contact');
+      toast.error(err.response?.data?.message || 'Failed to delete contact');
     }
   };
 
@@ -614,17 +621,20 @@ const Contacts: React.FC = () => {
   ) => {
     e.stopPropagation();
 
-    const deleteContacts = contactCount > 0 && window.confirm(
-      `Delete group "${groupName}"?\n\n` +
-      `This group has ${contactCount} contacts.\n\n` +
-      `Click OK to delete the group AND all ${contactCount} contacts.\n` +
-      `Click Cancel to keep the contacts.`
-    );
+    const deleteContacts = contactCount > 0 && (await confirm({
+      title: `Delete group "${groupName}"?`,
+      message: `This group has ${contactCount} contacts. You can delete them along with the group, or keep them and remove the group only.`,
+      confirmLabel: `Delete group and ${contactCount} contacts`,
+      cancelLabel: 'Keep contacts',
+      tone: 'danger',
+    }));
 
-    if (deleteContacts === false && !window.confirm(
-      `Delete group "${groupName}" only?\n\n` +
-      `The ${contactCount} contacts will remain in your contacts list.`
-    )) return;
+    if (deleteContacts === false && !(await confirm({
+      title: `Delete group "${groupName}" only?`,
+      message: `The ${contactCount} contacts stay in your contacts list.`,
+      confirmLabel: 'Delete group',
+      tone: 'danger',
+    }))) return;
 
     try {
       setGroups(prev => prev.filter(g => g.id !== groupId));
@@ -643,7 +653,7 @@ const Contacts: React.FC = () => {
       await fetchAll();
     } catch (err: any) {
       await fetchGroups();
-      alert(err.response?.data?.message || 'Failed to delete group');
+      toast.error(err.response?.data?.message || 'Failed to delete group');
     }
   };
 
@@ -651,7 +661,12 @@ const Contacts: React.FC = () => {
     if (selectedContacts.length === 0) return;
     if (action === 'delete') {
       const count = selectAllMode ? meta.total : selectedContacts.length;
-      if (!window.confirm(`Delete ${count} contacts?`)) return;
+      if (!(await confirm({
+        title: `Delete ${count} contacts?`,
+        message: 'This cannot be undone.',
+        confirmLabel: 'Delete',
+        tone: 'danger',
+      }))) return;
       try {
         await api.delete('/contacts/bulk', {
           data: { contactIds: selectedContacts },
@@ -660,7 +675,7 @@ const Contacts: React.FC = () => {
         setSelectedContacts([]);
         setSelectAllMode(false);
       } catch (err: any) {
-        alert(err.response?.data?.message || 'Bulk delete failed');
+        toast.error(err.response?.data?.message || 'Bulk delete failed');
       }
     }
   };
@@ -681,7 +696,11 @@ const Contacts: React.FC = () => {
     if (groupData?.name) payload.groupName = groupData.name;
     const res = await api.post('/contacts/import', payload);
     const result = res.data?.data;
-    alert(`✅ Import Complete!\nImported: ${result?.imported || 0}\nSkipped: ${result?.skipped || 0}\nFailed: ${result?.failed || 0}`);
+    toast.success(
+      `Imported ${result?.imported || 0} contacts` +
+      (result?.skipped ? `, skipped ${result.skipped}` : '') +
+      (result?.failed ? `, ${result.failed} failed` : '')
+    );
     await fetchAll();
     setShowImportModal(false);
   };
@@ -696,11 +715,11 @@ const Contacts: React.FC = () => {
       a.download = `contacts_${new Date().toISOString().split('T')[0]}.csv`;
       a.click();
       window.URL.revokeObjectURL(url);
-    } catch { alert('Export failed'); }
+    } catch { toast.error('Export failed'); }
   };
 
   const handleDeleteAllContacts = async () => {
-    if (deleteAllInput !== 'DELETE') { alert('Please type DELETE'); return; }
+    if (deleteAllInput !== 'DELETE') { toast.error('Type DELETE to confirm'); return; }
     setDeletingAll(true);
     try {
       await api.delete('/contacts/all');
@@ -708,7 +727,7 @@ const Contacts: React.FC = () => {
       setShowDeleteAllModal(false);
       setDeleteAllInput('');
     } catch (err: any) {
-      alert(err.response?.data?.message || 'Failed to delete all contacts');
+      toast.error(err.response?.data?.message || 'Failed to delete all contacts');
     } finally { setDeletingAll(false); }
   };
 
