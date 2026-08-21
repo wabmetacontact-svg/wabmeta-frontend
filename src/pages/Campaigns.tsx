@@ -11,7 +11,6 @@ import { formatDistanceToNow } from 'date-fns';
 import { campaigns as campaignsApi } from '../services/api';
 import { useSocket } from '../context/SocketContext';
 import toast from 'react-hot-toast';
-import PageSkeleton from '../components/common/PageSkeleton';
 import WalletCostModal from '../components/campaigns/WalletCostModal';
 
 // ─── Helpers ─────────────────────────────────────────────────
@@ -394,8 +393,6 @@ const Campaigns: React.FC = () => {
   };
 
   // ─── Render ────────────────────────────────────────────────
-  if (loading) return <PageSkeleton />;
-
   return (
     <div className="space-y-6">
 
@@ -501,7 +498,7 @@ const Campaigns: React.FC = () => {
                 {s.label}
               </p>
               <h3 className="text-3xl font-bold text-gray-900">
-                {safeStr(s.value)}
+                {loading ? <Loader2 className="w-6 h-6 animate-spin text-gray-400 my-1" /> : safeStr(s.value)}
               </h3>
             </div>
           </div>
@@ -554,7 +551,12 @@ const Campaigns: React.FC = () => {
 
       {/* ── Campaign List ── */}
       <div className="space-y-4">
-        {campaigns.length === 0 ? (
+        {loading ? (
+          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm min-h-[300px] flex flex-col items-center justify-center py-16">
+            <Loader2 className="w-8 h-8 text-green-600 animate-spin mb-3" />
+            <p className="text-sm font-medium text-gray-500">Loading campaigns...</p>
+          </div>
+        ) : campaigns.length === 0 ? (
           <div className="bg-white rounded-2xl p-16 text-center
                           border border-gray-200 shadow-sm">
             <div className="w-20 h-20 bg-gray-50 rounded-full flex

@@ -1,4 +1,4 @@
-// src/pages/Wallet.tsx
+// src/pages/Wallet.tsx - INSTANT LOADING VERSION
 
 import React, { useState, useEffect, useCallback } from "react";
 import {
@@ -14,7 +14,8 @@ import {
   Info,
   RefreshCw,
   Lock,
-  Zap
+  Zap,
+  Loader2
 } from "lucide-react";
 import { wallet as walletApi } from "../services/api";
 import WalletTopUpModal from "../components/wallet/WalletTopUpModal";
@@ -53,28 +54,6 @@ interface WalletData {
   pendingRequest: { id: string; amount: number; requestedAt: string } | null;
 }
 
-// ─── Skeleton ───────────────────────────────────────────────────────────────────
-const WalletSkeleton: React.FC = () => (
-  <div className="w-full mx-auto p-6 space-y-6 animate-pulse">
-    <div className="flex items-center justify-between">
-      <div>
-        <div className="h-7 w-32 bg-gray-200 rounded-lg" />
-        <div className="h-4 w-48 bg-gray-200 rounded mt-2" />
-      </div>
-      <div className="h-10 w-32 bg-gray-200 rounded-xl" />
-    </div>
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-      <div className="md:col-span-2 h-40 bg-gray-200 rounded-2xl" />
-      <div className="h-40 bg-gray-200 rounded-2xl" />
-    </div>
-    <div className="grid grid-cols-3 gap-4">
-      {[1, 2, 3].map((i) => (
-        <div key={i} className="h-24 bg-gray-200 rounded-2xl" />
-      ))}
-    </div>
-  </div>
-);
-
 // ─── Locked View ───────────────────────────────────────────────────────────────
 const LockedWalletView: React.FC = () => (
   <div className="max-w-2xl mx-auto mt-20 p-8 text-center">
@@ -85,7 +64,7 @@ const LockedWalletView: React.FC = () => (
       Wallet Feature Locked
     </h1>
     <p className="text-gray-650 mb-8 max-w-md mx-auto">
-      The Meta Payment Wallet is a premium feature available for all paid subscription plans. 
+      The Meta Payment Wallet is a premium feature available for all paid subscription plans.
       Upgrade your plan from Free to manage payments with ease.
     </p>
     <Link
@@ -96,7 +75,7 @@ const LockedWalletView: React.FC = () => (
       <Zap className="w-5 h-5" />
       Upgrade Now
     </Link>
-    
+
     <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-4 text-left">
       {[
         { title: "No International Cards", desc: "Pay in INR without needing international credit cards." },
@@ -233,17 +212,17 @@ const NotActiveView: React.FC<NotActiveViewProps> = ({
           <Info className="w-5 h-5 text-green-700" />
           Wabmeta Wallet Feature Description
         </h3>
-        
+
         <div className="space-y-4 text-sm text-green-800/90 leading-relaxed">
           <p>
             If you do not have a credit or debit card, you can use the Wabmeta Wallet to pay for bulk messaging services.
           </p>
-          
+
           <p>
-            According to Meta’s policies, running message templates and sending bulk messages requires payment through Meta, 
+            According to Meta’s policies, running message templates and sending bulk messages requires payment through Meta,
             which typically needs a valid credit or debit card linked to your account.
           </p>
-          
+
           <div className="bg-white/80 p-4 rounded-xl space-y-2 border border-emerald-100">
             <p>• If you have a card, you can directly add it to your Meta account and manage payments yourself.</p>
             <p>• If you do not have a card, you can use the Wabmeta Wallet as an alternative.</p>
@@ -402,7 +381,7 @@ const ActiveWalletView: React.FC<ActiveWalletViewProps> = ({
                     width: `${Math.min(
                       (walletData.currentMonthTopUp /
                         walletData.maxMonthlyTopUp) *
-                        100,
+                      100,
                       100
                     )}%`,
                   }}
@@ -438,8 +417,8 @@ const ActiveWalletView: React.FC<ActiveWalletViewProps> = ({
                 className="bg-blue-600 rounded-full h-2 transition-all"
                 style={{
                   width: `${walletData.creditLimit > 0
-                      ? (walletData.creditUsed / walletData.creditLimit) * 100
-                      : 0
+                    ? (walletData.creditUsed / walletData.creditLimit) * 100
+                    : 0
                     }%`,
                 }}
               />
@@ -505,9 +484,9 @@ const ActiveWalletView: React.FC<ActiveWalletViewProps> = ({
         {/* Tab Headers */}
         <div className="flex border-b border-gray-200 bg-gray-50">
           {([
-            { id: "overview",     label: "📊 Overview" },
+            { id: "overview", label: "📊 Overview" },
             { id: "transactions", label: "📋 Transactions" },
-            { id: "analytics",   label: "📈 Analytics" },
+            { id: "analytics", label: "📈 Analytics" },
           ] as const).map((tab) => (
             <button
               key={tab.id}
@@ -634,16 +613,13 @@ const WalletPage: React.FC = () => {
   const [showRequest, setShowRequest] = useState(false);
 
   const fetchWallet = useCallback(async () => {
-    // If auth is still loading, wait
     if (isAuthLoading) return;
 
-    // If not authenticated, we shouldn't even be here, but safety first
     if (!isAuthenticated) {
       setLoading(false);
       return;
     }
 
-    // If no plan access, don't fetch from API
     if (!hasAccess('wallet')) {
       setLoading(false);
       return;
@@ -671,13 +647,34 @@ const WalletPage: React.FC = () => {
     fetchWallet();
   }, [fetchWallet]);
 
-  if (isAuthLoading || (loading && !walletData)) {
-    return <WalletSkeleton />;
+  // Check access first
+  if (!isAuthLoading && !hasAccess('wallet')) {
+    return <LockedWalletView />;
   }
 
-  // Check access first
-  if (!hasAccess('wallet')) {
-    return <LockedWalletView />;
+  // ✅ Instant Loading State (Layout stays visible)
+  if (isAuthLoading || (loading && !walletData)) {
+    return (
+      <div className="w-full mx-auto p-6 space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">
+              My Wallet
+            </h1>
+            <p className="text-gray-500 text-sm">
+              Meta API Payment Balance
+            </p>
+          </div>
+        </div>
+
+        {/* Inline Card Loader */}
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-12 min-h-[360px] flex flex-col items-center justify-center">
+          <Loader2 className="w-8 h-8 text-green-600 animate-spin mb-3" />
+          <p className="text-sm font-medium text-gray-500">Loading wallet details...</p>
+        </div>
+      </div>
+    );
   }
 
   // Not active

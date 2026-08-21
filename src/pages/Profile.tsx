@@ -1,13 +1,13 @@
-// src/pages/Profile.tsx
+// src/pages/Profile.tsx - INSTANT LOADING + SAFE AVATAR
 
 import React, { useState, useEffect } from 'react';
-import { 
-  User, 
-  Mail, 
-  Phone, 
-  Camera, 
-  Loader2, 
-  CheckCircle, 
+import {
+  User,
+  Mail,
+  Phone,
+  Camera,
+  Loader2,
+  CheckCircle,
   AlertCircle,
   Building2,
   Calendar,
@@ -15,11 +15,11 @@ import {
   RefreshCw,
   LogOut,
   Smartphone,
-  Monitor
+  Monitor,
 } from 'lucide-react';
 import { auth, users } from '../services/api';
+import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
-import PageSkeleton from '../components/common/PageSkeleton';
 
 interface UserProfile {
   id: string;
@@ -47,6 +47,7 @@ const Profile: React.FC = () => {
   const { updateUser } = useAuth();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
@@ -69,13 +70,9 @@ const Profile: React.FC = () => {
     setError(null);
 
     try {
-      // Use /users/profile endpoint
       const response = await users.getProfile();
-      console.log('📥 Profile Response:', response.data);
-
-      // Handle different response structures
       const userData = response.data?.data || response.data;
-      
+
       if (!userData || !userData.id) {
         throw new Error('Invalid profile data received');
       }
@@ -87,16 +84,11 @@ const Profile: React.FC = () => {
         phone: userData.phone || '',
         avatar: userData.avatar || '',
       });
-
     } catch (err: any) {
       console.error('❌ Failed to fetch profile:', err);
-      
-      // Try fallback to /auth/me
+
       try {
-        console.log('🔄 Trying /auth/me fallback...');
         const fallbackResponse = await auth.me();
-        console.log('📥 Auth/Me Response:', fallbackResponse.data);
-        
         const userData = fallbackResponse.data.data;
 
         if (userData && userData.id) {
@@ -141,7 +133,7 @@ const Profile: React.FC = () => {
   }, []);
 
   // ==========================================
-  // UPDATE PROFILE
+  // UPDATE PROFILE (no avatar here)
   // ==========================================
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -154,7 +146,6 @@ const Profile: React.FC = () => {
         ? formData.phone.replace(/[\s\-\(\)]/g, '')
         : undefined;
 
-      // ✅ avatar yahan mat bhejo
       const response = await users.updateProfile({
         firstName: formData.firstName.trim(),
         lastName: formData.lastName?.trim() || undefined,
@@ -170,18 +161,25 @@ const Profile: React.FC = () => {
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
     } catch (err: any) {
-      setError(err?.response?.data?.message || err?.message || 'Failed to update profile');
+      setError(
+        err?.response?.data?.message ||
+        err?.message ||
+        'Failed to update profile'
+      );
     } finally {
       setSaving(false);
     }
   };
 
   // ==========================================
-  // HANDLE AVATAR CHANGE
+  // AVATAR — upload URL only (NO base64 to API)
   // ==========================================
   const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    // reset input so same file can be re-selected
+    e.target.value = '';
 
     if (file.size > 2 * 1024 * 1024) {
       setError('Image size should be less than 2MB');
@@ -193,37 +191,84 @@ const Profile: React.FC = () => {
       return;
     }
 
+    // Local preview only
     const reader = new FileReader();
-    reader.onloadend = async () => {
-      const base64 = reader.result as string;
-      setFormData((prev) => ({ ...prev, avatar: base64 }));
-
-      try {
-        setSaving(true);
-        setError(null);
-
-        // ✅ Call backend's actual avatar endpoint (PUT /api/users/avatar)
-        const response = await users.updateAvatar(base64);
-        const resData = response.data as any;
-        const updatedAvatar = resData?.data?.avatar || resData?.avatar || resData?.data?.url || resData?.url || base64;
-
-        setProfile((prev) => (prev ? { ...prev, avatar: updatedAvatar } : prev));
-        updateUser({ avatar: updatedAvatar });
-
-        setSuccess(true);
-        setTimeout(() => setSuccess(false), 3000);
-      } catch (err: any) {
-        console.error('Avatar update failed:', err);
-        setError(
-          err?.response?.data?.message ||
-          err?.message ||
-          'Failed to update avatar'
-        );
-      } finally {
-        setSaving(false);
-      }
+    reader.onloadend = () => {
+      setFormData((prev) => ({ ...prev, avatar: reader.result as string }));
     };
     reader.readAsDataURL(file);
+
+    try {
+      setUploadingAvatar(true);
+      setError(null);
+
+      // 1) Upload file → permanent URL (Cloudinary / R2 via existing upload)
+      const form = new FormData();
+      form.append('file', file);
+
+      let permanentUrl: string | null = null;
+
+      try {
+        const uploadRes = await api.post('/inbox/media/upload', form, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
+        permanentUrl =
+          uploadRes.data?.data?.url ||
+          uploadRes.data?.data?.cloudinaryUrl ||
+          uploadRes.data?.data?.permanentUrl ||
+          uploadRes.data?.data?.secure_url ||
+          null;
+      } catch {
+        // Fallback: try templates upload if inbox upload not available for avatars
+        try {
+          const uploadRes = await api.post('/templates/upload-media', form, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+          });
+          permanentUrl =
+            uploadRes.data?.data?.url ||
+            uploadRes.data?.data?.cloudinaryUrl ||
+            uploadRes.data?.data?.permanentUrl ||
+            null;
+        } catch (uploadErr: any) {
+          throw new Error(
+            uploadErr?.response?.data?.message ||
+            'Failed to upload image. Please try again.'
+          );
+        }
+      }
+
+      if (!permanentUrl || permanentUrl.startsWith('data:')) {
+        throw new Error('Invalid image URL returned from upload');
+      }
+
+      if (permanentUrl.length > 500) {
+        throw new Error('Avatar URL too long');
+      }
+
+      // 2) Save short URL only
+      await users.updateAvatar(permanentUrl);
+
+      setFormData((prev) => ({ ...prev, avatar: permanentUrl! }));
+      setProfile((prev) => (prev ? { ...prev, avatar: permanentUrl } : prev));
+      updateUser({ avatar: permanentUrl });
+
+      setSuccess(true);
+      setTimeout(() => setSuccess(false), 3000);
+    } catch (err: any) {
+      console.error('Avatar update failed:', err);
+      setError(
+        err?.response?.data?.message ||
+        err?.message ||
+        'Failed to update avatar'
+      );
+      // revert preview to previous avatar
+      setFormData((prev) => ({
+        ...prev,
+        avatar: profile?.avatar || '',
+      }));
+    } finally {
+      setUploadingAvatar(false);
+    }
   };
 
   // ==========================================
@@ -240,16 +285,9 @@ const Profile: React.FC = () => {
   };
 
   // ==========================================
-  // LOADING STATE
+  // ERROR STATE (only when load failed completely)
   // ==========================================
-  if (loading) {
-    return <PageSkeleton />;
-  }
-
-  // ==========================================
-  // ERROR STATE (No Profile)
-  // ==========================================
-  if (!profile && error) {
+  if (!loading && !profile && error) {
     return (
       <div className="flex items-center justify-center h-96">
         <div className="text-center max-w-md">
@@ -269,7 +307,7 @@ const Profile: React.FC = () => {
   }
 
   // ==========================================
-  // RENDER
+  // RENDER — header always visible
   // ==========================================
   return (
     <div className="max-w-4xl mx-auto space-y-6">
@@ -311,263 +349,281 @@ const Profile: React.FC = () => {
         </div>
       )}
 
-      <div className="grid lg:grid-cols-3 gap-6">
-        {/* Left Column - Avatar & Info */}
-        <div className="lg:col-span-1 space-y-6">
-          {/* Profile Card */}
-          <div className="bg-white border border-gray-200 rounded-2xl p-6 text-center shadow-sm">
-            {/* Avatar */}
-            <div className="relative inline-block mb-4">
-              <div className="w-28 h-28 rounded-full bg-primary-100 flex items-center justify-center overflow-hidden border-4 border-white shadow-lg">
-                {formData.avatar ? (
-                  <img
-                    src={formData.avatar}
-                    alt="Avatar"
-                    className="w-full h-full object-cover"
+      {/* ✅ Inline loader — layout stays */}
+      {loading && !profile ? (
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm min-h-[400px] flex flex-col items-center justify-center py-16">
+          <Loader2 className="w-8 h-8 text-green-600 animate-spin mb-3" />
+          <p className="text-sm font-medium text-gray-500">Loading profile...</p>
+        </div>
+      ) : profile ? (
+        <div className="grid lg:grid-cols-3 gap-6">
+          {/* Left Column - Avatar & Info */}
+          <div className="lg:col-span-1 space-y-6">
+            <div className="bg-white border border-gray-200 rounded-2xl p-6 text-center shadow-sm">
+              <div className="relative inline-block mb-4">
+                <div className="w-28 h-28 rounded-full bg-primary-100 flex items-center justify-center overflow-hidden border-4 border-white shadow-lg">
+                  {formData.avatar ? (
+                    <img
+                      src={formData.avatar}
+                      alt="Avatar"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <span className="text-4xl font-bold text-primary-600">
+                      {formData.firstName?.charAt(0) || profile?.email?.charAt(0) || 'U'}
+                    </span>
+                  )}
+                </div>
+                <label
+                  className={`absolute bottom-0 right-0 p-2 bg-primary-500 text-white rounded-full cursor-pointer hover:bg-primary-600 transition-colors shadow-lg ${uploadingAvatar ? 'opacity-60 pointer-events-none' : ''
+                    }`}
+                >
+                  {uploadingAvatar ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Camera className="w-4 h-4" />
+                  )}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleAvatarChange}
+                    className="hidden"
+                    disabled={uploadingAvatar}
                   />
-                ) : (
-                  <span className="text-4xl font-bold text-primary-600">
-                    {formData.firstName?.charAt(0) || profile?.email?.charAt(0) || 'U'}
+                </label>
+              </div>
+
+              <h2 className="text-xl font-bold text-gray-900">
+                {profile?.firstName} {profile?.lastName}
+              </h2>
+              <p className="text-gray-500">{profile?.email}</p>
+
+              <div className="mt-4 flex items-center justify-center flex-wrap gap-2">
+                <span
+                  className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${profile?.status === 'ACTIVE'
+                      ? 'bg-green-100 text-green-700'
+                      : profile?.status === 'SUSPENDED'
+                        ? 'bg-red-100 text-red-700'
+                        : 'bg-yellow-100 text-yellow-700'
+                    }`}
+                >
+                  {profile?.status === 'ACTIVE' ? '✓ Active' : profile?.status}
+                </span>
+                {profile?.emailVerified && (
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-700">
+                    <Shield className="w-3 h-3 mr-1" />
+                    Verified
                   </span>
                 )}
               </div>
-              <label className="absolute bottom-0 right-0 p-2 bg-primary-500 text-white rounded-full cursor-pointer hover:bg-primary-600 transition-colors shadow-lg">
-                <Camera className="w-4 h-4" />
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleAvatarChange}
-                  className="hidden"
-                />
-              </label>
-            </div>
 
-            {/* Name & Email */}
-            <h2 className="text-xl font-bold text-gray-900">
-              {profile?.firstName} {profile?.lastName}
-            </h2>
-            <p className="text-gray-500">{profile?.email}</p>
-
-            {/* Status Badges */}
-            <div className="mt-4 flex items-center justify-center flex-wrap gap-2">
-              <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-                profile?.status === 'ACTIVE' 
-                  ? 'bg-green-100 text-green-700' 
-                  : profile?.status === 'SUSPENDED'
-                    ? 'bg-red-100 text-red-700'
-                    : 'bg-yellow-100 text-yellow-700'
-              }`}>
-                {profile?.status === 'ACTIVE' ? '✓ Active' : profile?.status}
-              </span>
-              {profile?.emailVerified && (
-                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-700">
-                  <Shield className="w-3 h-3 mr-1" />
-                  Verified
-                </span>
+              {profile?.createdAt && (
+                <div className="mt-4 pt-4 border-t border-gray-100 text-sm text-gray-500 flex items-center justify-center space-x-2">
+                  <Calendar className="w-4 h-4" />
+                  <span>
+                    Joined{' '}
+                    {new Date(profile.createdAt).toLocaleDateString('en-US', {
+                      month: 'long',
+                      year: 'numeric',
+                    })}
+                  </span>
+                </div>
               )}
             </div>
 
-            {/* Join Date */}
-            {profile?.createdAt && (
-              <div className="mt-4 pt-4 border-t border-gray-100 text-sm text-gray-500 flex items-center justify-center space-x-2">
-                <Calendar className="w-4 h-4" />
-                <span>
-                  Joined {new Date(profile.createdAt).toLocaleDateString('en-US', {
-                    month: 'long',
-                    year: 'numeric',
-                  })}
-                </span>
+            <div className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm">
+              <h3 className="font-semibold text-gray-900 mb-3">Quick Actions</h3>
+              <div className="space-y-2">
+                <a
+                  href="/dashboard/settings"
+                  className="flex items-center space-x-3 p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors border border-gray-100"
+                >
+                  <Building2 className="w-5 h-5 text-gray-400" />
+                  <span className="text-gray-700">Organization Settings</span>
+                </a>
+                <a
+                  href="/dashboard/settings"
+                  className="flex items-center space-x-3 p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors border border-gray-100"
+                >
+                  <Shield className="w-5 h-5 text-gray-400" />
+                  <span className="text-gray-700">Security Settings</span>
+                </a>
               </div>
-            )}
-          </div>
-
-          {/* Quick Links */}
-          <div className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm">
-            <h3 className="font-semibold text-gray-900 mb-3">Quick Actions</h3>
-            <div className="space-y-2">
-              <a
-                href="/dashboard/settings"
-                className="flex items-center space-x-3 p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors border border-gray-100"
-              >
-                <Building2 className="w-5 h-5 text-gray-400" />
-                <span className="text-gray-700">Organization Settings</span>
-              </a>
-              <a
-                href="/dashboard/settings"
-                className="flex items-center space-x-3 p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors border border-gray-100"
-              >
-                <Shield className="w-5 h-5 text-gray-400" />
-                <span className="text-gray-700">Security Settings</span>
-              </a>
             </div>
           </div>
-        </div>
 
-        {/* Right Column - Edit Form & Sessions */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Edit Form */}
-          <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
-            <h3 className="text-lg font-semibold text-gray-900 mb-6">Edit Profile</h3>
+          {/* Right Column */}
+          <div className="lg:col-span-2 space-y-6">
+            <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+              <h3 className="text-lg font-semibold text-gray-900 mb-6">Edit Profile</h3>
 
-            <form onSubmit={handleSubmit} className="space-y-5">
-              {/* Name Fields */}
-              <div className="grid md:grid-cols-2 gap-4">
+              <form onSubmit={handleSubmit} className="space-y-5">
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      First Name *
+                    </label>
+                    <div className="relative">
+                      <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                      <input
+                        type="text"
+                        value={formData.firstName}
+                        onChange={(e) =>
+                          setFormData({ ...formData, firstName: e.target.value })
+                        }
+                        className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
+                        placeholder="John"
+                        required
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Last Name
+                    </label>
+                    <div className="relative">
+                      <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                      <input
+                        type="text"
+                        value={formData.lastName}
+                        onChange={(e) =>
+                          setFormData({ ...formData, lastName: e.target.value })
+                        }
+                        className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
+                        placeholder="Doe"
+                      />
+                    </div>
+                  </div>
+                </div>
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    First Name *
+                    Email Address
                   </label>
                   <div className="relative">
-                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                     <input
-                      type="text"
-                      value={formData.firstName}
-                      onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                      type="email"
+                      value={profile?.email || ''}
+                      disabled
+                      className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl bg-gray-100 text-gray-500 cursor-not-allowed"
+                    />
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">Email cannot be changed</p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Phone Number
+                  </label>
+                  <div className="relative">
+                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    <input
+                      type="tel"
+                      value={formData.phone}
+                      onChange={(e) =>
+                        setFormData({ ...formData, phone: e.target.value })
+                      }
                       className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
-                      placeholder="John"
-                      required
+                      placeholder="+91 98765 43210"
                     />
                   </div>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Last Name
-                  </label>
-                  <div className="relative">
-                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                    <input
-                      type="text"
-                      value={formData.lastName}
-                      onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-                      className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
-                      placeholder="Doe"
-                    />
-                  </div>
-                </div>
-              </div>
 
-              {/* Email (Read-only) */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Email Address
-                </label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                  <input
-                    type="email"
-                    value={profile?.email || ''}
-                    disabled
-                    className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl bg-gray-100 text-gray-500 cursor-not-allowed"
-                  />
+                <div className="flex justify-end pt-4">
+                  <button
+                    type="submit"
+                    disabled={saving || uploadingAvatar}
+                    className="px-6 py-2.5 bg-primary-500 hover:bg-primary-600 text-white font-medium rounded-xl transition-colors disabled:opacity-50 flex items-center space-x-2"
+                  >
+                    {saving ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <span>Saving...</span>
+                      </>
+                    ) : (
+                      <span>Save Changes</span>
+                    )}
+                  </button>
                 </div>
-                <p className="text-xs text-gray-500 mt-1">Email cannot be changed</p>
-              </div>
+              </form>
+            </div>
 
-              {/* Phone */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Phone Number
-                </label>
-                <div className="relative">
-                  <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                  <input
-                    type="tel"
-                    value={formData.phone}
-                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
-                    placeholder="+91 98765 43210"
-                  />
-                </div>
-              </div>
-
-              {/* Submit Button */}
-              <div className="flex justify-end pt-4">
+            {/* Active Sessions */}
+            <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-gray-900">Active Sessions</h3>
                 <button
-                  type="submit"
-                  disabled={saving}
-                  className="px-6 py-2.5 bg-primary-500 hover:bg-primary-600 text-white font-medium rounded-xl transition-colors disabled:opacity-50 flex items-center space-x-2"
+                  onClick={fetchSessions}
+                  disabled={loadingSessions}
+                  className="text-sm text-primary-600 hover:underline flex items-center space-x-1"
                 >
-                  {saving ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      <span>Saving...</span>
-                    </>
-                  ) : (
-                    <span>Save Changes</span>
-                  )}
+                  <RefreshCw
+                    className={`w-3 h-3 ${loadingSessions ? 'animate-spin' : ''}`}
+                  />
+                  <span>Refresh</span>
                 </button>
               </div>
-            </form>
-          </div>
 
-          {/* Active Sessions */}
-          <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">Active Sessions</h3>
-              <button
-                onClick={fetchSessions}
-                disabled={loadingSessions}
-                className="text-sm text-primary-600 hover:underline flex items-center space-x-1"
-              >
-                <RefreshCw className={`w-3 h-3 ${loadingSessions ? 'animate-spin' : ''}`} />
-                <span>Refresh</span>
-              </button>
-            </div>
-
-            {loadingSessions ? (
-              <div className="flex items-center justify-center py-8">
-                <Loader2 className="w-6 h-6 text-gray-400 animate-spin" />
-              </div>
-            ) : sessions.length > 0 ? (
-              <div className="space-y-3">
-                {sessions.map((session) => (
-                  <div
-                    key={session.id}
-                    className={`flex items-center justify-between p-4 rounded-xl ${
-                      session.isCurrent ? 'bg-green-50 border border-green-200' : 'bg-gray-50 border border-gray-100'
-                    }`}
-                  >
-                    <div className="flex items-center space-x-3">
-                      {session.userAgent?.toLowerCase().includes('mobile') ? (
-                        <Smartphone className="w-5 h-5 text-gray-400" />
-                      ) : (
-                        <Monitor className="w-5 h-5 text-gray-400" />
-                      )}
-                      <div>
-                        <p className="font-medium text-gray-900 flex items-center space-x-2">
-                          <span>{session.userAgent?.split(' ')[0] || 'Unknown Device'}</span>
-                          {session.isCurrent && (
-                            <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">
-                              Current
+              {loadingSessions ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="w-6 h-6 text-gray-400 animate-spin" />
+                </div>
+              ) : sessions.length > 0 ? (
+                <div className="space-y-3">
+                  {sessions.map((session) => (
+                    <div
+                      key={session.id}
+                      className={`flex items-center justify-between p-4 rounded-xl ${session.isCurrent
+                          ? 'bg-green-50 border border-green-200'
+                          : 'bg-gray-50 border border-gray-100'
+                        }`}
+                    >
+                      <div className="flex items-center space-x-3">
+                        {session.userAgent?.toLowerCase().includes('mobile') ? (
+                          <Smartphone className="w-5 h-5 text-gray-400" />
+                        ) : (
+                          <Monitor className="w-5 h-5 text-gray-400" />
+                        )}
+                        <div>
+                          <p className="font-medium text-gray-900 flex items-center space-x-2">
+                            <span>
+                              {session.userAgent?.split(' ')[0] || 'Unknown Device'}
                             </span>
-                          )}
-                        </p>
-                        <p className="text-sm text-gray-500">
-                          {session.ipAddress || 'Unknown IP'} • 
-                          {new Date(session.createdAt).toLocaleDateString()}
-                        </p>
+                            {session.isCurrent && (
+                              <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">
+                                Current
+                              </span>
+                            )}
+                          </p>
+                          <p className="text-sm text-gray-500">
+                            {session.ipAddress || 'Unknown IP'} •{' '}
+                            {new Date(session.createdAt).toLocaleDateString()}
+                          </p>
+                        </div>
                       </div>
+                      {!session.isCurrent && (
+                        <button
+                          onClick={() => handleRevokeSession(session.id)}
+                          className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                          title="Revoke session"
+                        >
+                          <LogOut className="w-4 h-4" />
+                        </button>
+                      )}
                     </div>
-                    {!session.isCurrent && (
-                      <button
-                        onClick={() => handleRevokeSession(session.id)}
-                        className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                        title="Revoke session"
-                      >
-                        <LogOut className="w-4 h-4" />
-                      </button>
-                    )}
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-8 text-gray-500">
-                <Monitor className="w-10 h-10 mx-auto mb-2 opacity-50" />
-                <p>No active sessions found</p>
-              </div>
-            )}
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8 text-gray-500">
+                  <Monitor className="w-10 h-10 mx-auto mb-2 opacity-50" />
+                  <p>No active sessions found</p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
-      </div>
+      ) : null}
     </div>
   );
 };

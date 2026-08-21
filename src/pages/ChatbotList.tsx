@@ -9,7 +9,6 @@ import {
 import { chatbots as chatbotsApi } from '../services/api';
 import type { Chatbot } from '../types/chatbot';
 import toast from 'react-hot-toast';
-import PageSkeleton from '../components/common/PageSkeleton';
 
 const ChatbotList: React.FC = () => {
   const navigate = useNavigate();
@@ -112,10 +111,6 @@ const ChatbotList: React.FC = () => {
     (c) => c.name.toLowerCase().includes(search.toLowerCase())
   );
 
-  if (loading) {
-    return <PageSkeleton />;
-  }
-
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -169,7 +164,12 @@ const ChatbotList: React.FC = () => {
 
       {/* Chatbots Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {filteredChatbots.map((chatbot) => (
+        {loading ? (
+          <div className="col-span-full bg-white rounded-2xl border border-gray-200 shadow-sm flex flex-col items-center justify-center py-16">
+            <Loader2 className="w-8 h-8 text-green-600 animate-spin mb-3" />
+            <p className="text-sm font-medium text-gray-500">Loading chatbots...</p>
+          </div>
+        ) : filteredChatbots.map((chatbot) => (
           <div
             key={chatbot.id}
             className="relative overflow-hidden rounded-2xl border border-gray-200 p-5 bg-white transition-all duration-200 group hover:-translate-y-0.5 hover:shadow-md"

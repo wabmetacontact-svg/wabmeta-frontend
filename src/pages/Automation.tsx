@@ -4,12 +4,11 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   Zap, Plus, Search, Play, Pause, Trash2,
-  Clock, MessageSquare, Users, Webhook
+  Clock, MessageSquare, Users, Webhook, Loader2
 } from 'lucide-react';
 import { automations as automationsApi } from '../services/api';
 import type { Automation } from '../types/automation';
 import toast from 'react-hot-toast';
-import PageSkeleton from '../components/common/PageSkeleton';
 
 const triggerIcons: Record<string, React.ReactNode> = {
   NEW_CONTACT: <Users className="w-4 h-4" />,
@@ -96,10 +95,6 @@ const AutomationPage: React.FC = () => {
     (a) => a.name.toLowerCase().includes(search.toLowerCase())
   );
 
-  if (loading) {
-    return <PageSkeleton />;
-  }
-
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -127,7 +122,7 @@ const AutomationPage: React.FC = () => {
           <div className="relative z-10 flex flex-col justify-between h-full">
             <p className="text-xs font-mono uppercase tracking-widest mb-1 text-emerald-600">Active Automations</p>
             <p className="text-3xl font-bold text-gray-900 mt-1">
-              {automations.filter((a) => a.isActive).length}
+              {loading ? <Loader2 className="w-6 h-6 animate-spin text-emerald-500" /> : automations.filter((a) => a.isActive).length}
             </p>
           </div>
         </div>
@@ -140,7 +135,7 @@ const AutomationPage: React.FC = () => {
           <div className="relative z-10 flex flex-col justify-between h-full">
             <p className="text-xs font-mono uppercase tracking-widest mb-1 text-blue-600">Total Executions</p>
             <p className="text-3xl font-bold text-gray-900 mt-1">
-              {automations.reduce((sum, a) => sum + a.executionCount, 0)}
+              {loading ? <Loader2 className="w-6 h-6 animate-spin text-blue-500" /> : automations.reduce((sum, a) => sum + a.executionCount, 0)}
             </p>
           </div>
         </div>
@@ -171,7 +166,12 @@ const AutomationPage: React.FC = () => {
 
       {/* Automations List */}
       <div className="space-y-3">
-        {filteredAutomations.map((automation) => (
+        {loading ? (
+          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm flex flex-col items-center justify-center py-16">
+            <Loader2 className="w-8 h-8 text-green-600 animate-spin mb-3" />
+            <p className="text-sm font-medium text-gray-500">Loading automations...</p>
+          </div>
+        ) : filteredAutomations.map((automation) => (
           <div
             key={automation.id}
             className="bg-white rounded-2xl border border-gray-200 p-5 hover:bg-emerald-50/[0.2] hover:border-emerald-300 hover:shadow-sm transition-all duration-200 group/row"

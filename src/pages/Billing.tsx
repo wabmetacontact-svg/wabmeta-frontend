@@ -21,7 +21,6 @@ import { useAuth } from '../context/AuthContext';
 import { billing } from '../services/api';
 import toast from 'react-hot-toast';
 import { loadRazorpayScript } from '../utils/razorpay';
-import PageSkeleton from '../components/common/PageSkeleton';
 
 // ============================================
 // TYPES
@@ -399,14 +398,6 @@ const Billing: React.FC = () => {
 
 
   // ============================================
-  // LOADING STATE
-  // ============================================
-
-  if (loading) {
-    return <PageSkeleton />;
-  }
-
-  // ============================================
   // ERROR STATE
   // ============================================
 
@@ -469,7 +460,11 @@ const Billing: React.FC = () => {
         </div>
       </div>
 
-      {subscription && (
+      {loading ? (
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8 mb-8 flex justify-center">
+          <Loader2 className="w-8 h-8 animate-spin text-green-600" />
+        </div>
+      ) : subscription && (
         <div className="relative overflow-hidden bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-8">
           <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 relative z-10">
             <div>
@@ -527,48 +522,56 @@ const Billing: React.FC = () => {
       )}
 
       {/* Usage Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        {usage.messages && (
-          <UsageCard
-            title="Messages"
-            used={usage.messages.used}
-            limit={usage.messages.limit}
-            percentage={usage.messages.percentage}
-            icon={MessageSquare}
-            color="blue"
-          />
-        )}
-        {usage.contacts && (
-          <UsageCard
-            title="Contacts"
-            used={usage.contacts.used}
-            limit={usage.contacts.limit}
-            percentage={usage.contacts.percentage}
-            icon={Users}
-            color="green"
-          />
-        )}
-        {usage.campaigns && (
-          <UsageCard
-            title="Campaigns"
-            used={usage.campaigns.used}
-            limit={usage.campaigns.limit}
-            percentage={usage.campaigns.percentage}
-            icon={Zap}
-            color="purple"
-          />
-        )}
-        {usage.storage && (
-          <UsageCard
-            title="Storage (MB)"
-            used={usage.storage.used}
-            limit={usage.storage.limit}
-            percentage={usage.storage.percentage}
-            icon={TrendingUp}
-            color="orange"
-          />
-        )}
-      </div>
+      {loading ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          {[1, 2, 3, 4].map(i => (
+            <div key={i} className="h-32 bg-gray-50 animate-pulse rounded-2xl border border-gray-100"></div>
+          ))}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          {usage.messages && (
+            <UsageCard
+              title="Messages"
+              used={usage.messages.used}
+              limit={usage.messages.limit}
+              percentage={usage.messages.percentage}
+              icon={MessageSquare}
+              color="blue"
+            />
+          )}
+          {usage.contacts && (
+            <UsageCard
+              title="Contacts"
+              used={usage.contacts.used}
+              limit={usage.contacts.limit}
+              percentage={usage.contacts.percentage}
+              icon={Users}
+              color="green"
+            />
+          )}
+          {usage.campaigns && (
+            <UsageCard
+              title="Campaigns"
+              used={usage.campaigns.used}
+              limit={usage.campaigns.limit}
+              percentage={usage.campaigns.percentage}
+              icon={Zap}
+              color="purple"
+            />
+          )}
+          {usage.storage && (
+            <UsageCard
+              title="Storage (MB)"
+              used={usage.storage.used}
+              limit={usage.storage.limit}
+              percentage={usage.storage.percentage}
+              icon={TrendingUp}
+              color="orange"
+            />
+          )}
+        </div>
+      )}
 
       {/* Billing Cycle Toggle */}
       <div className="flex justify-center mb-8">
