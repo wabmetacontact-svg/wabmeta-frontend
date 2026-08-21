@@ -970,12 +970,14 @@ const Inbox: React.FC = () => {
               unreadCount: (isCurrentConv || direction === 'OUTBOUND') ? 0 : (updated[idx].unreadCount || 0) + 1,
               ...(direction === 'INBOUND' ? { lastCustomerMessageAt: newMsg.createdAt || new Date().toISOString() } : {})
             };
+          } else {
+            fetchConversations(true);
           }
 
           return sortConversations(updated);
         });
       },
-      []
+      [fetchConversations]
     ),
 
     useCallback((updatedConv: ConversationUpdate) => {

@@ -188,22 +188,26 @@ export const useInboxSocket = (
       }
     };
 
+    const messageEvents = ['message:new', 'new:message', 'message:received', 'message:inbound', 'message:created', 'chat:message', 'message'];
+    const conversationEvents = ['conversation:updated', 'conversation:update', 'conversation:new', 'conversation:created'];
+    const statusEvents = ['message:status', 'message:status:update', 'message:updated'];
+
     // ✅ Pehle purane listeners hataao (duplicate prevention)
-    socket.off('message:new',          handleNewMessage);
-    socket.off('conversation:updated', handleConversationUpdate);
-    socket.off('message:status',       handleMessageStatus);
+    messageEvents.forEach(evt => socket.off(evt, handleNewMessage));
+    conversationEvents.forEach(evt => socket.off(evt, handleConversationUpdate));
+    statusEvents.forEach(evt => socket.off(evt, handleMessageStatus));
 
     // ✅ Naye listeners register karo
-    socket.on('message:new',          handleNewMessage);
-    socket.on('conversation:updated', handleConversationUpdate);
-    socket.on('message:status',       handleMessageStatus);
+    messageEvents.forEach(evt => socket.on(evt, handleNewMessage));
+    conversationEvents.forEach(evt => socket.on(evt, handleConversationUpdate));
+    statusEvents.forEach(evt => socket.on(evt, handleMessageStatus));
 
     console.log('✅ Socket listeners registered, socket:', socket.id);
 
     return () => {
-      socket.off('message:new',          handleNewMessage);
-      socket.off('conversation:updated', handleConversationUpdate);
-      socket.off('message:status',       handleMessageStatus);
+      messageEvents.forEach(evt => socket.off(evt, handleNewMessage));
+      conversationEvents.forEach(evt => socket.off(evt, handleConversationUpdate));
+      statusEvents.forEach(evt => socket.off(evt, handleMessageStatus));
       console.log('🔌 Socket listeners removed');
     };
   }, [socket]); // ✅ Sirf socket par depend karo

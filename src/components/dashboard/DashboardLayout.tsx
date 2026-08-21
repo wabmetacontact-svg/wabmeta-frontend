@@ -78,16 +78,15 @@ const DashboardLayout: React.FC = () => {
       {/* Main Content Viewport */}
       <main
         className={`
-          pt-16
           transition-all duration-300
           w-full
           max-md:overflow-x-hidden
           ${sidebarCollapsed ? 'lg:pl-20' : 'lg:pl-64'}
-          ${isInbox ? 'overflow-hidden' : 'min-h-screen'}
+          ${isInbox ? 'h-screen max-md:h-[100dvh] pt-16 flex flex-col overflow-hidden' : 'pt-16 min-h-screen'}
         `}
       >
         {isInbox ? (
-          <div className="h-[calc(100vh-4rem)] max-md:h-[calc(100dvh-4rem)]">
+          <div className="flex-1 min-h-0 w-full overflow-hidden">
             <Suspense fallback={<RouteLoader />}>
               <Outlet />
             </Suspense>

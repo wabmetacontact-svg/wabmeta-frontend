@@ -88,7 +88,20 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     console.log('🔌 Socket connecting to:', SOCKET_URL, '| Org:', organizationId, '| User:', userId);
 
     const newSocket = io(SOCKET_URL, {
-      auth: { token, organizationId },
+      auth: {
+        token: `Bearer ${token}`.replace(/^Bearer Bearer /, 'Bearer '),
+        rawToken: token,
+        organizationId: organizationId || undefined,
+        userId: userId || undefined,
+      },
+      query: {
+        token,
+        organizationId: organizationId || '',
+        userId: userId || '',
+      },
+      extraHeaders: {
+        Authorization: `Bearer ${token}`,
+      },
       transports: ['polling', 'websocket'],
       path: '/socket.io/',
       reconnection: true,
@@ -109,11 +122,17 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       const orgId = orgIdRef.current;
       if (orgId) {
         newSocket.emit('org:join', orgId);
+        newSocket.emit('join:org', orgId);
+        newSocket.emit('join', `org:${orgId}`);
+        newSocket.emit('join', orgId);
       }
 
       const uId = userIdRef.current;
       if (uId) {
         newSocket.emit('user:join', uId);
+        newSocket.emit('join:user', uId);
+        newSocket.emit('join', `user:${uId}`);
+        newSocket.emit('join', uId);
       }
     });
 
@@ -148,10 +167,18 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     newSocket.on('reconnect', (attempt) => {
       console.log(`🔄 Socket reconnected after ${attempt} attempts`);
       const orgId = orgIdRef.current;
-      if (orgId) newSocket.emit('org:join', orgId);
+      if (orgId) {
+        newSocket.emit('org:join', orgId);
+        newSocket.emit('join:org', orgId);
+        newSocket.emit('join', `org:${orgId}`);
+      }
 
       const uId = userIdRef.current;
-      if (uId) newSocket.emit('user:join', uId);
+      if (uId) {
+        newSocket.emit('user:join', uId);
+        newSocket.emit('join:user', uId);
+        newSocket.emit('join', `user:${uId}`);
+      }
     });
 
     setSocket(newSocket);
@@ -171,12 +198,18 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const joinConversation = useCallback((conversationId: string) => {
     if (socketRef.current?.connected && conversationId) {
       socketRef.current.emit('join:conversation', conversationId);
+      socketRef.current.emit('conversation:join', conversationId);
+      socketRef.current.emit('join', `conversation:${conversationId}`);
+      socketRef.current.emit('join', conversationId);
     }
   }, []);
 
   const leaveConversation = useCallback((conversationId: string) => {
     if (socketRef.current?.connected && conversationId) {
       socketRef.current.emit('leave:conversation', conversationId);
+      socketRef.current.emit('conversation:leave', conversationId);
+      socketRef.current.emit('leave', `conversation:${conversationId}`);
+      socketRef.current.emit('leave', conversationId);
     }
   }, []);
 
