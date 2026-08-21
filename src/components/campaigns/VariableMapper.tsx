@@ -1,14 +1,7 @@
-// src/components/campaigns/VariableMapper.tsx - FINAL FIX
-// ✅ FIX 1: CSV customData variables support karo ({{1}}, {{2}} format)
-// ✅ FIX 2: modeMap initial state bug fix (variables change pe reset)
-// ✅ FIX 3: Custom text input value bug (contact field switch)
-// ✅ FIX 4: Variable label properly show karo ({{1}} not {{1}})
-
 import React, { useState, useEffect } from 'react';
 import {
   Info, User, Phone, Mail, Building2,
   CheckCircle2, AlertCircle, Type, Zap,
-  Hash,
 } from 'lucide-react';
 
 interface VariableMapperProps {
@@ -29,14 +22,14 @@ const CONTACT_FIELDS: ContactField[] = [
   {
     value: '{{contact.firstName}}',
     label: 'First Name',
-    description: "Contact's first name",
+    description: "Recipient's first name",
     icon: User,
     placeholder: 'John',
   },
   {
     value: '{{contact.lastName}}',
     label: 'Last Name',
-    description: "Contact's last name",
+    description: "Recipient's last name",
     icon: User,
     placeholder: 'Doe',
   },
@@ -50,21 +43,21 @@ const CONTACT_FIELDS: ContactField[] = [
   {
     value: '{{contact.phone}}',
     label: 'Phone Number',
-    description: "Contact's phone number",
+    description: "Recipient's phone number",
     icon: Phone,
     placeholder: '+919876543210',
   },
   {
     value: '{{contact.email}}',
     label: 'Email',
-    description: "Contact's email address",
+    description: "Recipient's email address",
     icon: Mail,
     placeholder: 'john@example.com',
   },
   {
     value: '{{contact.company}}',
     label: 'Company',
-    description: 'Company/organization name',
+    description: 'Organization name',
     icon: Building2,
     placeholder: 'Acme Corp',
   },
@@ -75,14 +68,12 @@ const VariableMapper: React.FC<VariableMapperProps> = ({
   mapping,
   onMappingChange,
 }) => {
-  // ✅ FIX 2: modeMap ko variables change pe reinitialize karo
   const [modeMap, setModeMap] = useState<Record<string, 'field' | 'custom'>>({});
 
   useEffect(() => {
     const initial: Record<string, 'field' | 'custom'> = {};
     variables.forEach(v => {
       const current = mapping[v] || '';
-      // ✅ FIX 4: Agar already mapped hai toh mode preserve karo
       if (modeMap[v]) {
         initial[v] = modeMap[v];
       } else {
@@ -90,7 +81,6 @@ const VariableMapper: React.FC<VariableMapperProps> = ({
       }
     });
     setModeMap(initial);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [variables]);
 
   const updateValue = (variable: string, value: string) => {
@@ -99,29 +89,15 @@ const VariableMapper: React.FC<VariableMapperProps> = ({
 
   const setMode = (variable: string, mode: 'field' | 'custom') => {
     setModeMap(prev => ({ ...prev, [variable]: mode }));
-    // ✅ FIX 3: Mode switch pe value clear karo
     updateValue(variable, '');
   };
 
-  // ✅ FIX 4: Display variable name properly
   const getVarLabel = (v: string): string => {
-    // Numeric variable: "1" -> "{{1}}"
     if (/^\d+$/.test(v)) return `{{${v}}}`;
-    // Already has braces
     if (v.startsWith('{{')) return v;
     return `{{${v}}}`;
   };
 
-  const getDisplayValue = (value: string): string => {
-    if (!value) return 'Not mapped';
-    if (value.startsWith('{{contact.')) {
-      const field = CONTACT_FIELDS.find(f => f.value === value);
-      return field ? `Auto: ${field.label}` : value;
-    }
-    return `Fixed: "${value}"`;
-  };
-
-  // ✅ FIX 3: Get safe custom value (not a contact field)
   const getCustomValue = (value: string): string => {
     if (!value || value.startsWith('{{contact.')) return '';
     return value;
@@ -129,17 +105,15 @@ const VariableMapper: React.FC<VariableMapperProps> = ({
 
   if (variables.length === 0) {
     return (
-      <div className="bg-green-50 border border-green-200 rounded-xl
-                      p-8 text-center">
-        <div className="w-16 h-16 bg-green-100 rounded-full flex items-center
-                        justify-center mx-auto mb-4">
-          <CheckCircle2 className="w-8 h-8 text-green-600" />
+      <div className="bg-emerald-50/80 border border-emerald-200 rounded-2xl p-8 text-center shadow-sm">
+        <div className="w-14 h-14 bg-emerald-100 rounded-2xl flex items-center justify-center mx-auto mb-3.5 text-emerald-600">
+          <CheckCircle2 className="w-8 h-8" />
         </div>
-        <h4 className="text-lg font-semibold text-green-800 mb-2">
-          No Variables Required
+        <h4 className="text-base font-bold text-emerald-950 mb-1">
+          No Dynamic Variables Required
         </h4>
-        <p className="text-sm text-green-700 max-w-sm mx-auto">
-          This template sends the same message to all recipients.
+        <p className="text-xs font-semibold text-emerald-800 max-w-sm mx-auto">
+          This template sends uniform static text to all broadcast targets.
         </p>
       </div>
     );
@@ -150,116 +124,88 @@ const VariableMapper: React.FC<VariableMapperProps> = ({
 
   return (
     <div className="space-y-5">
-
-      {/* Info Banner */}
-      <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+      {/* ── Guidance Banner ── */}
+      <div className="bg-blue-50/80 border border-blue-200 rounded-2xl p-4 shadow-sm">
         <div className="flex items-start gap-3">
           <Info className="w-5 h-5 text-blue-600 mt-0.5 shrink-0" />
-          <div className="text-sm text-blue-700 space-y-1">
-            <p className="font-semibold text-blue-900">Variable Mapping</p>
+          <div className="text-xs text-blue-900 space-y-1 font-semibold leading-relaxed">
+            <p className="font-bold text-sm text-blue-950">Dynamic Variable Mapping Guide</p>
             <p>
-              <strong>Auto Field:</strong> Uses each contact's data
-              (e.g., their name changes per recipient)
+              • <strong>Auto Field:</strong> Pulls custom recipient data dynamically (e.g. First Name changes per recipient).
             </p>
             <p>
-              <strong>Custom Text:</strong> Same value for every
-              recipient (e.g., "SALE20", "₹500 OFF")
+              • <strong>Fixed Text:</strong> Sends identical static text to everyone (e.g. Discount Code "WELCOME20").
             </p>
           </div>
         </div>
       </div>
 
-      {/* Progress */}
+      {/* ── Status Header ── */}
       <div className="flex items-center justify-between">
-        <span className="text-sm text-gray-600">
-          {mappedCount}/{variables.length} mapped
+        <span className="text-xs font-bold text-gray-500">
+          {mappedCount} of {variables.length} variables mapped
         </span>
-        <span className={`px-2.5 py-1 rounded-full text-xs font-semibold
-                          ${allMapped
-            ? 'bg-green-100 text-green-700'
-            : 'bg-amber-100 text-amber-700'}`}>
-          {allMapped
-            ? '✓ All mapped'
-            : `${variables.length - mappedCount} remaining`}
+        <span className={`px-3 py-1 rounded-full text-xs font-extrabold border ${allMapped ? 'bg-emerald-100 text-emerald-900 border-emerald-300' : 'bg-amber-100 text-amber-900 border-amber-300'
+          }`}>
+          {allMapped ? '✓ All Mapped' : `${variables.length - mappedCount} Remaining`}
         </span>
       </div>
 
-      {/* Variable Cards */}
-      <div className="space-y-3">
+      {/* ── Mapping Cards List ── */}
+      <div className="space-y-3.5">
         {variables.map(variable => {
           const currentMode = modeMap[variable] || 'custom';
           const currentValue = mapping[variable] || '';
           const isValid = currentValue.trim().length > 0;
-          const isNumeric = /^\d+$/.test(variable);
 
           return (
             <div
               key={variable}
-              className={`bg-white border-2 rounded-xl p-4 transition-all
-                          ${isValid
-                  ? 'border-green-300 bg-green-50/20'
-                  : 'border-gray-200'}`}
+              className={`bg-white border rounded-2xl p-4 transition-all duration-200 ${isValid ? 'border-emerald-300 bg-emerald-50/30 shadow-sm' : 'border-gray-200 shadow-sm'
+                }`}
             >
-              {/* Header */}
               <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
                 <div className="flex items-center gap-2">
-                  {isNumeric
-                    ? <Hash className="w-4 h-4 text-primary-500" />
-                    : <Info className="w-4 h-4 text-primary-500" />
-                  }
-                  <span className="font-mono font-bold text-primary-700
-                                   bg-primary-50 border border-primary-200
-                                   px-2.5 py-1 rounded-lg text-sm">
+                  <span className="font-mono font-black text-emerald-800 bg-emerald-100/80 border border-emerald-200 px-3 py-1 rounded-lg text-xs">
                     {getVarLabel(variable)}
                   </span>
-                  {isValid && (
-                    <CheckCircle2 className="w-4 h-4 text-green-500" />
-                  )}
+                  {isValid && <CheckCircle2 className="w-4 h-4 text-emerald-600" />}
                 </div>
 
-                {/* Mode Toggle */}
-                <div className="inline-flex bg-gray-100 rounded-lg p-0.5">
+                {/* Mode Toggles */}
+                <div className="inline-flex bg-gray-100 p-1 rounded-xl border border-gray-200">
                   <button
                     type="button"
                     onClick={() => setMode(variable, 'field')}
-                    className={`flex items-center gap-1.5 px-3 py-1.5
-                                text-xs font-medium rounded-md transition-all
-                                ${currentMode === 'field'
-                        ? 'bg-white text-primary-600 shadow-sm'
-                        : 'text-gray-600 hover:text-gray-900'}`}
+                    className={`flex items-center gap-1.5 px-3 py-1 text-xs font-bold rounded-lg transition-all ${currentMode === 'field'
+                        ? 'bg-white text-emerald-700 shadow-sm'
+                        : 'text-gray-500 hover:text-gray-900'
+                      }`}
                   >
-                    <Zap className="w-3 h-3" />
-                    Auto Field
+                    <Zap className="w-3.5 h-3.5 text-emerald-600" /> Auto Field
                   </button>
                   <button
                     type="button"
                     onClick={() => setMode(variable, 'custom')}
-                    className={`flex items-center gap-1.5 px-3 py-1.5
-                                text-xs font-medium rounded-md transition-all
-                                ${currentMode === 'custom'
-                        ? 'bg-white text-primary-600 shadow-sm'
-                        : 'text-gray-600 hover:text-gray-900'}`}
+                    className={`flex items-center gap-1.5 px-3 py-1 text-xs font-bold rounded-lg transition-all ${currentMode === 'custom'
+                        ? 'bg-white text-emerald-700 shadow-sm'
+                        : 'text-gray-500 hover:text-gray-900'
+                      }`}
                   >
-                    <Type className="w-3 h-3" />
-                    Fixed Text
+                    <Type className="w-3.5 h-3.5 text-emerald-600" /> Fixed Text
                   </button>
                 </div>
               </div>
 
-              {/* Input */}
+              {/* Selector vs Input */}
               {currentMode === 'field' ? (
                 <div className="space-y-2">
                   <select
-                    value={currentValue.startsWith('{{contact.')
-                      ? currentValue
-                      : ''}
+                    value={currentValue.startsWith('{{contact.') ? currentValue : ''}
                     onChange={e => updateValue(variable, e.target.value)}
-                    className="w-full px-4 py-2.5 bg-white border border-gray-200
-                               rounded-xl text-gray-900 text-sm focus:outline-none
-                               focus:ring-2 focus:ring-primary-500/20
-                               focus:border-primary-500 transition-all"
+                    className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-xs font-bold focus:outline-none focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
                   >
-                    <option value="">-- Select contact field --</option>
+                    <option value="">-- Choose Contact Field --</option>
                     {CONTACT_FIELDS.map(field => (
                       <option key={field.value} value={field.value}>
                         {field.label} — {field.description}
@@ -267,96 +213,38 @@ const VariableMapper: React.FC<VariableMapperProps> = ({
                     ))}
                   </select>
 
-                  {/* Preview */}
                   {currentValue?.startsWith('{{contact.') && (
-                    <div className="flex items-center gap-2 px-3 py-2
-                                    bg-blue-50 border border-blue-100
-                                    rounded-lg text-xs text-blue-700">
-                      <Info className="w-3.5 h-3.5 shrink-0" />
-                      <span>
-                        Each recipient gets their own{' '}
-                        <strong>
-                          {CONTACT_FIELDS.find(f => f.value === currentValue)
-                            ?.label}
-                        </strong>
-                        {' '}— e.g.,{' '}
-                        <em>
-                          "{CONTACT_FIELDS.find(f => f.value === currentValue)
-                            ?.placeholder}"
-                        </em>
-                      </span>
-                    </div>
+                    <p className="text-xs font-semibold text-emerald-800 bg-emerald-100/60 p-2.5 rounded-xl border border-emerald-200">
+                      Sample Value: "{CONTACT_FIELDS.find(f => f.value === currentValue)?.placeholder}"
+                    </p>
                   )}
                 </div>
               ) : (
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                   <input
                     type="text"
-                    // ✅ FIX 3: Safe value
                     value={getCustomValue(currentValue)}
                     onChange={e => updateValue(variable, e.target.value)}
-                    placeholder={`Enter fixed text for ${getVarLabel(variable)}`}
+                    placeholder={`Type fixed text for ${getVarLabel(variable)}`}
                     maxLength={200}
-                    className="w-full px-4 py-2.5 bg-white border border-gray-200
-                               rounded-xl text-gray-900 text-sm
-                               placeholder:text-gray-400 focus:outline-none
-                               focus:ring-2 focus:ring-primary-500/20
-                               focus:border-primary-500 transition-all"
+                    className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-xs font-bold placeholder-gray-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
                   />
-                  <div className="flex justify-between text-xs text-gray-400">
-                    <span>Same value sent to all recipients</span>
-                    <span>
-                      {getCustomValue(currentValue).length}/200
-                    </span>
+                  <div className="flex justify-between text-[10px] font-bold text-gray-400 px-1">
+                    <span>Static value sent to all recipients</span>
+                    <span>{getCustomValue(currentValue).length}/200</span>
                   </div>
                 </div>
               )}
 
-              {/* Warning */}
               {!isValid && (
-                <div className="mt-2 flex items-center gap-2 text-xs
-                                text-amber-700 bg-amber-50 border
-                                border-amber-200 rounded-lg px-3 py-2">
-                  <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-                  Required — fill this to proceed
+                <div className="mt-2.5 flex items-center gap-1.5 text-xs font-bold text-amber-800 bg-amber-50 border border-amber-200 rounded-xl p-2.5">
+                  <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
+                  Required field — please complete mapping to proceed
                 </div>
               )}
             </div>
           );
         })}
-      </div>
-
-      {/* Summary */}
-      <div className="bg-white border border-gray-200 rounded-xl p-4">
-        <h4 className="font-semibold text-gray-800 mb-3 text-sm flex
-                        items-center gap-2">
-          <Info className="w-4 h-4 text-gray-400" />
-          Mapping Summary
-        </h4>
-        <div className="space-y-1.5">
-          {variables.map(variable => {
-            const value = mapping[variable] || '';
-            const valid = value.trim().length > 0;
-            return (
-              <div
-                key={variable}
-                className={`flex items-center justify-between text-xs
-                            py-2 px-3 rounded-lg
-                            ${valid ? 'bg-green-50' : 'bg-red-50'}`}
-              >
-                <span className="font-mono font-bold text-primary-700">
-                  {getVarLabel(variable)}
-                </span>
-                <span className={`font-medium truncate max-w-[200px] ml-2
-                                  ${valid
-                    ? 'text-green-700'
-                    : 'text-red-500 italic'}`}>
-                  {getDisplayValue(value)}
-                </span>
-              </div>
-            );
-          })}
-        </div>
       </div>
     </div>
   );
