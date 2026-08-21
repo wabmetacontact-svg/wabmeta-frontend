@@ -416,8 +416,8 @@ const Campaigns: React.FC = () => {
           >
             <div className="absolute top-0 right-0 p-4 opacity-[0.08] text-gray-900"><s.icon size={80} /></div>
             <div className="relative z-10">
-              <p className="text-xs font-bold font-mono uppercase tracking-widest mb-1" style={{ color: s.color }}>{s.label}</p>
-              <h3 className="text-3xl font-black text-gray-900">
+              <p className="text-xs font-semibold font-mono uppercase tracking-wider mb-1" style={{ color: s.color }}>{s.label}</p>
+              <h3 className="text-3xl font-bold text-gray-900">
                 {loading ? <Loader2 className="w-6 h-6 animate-spin text-gray-400 my-1" /> : safeStr(s.value)}
               </h3>
             </div>
@@ -498,10 +498,10 @@ const Campaigns: React.FC = () => {
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-3 mb-2 flex-wrap">
-                      <h3 className="text-base font-bold text-gray-900 truncate max-w-[200px] sm:max-w-none">{campaign.name}</h3>
+                      <h3 className="text-base font-semibold text-gray-900 truncate max-w-[200px] sm:max-w-none">{campaign.name}</h3>
                       <StatusBadge status={campaign.status} />
                       {isCompleted && total > 0 && (
-                        <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold ${successRate >= 90
+                        <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${successRate >= 90
                             ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                             : successRate >= 80
                               ? 'bg-blue-50 text-blue-700 border border-blue-200'
@@ -511,8 +511,8 @@ const Campaigns: React.FC = () => {
                         </span>
                       )}
                     </div>
-                    {campaign.description && <p className="text-gray-500 text-sm line-clamp-1 font-semibold">{campaign.description}</p>}
-                    {campaign.template?.name && <p className="text-xs text-gray-400 mt-1 font-bold">Template: {campaign.template.name}</p>}
+                    {campaign.description && <p className="text-gray-500 text-sm line-clamp-1 font-normal">{campaign.description}</p>}
+                    {campaign.template?.name && <p className="text-xs text-gray-400 mt-1 font-medium">Template: {campaign.template.name}</p>}
                   </div>
 
                   {/* Actions column */}
@@ -574,20 +574,20 @@ const Campaigns: React.FC = () => {
                 {/* Internal metrics rows */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4 select-none">
                   <div className="bg-gray-50 p-3 rounded-xl border border-gray-100">
-                    <p className="text-[10px] uppercase tracking-wider font-bold text-gray-400 mb-1">Recipients</p>
-                    <p className="text-lg font-black text-gray-900">{safeStr(total)}</p>
+                    <p className="text-[10px] uppercase tracking-wider font-semibold text-gray-400 mb-1">Recipients</p>
+                    <p className="text-lg font-bold text-gray-900">{safeStr(total)}</p>
                   </div>
                   <div className="bg-blue-50/50 p-3 rounded-xl border border-blue-100">
-                    <p className="text-[10px] uppercase tracking-wider font-bold text-blue-500 mb-1">Sent</p>
-                    <p className="text-lg font-black text-blue-700">{safeStr(sent)}</p>
+                    <p className="text-[10px] uppercase tracking-wider font-semibold text-blue-500 mb-1">Sent</p>
+                    <p className="text-lg font-bold text-blue-700">{safeStr(sent)}</p>
                   </div>
                   <div className="bg-emerald-50/50 p-3 rounded-xl border border-emerald-100">
-                    <p className="text-[10px] uppercase tracking-wider font-bold text-emerald-600 mb-1">Delivered</p>
-                    <p className="text-lg font-black text-emerald-700">{safeStr(delivered + read)}</p>
+                    <p className="text-[10px] uppercase tracking-wider font-semibold text-emerald-600 mb-1">Delivered</p>
+                    <p className="text-lg font-bold text-emerald-700">{safeStr(delivered + read)}</p>
                   </div>
                   <div className="bg-red-50/50 p-3 rounded-xl border border-red-100">
-                    <p className="text-[10px] uppercase tracking-wider font-bold text-red-500 mb-1">Failed</p>
-                    <p className="text-lg font-black text-red-700">{safeStr(failed)}</p>
+                    <p className="text-[10px] uppercase tracking-wider font-semibold text-red-500 mb-1">Failed</p>
+                    <p className="text-lg font-bold text-red-700">{safeStr(failed)}</p>
                   </div>
                 </div>
 
@@ -608,7 +608,7 @@ const Campaigns: React.FC = () => {
                   </div>
                 )}
 
-                <div className="flex items-center gap-4 mt-2 text-[11px] text-gray-450 border-t border-gray-100 pt-3 flex-wrap font-bold uppercase tracking-wider">
+                <div className="flex items-center gap-4 mt-2 text-[11px] text-gray-400 border-t border-gray-100 pt-3 flex-wrap font-medium uppercase tracking-wider">
                   <span className="flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5" />Created {formatDistanceToNow(new Date(campaign.createdAt), { addSuffix: true })}</span>
                   {campaign.scheduledAt && <span className="flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" />Scheduled: {new Date(campaign.scheduledAt).toLocaleString()}</span>}
                   {campaign.startedAt && <span className="flex items-center gap-1.5"><Play className="w-3.5 h-3.5 text-emerald-600" />Started {formatDistanceToNow(new Date(campaign.startedAt), { addSuffix: true })}</span>}

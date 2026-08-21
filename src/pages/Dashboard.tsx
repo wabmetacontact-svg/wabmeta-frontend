@@ -206,16 +206,16 @@ const Dashboard: React.FC = () => {
       {/* Header Row */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2 mb-2">
+          <div className="flex items-center gap-2 mb-1.5">
             <Sparkles className="w-4 h-4 text-emerald-600" />
             <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-gray-400">
               {greeting}
             </span>
           </div>
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-gray-900 tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">
             Welcome back, {userName} 👋
           </h1>
-          <p className="mt-2 text-xs sm:text-sm text-gray-500 font-semibold">
+          <p className="mt-1 text-xs sm:text-sm text-gray-500 font-normal">
             {loadingStats
               ? 'Loading your dashboard...'
               : hasAnyData
@@ -341,11 +341,11 @@ const Dashboard: React.FC = () => {
                     <FaWhatsapp size={80} />
                   </div>
                   <div className="relative">
-                    <p className="text-[10px] font-mono text-emerald-700 uppercase tracking-widest mb-1 font-bold">WhatsApp</p>
-                    <h3 className="text-3xl font-black text-gray-900">{formatNum(messagesSent)}</h3>
-                    <p className="text-xs text-gray-500 font-medium mt-2">Messages sent this month</p>
+                    <p className="text-[10px] font-mono text-emerald-700 uppercase tracking-widest mb-1 font-semibold">WhatsApp</p>
+                    <h3 className="text-3xl font-bold text-gray-900">{formatNum(messagesSent)}</h3>
+                    <p className="text-xs text-gray-500 font-normal mt-2">Messages sent this month</p>
                     <div className="mt-4 flex items-center gap-2">
-                      <span className="text-[10px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-bold">{deliveryRate}% Delivery</span>
+                      <span className="text-[10px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-semibold">{deliveryRate}% Delivery</span>
                     </div>
                   </div>
                 </div>
@@ -355,11 +355,11 @@ const Dashboard: React.FC = () => {
                     <Instagram size={80} />
                   </div>
                   <div className="relative">
-                    <p className="text-[10px] font-mono text-pink-700 uppercase tracking-widest mb-1 font-bold">Instagram</p>
-                    <h3 className="text-3xl font-black text-gray-900">0</h3>
-                    <p className="text-xs text-gray-500 font-medium mt-2">Automated interactions</p>
+                    <p className="text-[10px] font-mono text-pink-700 uppercase tracking-widest mb-1 font-semibold">Instagram</p>
+                    <h3 className="text-3xl font-bold text-gray-900">0</h3>
+                    <p className="text-xs text-gray-500 font-normal mt-2">Automated interactions</p>
                     <div className="mt-4 flex items-center gap-2">
-                      <span className="text-[10px] bg-pink-100 text-pink-800 px-2 py-0.5 rounded-full font-bold">Coming soon</span>
+                      <span className="text-[10px] bg-pink-100 text-pink-800 px-2 py-0.5 rounded-full font-semibold">Coming soon</span>
                     </div>
                   </div>
                 </div>
@@ -369,12 +369,12 @@ const Dashboard: React.FC = () => {
                     <Target size={80} />
                   </div>
                   <div className="relative">
-                    <p className="text-[10px] font-mono text-indigo-700 uppercase tracking-widest mb-1 font-bold">Efficiency</p>
-                    <h3 className="text-3xl font-black text-gray-900">84%</h3>
-                    <p className="text-xs text-gray-500 font-medium mt-2">AI Response Accuracy</p>
+                    <p className="text-[10px] font-mono text-indigo-700 uppercase tracking-widest mb-1 font-semibold">Efficiency</p>
+                    <h3 className="text-3xl font-bold text-gray-900">84%</h3>
+                    <p className="text-xs text-gray-500 font-normal mt-2">AI Response Accuracy</p>
                     <div className="mt-4 flex items-center gap-2">
                       <Zap size={12} className="text-indigo-600" />
-                      <span className="text-[10px] text-indigo-700 font-bold">Saving hours/week</span>
+                      <span className="text-[10px] text-indigo-700 font-semibold">Saving hours/week</span>
                     </div>
                   </div>
                 </div>
@@ -808,9 +808,9 @@ const QuickStatItem: React.FC<{
       >
         <Icon className="w-3.5 h-3.5" style={{ color }} />
       </div>
-      <span className="text-xs text-gray-500 font-bold group-hover:text-gray-900">{label}</span>
+      <span className="text-xs text-gray-600 font-medium group-hover:text-gray-900">{label}</span>
     </div>
-    <span className="text-sm font-black text-gray-900">{value}</span>
+    <span className="text-sm font-semibold text-gray-900">{value}</span>
   </Link>
 );
 
@@ -822,14 +822,14 @@ const StatusBadge: React.FC<{ status: string }> = ({ status }) => {
     PAUSED: 'bg-yellow-50 text-yellow-700 border-yellow-200',
   };
   return (
-    <span className={`px-2 py-1 text-[10px] font-mono font-bold rounded-full border ${styles[status] || 'bg-gray-50 text-gray-600 border-gray-200'}`}>
+    <span className={`px-2 py-1 text-[10px] font-mono font-semibold rounded-full border ${styles[status] || 'bg-gray-50 text-gray-600 border-gray-200'}`}>
       {status}
     </span>
   );
 };
 
 const DeliveryRateBadge: React.FC<{ rate: number }> = ({ rate }) => (
-  <span className={`text-sm font-black ${rate >= 90 ? 'text-emerald-600' : rate >= 70 ? 'text-yellow-600' : 'text-red-600'}`}>
+  <span className={`text-sm font-semibold ${rate >= 90 ? 'text-emerald-600' : rate >= 70 ? 'text-yellow-600' : 'text-red-600'}`}>
     {rate}%
   </span>
 );

@@ -1,6 +1,5 @@
-// 📁 src/components/campaigns/CsvAudienceUploader.tsx - COMPLETE VERSION
-
-import React, { useState, useRef } from 'react';
+// src/components/campaigns/CsvAudienceUploader.tsx
+import React, { useState, useRef, useEffect } from 'react';
 import {
   Upload,
   FileText,
@@ -14,9 +13,6 @@ import {
 import { campaigns as campaignApi } from '../../services/api';
 import toast from 'react-hot-toast';
 
-// ============================================
-// TYPES
-// ============================================
 interface UploadedContact {
   id: string;
   phone: string;
@@ -45,20 +41,19 @@ interface Props {
   onImported: (contacts: UploadedContact[]) => void;
 }
 
-// ============================================
-// COMPONENT
-// ============================================
-const CsvAudienceUploader: React.FC<Props> = ({ onImported }) => {
+export const CsvAudienceUploader: React.FC<Props> = ({ onImported }) => {
   const inputRef = useRef<HTMLInputElement>(null);
-
   const [uploading, setUploading] = useState(false);
-
   const [result, setResult] = useState<UploadResult | null>(null);
   const [showErrors, setShowErrors] = useState(false);
+  const isMountedRef = useRef(true);
 
-  // ==========================================
-  // DOWNLOAD SAMPLE CSV
-  // ==========================================
+  // ✅ Memory leak prevention
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => { isMountedRef.current = false; };
+  }, []);
+
   const handleDownloadSample = () => {
     const csvContent = [
       'phone,firstName,lastName,email,tags',
@@ -80,22 +75,16 @@ const CsvAudienceUploader: React.FC<Props> = ({ onImported }) => {
     toast.success('Sample CSV downloaded');
   };
 
-  // ==========================================
-  // FILE VALIDATION
-  // ==========================================
   const validateFile = (file: File): string | null => {
-    // Check file type
-    if (!file.name.endsWith('.csv')) {
-      return 'Please upload a CSV file';
+    if (!file.name.toLowerCase().endsWith('.csv')) {
+      return 'Please upload a valid CSV file (.csv)';
     }
 
-    // Check file size (5MB max)
     const maxSize = 5 * 1024 * 1024; // 5MB
     if (file.size > maxSize) {
       return 'File size exceeds 5MB limit';
     }
 
-    // Check if file is empty
     if (file.size === 0) {
       return 'File is empty';
     }
@@ -103,25 +92,51 @@ const CsvAudienceUploader: React.FC<Props> = ({ onImported }) => {
     return null;
   };
 
-  // ==========================================
-  // HANDLE FILE SELECTION
-  // ==========================================
   const handleFileSelect = () => {
     inputRef.current?.click();
   };
 
-  // ==========================================
-  // HANDLE FILE UPLOAD
-  // ==========================================
+  // ✅ Client-side pre-parsing validation before pushing to backend
+  const preValidateCsvHeaders = (file: File): Promise<boolean> => {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const text = e.target?.result as string;
+        if (!text) {
+          resolve(false);
+          return;
+        }
+        const firstLine = text.split('\n')[0]?.toLowerCase() || '';
+        const headers = firstLine.split(',').map(h => h.trim());
+
+        // Mandatory field check
+        if (!headers.includes('phone')) {
+          toast.error("Invalid CSV: Missing mandatory 'phone' header column!");
+          resolve(false);
+        } else {
+          resolve(true);
+        }
+      };
+      reader.onerror = () => resolve(false);
+      reader.readAsText(file.slice(0, 1024)); // Read first 1KB only for performance
+    });
+  };
+
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Validate file
     const validationError = validateFile(file);
     if (validationError) {
       toast.error(validationError);
-      e.target.value = ''; // Reset input
+      e.target.value = '';
+      return;
+    }
+
+    // Pre-validate headers
+    const isValidCSV = await preValidateCsvHeaders(file);
+    if (!isValidCSV) {
+      e.target.value = '';
       return;
     }
 
@@ -131,24 +146,16 @@ const CsvAudienceUploader: React.FC<Props> = ({ onImported }) => {
 
     try {
       console.log('📤 Uploading CSV file:', file.name);
-
       const response = await campaignApi.uploadContacts(file);
+
+      if (!isMountedRef.current) return;
 
       if (response.data.success) {
         const data: UploadResult = response.data.data;
-
-        console.log('✅ CSV Upload Result:', data);
-
         setResult(data);
 
-        // Show appropriate toast message
         if (data.successful > 0) {
-          toast.success(
-            `✅ ${data.successful} contacts uploaded successfully!`,
-            { duration: 5000 }
-          );
-
-          // ✅ Pass contacts with IDs to parent
+          toast.success(`✅ ${data.successful} contacts uploaded successfully!`, { duration: 5000 });
           if (data.contacts && data.contacts.length > 0) {
             onImported(data.contacts);
           }
@@ -156,7 +163,6 @@ const CsvAudienceUploader: React.FC<Props> = ({ onImported }) => {
           toast.error('No valid contacts found in CSV');
         }
 
-        // Show warning if there are duplicates or failures
         if (data.duplicates > 0) {
           toast(`ℹ️ ${data.duplicates} duplicate contacts skipped`, {
             icon: '⚠️',
@@ -172,66 +178,58 @@ const CsvAudienceUploader: React.FC<Props> = ({ onImported }) => {
       }
     } catch (error: any) {
       console.error('❌ CSV upload error:', error);
-
-      const errorMessage =
-        error.response?.data?.message ||
-        error.message ||
-        'Failed to upload CSV';
-
-      toast.error(errorMessage);
-      setResult(null);
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to upload CSV';
+      if (isMountedRef.current) {
+        toast.error(errorMessage);
+        setResult(null);
+      }
     } finally {
-      setUploading(false);
-      e.target.value = ''; // Reset input to allow re-upload
+      if (isMountedRef.current) {
+        setUploading(false);
+        e.target.value = '';
+      }
     }
   };
 
-  // ==========================================
-  // CLEAR RESULTS
-  // ==========================================
   const handleClearResults = () => {
     setResult(null);
     setShowErrors(false);
   };
 
-  // ==========================================
-  // RENDER
-  // ==========================================
   return (
-    <div className="space-y-4">
-      {/* Header */}
+    <div className="space-y-4 select-none">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="font-medium text-white">
+          <h3 className="font-semibold text-gray-800 text-sm">
             Upload Contacts via CSV
           </h3>
-          <p className="text-sm text-gray-400 mt-1">
+          <p className="text-xs text-gray-400 mt-0.5">
             Import multiple contacts at once using a CSV file
           </p>
         </div>
 
         <button
           onClick={handleDownloadSample}
-          className="flex items-center gap-2 px-3 py-2 text-sm bg-[#0a0e27] border border-white/[0.1] rounded-lg hover:bg-[#0a0e27]/[0.04] transition-colors"
+          className="flex items-center gap-2 px-3.5 py-2 text-xs bg-white border border-gray-200 rounded-xl text-gray-700 hover:bg-gray-50 transition-colors font-semibold shadow-sm"
         >
           <Download className="w-4 h-4" />
           Sample CSV
         </button>
       </div>
 
-      {/* Upload Area */}
+      {/* ✅ FIXED: Styled upload box strictly using emerald brand variables */}
       <div
         onClick={!uploading ? handleFileSelect : undefined}
-        className={`relative flex flex-col items-center justify-center w-full h-40 px-4 transition bg-[#0a0e27] border-2 border-dashed rounded-xl ${uploading
-          ? 'border-primary-400 bg-primary-50/50 dark:bg-primary-900/10'
-          : 'border-white/[0.12] hover:border-primary-400 dark:hover:border-primary-500 cursor-pointer'
+        className={`relative flex flex-col items-center justify-center w-full h-40 px-4 transition bg-white border-2 border-dashed rounded-2xl ${uploading
+            ? 'border-emerald-500 bg-emerald-50/20'
+            : 'border-gray-200 hover:border-emerald-500 cursor-pointer shadow-sm'
           }`}
       >
         <div className="flex flex-col items-center justify-center">
           {uploading ? (
             <>
-              <Loader2 className="w-12 h-12 text-primary-500 animate-spin mb-3" />
-              <p className="text-sm font-medium text-gray-300">
+              <Loader2 className="w-10 h-10 text-emerald-600 animate-spin mb-3" />
+              <p className="text-sm font-semibold text-gray-700">
                 Uploading and processing...
               </p>
               <p className="text-xs text-gray-400 mt-1">
@@ -240,17 +238,17 @@ const CsvAudienceUploader: React.FC<Props> = ({ onImported }) => {
             </>
           ) : (
             <>
-              <div className="p-3 bg-[#0a0e27]/[0.04] dark:bg-gray-700 rounded-full mb-3">
-                <Upload className="w-8 h-8 text-gray-400" />
+              <div className="p-3 bg-emerald-50 rounded-full mb-3 border border-emerald-100">
+                <Upload className="w-6 h-6 text-emerald-600" />
               </div>
-              <p className="text-sm font-medium text-gray-300 mb-1">
+              <p className="text-sm font-bold text-gray-800 mb-1">
                 Click to upload CSV file
               </p>
               <p className="text-xs text-gray-400">
                 or drag and drop (Max 5MB)
               </p>
-              <div className="flex items-center gap-1 mt-2 text-xs text-gray-500">
-                <FileText className="w-3 h-3" />
+              <div className="flex items-center gap-1.5 mt-2.5 text-xs text-gray-400 font-medium">
+                <FileText className="w-3.5 h-3.5" />
                 <span>Supported: .csv</span>
               </div>
             </>
@@ -267,13 +265,13 @@ const CsvAudienceUploader: React.FC<Props> = ({ onImported }) => {
         />
       </div>
 
-      {/* CSV Format Info */}
-      <div className="flex items-start gap-2 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-        <Info className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
-        <div className="flex-1 text-sm text-blue-700 dark:text-blue-300">
-          <p className="font-medium mb-1">CSV Format:</p>
-          <ul className="list-disc list-inside space-y-0.5 text-xs">
-            <li><strong>phone</strong> (required): +country_code + number (e.g., +911234567890)</li>
+      {/* Info Card */}
+      <div className="flex items-start gap-2 p-3.5 bg-blue-50 border border-blue-200 rounded-2xl">
+        <Info className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
+        <div className="flex-1 text-xs text-blue-800 leading-relaxed font-semibold">
+          <p className="font-bold text-blue-900 mb-1">CSV Format Guidelines:</p>
+          <ul className="list-disc list-inside space-y-1">
+            <li><strong className="text-blue-900">phone</strong> (required): +country_code + number (e.g., +911234567890)</li>
             <li><strong>firstName</strong> (optional): Contact's first name</li>
             <li><strong>lastName</strong> (optional): Contact's last name</li>
             <li><strong>email</strong> (optional): Contact's email address</li>
@@ -284,74 +282,74 @@ const CsvAudienceUploader: React.FC<Props> = ({ onImported }) => {
 
       {/* Upload Results */}
       {result && (
-        <div className="p-4 bg-[#0a0e27] border border-white/[0.1] rounded-xl">
+        <div className="p-4 bg-white border border-gray-200 rounded-2xl shadow-sm animate-in zoom-in-95 duration-200">
           <div className="flex items-start justify-between mb-4">
             <div className="flex items-start gap-3">
-              <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
-                <CheckCircle className="w-6 h-6 text-green-600 dark:text-green-400" />
+              <div className="p-2 bg-emerald-50 border border-emerald-100 rounded-xl">
+                <CheckCircle className="w-5 h-5 text-emerald-600" />
               </div>
               <div>
-                <h4 className="font-medium text-white">
+                <h4 className="font-bold text-gray-900 text-sm">
                   Upload Complete
                 </h4>
-                <p className="text-sm text-gray-400 mt-1">
+                <p className="text-xs text-gray-450 font-bold mt-0.5">
                   {result.total} rows processed
                 </p>
               </div>
             </div>
             <button
               onClick={handleClearResults}
-              className="p-1 hover:bg-[#0a0e27]/[0.04] dark:hover:bg-gray-700 rounded-lg transition-colors"
+              className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
             >
-              <X className="w-4 h-4 text-gray-500" />
+              <X className="w-4 h-4 text-gray-400" />
             </button>
           </div>
 
           {/* Stats Grid */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <div className="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
-              <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+            <div className="p-3 bg-emerald-50 border border-emerald-100 rounded-xl">
+              <div className="text-2xl font-black text-emerald-700">
                 {result.successful}
               </div>
-              <div className="text-xs text-green-700 dark:text-green-300 mt-1">
+              <div className="text-[10px] font-bold text-emerald-800 mt-1 uppercase tracking-wider">
                 Successful
               </div>
             </div>
 
-            <div className="p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
-              <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
+            <div className="p-3 bg-yellow-50 border border-yellow-100 rounded-xl">
+              <div className="text-2xl font-black text-yellow-700">
                 {result.duplicates || result.duplicateRows || 0}
               </div>
-              <div className="text-xs text-yellow-700 dark:text-yellow-300 mt-1">
+              <div className="text-[10px] font-bold text-yellow-800 mt-1 uppercase tracking-wider">
                 Duplicates
               </div>
             </div>
 
-            <div className="p-3 bg-red-50 dark:bg-red-900/20 rounded-lg">
-              <div className="text-2xl font-bold text-red-600 dark:text-red-400">
+            <div className="p-3 bg-red-50 border border-red-100 rounded-xl">
+              <div className="text-2xl font-black text-red-700">
                 {result.failed}
               </div>
-              <div className="text-xs text-red-700 dark:text-red-300 mt-1">
+              <div className="text-[10px] font-bold text-red-800 mt-1 uppercase tracking-wider">
                 Failed
               </div>
             </div>
 
-            <div className="p-3 bg-[#050816] dark:bg-gray-700 rounded-lg">
-              <div className="text-2xl font-bold text-gray-400">
+            <div className="p-3 bg-gray-50 border border-gray-200 rounded-xl">
+              <div className="text-2xl font-black text-gray-500">
                 {result.total}
               </div>
-              <div className="text-xs text-gray-300 mt-1">
-                Total
+              <div className="text-[10px] font-bold text-gray-500 mt-1 uppercase tracking-wider">
+                Total Rows
               </div>
             </div>
           </div>
 
-          {/* Error Details */}
+          {/* Errors list */}
           {result.errors && result.errors.length > 0 && (
             <div className="mt-4">
               <button
                 onClick={() => setShowErrors(!showErrors)}
-                className="flex items-center gap-2 text-sm text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300"
+                className="flex items-center gap-2 text-xs font-bold text-red-600 hover:text-red-700"
               >
                 <AlertCircle className="w-4 h-4" />
                 <span>
@@ -360,25 +358,25 @@ const CsvAudienceUploader: React.FC<Props> = ({ onImported }) => {
               </button>
 
               {showErrors && (
-                <div className="mt-3 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg max-h-48 overflow-y-auto">
+                <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-2xl max-h-48 overflow-y-auto">
                   <div className="space-y-2">
                     {result.errors.slice(0, 10).map((error, index) => (
                       <div
                         key={index}
-                        className="text-xs text-red-700 dark:text-red-300 flex items-start gap-2"
+                        className="text-xs text-red-700 flex items-start gap-2 font-semibold"
                       >
-                        <span className="font-mono bg-red-100 dark:bg-red-900/40 px-1.5 py-0.5 rounded">
+                        <span className="font-mono bg-red-100 px-1.5 py-0.5 rounded font-black">
                           Row {error.row}
                         </span>
                         <span className="flex-1">
-                          {error.phone && <span className="font-medium">{error.phone}:</span>}{' '}
+                          {error.phone && <span className="font-bold">{error.phone}:</span>}{' '}
                           {error.error}
                         </span>
                       </div>
                     ))}
                     {result.errors.length > 10 && (
-                      <p className="text-xs text-red-600 dark:text-red-400 italic">
-                        ... and {result.errors.length - 10} more errors
+                      <p className="text-xs text-red-500 italic font-bold">
+                        ... and {result.errors.length - 10} more errors occurred
                       </p>
                     )}
                   </div>
