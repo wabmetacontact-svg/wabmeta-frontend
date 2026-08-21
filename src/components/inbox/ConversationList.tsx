@@ -1,19 +1,17 @@
 // src/components/inbox/ConversationList.tsx
-import React, { useState, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import {
   Search,
   RefreshCw,
-  Filter,
   X,
   Trash2,
   Archive,
   ArchiveRestore,
   CheckSquare,
   Square,
-  Check,
-  MessageSquarePlus,
   Inbox,
   Pin,
+  MessageSquarePlus,
 } from 'lucide-react';
 import ConversationItem from './ConversationItem';
 import type { ContactLike } from '../../utils/inboxHelpers';
@@ -88,18 +86,15 @@ const ConversationList: React.FC<Props> = ({
   onBulkArchive,
   onBulkDelete,
 }) => {
-
-  // Check if we are in selection mode
   const isSelectionMode = selectedConversationIds.length > 0;
-  
-  // Combine pinned and regular for select all logic
+
   const allCurrentIds = useMemo(() => {
     return conversations.map(c => c.id);
   }, [conversations]);
+
   const isAllSelected = allCurrentIds.length > 0 && selectedConversationIds.length === allCurrentIds.length;
 
-
-  // ── Stats ──────────────────────────────────────────────────────────────
+  // Stats calculation
   const stats = useMemo(() => {
     const unread = conversations.filter((c) => c.unreadCount > 0 && !c.isArchived).length;
     const total = conversations.filter((c) => !c.isArchived).length;
@@ -107,7 +102,7 @@ const ConversationList: React.FC<Props> = ({
     return { unread, total, archived };
   }, [conversations]);
 
-  // ── Group: pinned vs regular ───────────────────────────────────────────
+  // Split Pinned vs Regular
   const { pinned, regular } = useMemo(() => {
     const pinned: Conversation[] = [];
     const regular: Conversation[] = [];
@@ -120,21 +115,22 @@ const ConversationList: React.FC<Props> = ({
 
   return (
     <div className="flex flex-col h-full bg-white border-r border-gray-200">
-      {/* ── Header ──────────────────────────────────────────────────────── */}
-      <div className={`flex-shrink-0 px-4 pt-4 pb-3 border-b border-gray-200 transition-colors ${isSelectionMode ? 'bg-emerald-500/10' : ''}`}>
+
+      {/* Header Container */}
+      <div className={`flex-shrink-0 px-4 pt-4 pb-3 border-b border-gray-200 transition-all duration-150 ${isSelectionMode ? 'bg-emerald-50/70' : ''}`}>
         {isSelectionMode ? (
           <div className="flex items-center justify-between mb-4 h-8">
             <div className="flex items-center gap-3">
-              <button onClick={onClearSelection} className="p-1 hover:bg-gray-100 rounded-full transition-colors text-gray-500">
+              <button onClick={onClearSelection} className="p-1 hover:bg-gray-150 rounded-full transition-colors text-gray-500">
                 <X className="w-5 h-5" />
               </button>
-              <span className="text-sm font-bold text-emerald-600">{selectedConversationIds.length} Selected</span>
+              <span className="text-sm font-bold text-emerald-700">{selectedConversationIds.length} Selected</span>
             </div>
             <div className="flex items-center gap-1">
               {filter === 'archived' ? (
                 <button
                   onClick={() => onBulkArchive?.(false)}
-                  className="p-1.5 rounded-lg hover:bg-emerald-500/20 text-gray-500 hover:text-emerald-600 transition-all"
+                  className="p-1.5 rounded-lg hover:bg-emerald-100 text-emerald-800 transition-all"
                   title="Unarchive"
                 >
                   <ArchiveRestore className="w-4 h-4" />
@@ -142,7 +138,7 @@ const ConversationList: React.FC<Props> = ({
               ) : (
                 <button
                   onClick={() => onBulkArchive?.(true)}
-                  className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-gray-900 transition-all"
+                  className="p-1.5 rounded-lg hover:bg-gray-150 text-gray-600 hover:text-gray-900 transition-all"
                   title="Archive"
                 >
                   <Archive className="w-4 h-4" />
@@ -150,7 +146,7 @@ const ConversationList: React.FC<Props> = ({
               )}
               <button
                 onClick={onBulkDelete}
-                className="p-1.5 rounded-lg hover:bg-red-500/10 text-gray-500 hover:text-red-600 transition-all"
+                className="p-1.5 rounded-lg hover:bg-red-50 text-red-600 transition-all"
                 title="Delete"
               >
                 <Trash2 className="w-4 h-4" />
@@ -162,7 +158,7 @@ const ConversationList: React.FC<Props> = ({
             <div className="flex items-center gap-2">
               <h2 className="text-lg font-bold text-gray-900 tracking-tight">Inbox</h2>
               {stats.total > 0 && (
-                <span className="text-[10px] font-mono text-gray-600 bg-gray-100 px-2 py-0.5 rounded-md">
+                <span className="text-[10px] font-mono text-gray-500 bg-gray-100 px-2 py-0.5 rounded-md font-bold">
                   {stats.total}
                 </span>
               )}
@@ -190,7 +186,7 @@ const ConversationList: React.FC<Props> = ({
           </div>
         )}
 
-        {/* Search & Select All */}
+        {/* Search */}
         <div className="relative mb-3 flex items-center gap-2">
           {isSelectionMode && (
             <button
@@ -198,7 +194,7 @@ const ConversationList: React.FC<Props> = ({
               className="flex-shrink-0 p-2 rounded hover:bg-gray-100 transition-colors"
             >
               {isAllSelected ? (
-                <CheckSquare className="w-5 h-5 text-emerald-500" />
+                <CheckSquare className="w-5 h-5 text-emerald-600" />
               ) : (
                 <Square className="w-5 h-5 text-gray-400" />
               )}
@@ -211,13 +207,7 @@ const ConversationList: React.FC<Props> = ({
               placeholder="Search conversations..."
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
-              className="
-                w-full pl-9 pr-9 py-2.5
-                bg-gray-50 border border-gray-200
-                focus:bg-white focus:border-emerald-500/50
-                text-sm text-gray-900 placeholder-gray-400
-                rounded-xl outline-none transition-all
-              "
+              className="w-full pl-9 pr-9 py-2 bg-gray-50 border border-gray-200 focus:bg-white focus:border-emerald-500/50 text-sm text-gray-900 placeholder-gray-400 rounded-xl outline-none transition-all"
             />
             {searchQuery && (
               <button
@@ -230,7 +220,7 @@ const ConversationList: React.FC<Props> = ({
           </div>
         </div>
 
-        {/* Filter Tabs */}
+        {/* Tabs */}
         <div className="flex gap-1 bg-gray-50 border border-gray-200 p-1 rounded-xl">
           {[
             { key: 'all' as FilterTab, label: 'All', count: stats.total },
@@ -240,30 +230,19 @@ const ConversationList: React.FC<Props> = ({
             <button
               key={f.key}
               onClick={() => onFilterChange(f.key)}
-              className={`
-                flex-1 py-1.5 px-2 text-xs font-medium rounded-lg
-                transition-all flex items-center justify-center gap-1.5
-                ${
-                  filter === f.key
-                    ? 'bg-white text-gray-900 shadow-sm border border-gray-200/50'
-                    : 'text-gray-500 hover:text-gray-800'
-                }
-              `}
+              className={`flex-1 py-1.5 px-2 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1.5 ${filter === f.key
+                  ? 'bg-white text-gray-950 shadow-sm border border-gray-200/50'
+                  : 'text-gray-500 hover:text-gray-800'
+                }`}
             >
               {f.label}
               {f.count > 0 && (
-                <span
-                  className={`
-                    px-1.5 py-0.5 text-[9px] font-bold rounded-full
-                    ${
-                      f.key === 'unread' && filter === f.key
-                        ? 'bg-emerald-500 text-white'
-                        : filter === f.key
-                        ? 'bg-gray-200 text-gray-800'
-                        : 'bg-gray-100 text-gray-500'
-                    }
-                  `}
-                >
+                <span className={`px-1.5 py-0.5 text-[9px] font-bold rounded-full ${f.key === 'unread' && filter === f.key
+                    ? 'bg-emerald-600 text-white'
+                    : filter === f.key
+                      ? 'bg-gray-200 text-gray-800'
+                      : 'bg-gray-100 text-gray-500'
+                  }`}>
                   {f.count > 99 ? '99+' : f.count}
                 </span>
               )}
@@ -271,21 +250,17 @@ const ConversationList: React.FC<Props> = ({
           ))}
         </div>
 
-        {/* Labels Scrollable Bar */}
+        {/* Label Filters */}
         {labels && labels.filter(l => l.count > 0).length > 0 && (
           <div className="mt-3 flex items-center gap-2 overflow-x-auto inbox-scroll pb-1">
             {labels.filter(l => l.count > 0).map((l) => (
               <button
                 key={l.label}
                 onClick={() => onFilterChange(filter === l.label ? 'all' : l.label)}
-                className={`
-                  flex-shrink-0 px-2.5 py-1 text-[11px] font-medium rounded-full border transition-all flex items-center gap-1.5
-                  ${
-                    filter === l.label
-                      ? 'bg-emerald-50 border-emerald-300 text-emerald-700'
-                      : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100 hover:text-gray-800'
-                  }
-                `}
+                className={`flex-shrink-0 px-2.5 py-1 text-[11px] font-semibold rounded-full border transition-all flex items-center gap-1.5 ${filter === l.label
+                    ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
+                    : 'bg-gray-50 border-gray-200 text-gray-500 hover:bg-gray-150 hover:text-gray-800'
+                  }`}
               >
                 {l.label}
                 <span className="opacity-65 text-[9px]">{l.count}</span>
@@ -295,7 +270,7 @@ const ConversationList: React.FC<Props> = ({
         )}
       </div>
 
-      {/* ── Conversation List ──────────────────────────────────────────── */}
+      {/* Conversations Container */}
       <div className="flex-1 overflow-y-auto inbox-scroll bg-white">
         {loading ? (
           <div className="flex flex-col items-center justify-center h-full px-4 text-center">
@@ -303,44 +278,35 @@ const ConversationList: React.FC<Props> = ({
             <p className="text-sm text-gray-500">Loading conversations...</p>
           </div>
         ) : conversations.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full px-4 text-center">
-            <div className="
-              w-16 h-16 rounded-full
-              bg-gray-50 border border-gray-200
-              flex items-center justify-center mb-4
-            ">
+          <div className="flex flex-col items-center justify-center h-full px-4 text-center select-none">
+            <div className="w-16 h-16 rounded-full bg-gray-50 border border-gray-200 flex items-center justify-center mb-4">
               <Inbox className="w-7 h-7 text-gray-400" />
             </div>
             <h3 className="text-sm font-semibold text-gray-800 mb-1">
               {searchQuery
                 ? 'No matches found'
                 : filter === 'unread'
-                ? 'All caught up!'
-                : filter === 'archived'
-                ? 'No archived chats'
-                : 'No conversations yet'}
+                  ? 'All caught up!'
+                  : filter === 'archived'
+                    ? 'No archived chats'
+                    : 'No conversations yet'}
             </h3>
-            <p className="text-xs text-gray-500 max-w-[200px]">
+            <p className="text-xs text-gray-400 max-w-[200px] font-medium">
               {searchQuery
                 ? 'Try a different search term'
                 : filter === 'unread'
-                ? "You've read all your messages"
-                : 'New messages will appear here'}
+                  ? "You've read all your messages"
+                  : 'New messages will appear here'}
             </p>
           </div>
         ) : (
           <div className="pb-4">
-            {/* Pinned section */}
             {pinned.length > 0 && filter !== 'archived' && (
               <div>
                 <div className="flex items-center gap-1.5 px-4 py-2 mt-1">
                   <Pin className="w-3 h-3 text-gray-400" />
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
-                    Pinned
-                  </span>
-                  <span className="text-[10px] font-mono text-gray-400">
-                    {pinned.length}
-                  </span>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Pinned</span>
+                  <span className="text-[10px] font-mono text-gray-400 font-bold">{pinned.length}</span>
                 </div>
                 {pinned.map((conv) => (
                   <ConversationItem
@@ -363,17 +329,12 @@ const ConversationList: React.FC<Props> = ({
               </div>
             )}
 
-            {/* Regular conversations */}
             {regular.length > 0 && (
               <div>
                 {pinned.length > 0 && filter !== 'archived' && (
                   <div className="flex items-center gap-1.5 px-4 py-2 mt-2">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
-                      All Chats
-                    </span>
-                    <span className="text-[10px] font-mono text-gray-400">
-                      {regular.length}
-                    </span>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">All Chats</span>
+                    <span className="text-[10px] font-mono text-gray-400 font-bold">{regular.length}</span>
                   </div>
                 )}
                 {regular.map((conv) => (
@@ -400,14 +361,14 @@ const ConversationList: React.FC<Props> = ({
         )}
       </div>
 
-      {/* ── Footer Stats ──────────────────────────────────────────────── */}
+      {/* Footer statistics bar */}
       {stats.total > 0 && !loading && (
         <div className="flex-shrink-0 px-4 py-2.5 border-t border-gray-200 bg-gray-50/50">
-          <div className="flex items-center justify-between text-[10px] font-mono text-gray-500">
+          <div className="flex items-center justify-between text-[10px] font-mono text-gray-400 font-semibold">
             <span>{stats.total} total</span>
             <span className="flex items-center gap-3">
               {stats.unread > 0 && (
-                <span className="text-emerald-600 font-semibold">{stats.unread} unread</span>
+                <span className="text-emerald-600 font-bold">{stats.unread} unread</span>
               )}
               {pinned.length > 0 && <span>{pinned.length} pinned</span>}
             </span>

@@ -1,4 +1,4 @@
-// src/pages/Inbox.tsx - WORLD-CLASS CHAT UI
+// src/pages/Inbox.tsx
 import React, {
   useState,
   useEffect,
@@ -46,9 +46,6 @@ import type { Note } from '../components/inbox/ConversationNotes';
 // Styles
 import '../components/inbox/inbox.styles.css';
 
-// ============================================
-// TYPES
-// ============================================
 interface Conversation {
   id: string;
   contact: ContactLike;
@@ -72,17 +69,13 @@ interface Conversation {
 
 type FilterTab = 'all' | 'unread' | 'archived' | string;
 
-// ============================================
-// QUICK REPLIES (localStorage based)
-// ============================================
 const QR_STORAGE_KEY = 'wabmeta_quick_replies';
 
 const loadQuickReplies = (): QuickReply[] => {
   try {
     const data = localStorage.getItem(QR_STORAGE_KEY);
     if (data) return JSON.parse(data);
-  } catch {}
-  // Default quick replies
+  } catch { }
   return [
     {
       id: 'qr-1',
@@ -120,48 +113,36 @@ const loadQuickReplies = (): QuickReply[] => {
 const saveQuickReplies = (qrs: QuickReply[]) => {
   try {
     localStorage.setItem(QR_STORAGE_KEY, JSON.stringify(qrs));
-  } catch {}
+  } catch { }
 };
 
-// ============================================
-// NOTES (localStorage based per conversation)
-// ============================================
 const NOTES_KEY = (convId: string) => `wabmeta_notes_${convId}`;
 
 const loadNotes = (convId: string): Note[] => {
   try {
     const data = localStorage.getItem(NOTES_KEY(convId));
     if (data) return JSON.parse(data);
-  } catch {}
+  } catch { }
   return [];
 };
 
 const saveNotes = (convId: string, notes: Note[]) => {
   try {
     localStorage.setItem(NOTES_KEY(convId), JSON.stringify(notes));
-  } catch {}
+  } catch { }
 };
 
-// ============================================
-// MAIN COMPONENT
-// ============================================
 const Inbox: React.FC = () => {
   const { conversationId: urlConvId } = useParams();
   const navigate = useNavigate();
   const { decrementUnread } = useApp();
 
-  // ============================================
-  // REFS
-  // ============================================
   const selectedConvRef = useRef<Conversation | null>(null);
   const fetchingMessagesRef = useRef(false);
   const lastFetchedConvId = useRef<string | null>(null);
   const sentMessageIds = useRef<Set<string>>(new Set());
   const tempToRealIdMap = useRef<Map<string, string>>(new Map());
 
-  // ============================================
-  // STATE
-  // ============================================
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
@@ -172,9 +153,8 @@ const Inbox: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filter, setFilter] = useState<FilterTab>('all');
   const [whatsappAccountId, setWhatsappAccountId] = useState<string | null>(null);
-  const [labels, setLabels] = useState<{label: string, count: number, color?: string}[]>([]);
+  const [labels, setLabels] = useState<{ label: string, count: number, color?: string }[]>([]);
 
-  // UI State
   const [showContactInfo, setShowContactInfo] = useState(false);
   const [selectedConversationIds, setSelectedConversationIds] = useState<string[]>([]);
   const [showTemplateModal, setShowTemplateModal] = useState(false);
@@ -183,26 +163,16 @@ const Inbox: React.FC = () => {
   const [showQuickReplies, setShowQuickReplies] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
-  // Reply / forward
   const [replyTo, setReplyTo] = useState<Message | null>(null);
 
-  // Message search
   const [showMessageSearch, setShowMessageSearch] = useState(false);
   const [messageSearchQuery, setMessageSearchQuery] = useState('');
   const [currentSearchIndex, setCurrentSearchIndex] = useState(-1);
 
-  // Quick replies
   const [quickReplies, setQuickReplies] = useState<QuickReply[]>(loadQuickReplies);
-
-  // Notes (per conversation)
   const [notes, setNotes] = useState<Note[]>([]);
-
-  // Typing indicator (for current conversation)
   const [isContactTyping, setIsContactTyping] = useState(false);
 
-  // ============================================
-  // SYNC REFS
-  // ============================================
   const filterRef = useRef<FilterTab>(filter);
 
   useEffect(() => {
@@ -229,9 +199,6 @@ const Inbox: React.FC = () => {
     }
   }, [notes, selectedConversation?.id]);
 
-  // ============================================
-  // FETCH WHATSAPP ACCOUNT
-  // ============================================
   useEffect(() => {
     const fetchAccount = async () => {
       try {
@@ -247,9 +214,6 @@ const Inbox: React.FC = () => {
     fetchAccount();
   }, []);
 
-  // ============================================
-  // FETCH LABELS
-  // ============================================
   const fetchLabels = async () => {
     try {
       const res = await inboxApi.getLabels();
@@ -275,9 +239,6 @@ const Inbox: React.FC = () => {
     }
   };
 
-  // ============================================
-  // FETCH CONVERSATIONS
-  // ============================================
   const fetchConversations = useCallback(
     async (silent = false) => {
       try {
@@ -327,9 +288,6 @@ const Inbox: React.FC = () => {
     [searchQuery, filter]
   );
 
-  // ============================================
-  // FETCH MESSAGES
-  // ============================================
   const fetchMessages = useCallback(
     async (convId: string, force = false) => {
       if (fetchingMessagesRef.current && !force) return;
@@ -363,8 +321,7 @@ const Inbox: React.FC = () => {
           setMessages(msgs);
           lastFetchedConvId.current = convId;
 
-          // Mark as read
-          inboxApi.markAsRead(convId).catch(() => {});
+          inboxApi.markAsRead(convId).catch(() => { });
           setConversations((prev) =>
             prev.map((c) =>
               c.id === convId ? { ...c, unreadCount: 0, isRead: true } : c
@@ -383,9 +340,6 @@ const Inbox: React.FC = () => {
     [messages.length]
   );
 
-  // ============================================
-  // SELECT CONVERSATION
-  // ============================================
   const selectConversation = useCallback(
     (conv: Conversation) => {
       if (selectedConvRef.current?.id === conv.id) {
@@ -413,9 +367,6 @@ const Inbox: React.FC = () => {
     [navigate, fetchMessages, decrementUnread]
   );
 
-  // ============================================
-  // SEND TEXT MESSAGE
-  // ============================================
   const handleSendMessage = useCallback(
     async (text: string, options?: { replyToId?: string }) => {
       if (!text.trim() || !selectedConvRef.current) return;
@@ -424,7 +375,6 @@ const Inbox: React.FC = () => {
       const tempId = `temp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
       const now = new Date().toISOString();
 
-      // Build reply info if replying
       let replyToData: Message['replyTo'] | undefined;
       if (options?.replyToId) {
         const repliedMsg = messages.find((m) => m.id === options.replyToId);
@@ -493,12 +443,12 @@ const Inbox: React.FC = () => {
               prev.map((c) =>
                 c.id === conv.id
                   ? {
-                      ...c,
-                      lastMessagePreview: text.substring(0, 60),
-                      lastMessageAt: now,
-                      lastMessageDirection: 'OUTBOUND',
-                      lastMessageStatus: 'SENT',
-                    }
+                    ...c,
+                    lastMessagePreview: text.substring(0, 60),
+                    lastMessageAt: now,
+                    lastMessageDirection: 'OUTBOUND',
+                    lastMessageStatus: 'SENT',
+                  }
                   : c
               )
             )
@@ -523,9 +473,6 @@ const Inbox: React.FC = () => {
     [whatsappAccountId, messages]
   );
 
-  // ============================================
-  // SEND MEDIA
-  // ============================================
   const handleUploadAndSendMedia = useCallback(
     async (file: File) => {
       if (!selectedConvRef.current) return;
@@ -537,10 +484,10 @@ const Inbox: React.FC = () => {
       const tempType: Message['type'] = mime.startsWith('image/')
         ? 'IMAGE'
         : mime.startsWith('video/')
-        ? 'VIDEO'
-        : mime.startsWith('audio/')
-        ? 'AUDIO'
-        : 'DOCUMENT';
+          ? 'VIDEO'
+          : mime.startsWith('audio/')
+            ? 'AUDIO'
+            : 'DOCUMENT';
 
       const tempMsg: Message = {
         id: tempId,
@@ -613,69 +560,56 @@ const Inbox: React.FC = () => {
     []
   );
 
-  // ============================================
-  // SEND VOICE MESSAGE
-  // ============================================
   const handleSendVoice = useCallback(
     async (blob: Blob, duration: number) => {
       if (!selectedConvRef.current) return;
-      
-      // ✅ Determine correct file extension from blob type
-      let extension = 'ogg'; // default
+
+      let extension = 'ogg';
       const mimeType = blob.type;
-      
+
       if (mimeType.includes('ogg')) extension = 'ogg';
       else if (mimeType.includes('mp4')) extension = 'm4a';
       else if (mimeType.includes('mpeg')) extension = 'mp3';
       else if (mimeType.includes('webm')) extension = 'webm';
-      
+
       const fileName = `voice-${Date.now()}.${extension}`;
-      
-      // ✅ Create file with correct extension AND audio mime type
-      const file = new File([blob], fileName, { 
-        type: blob.type 
+
+      const file = new File([blob], fileName, {
+        type: blob.type
       });
-      
-      console.log('🎤 Sending voice:', { 
-        fileName, 
-        mimeType: blob.type, 
+
+      console.log('🎤 Sending voice:', {
+        fileName,
+        mimeType: blob.type,
         size: blob.size,
-        duration 
+        duration
       });
-      
+
       await handleUploadAndSendMedia(file);
     },
     [handleUploadAndSendMedia]
   );
 
-  // ============================================
-  // TYPING INDICATOR (AGENT)
-  // ============================================
   const typingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const handleTyping = useCallback(
     async (isTyping: boolean) => {
       if (!isTyping || !selectedConvRef.current) return;
-      
-      // Prevent spamming the API, only send once every 10 seconds
       if (typingTimerRef.current) return;
-      
+
       try {
         await api.post(`/inbox/conversations/${selectedConvRef.current.id}/typing`);
       } catch (err) {
         console.error('Failed to send typing indicator', err);
       }
-      
+
       typingTimerRef.current = setTimeout(() => {
         typingTimerRef.current = null;
-      }, 10000); // 10s cooldown
+      }, 10000);
     },
     []
   );
 
-  // ============================================
-  // PIN / ARCHIVE / LABELS
-  // ============================================
   const handlePinConversation = useCallback(
     async (conv: Conversation, e: React.MouseEvent) => {
       e.stopPropagation();
@@ -801,7 +735,7 @@ const Inbox: React.FC = () => {
           prev ? { ...prev, labels: [label] } : prev
         );
       }
-      fetchLabels(); // refresh counts
+      fetchLabels();
     } catch (err) {
       console.error('Add label failed:', err);
       toast.error('Failed to add label');
@@ -822,7 +756,7 @@ const Inbox: React.FC = () => {
             prev ? { ...prev, labels: updatedLabels } : prev
           );
         }
-        fetchLabels(); // refresh counts
+        fetchLabels();
       } catch {
         toast.error('Failed to remove label');
       }
@@ -830,15 +764,11 @@ const Inbox: React.FC = () => {
     []
   );
 
-  // ============================================
-  // MESSAGE ACTIONS (Reply, Forward, Star, React)
-  // ============================================
   const handleReplyMessage = useCallback((msg: Message) => {
     setReplyTo(msg);
   }, []);
 
   const handleForwardMessage = useCallback((msg: Message) => {
-    // TODO: Open forward modal with conversation picker
     toast('Forward feature coming soon!', { icon: '🚧' });
     console.log('Forward:', msg);
   }, []);
@@ -857,7 +787,6 @@ const Inbox: React.FC = () => {
         );
         toast.success(newStarred ? '⭐ Starred' : 'Unstarred');
       } catch {
-        // Revert
         setMessages((prev) =>
           prev.map((m) => (m.id === msg.id ? { ...m, isStarred: msg.isStarred } : m))
         );
@@ -875,10 +804,8 @@ const Inbox: React.FC = () => {
 
       let newReactions;
       if (userReaction?.emoji === emoji) {
-        // Toggle off
         newReactions = existingReactions.filter((r) => r.userId !== 'self');
       } else {
-        // Replace or add
         newReactions = existingReactions.filter((r) => r.userId !== 'self');
         newReactions.push({ emoji, userId: 'self' });
       }
@@ -893,7 +820,6 @@ const Inbox: React.FC = () => {
           { emoji: userReaction?.emoji === emoji ? null : emoji }
         );
       } catch {
-        // Revert
         setMessages((prev) =>
           prev.map((m) =>
             m.id === msg.id ? { ...m, reactions: existingReactions } : m
@@ -915,9 +841,6 @@ const Inbox: React.FC = () => {
     }
   }, []);
 
-  // ============================================
-  // MESSAGE SEARCH
-  // ============================================
   const searchResults = useMemo(() => {
     if (!messageSearchQuery.trim()) return [];
     const q = messageSearchQuery.toLowerCase();
@@ -946,9 +869,6 @@ const Inbox: React.FC = () => {
     }
   }, [searchResults.length, currentSearchIndex]);
 
-  // ============================================
-  // NOTES HANDLERS
-  // ============================================
   const handleAddNote = useCallback(async (text: string) => {
     const newNote: Note = {
       id: `note-${Date.now()}`,
@@ -974,9 +894,6 @@ const Inbox: React.FC = () => {
     toast.success('Note deleted');
   }, []);
 
-  // ============================================
-  // QUICK REPLIES HANDLERS
-  // ============================================
   const handleAddQuickReply = useCallback(async (qr: Omit<QuickReply, 'id'>) => {
     const newQR: QuickReply = { ...qr, id: `qr-${Date.now()}` };
     setQuickReplies((prev) => [...prev, newQR]);
@@ -999,17 +916,12 @@ const Inbox: React.FC = () => {
   }, []);
 
   const handleQuickReplySelect = useCallback((qr: QuickReply) => {
-    // Send directly or insert into input
     handleSendMessage(qr.text);
   }, [handleSendMessage]);
 
-  // ============================================
-  // SOCKET HANDLERS
-  // ============================================
   useInboxSocket(
     selectedConversation?.id || null,
 
-    // NEW MESSAGE
     useCallback(
       (newMsg: InboundMessage) => {
         if (!newMsg) return;
@@ -1037,14 +949,13 @@ const Inbox: React.FC = () => {
               },
             ];
           });
-          
+
           if (direction === 'INBOUND') {
-            inboxApi.markAsRead(convId).catch(() => {});
+            inboxApi.markAsRead(convId).catch(() => { });
             setIsContactTyping(false);
           }
         }
 
-        // Always update conversation list
         setConversations((prev) => {
           const idx = prev.findIndex((c) => c.id === convId);
           const updated = [...prev];
@@ -1067,7 +978,6 @@ const Inbox: React.FC = () => {
       []
     ),
 
-    // CONVERSATION UPDATE
     useCallback((updatedConv: ConversationUpdate) => {
       if (!updatedConv?.id) return;
 
@@ -1086,8 +996,7 @@ const Inbox: React.FC = () => {
 
         const updated = [...prev];
         const isCurrentlyOpen = selectedConvRef.current?.id === updatedConv.id;
-        
-        // Remove if it no longer matches the current filter
+
         if (currentFilter === 'archived' && !updatedConv.isArchived) {
           return sortConversations(updated.filter(c => c.id !== updatedConv.id));
         }
@@ -1095,10 +1004,9 @@ const Inbox: React.FC = () => {
           return sortConversations(updated.filter(c => c.id !== updatedConv.id));
         }
 
-        updated[idx] = { 
-          ...updated[idx], 
+        updated[idx] = {
+          ...updated[idx],
           ...updatedConv,
-          // Prevent backend webhook from overriding unread count if the chat is actively open
           ...(isCurrentlyOpen ? { unreadCount: 0, isRead: true } : {})
         };
         return sortConversations(updated);
@@ -1111,7 +1019,6 @@ const Inbox: React.FC = () => {
       }
     }, []),
 
-    // MESSAGE STATUS
     useCallback((statusUpdate: MessageStatusUpdate) => {
       if (!statusUpdate?.status) return;
 
@@ -1151,7 +1058,6 @@ const Inbox: React.FC = () => {
         })
       );
 
-      // Update conversation's last message status for the sidebar
       if (statusUpdate.conversationId) {
         setConversations((prev) =>
           prev.map((c) => {
@@ -1169,9 +1075,6 @@ const Inbox: React.FC = () => {
     }, [])
   );
 
-  // ============================================
-  // EFFECTS
-  // ============================================
   useEffect(() => {
     fetchConversations();
   }, [filter]);
@@ -1194,24 +1097,18 @@ const Inbox: React.FC = () => {
     }
   }, [urlConvId, conversations, fetchMessages]);
 
-  // ============================================
-  // KEYBOARD SHORTCUTS
-  // ============================================
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      // Ctrl/Cmd + F = Search messages
       if ((e.metaKey || e.ctrlKey) && e.key === 'f' && selectedConversation) {
         e.preventDefault();
         setShowMessageSearch(true);
       }
 
-      // Ctrl/Cmd + / = Quick replies
       if ((e.metaKey || e.ctrlKey) && e.key === '/') {
         e.preventDefault();
         setShowQuickReplies(true);
       }
 
-      // Esc = Close panels
       if (e.key === 'Escape') {
         if (showMessageSearch) setShowMessageSearch(false);
         else if (replyTo) setReplyTo(null);
@@ -1222,9 +1119,6 @@ const Inbox: React.FC = () => {
     return () => window.removeEventListener('keydown', handler);
   }, [selectedConversation, showMessageSearch, replyTo, showContactInfo]);
 
-  // ============================================
-  // LOADING / ERROR STATES
-  // ============================================
   if (loading && conversations.length === 0) {
     return (
       <div className="flex items-center justify-center h-full chat-bg">
@@ -1254,16 +1148,14 @@ const Inbox: React.FC = () => {
     );
   }
 
-  // ============================================
-  // MAIN RENDER
-  // ============================================
   return (
-    <div className="flex h-full overflow-hidden relative chat-bg">
+    <div className="flex h-full overflow-hidden relative chat-bg select-none">
+
       {/* ─── Left Sidebar: Conversation List ─────────────────────────────── */}
       <div className={`
         flex-shrink-0
         w-full md:w-[340px] lg:w-[380px]
-        h-full
+        h-full border-r border-gray-200
         ${showMobileChat ? 'hidden md:block' : 'block'}
       `}>
         <ConversationList
@@ -1297,12 +1189,11 @@ const Inbox: React.FC = () => {
 
       {/* ─── Center: Chat Window ─────────────────────────────────────────── */}
       <div className={`
-        flex-1 flex flex-col h-full overflow-hidden min-w-0 w-full
+        flex-1 flex flex-col h-full overflow-hidden min-w-0 w-full relative
         ${!showMobileChat ? 'hidden md:flex' : 'flex'}
       `}>
         {selectedConversation ? (
           <>
-            {/* Chat Header */}
             <ChatHeader
               conversation={selectedConversation}
               showContactInfo={showContactInfo}
@@ -1318,7 +1209,6 @@ const Inbox: React.FC = () => {
               onClearChat={() => handleClearChat(selectedConversation)}
             />
 
-            {/* Message Search Bar */}
             <MessageSearchBar
               isOpen={showMessageSearch}
               query={messageSearchQuery}
@@ -1333,13 +1223,11 @@ const Inbox: React.FC = () => {
               onPrev={handleSearchPrev}
             />
 
-            {/* Window Status */}
             <WindowStatus
               windowExpiresAt={selectedConversation.windowExpiresAt || null}
               isWindowOpen={selectedConversation.isWindowOpen || false}
             />
 
-            {/* Messages Container */}
             <ChatWindow
               messages={messages}
               conversationId={selectedConversation.id}
@@ -1365,14 +1253,12 @@ const Inbox: React.FC = () => {
               onJumpToMessage={handleJumpToMessage}
             />
 
-            {/* Typing indicator */}
             {isContactTyping && (
               <TypingIndicator
                 contactName={getContactName(selectedConversation.contact)}
               />
             )}
 
-            {/* Chat Input */}
             <ChatInput
               onSendMessage={handleSendMessage}
               onSendVoice={handleSendVoice}
@@ -1392,34 +1278,39 @@ const Inbox: React.FC = () => {
         )}
       </div>
 
-      {/* ─── Right Sidebar: Contact Info ─────────────────────────────────── */}
+      {/* ─── Right Sidebar: Contact Info Panel Drawer ────────────────────── */}
+      {/* ✅ FIXED: Converted right panel to sliding overlay drawer on mobile and tablets to prevent content squeeze crash */}
       {showContactInfo && selectedConversation && (
-        <ContactInfoPanel
-          conversation={selectedConversation}
-          messages={messages}
-          notes={notes}
-          allLabels={labels}
-          onClose={() => setShowContactInfo(false)}
-          onAddLabel={(label) => handleAddLabel(selectedConversation, label)}
-          onRemoveLabel={(label) => handleRemoveLabel(selectedConversation, label)}
-          onAddNote={handleAddNote}
-          onUpdateNote={handleUpdateNote}
-          onDeleteNote={handleDeleteNote}
-          onArchive={() => {
-            const event = new MouseEvent('click') as any;
-            handleArchiveConversation(selectedConversation, event);
-          }}
-          onViewProfile={() => {
-            if (selectedConversation.contact.id) {
-              navigate(`/dashboard/contacts/${selectedConversation.contact.id}`);
-            }
-          }}
-        />
+        <div className="
+          fixed inset-y-0 right-0 z-40 w-full sm:w-[360px] md:w-[400px] h-full bg-white shadow-2xl border-l border-gray-200
+          xl:static xl:w-[380px] xl:shadow-none xl:block
+          animate-in slide-in-from-right duration-200
+        ">
+          <ContactInfoPanel
+            conversation={selectedConversation}
+            messages={messages}
+            notes={notes}
+            allLabels={labels}
+            onClose={() => setShowContactInfo(false)}
+            onAddLabel={(label) => handleAddLabel(selectedConversation, label)}
+            onRemoveLabel={(label) => handleRemoveLabel(selectedConversation, label)}
+            onAddNote={handleAddNote}
+            onUpdateNote={handleUpdateNote}
+            onDeleteNote={handleDeleteNote}
+            onArchive={() => {
+              const event = new MouseEvent('click') as any;
+              handleArchiveConversation(selectedConversation, event);
+            }}
+            onViewProfile={() => {
+              if (selectedConversation.contact.id) {
+                navigate(`/dashboard/contacts/${selectedConversation.contact.id}`);
+              }
+            }}
+          />
+        </div>
       )}
 
-      {/* ─── Modals ─────────────────────────────────────────────────────── */}
-
-      {/* Template Modal */}
+      {/* Modals */}
       {showTemplateModal && selectedConversation && (
         <SendTemplateModal
           isOpen={showTemplateModal}
@@ -1437,7 +1328,6 @@ const Inbox: React.FC = () => {
         />
       )}
 
-      {/* Call Screen */}
       {showCallScreen && selectedConversation && (
         <CallScreen
           contact={selectedConversation.contact}
@@ -1446,7 +1336,6 @@ const Inbox: React.FC = () => {
         />
       )}
 
-      {/* Quick Replies Manager */}
       <QuickRepliesPanel
         isOpen={showQuickReplies}
         quickReplies={quickReplies}
@@ -1457,7 +1346,6 @@ const Inbox: React.FC = () => {
         onDelete={handleDeleteQuickReply}
       />
 
-      {/* Upgrade Modal */}
       <UpgradeModal
         isOpen={showUpgradeModal}
         onClose={() => setShowUpgradeModal(false)}
@@ -1469,34 +1357,31 @@ const Inbox: React.FC = () => {
   );
 };
 
-// ============================================
-// EMPTY STATE
-// ============================================
 const EmptyState: React.FC<{ onOpenQuickReplies: () => void }> = ({
   onOpenQuickReplies,
 }) => {
   return (
-    <div className="flex-1 flex items-center justify-center chat-bg p-6">
-      <div className="text-center max-w-md">
+    <div className="flex-1 flex items-center justify-center chat-bg p-4 lg:p-8">
+      <div className="text-center max-w-md w-full">
         <div className="
-          w-24 h-24 mx-auto mb-6
+          w-20 h-24 mx-auto mb-6
           bg-emerald-50 border border-emerald-200
           rounded-3xl flex items-center justify-center
           shadow-lg shadow-emerald-500/5
         ">
-          <MessageSquare className="w-12 h-12 text-emerald-600" />
+          <MessageSquare className="w-10 h-10 text-emerald-600" />
         </div>
 
         <h3 className="text-xl font-bold text-gray-900 mb-2">
           Welcome to your Inbox
         </h3>
-        <p className="text-sm text-gray-600 mb-6">
+        <p className="text-sm text-gray-500 mb-6">
           Select a conversation from the left to start chatting, or use keyboard
           shortcuts to navigate faster.
         </p>
 
-        {/* Quick tips */}
-        <div className="grid grid-cols-2 gap-2 mb-6">
+        {/* ✅ FIXED: Tips grid wraps to single column on extra-small 320px screens */}
+        <div className="grid grid-cols-1 xs:grid-cols-2 gap-2 mb-6">
           {[
             { keys: ['Ctrl', 'F'], label: 'Search messages' },
             { keys: ['Ctrl', '/'], label: 'Quick replies' },
@@ -1511,21 +1396,21 @@ const EmptyState: React.FC<{ onOpenQuickReplies: () => void }> = ({
                 rounded-lg shadow-sm
               "
             >
-              <div className="flex items-center gap-0.5">
+              <div className="flex items-center gap-0.5 shrink-0">
                 {tip.keys.map((k, ki) => (
                   <React.Fragment key={ki}>
                     {ki > 0 && <span className="text-gray-400 text-[10px]">+</span>}
                     <kbd className="
                       px-1.5 py-0.5
                       bg-gray-100 border border-gray-200
-                      rounded text-[10px] font-mono text-gray-600
+                      rounded text-[9px] font-mono text-gray-600
                     ">
                       {k}
                     </kbd>
                   </React.Fragment>
                 ))}
               </div>
-              <span className="text-[11px] text-gray-500 truncate">{tip.label}</span>
+              <span className="text-[10px] text-gray-500 truncate font-semibold">{tip.label}</span>
             </div>
           ))}
         </div>
@@ -1533,12 +1418,11 @@ const EmptyState: React.FC<{ onOpenQuickReplies: () => void }> = ({
         <button
           onClick={onOpenQuickReplies}
           className="
-            inline-flex items-center gap-2 px-4 py-2
+            inline-flex items-center gap-2 px-5 py-2.5
             bg-white hover:bg-gray-50
             border border-gray-200
-            rounded-xl
-            text-sm text-gray-700 hover:text-gray-950
-            transition-all shadow-sm
+            rounded-xl text-xs text-gray-700 hover:text-gray-950
+            transition-all shadow-sm font-semibold
           "
         >
           Manage Quick Replies

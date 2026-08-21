@@ -1,8 +1,8 @@
 // src/components/common/NoWhatsAppConnected.tsx
-
-import React, { useState } from 'react';
-import { MessageCircle, Smartphone, ArrowRight, CheckCircle2 } from 'lucide-react';
-import MetaConnectModal from '../dashboard/MetaConnectModal';
+import React from 'react';
+import { MessageCircle, Smartphone, ArrowRight, CheckCircle2, Loader2 } from 'lucide-react';
+import { useMetaConnect } from '../../hooks/useMetaConnect';
+import toast from 'react-hot-toast';
 
 interface NoWhatsAppConnectedProps {
   organizationId: string;
@@ -17,87 +17,92 @@ export const NoWhatsAppConnected: React.FC<NoWhatsAppConnectedProps> = ({
   description = 'Connect your WhatsApp Business account to start messaging your customers.',
   onConnected,
 }) => {
-  const [showModal, setShowModal] = useState(false);
+  const { connect, loading, progress, sdkLoading } = useMetaConnect({
+    organizationId,
+    onSuccess: () => {
+      toast.success('WhatsApp Business connected successfully!');
+      onConnected?.();
+    },
+    onError: (err) => {
+      toast.error(err || 'Failed to connect WhatsApp Business');
+    },
+  });
 
   const features = [
-    'Send template messages to customers',
-    'Receive and reply to messages in real-time',
-    'Create automated chatbot flows',
-    'Run bulk marketing campaigns',
-    'Track message delivery and engagement',
+    'Send template messages to customers at scale',
+    'Receive and reply to inbound messages in real-time',
+    'Build and activate automated chatbot flows',
+    'Execute target campaign marketing schedules',
+    'Monitor delivery statistics and conversion data',
   ];
 
   return (
-    <>
-      <div className="flex flex-col items-center justify-center min-h-[60vh] p-8">
-        <div className="max-w-lg w-full text-center">
-          {/* Icon */}
-          <div className="relative mx-auto w-24 h-24 mb-6">
-            <div className="absolute inset-0 bg-green-100 rounded-full animate-pulse" />
-            <div className="relative flex items-center justify-center w-full h-full bg-green-50 rounded-full">
-              <Smartphone className="w-12 h-12 text-green-600" />
-            </div>
-            <div className="absolute -right-1 -bottom-1 w-8 h-8 bg-white rounded-full shadow-lg flex items-center justify-center">
-              <MessageCircle className="w-4 h-4 text-green-600" />
-            </div>
+    <div className="flex flex-col items-center justify-center min-h-[60vh] p-4 lg:p-8 animate-in fade-in duration-200">
+      <div className="max-w-lg w-full text-center">
+
+        {/* Brand Emerald Glow Ring */}
+        <div className="relative mx-auto w-24 h-24 mb-6">
+          <div className="absolute inset-0 bg-emerald-100 rounded-full animate-ping opacity-35" />
+          <div className="relative flex items-center justify-center w-full h-full bg-emerald-50 rounded-full border border-emerald-100">
+            <Smartphone className="w-10 h-10 text-emerald-600" />
           </div>
-
-          {/* Title */}
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">{title}</h2>
-          <p className="text-gray-600 mb-8">{description}</p>
-
-          {/* Features */}
-          <div className="bg-gray-50 rounded-xl p-6 mb-8 text-left">
-            <h3 className="text-sm font-semibold text-gray-700 mb-4">
-              What you can do after connecting:
-            </h3>
-            <ul className="space-y-3">
-              {features.map((feature, index) => (
-                <li key={index} className="flex items-start gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
-                  <span className="text-sm text-gray-600">{feature}</span>
-                </li>
-              ))}
-            </ul>
+          <div className="absolute -right-1 -bottom-1 w-8 h-8 bg-white rounded-full shadow-md flex items-center justify-center border border-gray-100">
+            <MessageCircle className="w-4 h-4 text-emerald-600" />
           </div>
-
-          {/* CTA Button */}
-          <button
-            onClick={() => setShowModal(true)}
-            className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-xl transition-colors shadow-lg hover:shadow-xl"
-          >
-            <MessageCircle className="w-5 h-5" />
-            Connect WhatsApp Business
-            <ArrowRight className="w-5 h-5" />
-          </button>
-
-          {/* Help text */}
-          <p className="mt-4 text-xs text-gray-500">
-            You'll need a{' '}
-            <a
-              href="https://business.facebook.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-green-600 hover:underline"
-            >
-              Meta Business Account
-            </a>{' '}
-            to connect
-          </p>
         </div>
-      </div>
 
-      {/* Connect Modal */}
-      <MetaConnectModal
-        isOpen={showModal}
-        onClose={() => setShowModal(false)}
-        organizationId={organizationId}
-        onConnected={() => {
-          setShowModal(false);
-          onConnected?.();
-        }}
-      />
-    </>
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">{title}</h2>
+        <p className="text-gray-500 text-sm mb-6 max-w-md mx-auto">{description}</p>
+
+        {/* Features Checklist */}
+        <div className="bg-white rounded-2xl border border-gray-200 p-6 mb-8 text-left shadow-sm">
+          <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-4">
+            Unlock powerful business benefits:
+          </h3>
+          <ul className="space-y-3">
+            {features.map((feature, index) => (
+              <li key={index} className="flex items-start gap-3">
+                <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
+                <span className="text-sm text-gray-600 font-medium">{feature}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* Dynamic Action Trigger */}
+        <button
+          onClick={connect}
+          disabled={loading || sdkLoading}
+          className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl transition-all shadow-md active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {loading ? (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin" />
+              <span>{progress || 'Connecting...'}</span>
+            </>
+          ) : (
+            <>
+              <MessageCircle className="w-4.5 h-4.5" />
+              <span>Connect WhatsApp Business</span>
+              <ArrowRight className="w-4 h-4" />
+            </>
+          )}
+        </button>
+
+        <p className="mt-4 text-xs text-gray-400">
+          A valid{' '}
+          <a
+            href="https://business.facebook.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-emerald-600 hover:underline font-semibold"
+          >
+            Meta Business Account
+          </a>{' '}
+          is required to establish integration
+        </p>
+      </div>
+    </div>
   );
 };
 

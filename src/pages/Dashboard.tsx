@@ -1,6 +1,5 @@
-// src/pages/Dashboard.tsx - OPTIMIZED WITH PROGRESSIVE LOADING
-
-import React, { useState, useEffect, useRef } from 'react';
+// src/pages/Dashboard.tsx
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import {
   MessageSquare,
   Send,
@@ -30,10 +29,6 @@ import { Link, useNavigate } from 'react-router-dom';
 import { FaWhatsapp } from "react-icons/fa";
 import SocialFollowCard from '../components/dashboard/SocialFollowCard';
 
-// ============================================
-// HELPERS
-// ============================================
-
 const getGreeting = () => {
   const h = new Date().getHours();
   if (h >= 5 && h < 12) return 'Good morning';
@@ -62,16 +57,11 @@ const formatRelativeTime = (dateStr: string) => {
   return `${diffDays}d ago`;
 };
 
-// ============================================
-// MAIN DASHBOARD
-// ============================================
-
 const Dashboard: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { socket } = useSocket();
 
-  // ✅ SEPARATE loading states for progressive loading
   const [loadingStats, setLoadingStats] = useState(true);
   const [loadingWidgets, setLoadingWidgets] = useState(true);
   const [loadingActivity, setLoadingActivity] = useState(true);
@@ -82,17 +72,14 @@ const Dashboard: React.FC = () => {
   const [widgets, setWidgets] = useState<any>(null);
   const [activity, setActivity] = useState<any[]>([]);
 
-  // ✅ Debounce socket-triggered refetches
   const refetchTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Real-time greeting
   const [greeting, setGreeting] = useState(getGreeting());
   useEffect(() => {
     const timer = setInterval(() => setGreeting(getGreeting()), 60000);
     return () => clearInterval(timer);
   }, []);
 
-  // ✅ PROGRESSIVE LOADING: Fetch each API independently, show as it arrives
   const fetchStats = async () => {
     try {
       const res = await dashboard.getStats();
@@ -132,27 +119,21 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  // ✅ Fetch all in parallel but track separately
   const fetchAll = () => {
     fetchStats();
     fetchWidgets();
     fetchActivity();
   };
 
-  // Initial load
   useEffect(() => {
     fetchAll();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Refetch widgets when date range changes
   useEffect(() => {
     setLoadingWidgets(true);
     fetchWidgets();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dateRange]);
 
-  // ✅ DEBOUNCED socket updates - don't refetch on every message
   useEffect(() => {
     if (!socket) return;
 
@@ -161,7 +142,7 @@ const Dashboard: React.FC = () => {
       refetchTimerRef.current = setTimeout(() => {
         fetchStats();
         fetchWidgets();
-      }, 3000); // Wait 3 sec, then refetch (batches multiple events)
+      }, 3000);
     };
 
     socket.on('message:new', debouncedRefetch);
@@ -178,7 +159,6 @@ const Dashboard: React.FC = () => {
       socket.off('campaign:completed', debouncedRefetch);
       if (refetchTimerRef.current) clearTimeout(refetchTimerRef.current);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [socket]);
 
   const handleRefresh = async () => {
@@ -193,7 +173,6 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  // ✅ Pull data with safe defaults
   const contactsTotal = stats?.contacts?.total ?? 0;
   const messagesSent = stats?.messages?.sent ?? 0;
   const deliveryRate = stats?.delivery?.deliveryRate ?? 0;
@@ -206,13 +185,15 @@ const Dashboard: React.FC = () => {
   const templatesApproved = stats?.templates?.approved ?? 0;
   const whatsappConnected = stats?.whatsapp?.connected ?? 0;
 
-  const chartData = widgets?.messagesOverview?.map((item: any) => ({
-    label: new Date(item.date).toLocaleDateString('en-US', { weekday: 'short' }),
-    sent: item.sent || 0,
-    delivered: item.delivered || 0,
-    read: item.read || 0,
-    failed: item.failed || 0,
-  })) || [];
+  const chartData = useMemo(() => {
+    return widgets?.messagesOverview?.map((item: any) => ({
+      label: new Date(item.date).toLocaleDateString('en-US', { weekday: 'short' }),
+      sent: item.sent || 0,
+      delivered: item.delivered || 0,
+      read: item.read || 0,
+      failed: item.failed || 0,
+    })) || [];
+  }, [widgets?.messagesOverview]);
 
   const hasAnyData = contactsTotal > 0 || messagesSent > 0 || activeCampaigns > 0;
   const hasChartData = chartData.length > 0 && chartData.some((d: any) => d.sent > 0);
@@ -220,21 +201,21 @@ const Dashboard: React.FC = () => {
   const userName = user?.firstName || 'there';
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto pb-10">
+    <div className="space-y-6 max-w-7xl mx-auto pb-10 px-1 sm:px-4 lg:px-6">
 
-      {/* ✅ HEADER - Always visible */}
+      {/* Header Row */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 mb-2">
-            <Sparkles className="w-4 h-4 text-green-600" />
-            <span className="text-xs font-mono uppercase tracking-[0.15em] text-gray-500">
+            <Sparkles className="w-4 h-4 text-emerald-600" />
+            <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-gray-400">
               {greeting}
             </span>
           </div>
-          <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 tracking-tight">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-gray-900 tracking-tight">
             Welcome back, {userName} 👋
           </h1>
-          <p className="mt-2 text-sm text-gray-600">
+          <p className="mt-2 text-xs sm:text-sm text-gray-500 font-semibold">
             {loadingStats
               ? 'Loading your dashboard...'
               : hasAnyData
@@ -249,10 +230,10 @@ const Dashboard: React.FC = () => {
               <button
                 key={days}
                 onClick={() => setDateRange(days as 7 | 14 | 30)}
-                className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all duration-300
+                className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all duration-300
                   ${dateRange === days
-                    ? 'bg-green-50 text-green-700 border border-green-200 shadow-sm'
-                    : 'text-gray-600 hover:text-gray-900 border border-transparent'
+                    ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-sm'
+                    : 'text-gray-500 hover:text-gray-900 border border-transparent'
                   }
                 `}
               >
@@ -263,7 +244,7 @@ const Dashboard: React.FC = () => {
           <button
             onClick={handleRefresh}
             disabled={refreshing}
-            className="p-2.5 rounded-xl bg-white border border-gray-200 shadow-sm hover:bg-gray-50 hover:border-gray-300 text-gray-500 hover:text-gray-900 transition-all duration-300 disabled:opacity-50"
+            className="p-2.5 rounded-xl bg-white border border-gray-200 shadow-sm hover:bg-gray-50 hover:border-gray-300 text-gray-500 hover:text-gray-900 transition-all disabled:opacity-50"
           >
             <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
           </button>
@@ -272,31 +253,31 @@ const Dashboard: React.FC = () => {
 
       <SocialFollowCard />
 
-      {/* ✅ NEW USER ONBOARDING CARD */}
+      {/* Dynamic onboarding Card */}
       {!loadingStats && !hasAnyData && (
-        <div className="relative rounded-2xl overflow-hidden bg-white shadow-[0_1px_3px_0_rgba(0,0,0,0.05),0_1px_2px_0_rgba(0,0,0,0.03)] border border-gray-200 p-6 lg:p-8">
+        <div className="relative rounded-2xl overflow-hidden bg-white shadow-sm border border-gray-200 p-6 lg:p-8">
           <div className="absolute inset-0 pointer-events-none"
             style={{ background: 'radial-gradient(ellipse 60% 50% at 20% 50%, rgba(16, 185, 129, 0.06) 0%, transparent 60%)' }}
           />
 
           <div className="relative grid grid-cols-1 lg:grid-cols-3 gap-6 items-center">
             <div className="lg:col-span-2">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-50 border border-green-200 mb-3 select-none">
-                <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                <span className="text-xs font-mono uppercase tracking-wider text-green-700">Quick setup</span>
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 mb-3 select-none">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700">Quick setup</span>
               </div>
 
-              <h2 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-2">
+              <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-2">
                 You're all set up. <span className="italic font-light text-gray-500">Almost.</span>
               </h2>
-              <p className="text-sm text-gray-600 mb-5 max-w-lg">
+              <p className="text-xs sm:text-sm text-gray-500 mb-5 max-w-lg">
                 Connect WhatsApp, import contacts, and send your first message. Most users finish in under 10 minutes.
               </p>
 
               <div className="flex flex-wrap gap-2">
                 <button
                   onClick={() => navigate('/dashboard/settings?tab=whatsapp')}
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-green-600 to-emerald-600 text-white text-sm font-semibold shadow-[0_8px_24px_rgba(16,185,129,0.2)] hover:shadow-[0_12px_32px_rgba(16,185,129,0.3)] hover:-translate-y-0.5 transition-all duration-500"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-emerald-600 text-white text-xs font-bold shadow-md hover:bg-emerald-700 hover:-translate-y-0.5 transition-all"
                 >
                   <Phone className="w-4 h-4" />
                   Connect WhatsApp
@@ -304,7 +285,7 @@ const Dashboard: React.FC = () => {
                 </button>
                 <button
                   onClick={() => navigate('/dashboard/contacts/import')}
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-gray-50 border border-gray-200 hover:bg-gray-100 text-gray-700 hover:text-gray-900 text-sm font-medium shadow-sm transition-all duration-300"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-gray-50 border border-gray-200 hover:bg-gray-100 text-gray-700 hover:text-gray-900 text-xs font-bold shadow-sm transition-all"
                 >
                   <UserPlus className="w-4 h-4" />
                   Import contacts
@@ -321,15 +302,15 @@ const Dashboard: React.FC = () => {
               ].map((item) => (
                 <div key={item.step}
                   className={`flex items-center gap-3 p-2.5 rounded-xl border transition-all
-                    ${item.done ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-100'}
+                    ${item.done ? 'bg-emerald-50/50 border-emerald-200' : 'bg-gray-50 border-gray-100'}
                   `}
                 >
                   <div className={`w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-mono font-bold
-                    ${item.done ? 'bg-green-100 text-green-700 border border-green-200' : 'bg-gray-100 text-gray-500 border border-gray-200'}
+                    ${item.done ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' : 'bg-gray-100 text-gray-400 border border-gray-200'}
                   `}>
-                    {item.done ? <CheckCircle className="w-3.5 h-3.5" /> : item.step}
+                    {item.done ? <CheckCircle className="w-3.5 h-3.5 text-emerald-600" /> : item.step}
                   </div>
-                  <span className={`text-xs font-medium ${item.done ? 'text-gray-900' : 'text-gray-500'}`}>
+                  <span className={`text-xs font-medium ${item.done ? 'text-gray-900 font-semibold' : 'text-gray-500'}`}>
                     {item.label}
                   </span>
                 </div>
@@ -339,14 +320,14 @@ const Dashboard: React.FC = () => {
         </div>
       )}
 
-      {/* ✅ MAIN GRID */}
+      {/* Grid container */}
       <div className="grid grid-cols-1 xl:grid-cols-4 gap-6 items-start">
 
-        {/* LEFT: 3/4 width */}
-        <div className="xl:col-span-3 space-y-6">
+        {/* Left main area */}
+        <div className="xl:col-span-3 space-y-6 min-w-0 w-full">
 
-          {/* ✅ UNIFIED OVERVIEW ROW - Show skeleton or data */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          {/* Quick Metrics */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {loadingStats ? (
               <>
                 <QuickStatSkeleton />
@@ -355,42 +336,42 @@ const Dashboard: React.FC = () => {
               </>
             ) : (
               <>
-                <div className="relative overflow-hidden rounded-2xl bg-green-50/40 border border-green-200 p-6 group shadow-sm">
-                  <div className="absolute top-0 right-0 p-4 opacity-[0.07] text-green-600 group-hover:scale-110 transition-transform">
+                <div className="relative overflow-hidden rounded-2xl bg-emerald-50/40 border border-emerald-100 p-6 group shadow-sm">
+                  <div className="absolute top-0 right-0 p-4 opacity-[0.05] text-emerald-600 group-hover:scale-110 transition-transform">
                     <FaWhatsapp size={80} />
                   </div>
                   <div className="relative">
-                    <p className="text-xs font-mono text-green-700 uppercase tracking-widest mb-1">WhatsApp</p>
-                    <h3 className="text-3xl font-bold text-gray-900">{formatNum(messagesSent)}</h3>
-                    <p className="text-xs text-gray-600 mt-2">Messages sent this month</p>
+                    <p className="text-[10px] font-mono text-emerald-700 uppercase tracking-widest mb-1 font-bold">WhatsApp</p>
+                    <h3 className="text-3xl font-black text-gray-900">{formatNum(messagesSent)}</h3>
+                    <p className="text-xs text-gray-500 font-medium mt-2">Messages sent this month</p>
                     <div className="mt-4 flex items-center gap-2">
-                      <span className="text-[10px] bg-green-100 text-green-800 px-2 py-0.5 rounded-full font-bold">{deliveryRate}% Delivery</span>
+                      <span className="text-[10px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-bold">{deliveryRate}% Delivery</span>
                     </div>
                   </div>
                 </div>
 
-                <div className="relative overflow-hidden rounded-2xl bg-pink-50/40 border border-pink-200 p-6 group shadow-sm">
-                  <div className="absolute top-0 right-0 p-4 opacity-[0.07] text-pink-600 group-hover:scale-110 transition-transform">
+                <div className="relative overflow-hidden rounded-2xl bg-pink-50/40 border border-pink-100 p-6 group shadow-sm">
+                  <div className="absolute top-0 right-0 p-4 opacity-[0.05] text-pink-600 group-hover:scale-110 transition-transform">
                     <Instagram size={80} />
                   </div>
                   <div className="relative">
-                    <p className="text-xs font-mono text-pink-700 uppercase tracking-widest mb-1">Instagram</p>
-                    <h3 className="text-3xl font-bold text-gray-900">0</h3>
-                    <p className="text-xs text-gray-600 mt-2">Automated interactions</p>
+                    <p className="text-[10px] font-mono text-pink-700 uppercase tracking-widest mb-1 font-bold">Instagram</p>
+                    <h3 className="text-3xl font-black text-gray-900">0</h3>
+                    <p className="text-xs text-gray-500 font-medium mt-2">Automated interactions</p>
                     <div className="mt-4 flex items-center gap-2">
                       <span className="text-[10px] bg-pink-100 text-pink-800 px-2 py-0.5 rounded-full font-bold">Coming soon</span>
                     </div>
                   </div>
                 </div>
 
-                <div className="relative overflow-hidden rounded-2xl bg-indigo-50/40 border border-indigo-200 p-6 group shadow-sm">
-                  <div className="absolute top-0 right-0 p-4 opacity-[0.07] text-indigo-600 group-hover:scale-110 transition-transform">
+                <div className="relative overflow-hidden rounded-2xl bg-indigo-50/40 border border-indigo-100 p-6 group shadow-sm">
+                  <div className="absolute top-0 right-0 p-4 opacity-[0.05] text-indigo-600 group-hover:scale-110 transition-transform">
                     <Target size={80} />
                   </div>
                   <div className="relative">
-                    <p className="text-xs font-mono text-indigo-700 uppercase tracking-widest mb-1">Efficiency</p>
-                    <h3 className="text-3xl font-bold text-gray-900">84%</h3>
-                    <p className="text-xs text-gray-600 mt-2">AI Response Accuracy</p>
+                    <p className="text-[10px] font-mono text-indigo-700 uppercase tracking-widest mb-1 font-bold">Efficiency</p>
+                    <h3 className="text-3xl font-black text-gray-900">84%</h3>
+                    <p className="text-xs text-gray-500 font-medium mt-2">AI Response Accuracy</p>
                     <div className="mt-4 flex items-center gap-2">
                       <Zap size={12} className="text-indigo-600" />
                       <span className="text-[10px] text-indigo-700 font-bold">Saving hours/week</span>
@@ -401,25 +382,26 @@ const Dashboard: React.FC = () => {
             )}
           </div>
 
-          {/* CHARTS ROW */}
+          {/* Charts view */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            {/* Messages Overview Chart */}
-            <GlassCard className="lg:col-span-8">
+
+            {/* Overview chart card */}
+            <GlassCard className="lg:col-span-8 overflow-hidden">
               <div className="flex items-center justify-between mb-5">
                 <div className="flex items-center gap-2">
-                  <div className="w-9 h-9 rounded-xl bg-green-50 border border-green-200 flex items-center justify-center">
-                    <MessageSquare className="w-4 h-4 text-green-600" />
+                  <div className="w-9 h-9 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center">
+                    <MessageSquare className="w-4 h-4 text-emerald-600" />
                   </div>
-                  <h3 className="text-base font-semibold text-gray-900">Messages Overview</h3>
+                  <h3 className="text-sm sm:text-base font-semibold text-gray-900">Messages Overview</h3>
                 </div>
-                <div className="hidden sm:flex items-center gap-3 text-[10px] font-medium text-gray-600">
+                <div className="hidden sm:flex items-center gap-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">
                   {[
                     { color: '#10b981', label: 'Sent' },
                     { color: '#3b82f6', label: 'Delivered' },
                     { color: '#a855f7', label: 'Read' },
                     { color: '#ef4444', label: 'Failed' },
                   ].map((l) => (
-                    <div key={l.label} className="flex items-center gap-1">
+                    <div key={l.label} className="flex items-center gap-1.5">
                       <div className="w-2 h-2 rounded-full" style={{ backgroundColor: l.color }} />
                       <span>{l.label}</span>
                     </div>
@@ -430,8 +412,11 @@ const Dashboard: React.FC = () => {
               {loadingWidgets ? (
                 <ChartSkeleton />
               ) : hasChartData ? (
-                <div className="h-80 w-full mt-6">
-                  <MessagesChart data={chartData} />
+                // ✅ FIXED: Touch scroll containment stops SVG chart overflows from stretching cards on 320px
+                <div className="w-full overflow-x-auto scrollbar-none mt-6">
+                  <div className="h-80 min-w-[500px] w-full">
+                    <MessagesChart data={chartData} />
+                  </div>
                 </div>
               ) : (
                 <EmptyChart
@@ -444,11 +429,11 @@ const Dashboard: React.FC = () => {
               )}
             </GlassCard>
 
-            {/* Delivery Performance Donut */}
+            {/* Donut chart */}
             <GlassCard className="lg:col-span-4">
               <div className="flex items-center gap-2 mb-5">
-                <div className="w-9 h-9 rounded-xl bg-purple-50 border border-purple-200 flex items-center justify-center">
-                  <BarChart3 className="w-4 h-4 text-purple-600" />
+                <div className="w-9 h-9 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center">
+                  <BarChart3 className="w-4 h-4 text-emerald-600" />
                 </div>
                 <h3 className="text-base font-semibold text-gray-900">Delivery</h3>
               </div>
@@ -465,27 +450,27 @@ const Dashboard: React.FC = () => {
               ) : (
                 <div className="flex flex-col items-center justify-center py-10 text-center">
                   <div className="w-14 h-14 rounded-2xl bg-gray-50 border border-gray-200 flex items-center justify-center mb-3">
-                    <BarChart3 className="w-6 h-6 text-gray-500" />
+                    <BarChart3 className="w-6 h-6 text-gray-400" />
                   </div>
-                  <p className="text-sm text-gray-600">No delivery data</p>
-                  <p className="text-xs text-gray-500 mt-1">Send messages to see stats</p>
+                  <p className="text-sm text-gray-500 font-semibold">No delivery data</p>
+                  <p className="text-xs text-gray-400 mt-1">Send messages to see stats</p>
                 </div>
               )}
 
               <div className="grid grid-cols-2 gap-2 mt-4 pt-4 border-t border-gray-100">
-                <div className="p-2.5 rounded-xl bg-green-50 border border-green-100">
+                <div className="p-2.5 rounded-xl bg-emerald-50/50 border border-emerald-100">
                   <div className="flex items-center gap-1.5">
-                    <CheckCircle className="w-3 h-3 text-green-600" />
-                    <span className="text-[10px] text-gray-500 uppercase tracking-wider">Delivered</span>
+                    <CheckCircle className="w-3 h-3 text-emerald-600" />
+                    <span className="text-[10px] text-gray-400 uppercase tracking-wider font-bold">Delivered</span>
                   </div>
-                  <p className="text-sm font-bold text-green-700 mt-1">
+                  <p className="text-sm font-bold text-emerald-700 mt-1">
                     {loadingStats ? '...' : formatNum(totalDelivered)}
                   </p>
                 </div>
-                <div className="p-2.5 rounded-xl bg-red-50 border border-red-100">
+                <div className="p-2.5 rounded-xl bg-red-50/50 border border-red-100">
                   <div className="flex items-center gap-1.5">
                     <XCircle className="w-3 h-3 text-red-600" />
-                    <span className="text-[10px] text-gray-500 uppercase tracking-wider">Failed</span>
+                    <span className="text-[10px] text-gray-400 uppercase tracking-wider font-bold">Failed</span>
                   </div>
                   <p className="text-sm font-bold text-red-700 mt-1">
                     {loadingStats ? '...' : formatNum(totalFailed)}
@@ -495,11 +480,11 @@ const Dashboard: React.FC = () => {
             </GlassCard>
           </div>
 
-          {/* RECENT CAMPAIGNS */}
+          {/* Table list card */}
           <GlassCard>
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-base font-semibold text-gray-900">Recent Campaigns</h3>
-              <Link to="/dashboard/campaigns" className="text-xs text-green-600 hover:text-green-700 flex items-center gap-1 group">
+              <Link to="/dashboard/campaigns" className="text-xs font-bold text-emerald-600 hover:text-emerald-700 flex items-center gap-1 group">
                 View all
                 <ArrowUpRight className="w-3 h-3 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
               </Link>
@@ -508,28 +493,29 @@ const Dashboard: React.FC = () => {
             {loadingWidgets ? (
               <TableSkeleton />
             ) : recentCampaigns.length > 0 ? (
-              <div className="overflow-x-auto -mx-2">
-                <table className="w-full">
+              // ✅ FIXED: Scroll wrapper container handles tabular layouts on narrow viewport screens without cropping limits
+              <div className="w-full overflow-x-auto scrollbar-none -mx-2 px-2">
+                <table className="w-full min-w-[500px]">
                   <thead>
-                    <tr className="text-left text-[10px] font-mono uppercase tracking-wider text-gray-500 border-b border-gray-200">
-                      <th className="pb-3 px-2 font-medium">Campaign</th>
-                      <th className="pb-3 px-2 font-medium">Status</th>
-                      <th className="pb-3 px-2 font-medium text-right">Sent</th>
-                      <th className="pb-3 px-2 font-medium text-right">Delivery</th>
+                    <tr className="text-left text-[10px] font-mono uppercase tracking-wider text-gray-400 border-b border-gray-100">
+                      <th className="pb-3 px-2 font-bold">Campaign</th>
+                      <th className="pb-3 px-2 font-bold">Status</th>
+                      <th className="pb-3 px-2 font-bold text-right">Sent</th>
+                      <th className="pb-3 px-2 font-bold text-right">Delivery</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100">
                     {recentCampaigns.map((campaign: any) => (
-                      <tr key={campaign.id} className="hover:bg-gray-50 transition-colors">
+                      <tr key={campaign.id} className="hover:bg-gray-50/50 transition-colors">
                         <td className="py-3 px-2">
-                          <Link to={`/dashboard/campaigns/${campaign.id}`} className="text-sm font-medium text-gray-900 hover:text-green-600 transition-colors">
+                          <Link to={`/dashboard/campaigns/${campaign.id}`} className="text-sm font-semibold text-gray-800 hover:text-emerald-600 transition-colors">
                             {campaign.name}
                           </Link>
                         </td>
                         <td className="py-3 px-2">
                           <StatusBadge status={campaign.status} />
                         </td>
-                        <td className="py-3 px-2 text-right text-xs text-gray-500 font-mono">
+                        <td className="py-3 px-2 text-right text-xs text-gray-500 font-mono font-semibold">
                           {campaign.sentCount || 0}/{campaign.totalContacts || 0}
                         </td>
                         <td className="py-3 px-2 text-right">
@@ -543,10 +529,10 @@ const Dashboard: React.FC = () => {
             ) : (
               <div className="text-center py-10">
                 <div className="w-14 h-14 rounded-2xl bg-gray-50 border border-gray-200 flex items-center justify-center mx-auto mb-3">
-                  <Zap className="w-6 h-6 text-gray-500" />
+                  <Zap className="w-6 h-6 text-gray-400" />
                 </div>
-                <p className="text-sm text-gray-600">No campaigns yet</p>
-                <Link to="/dashboard/campaigns/create" className="mt-3 inline-block text-xs text-green-600 hover:text-green-700 font-medium">
+                <p className="text-sm text-gray-500 font-semibold">No campaigns yet</p>
+                <Link to="/dashboard/campaigns/create" className="mt-3 inline-block text-xs text-emerald-600 hover:text-emerald-700 font-bold">
                   Create your first campaign →
                 </Link>
               </div>
@@ -554,12 +540,12 @@ const Dashboard: React.FC = () => {
           </GlassCard>
         </div>
 
-        {/* RIGHT SIDEBAR: 1/4 width */}
-        <div className="xl:col-span-1 space-y-6">
+        {/* Right side widgets column */}
+        <div className="xl:col-span-1 space-y-6 w-full">
 
-          {/* QUICK STATS */}
+          {/* Quick stats list */}
           <GlassCard>
-            <h3 className="text-sm font-semibold text-gray-900 mb-4">At a glance</h3>
+            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">At a glance</h3>
             {loadingStats ? (
               <div className="space-y-3">
                 {[1, 2, 3, 4].map(i => (
@@ -576,10 +562,11 @@ const Dashboard: React.FC = () => {
             )}
           </GlassCard>
 
-          {/* QUICK ACTIONS - Always visible */}
+          {/* Quick actions buttons grids */}
           <GlassCard>
-            <h3 className="text-sm font-semibold text-gray-900 mb-4">Quick actions</h3>
-            <div className="grid grid-cols-3 gap-2">
+            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Quick actions</h3>
+            {/* ✅ FIXED: Dynamic grid auto-adjusts boundaries preventing tight box content spills on small 320px screens */}
+            <div className="grid grid-cols-2 xs:grid-cols-3 gap-2">
               {[
                 { icon: Send, label: 'Campaign', color: '#059669', href: '/dashboard/campaigns/create' },
                 { icon: Radio, label: 'Broadcast', color: '#7c3aed', href: '/dashboard/campaigns/create' },
@@ -591,18 +578,18 @@ const Dashboard: React.FC = () => {
                 <button
                   key={action.label}
                   onClick={() => navigate(action.href)}
-                  className="flex flex-col items-center justify-center gap-1.5 p-3 rounded-xl bg-gray-50/50 border border-gray-200/60 hover:bg-gray-50 hover:border-gray-300/85 shadow-sm transition-all duration-300 group"
+                  className="flex flex-col items-center justify-center gap-1.5 p-3 rounded-xl bg-gray-50/50 border border-gray-200/60 hover:bg-gray-50 hover:border-gray-300 shadow-sm transition-all duration-300 group"
                 >
                   <action.icon className="w-4 h-4 group-hover:scale-110 transition-transform" style={{ color: action.color }} />
-                  <span className="text-[10px] font-medium text-gray-600 group-hover:text-gray-900">{action.label}</span>
+                  <span className="text-[10px] font-bold text-gray-500 group-hover:text-gray-900 truncate w-full text-center">{action.label}</span>
                 </button>
               ))}
             </div>
           </GlassCard>
 
-          {/* RECENT ACTIVITY */}
+          {/* Activity updates list */}
           <GlassCard>
-            <h3 className="text-sm font-semibold text-gray-900 mb-4">Recent activity</h3>
+            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Recent activity</h3>
 
             {loadingActivity ? (
               <div className="space-y-3">
@@ -614,11 +601,11 @@ const Dashboard: React.FC = () => {
               <div className="space-y-3 relative pl-3.5 before:absolute before:left-1 before:top-2 before:bottom-2 before:w-0.5 before:bg-gray-200">
                 {activity.slice(0, 5).map((act) => (
                   <div key={act.id} className="relative">
-                    <span className="absolute -left-5 top-1.5 w-3 h-3 rounded-full bg-green-500 border-2 border-white shadow-sm" />
-                    <p className="text-xs font-medium text-gray-900">
+                    <span className="absolute -left-5 top-1.5 w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-white shadow-sm" />
+                    <p className="text-xs font-semibold text-gray-800">
                       {act.action?.replace(/_/g, ' ').toLowerCase() || 'Activity'}
                     </p>
-                    <p className="text-[10px] text-gray-500 mt-0.5 font-mono">
+                    <p className="text-[10px] text-gray-400 mt-0.5 font-mono">
                       {formatRelativeTime(act.createdAt)}
                     </p>
                   </div>
@@ -626,9 +613,9 @@ const Dashboard: React.FC = () => {
               </div>
             ) : (
               <div className="text-center py-6">
-                <Inbox className="w-8 h-8 text-gray-500 mx-auto mb-2" />
-                <p className="text-xs text-gray-500">No activity yet</p>
-                <p className="text-[10px] text-gray-500 mt-1">Your actions will show up here</p>
+                <Inbox className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                <p className="text-xs text-gray-500 font-semibold">No activity yet</p>
+                <p className="text-[10px] text-gray-400 mt-1">Your actions will show up here</p>
               </div>
             )}
           </GlassCard>
@@ -637,10 +624,6 @@ const Dashboard: React.FC = () => {
     </div>
   );
 };
-
-// ============================================
-// SKELETON COMPONENTS
-// ============================================
 
 const QuickStatSkeleton = () => (
   <div className="relative overflow-hidden rounded-2xl bg-gray-50 border border-gray-200 p-6 shadow-sm animate-pulse">
@@ -677,10 +660,6 @@ const TableSkeleton = () => (
   </div>
 );
 
-// ============================================
-// REUSABLE COMPONENTS
-// ============================================
-
 const GlassCard: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className = '' }) => (
   <div className={`relative rounded-2xl bg-white shadow-[0_1px_3px_0_rgba(0,0,0,0.05),0_1px_2px_0_rgba(0,0,0,0.03)] border border-gray-200 p-6 ${className}`}>
     <div className="relative">{children}</div>
@@ -691,8 +670,8 @@ const MessagesChart: React.FC<{ data: any[] }> = ({ data }) => {
   const maxVal = Math.max(...data.flatMap((d) => [d.sent, d.delivered, d.read, d.failed]), 1);
 
   return (
-    <div className="relative w-full overflow-x-auto select-none pt-2">
-      <svg className="w-full min-w-[420px] h-48 overflow-visible" viewBox="0 0 500 180" preserveAspectRatio="none">
+    <div className="relative w-full overflow-x-auto select-none pt-2 scrollbar-none">
+      <svg className="w-full min-w-[480px] h-48 overflow-visible" viewBox="0 0 500 180" preserveAspectRatio="none">
         {[0, 45, 90, 135].map((y) => (
           <line key={y} x1="35" y1={y + 10} x2="495" y2={y + 10} stroke="rgba(0,0,0,0.06)" strokeWidth="1" strokeDasharray="4 4" />
         ))}
@@ -727,7 +706,7 @@ const MessagesChart: React.FC<{ data: any[] }> = ({ data }) => {
                 />
               ))}
               {(N <= 10 || idx % Math.ceil(N / 7) === 0) && (
-                <text x={startX + (barWidth + gap) * 1.5} y="176" className="text-[9px] font-mono fill-gray-500" textAnchor="middle">
+                <text x={startX + (barWidth + gap) * 1.5} y="176" className="text-[9px] font-mono fill-gray-400 font-bold" textAnchor="middle">
                   {item.label}
                 </text>
               )}
@@ -756,8 +735,8 @@ const DonutChart: React.FC<{ delivered: number; read: number; failed: number; to
   let currentOffset = 0;
 
   return (
-    <div className="flex items-center gap-4 justify-center py-2">
-      <div className="relative w-28 h-28">
+    <div className="flex flex-col sm:flex-row items-center gap-4 justify-center py-2">
+      <div className="relative w-28 h-28 shrink-0">
         <svg className="w-full h-full" viewBox="0 0 100 100">
           <circle cx="50" cy="50" r={radius} fill="transparent" stroke="rgba(0,0,0,0.05)" strokeWidth="9" />
           {segments.map((s) => {
@@ -777,17 +756,17 @@ const DonutChart: React.FC<{ delivered: number; read: number; failed: number; to
           })}
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-[9px] text-gray-500 uppercase tracking-wider">Total</span>
+          <span className="text-[9px] text-gray-400 uppercase tracking-wider font-bold">Total</span>
           <span className="text-base font-bold text-gray-900">{formatNum(total)}</span>
         </div>
       </div>
 
-      <div className="space-y-1.5">
+      <div className="space-y-1.5 w-full">
         {segments.map((s) => (
           <div key={s.name} className="flex items-center gap-2 text-xs">
-            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: s.color }} />
-            <span className="text-gray-500">{s.name}</span>
-            <span className="text-gray-900 font-semibold ml-auto">{Math.round((s.value / sum) * 100)}%</span>
+            <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: s.color }} />
+            <span className="text-gray-500 font-semibold">{s.name}</span>
+            <span className="text-gray-900 font-bold ml-auto">{Math.round((s.value / sum) * 100)}%</span>
           </div>
         ))}
       </div>
@@ -804,11 +783,11 @@ const EmptyChart: React.FC<{
 }> = ({ icon: Icon, title, subtitle, actionText, actionHref }) => (
   <div className="flex flex-col items-center justify-center py-16 text-center">
     <div className="w-16 h-16 rounded-2xl bg-gray-50 border border-gray-200 flex items-center justify-center mb-4 shadow-sm">
-      <Icon className="w-7 h-7 text-gray-500" />
+      <Icon className="w-7 h-7 text-gray-400" />
     </div>
-    <p className="text-sm font-medium text-gray-900 mb-1">{title}</p>
-    <p className="text-xs text-gray-500 mb-4">{subtitle}</p>
-    <Link to={actionHref} className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-green-50 border border-green-200 text-green-700 text-xs font-medium hover:bg-green-100 hover:border-green-300 transition-all duration-300 shadow-sm">
+    <p className="text-sm font-semibold text-gray-900 mb-1">{title}</p>
+    <p className="text-xs text-gray-400 font-semibold mb-4">{subtitle}</p>
+    <Link to={actionHref} className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-emerald-50 border border-emerald-100 text-emerald-700 text-xs font-bold hover:bg-emerald-100 transition-all shadow-sm">
       {actionText}
       <ArrowUpRight className="w-3 h-3" />
     </Link>
@@ -822,35 +801,35 @@ const QuickStatItem: React.FC<{
   color: string;
   href: string;
 }> = ({ label, value, icon: Icon, color, href }) => (
-  <Link to={href} className="flex items-center justify-between p-2.5 rounded-xl hover:bg-gray-50 border border-transparent hover:border-gray-100 transition-all duration-300 group">
+  <Link to={href} className="flex items-center justify-between p-2.5 rounded-xl hover:bg-gray-50 border border-transparent hover:border-gray-100 transition-all group">
     <div className="flex items-center gap-2.5">
       <div className="w-7 h-7 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform"
         style={{ background: `${color}10`, border: `1px solid ${color}20` }}
       >
         <Icon className="w-3.5 h-3.5" style={{ color }} />
       </div>
-      <span className="text-xs text-gray-600 group-hover:text-gray-900">{label}</span>
+      <span className="text-xs text-gray-500 font-bold group-hover:text-gray-900">{label}</span>
     </div>
-    <span className="text-sm font-bold text-gray-900">{value}</span>
+    <span className="text-sm font-black text-gray-900">{value}</span>
   </Link>
 );
 
 const StatusBadge: React.FC<{ status: string }> = ({ status }) => {
   const styles: Record<string, string> = {
-    COMPLETED: 'bg-green-50 text-green-700 border-green-200',
+    COMPLETED: 'bg-emerald-50 text-emerald-700 border-emerald-200',
     RUNNING: 'bg-blue-50 text-blue-700 border-blue-200',
     FAILED: 'bg-red-50 text-red-700 border-red-200',
     PAUSED: 'bg-yellow-50 text-yellow-700 border-yellow-200',
   };
   return (
-    <span className={`px-2 py-1 text-[10px] font-mono font-semibold rounded-full border ${styles[status] || 'bg-gray-50 text-gray-600 border-gray-200'}`}>
+    <span className={`px-2 py-1 text-[10px] font-mono font-bold rounded-full border ${styles[status] || 'bg-gray-50 text-gray-600 border-gray-200'}`}>
       {status}
     </span>
   );
 };
 
 const DeliveryRateBadge: React.FC<{ rate: number }> = ({ rate }) => (
-  <span className={`text-sm font-bold ${rate >= 90 ? 'text-green-700' : rate >= 70 ? 'text-yellow-700' : 'text-red-700'}`}>
+  <span className={`text-sm font-black ${rate >= 90 ? 'text-emerald-600' : rate >= 70 ? 'text-yellow-600' : 'text-red-600'}`}>
     {rate}%
   </span>
 );

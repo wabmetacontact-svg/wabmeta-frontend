@@ -1,4 +1,14 @@
-export type CampaignStatus = 'draft' | 'scheduled' | 'running' | 'completed' | 'paused' | 'failed';
+// src/types/campaign.ts
+
+export type CampaignStatus =
+  | 'DRAFT'
+  | 'SCHEDULED'
+  | 'RUNNING'
+  | 'PAUSED'
+  | 'COMPLETED'
+  | 'FAILED'
+  | 'CANCELLED';
+
 export type AudienceType = 'all' | 'tags' | 'manual' | 'group' | 'csv';
 
 export interface CampaignAudience {
@@ -12,33 +22,35 @@ export interface CampaignAudience {
 
 export interface CampaignStats {
   total: number;
-  sent: number;
-  delivered: number;
-  read: number;
-  replied: number;
-  failed: number;
-  pending: number;
-  _internal?: {
-    mode?: string;
-    [key: string]: any;
-  };
+  totalSent: number;
+  totalDelivered: number;
+  totalRead: number;
+  totalRecipients: number;
 }
 
 export interface Campaign {
   id: string;
   name: string;
   description?: string;
-  templateId: string;
-  templateName: string;
-  audience: CampaignAudience;
   status: CampaignStatus;
-  stats: CampaignStats;
+  totalContacts?: number;
+  sentCount?: number;
+  deliveredCount?: number;
+  readCount?: number;
+  failedCount?: number;
   scheduledAt?: string;
   startedAt?: string;
   completedAt?: string;
   createdAt: string;
-  createdBy: string;
-  variableMapping: Record<string, string>;
+  template?: {
+    name: string;
+  };
+  _internal?: {
+    realSent: number;
+    realDelivered: number;
+    realFailed: number;
+    mode: 'honest' | 'smart' | 'emergency_honest';
+  };
 }
 
 export interface CampaignFormData {

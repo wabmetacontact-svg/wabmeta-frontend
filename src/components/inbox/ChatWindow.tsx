@@ -40,12 +40,13 @@ const ChatWindow: React.FC<Props> = ({
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const scrollRafRef = useRef<number | null>(null); // ✅ Frame controller ref
+
   const [showScrollButton, setShowScrollButton] = useState(false);
   const [newMessageCount, setNewMessageCount] = useState(0);
   const lastMessageCountRef = useRef(messages.length);
   const isInitialLoadRef = useRef(true);
 
-  // ── Scroll to bottom ────────────────────────────────────────────────────
   const scrollToBottom = useCallback((smooth = true) => {
     messagesEndRef.current?.scrollIntoView({
       behavior: smooth ? 'smooth' : 'auto',
@@ -54,23 +55,32 @@ const ChatWindow: React.FC<Props> = ({
     setNewMessageCount(0);
   }, []);
 
-  // ── Handle scroll: show/hide scroll-to-bottom button ────────────────────
+  // ✅ FIXED: requestAnimationFrame Throttling — Decouples DOM layout reads from render ticks
   const handleScroll = useCallback(() => {
-    const el = containerRef.current;
-    if (!el) return;
+    if (scrollRafRef.current) return;
 
-    const { scrollTop, scrollHeight, clientHeight } = el;
-    const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
-    const isNearBottom = distanceFromBottom < 100;
+    scrollRafRef.current = requestAnimationFrame(() => {
+      const el = containerRef.current;
+      if (el) {
+        const { scrollTop, scrollHeight, clientHeight } = el;
+        const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
+        const isNearBottom = distanceFromBottom < 100;
 
-    setShowScrollButton(!isNearBottom && scrollHeight > clientHeight + 200);
-
-    if (isNearBottom) {
-      setNewMessageCount(0);
-    }
+        setShowScrollButton(!isNearBottom && scrollHeight > clientHeight + 200);
+        if (isNearBottom) {
+          setNewMessageCount(0);
+        }
+      }
+      scrollRafRef.current = null;
+    });
   }, []);
 
-  // ── Auto-scroll on new messages ─────────────────────────────────────────
+  useEffect(() => {
+    return () => {
+      if (scrollRafRef.current) cancelAnimationFrame(scrollRafRef.current);
+    };
+  }, []);
+
   useEffect(() => {
     const newCount = messages.length - lastMessageCountRef.current;
     if (newCount > 0) {
@@ -84,14 +94,12 @@ const ChatWindow: React.FC<Props> = ({
       if (isInitialLoadRef.current || isNearBottom) {
         setTimeout(() => scrollToBottom(!isInitialLoadRef.current), 100);
       } else {
-        // User is scrolled up - show counter
         setNewMessageCount((prev) => prev + newCount);
       }
     }
     lastMessageCountRef.current = messages.length;
   }, [messages.length, scrollToBottom]);
 
-  // ── Initial load: instant scroll to bottom ─────────────────────────────
   useEffect(() => {
     if (messages.length > 0 && isInitialLoadRef.current) {
       setTimeout(() => {
@@ -101,14 +109,12 @@ const ChatWindow: React.FC<Props> = ({
     }
   }, [messages.length, scrollToBottom]);
 
-  // ── Reset on conversation change ────────────────────────────────────────
   useEffect(() => {
     isInitialLoadRef.current = true;
     setNewMessageCount(0);
     setShowScrollButton(false);
   }, [conversationId]);
 
-  // ── Group messages by date + sender ─────────────────────────────────────
   const groupedMessages = useMemo(() => {
     const groups: Array<{
       type: 'date' | 'message';
@@ -128,7 +134,6 @@ const ChatWindow: React.FC<Props> = ({
       const dateKey = msgDate.toDateString();
       const msgTime = msgDate.getTime();
 
-      // Date separator
       if (dateKey !== lastDate) {
         groups.push({
           type: 'date',
@@ -140,12 +145,10 @@ const ChatWindow: React.FC<Props> = ({
         lastSenderTime = 0;
       }
 
-      // Same sender within 2 minutes = grouped
       const isGrouped =
         msg.direction === lastDirection &&
         msgTime - lastSenderTime < 2 * 60 * 1000;
 
-      // Show avatar on LAST message of group (for inbound)
       const nextMsg = messages[idx + 1];
       const isLastInGroup =
         !nextMsg ||
@@ -168,11 +171,10 @@ const ChatWindow: React.FC<Props> = ({
     return groups;
   }, [messages]);
 
-  // ── Copy handler ────────────────────────────────────────────────────────
   const handleCopy = useCallback((text: string) => {
     navigator.clipboard.writeText(text);
     toast.success('Copied to clipboard', {
-      duration: 2000,
+      duration: 1500,
       style: {
         background: '#fff',
         color: '#1f2937',
@@ -181,7 +183,6 @@ const ChatWindow: React.FC<Props> = ({
     });
   }, []);
 
-  // ── Loading state ───────────────────────────────────────────────────────
   if (loading) {
     return (
       <div className="flex-1 flex items-center justify-center chat-bg">
@@ -193,20 +194,15 @@ const ChatWindow: React.FC<Props> = ({
     );
   }
 
-  // ── Empty state ─────────────────────────────────────────────────────────
   if (messages.length === 0) {
     return (
       <div className="flex-1 flex items-center justify-center chat-bg">
         <div className="flex flex-col items-center gap-3 text-center px-6">
-          <div className="
-            w-20 h-20 rounded-full
-            bg-emerald-50 border border-emerald-250
-            flex items-center justify-center
-          ">
+          <div className="w-20 h-20 rounded-full bg-emerald-50 border border-emerald-100 flex items-center justify-center">
             <MessageSquare className="w-9 h-9 text-emerald-600" />
           </div>
           <h3 className="text-base font-semibold text-gray-800">No messages yet</h3>
-          <p className="text-sm text-gray-500 max-w-xs">
+          <p className="text-sm text-gray-450 max-w-xs">
             Start the conversation by sending a message below
           </p>
         </div>
@@ -214,27 +210,18 @@ const ChatWindow: React.FC<Props> = ({
     );
   }
 
-  // ── Main render ─────────────────────────────────────────────────────────
   return (
     <div className="flex-1 relative overflow-hidden chat-bg chat-area">
       <div
         ref={containerRef}
         onScroll={handleScroll}
-        className="
-          h-full overflow-y-auto inbox-scroll chat-scroll-container
-          py-3 pb-6
-        "
+        className="h-full overflow-y-auto inbox-scroll chat-scroll-container py-3 pb-6"
       >
         {groupedMessages.map((item) => {
           if (item.type === 'date') {
             return (
               <div key={item.key} className="flex justify-center my-4">
-                <span className="
-                  px-3 py-1
-                  bg-gray-200 border-transparent
-                  text-gray-650 text-[11px] font-medium
-                  rounded-full shadow-sm
-                ">
+                <span className="px-3 py-1 bg-gray-200 text-gray-600 text-[11px] font-semibold rounded-full shadow-sm">
                   {formatDateSeparator(item.date)}
                 </span>
               </div>
@@ -272,30 +259,14 @@ const ChatWindow: React.FC<Props> = ({
         <div ref={messagesEndRef} />
       </div>
 
-      {/* ── Scroll to bottom button ─────────────────────────────────────── */}
       {showScrollButton && (
         <button
           onClick={() => scrollToBottom(true)}
-          className="
-            absolute bottom-6 right-6 z-10
-            w-11 h-11 rounded-full
-            bg-emerald-500 hover:bg-emerald-600
-            text-white shadow-lg shadow-emerald-500/30
-            flex items-center justify-center
-            transition-all hover:scale-110 active:scale-95
-            animate-fade-in
-          "
+          className="absolute bottom-6 right-6 z-10 w-11 h-11 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white shadow-lg shadow-emerald-500/30 flex items-center justify-center transition-all hover:scale-110 active:scale-95 animate-fade-in"
         >
           <ArrowDown className="w-5 h-5" />
           {newMessageCount > 0 && (
-            <span className="
-              absolute -top-1 -right-1
-              min-w-[20px] h-5 px-1.5
-              bg-red-500 text-white
-              text-[10px] font-bold
-              rounded-full flex items-center justify-center
-              ring-2 ring-white
-            ">
+            <span className="absolute -top-1 -right-1 min-w-[20px] h-5 px-1.5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center ring-2 ring-white">
               {newMessageCount > 99 ? '99+' : newMessageCount}
             </span>
           )}
