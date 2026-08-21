@@ -151,7 +151,12 @@ const AudienceSelector: React.FC<AudienceSelectorProps> = ({
     setSearchLoading(true);
     contactsApi.search(query, 30)
       .then(res => {
-        const results = res.data?.data?.contacts || [];
+        const results = (res.data?.data?.contacts || []).map((c: any) => ({
+          id: c.id,
+          name: c.name || [c.firstName, c.lastName].filter(Boolean).join(' ') || c.phone || 'Unknown',
+          phone: c.phone || '',
+          tags: Array.isArray(c.tags) ? c.tags : [],
+        }));
         setSearchResults(results);
       })
       .catch(() => setSearchResults([]))

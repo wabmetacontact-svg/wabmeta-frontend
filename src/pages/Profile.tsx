@@ -19,7 +19,6 @@ import {
 } from 'lucide-react';
 import { auth, users } from '../services/api';
 import { useAuth } from '../context/AuthContext';
-import { useApp } from '../context/AppContext';
 import PageSkeleton from '../components/common/PageSkeleton';
 
 interface UserProfile {
@@ -46,7 +45,6 @@ interface Session {
 
 const Profile: React.FC = () => {
   const { updateUser } = useAuth();
-  const { setUser } = useApp();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -128,18 +126,10 @@ const Profile: React.FC = () => {
   const fetchSessions = async () => {
     setLoadingSessions(true);
     try {
-      const response = await fetch('/api/v1/users/sessions', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('accessToken') || localStorage.getItem('token') || localStorage.getItem('wabmeta_token')}`,
-        },
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        setSessions(data.data || []);
-      }
+      const response = await users.getSessions();
+      setSessions(response.data?.data || []);
     } catch (err) {
-      console.log('Sessions not available');
+      console.log('Sessions not available', err);
     } finally {
       setLoadingSessions(false);
     }
@@ -160,35 +150,63 @@ const Profile: React.FC = () => {
     setSuccess(false);
 
     try {
-      const response = await users.updateProfile({
-        firstName: formData.firstName,
-        lastName: formData.lastName || undefined,
-        phone: formData.phone || undefined,
-        avatar: formData.avatar || undefined,
-      });
-      
+      // ✅ Phone clean karo (spaces/dashes hatao)
+      const cleanPhone = formData.phone
+        ? formData.phone.replace(/[\s\-\(\)]/g, '')
+        : undefined;
+
+      // ✅ Avatar sirf tab bhejo jab woh URL ho — base64 mat bhejo yahan
+      const isBase64Avatar = formData.avatar?.startsWith('data:');
+
+      const payload: {
+        firstName?: string;
+        lastName?: string;
+        phone?: string;
+        avatar?: string;
+      } = {
+        firstName: formData.firstName.trim(),
+        lastName: formData.lastName?.trim() || undefined,
+        phone: cleanPhone || undefined,
+      };
+
+      // Sirf existing URL avatar bhejo; naya base64 alag upload flow se hoga
+      if (formData.avatar && !isBase64Avatar) {
+        payload.avatar = formData.avatar;
+      }
+
+      // ✅ Naya avatar ho toh pehle avatar endpoint use karo
+      if (isBase64Avatar && formData.avatar) {
+        await users.updateAvatar(formData.avatar);
+      }
+
+      const response = await users.updateProfile(payload);
+
       console.log('✅ Profile Updated:', response.data);
 
       const updatedUser = response.data?.data || response.data;
       if (updatedUser) {
-        setProfile((prev) => prev ? { ...prev, ...updatedUser } : updatedUser);
-        
+        setProfile((prev) => (prev ? { ...prev, ...updatedUser } : updatedUser));
+
         // ✅ Sync Global State
         updateUser(updatedUser);
-        setUser({
-          name: [updatedUser.firstName, updatedUser.lastName].filter(Boolean).join(" ") || updatedUser.email,
-          email: updatedUser.email,
-          phone: updatedUser.phone || "",
-          role: updatedUser.role || "",
-          avatar: updatedUser.avatar || null,
-        });
       }
-      
+
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
     } catch (err: any) {
       console.error('❌ Failed to update profile:', err);
-      setError(err.response?.data?.message || 'Failed to update profile');
+
+      // ✅ Asli error message extract karo
+      const message =
+        err?.response?.data?.message ||
+        err?.response?.data?.error ||
+        (Array.isArray(err?.response?.data?.errors)
+          ? err.response.data.errors.map((e: any) => e.message || e).join(', ')
+          : null) ||
+        err?.message ||
+        'Failed to update profile';
+
+      setError(message);
     } finally {
       setSaving(false);
     }
@@ -218,17 +236,10 @@ const Profile: React.FC = () => {
   // ==========================================
   const handleRevokeSession = async (sessionId: string) => {
     if (!window.confirm('Revoke this session?')) return;
-    
     try {
-      const token = localStorage.getItem('accessToken') || localStorage.getItem('token') || localStorage.getItem('wabmeta_token');
-      await fetch(`/api/v1/users/sessions/${sessionId}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-      setSessions(sessions.filter(s => s.id !== sessionId));
-    } catch (err) {
+      await users.revokeSession(sessionId);
+      setSessions((prev) => prev.filter((s) => s.id !== sessionId));
+    } catch {
       alert('Failed to revoke session');
     }
   };
