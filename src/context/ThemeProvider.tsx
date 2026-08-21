@@ -1,10 +1,9 @@
-import React, { 
-  createContext, 
-  useContext, 
-  useEffect, 
-  useMemo 
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo
 } from 'react';
-import { useLocation } from 'react-router-dom';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -26,44 +25,21 @@ export const useTheme = (): ThemeContextValue => {
   return ctx;
 };
 
-// ─── Routes Config ───────────────────────────────────────────────────────────
-
-// Yeh routes LIGHT mode mein rahenge
-const LIGHT_ROUTES = [
-  '/',
-  '/contact',
-  '/documentation', 
-  '/blog',
-  '/privacy',
-  '/terms',
-  '/data-deletion',
-];
-
-// Yeh routes bhi LIGHT mein honge (auth pages)
-const AUTH_ROUTES = [
-  '/login',
-  '/signup',
-  '/forgot-password',
-  '/reset-password',
-  '/verify-email',
-  '/verify-otp',
-];
-
 // ─── Provider ────────────────────────────────────────────────────────────────
 
-export const ThemeProvider: React.FC<React.PropsWithChildren> = ({ children }) => {
-  const { pathname } = useLocation();
+// The app is pinned to light mode on every route, dashboard included.
+//
+// This used to switch on the route, and the machinery for that is worth keeping
+// in mind if per-route theming comes back: marketing ('/', '/contact',
+// '/documentation', '/blog', '/privacy', '/terms', '/data-deletion') and auth
+// ('/login', '/signup', '/forgot-password', '/reset-password', '/verify-email',
+// '/verify-otp') were light, and everything else dark. Restoring it means
+// reading `useLocation().pathname` here and returning 'dark' for the rest.
+//
+// Note: while this stays pinned, every `dark:` class in the app is inert.
 
-  // Determine mode based on route
-  const mode: ThemeMode = useMemo(() => {
-    const isLightRoute = 
-      LIGHT_ROUTES.includes(pathname) || 
-      AUTH_ROUTES.includes(pathname);
-    
-    // Ab sab kuch light hai - dashboard bhi
-    // Agar sirf marketing light chahiye toh: return isLightRoute ? 'light' : 'dark'
-    return 'light'; // ← PURE LIGHT MODE
-  }, [pathname]);
+export const ThemeProvider: React.FC<React.PropsWithChildren> = ({ children }) => {
+  const mode: ThemeMode = 'light';
 
   // Apply class to <html>
   useEffect(() => {

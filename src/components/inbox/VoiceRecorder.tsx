@@ -1,6 +1,6 @@
 // src/components/inbox/VoiceRecorder.tsx
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Mic, Send, Trash2, Pause, Play, X } from 'lucide-react';
+import { Send, Trash2, Pause, Play, X } from 'lucide-react';
 import { formatDuration } from '../../utils/inboxHelpers';
 import toast from 'react-hot-toast';
 
@@ -16,7 +16,6 @@ const VoiceRecorder: React.FC<Props> = ({ isRecording, onStart, onStop, onCancel
   const [duration, setDuration] = useState(0);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
-  const [isPaused, setIsPaused] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [sending, setSending] = useState(false);
 
@@ -125,8 +124,7 @@ const VoiceRecorder: React.FC<Props> = ({ isRecording, onStart, onStop, onCancel
   
       mediaRecorder.start(100); // Capture data every 100ms
       setDuration(0);
-      setIsPaused(false);
-  
+    
       intervalRef.current = setInterval(() => {
         setDuration((d) => {
           if (d >= 300) {
@@ -177,7 +175,6 @@ const VoiceRecorder: React.FC<Props> = ({ isRecording, onStart, onStop, onCancel
     setDuration(0);
     setAudioBlob(null);
     setAudioUrl(null);
-    setIsPaused(false);
     setIsPlaying(false);
     if (audioUrl) URL.revokeObjectURL(audioUrl);
 

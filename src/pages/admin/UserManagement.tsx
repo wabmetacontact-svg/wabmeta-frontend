@@ -212,17 +212,17 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
         onClick={onCancel}
       />
       <div
-        className="relative bg-[#0a0e27] border border-white/[0.08]
+        className="relative bg-white border border-gray-200
         rounded-2xl shadow-2xl max-w-md w-full p-6"
       >
-        <h3 className="text-lg font-bold text-white mb-2">{title}</h3>
-        <p className="text-sm text-gray-400 mb-6">{message}</p>
+        <h3 className="text-lg font-bold text-gray-900 mb-2">{title}</h3>
+        <p className="text-sm text-gray-500 mb-6">{message}</p>
         <div className="flex gap-3 justify-end">
           <button
             onClick={onCancel}
             disabled={loading}
-            className="px-4 py-2 text-gray-300 bg-white/[0.04]
-              hover:bg-white/[0.08] rounded-xl transition-colors
+            className="px-4 py-2 text-gray-700 bg-gray-50
+              hover:bg-gray-50 rounded-xl transition-colors
               disabled:opacity-50 text-sm font-medium"
           >
             Cancel
@@ -266,18 +266,18 @@ const UserDetailsModal: React.FC<UserDetailsModalProps> = ({
         onClick={onClose}
       />
       <div
-        className="relative bg-[#0a0e27] border border-white/[0.08]
+        className="relative bg-white border border-gray-200
         rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6"
       >
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 p-2 text-gray-400
-            hover:bg-white/[0.06] rounded-lg transition-colors"
+          className="absolute top-4 right-4 p-2 text-gray-500
+            hover:bg-gray-50 rounded-lg transition-colors"
         >
           <X className="w-5 h-5" />
         </button>
 
-        <div className="mb-6 flex space-x-4 items-center border-b border-white/[0.06] pb-4">
+        <div className="mb-6 flex space-x-4 items-center border-b border-gray-200 pb-4">
           <div
             className="w-16 h-16 bg-gradient-to-br from-primary-400
               to-primary-600 rounded-full flex items-center justify-center
@@ -286,21 +286,21 @@ const UserDetailsModal: React.FC<UserDetailsModalProps> = ({
             {getUserInitials(user)}
           </div>
           <div>
-            <h2 className="text-xl font-bold text-white">
+            <h2 className="text-xl font-bold text-gray-900">
               {getUserDisplayName(user)}
             </h2>
-            <p className="text-sm text-gray-400">{user.email}</p>
+            <p className="text-sm text-gray-500">{user.email}</p>
           </div>
         </div>
 
         <div className="space-y-4">
-          <h3 className="text-base font-semibold text-white">
+          <h3 className="text-base font-semibold text-gray-900">
             WhatsApp Accounts ({user.whatsappAccounts?.length || 0})
           </h3>
 
           {!user.whatsappAccounts || user.whatsappAccounts.length === 0 ? (
-            <div className="text-center py-8 bg-[#050816] rounded-xl border border-white/[0.06]">
-              <p className="text-sm text-gray-400">
+            <div className="text-center py-8 bg-gray-50 rounded-xl border border-gray-200">
+              <p className="text-sm text-gray-500">
                 No WhatsApp accounts connected
               </p>
             </div>
@@ -309,12 +309,12 @@ const UserDetailsModal: React.FC<UserDetailsModalProps> = ({
               {user.whatsappAccounts.map((account) => (
                 <div
                   key={account.id}
-                  className="p-4 bg-[#050816] rounded-xl border border-white/[0.06]"
+                  className="p-4 bg-gray-50 rounded-xl border border-gray-200"
                 >
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
-                        <h4 className="font-semibold text-white">
+                        <h4 className="font-semibold text-gray-900">
                           {account.verifiedName || 'Unnamed Account'}
                         </h4>
                         {account.isDefault && (
@@ -326,7 +326,7 @@ const UserDetailsModal: React.FC<UserDetailsModalProps> = ({
                           </span>
                         )}
                       </div>
-                      <p className="text-sm text-gray-400">
+                      <p className="text-sm text-gray-500">
                         {account.displayPhoneNumber}
                       </p>
                     </div>
@@ -337,16 +337,16 @@ const UserDetailsModal: React.FC<UserDetailsModalProps> = ({
                     />
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4 mt-3 pt-3 border-t border-white/[0.06]">
+                  <div className="grid grid-cols-2 gap-4 mt-3 pt-3 border-t border-gray-200">
                     <div>
                       <p className="text-xs text-gray-500">Quality Rating</p>
-                      <p className="text-sm font-medium text-white">
+                      <p className="text-sm font-medium text-gray-900">
                         {account.qualityRating || 'N/A'}
                       </p>
                     </div>
                     <div>
                       <p className="text-xs text-gray-500">Phone Number ID</p>
-                      <p className="text-sm font-mono text-gray-300">
+                      <p className="text-sm font-mono text-gray-700">
                         {account.phoneNumberId.slice(0, 12)}...
                       </p>
                     </div>
@@ -369,9 +369,9 @@ const UserDetailsModal: React.FC<UserDetailsModalProps> = ({
                 {user.whatsappSummary?.businessAppAccounts || 0}
               </p>
             </div>
-            <div className="p-3 bg-white/[0.03] rounded-xl border border-white/[0.06]">
-              <p className="text-xs text-gray-400 mb-1">Active</p>
-              <p className="text-xl font-bold text-gray-300">
+            <div className="p-3 bg-gray-50 rounded-xl border border-gray-200">
+              <p className="text-xs text-gray-500 mb-1">Active</p>
+              <p className="text-xl font-bold text-gray-700">
                 {user.whatsappSummary?.activeAccounts || 0}
               </p>
             </div>
@@ -473,18 +473,18 @@ const PasswordModal: React.FC<PasswordModalProps> = ({
         onClick={handleClose}
       />
       <div
-        className="relative bg-[#0a0e27] border border-white/[0.08]
+        className="relative bg-white border border-gray-200
         rounded-2xl shadow-2xl max-w-md w-full overflow-hidden"
       >
         {/* Header */}
-        <div className="bg-[#050816] border-b border-white/[0.06] px-6 py-4">
+        <div className="bg-gray-50 border-b border-gray-200 px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-primary-500/10 border border-primary-500/20 rounded-xl flex items-center justify-center">
                 <Key className="w-5 h-5 text-primary-400" />
               </div>
               <div>
-                <h2 className="text-base font-bold text-white">
+                <h2 className="text-base font-bold text-gray-900">
                   Change Password
                 </h2>
                 <p className="text-xs text-gray-500 mt-0.5">
@@ -495,7 +495,7 @@ const PasswordModal: React.FC<PasswordModalProps> = ({
             <button
               onClick={handleClose}
               disabled={loading}
-              className="p-2 text-gray-400 hover:bg-white/[0.06] rounded-lg
+              className="p-2 text-gray-500 hover:bg-gray-50 rounded-lg
                 transition-colors"
             >
               <X className="w-5 h-5" />
@@ -512,7 +512,7 @@ const PasswordModal: React.FC<PasswordModalProps> = ({
             {getUserInitials(user)}
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-semibold text-white truncate">
+            <p className="text-sm font-semibold text-gray-900 truncate">
               {getUserDisplayName(user)}
             </p>
             <p className="text-xs text-blue-300 truncate">{user.email}</p>
@@ -524,7 +524,7 @@ const PasswordModal: React.FC<PasswordModalProps> = ({
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           {/* New Password */}
           <div>
-            <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
+            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
               New Password
             </label>
             <div className="relative">
@@ -533,8 +533,8 @@ const PasswordModal: React.FC<PasswordModalProps> = ({
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 placeholder="Enter new password"
-                className="w-full px-4 py-2.5 bg-[#050816]
-                  border border-white/[0.08] rounded-xl text-sm text-white
+                className="w-full px-4 py-2.5 bg-gray-50
+                  border border-gray-200 rounded-xl text-sm text-gray-900
                   placeholder:text-gray-500 focus:outline-none
                   focus:border-primary-500 transition-colors"
                 required
@@ -543,7 +543,7 @@ const PasswordModal: React.FC<PasswordModalProps> = ({
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
               >
                 <Eye className="w-4 h-4" />
               </button>
@@ -570,7 +570,7 @@ const PasswordModal: React.FC<PasswordModalProps> = ({
 
           {/* Confirm Password */}
           <div>
-            <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
+            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
               Confirm Password
             </label>
             <div className="relative">
@@ -579,19 +579,19 @@ const PasswordModal: React.FC<PasswordModalProps> = ({
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="Confirm new password"
-                className={`w-full px-4 py-2.5 pr-10 bg-[#050816]
+                className={`w-full px-4 py-2.5 pr-10 bg-gray-50
                   border rounded-xl text-sm text-white placeholder:text-gray-500
                   focus:outline-none transition-colors ${
                     confirmPassword && newPassword !== confirmPassword
                       ? 'border-red-500/50 focus:border-red-500'
-                      : 'border-white/[0.08] focus:border-primary-500'
+                      : 'border-gray-200 focus:border-primary-500'
                   }`}
                 required
               />
               <button
                 type="button"
                 onClick={() => setShowConfirm(!showConfirm)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
               >
                 <Eye className="w-4 h-4" />
               </button>
@@ -599,10 +599,10 @@ const PasswordModal: React.FC<PasswordModalProps> = ({
           </div>
 
           {/* Logout toggle */}
-          <div className="bg-[#050816] border border-white/[0.06] p-3.5 rounded-xl">
+          <div className="bg-gray-50 border border-gray-200 p-3.5 rounded-xl">
             <label className="relative flex items-center cursor-pointer select-none w-full gap-3">
               <div className="flex-1 min-w-0">
-                <div className="text-sm font-semibold text-white">
+                <div className="text-sm font-semibold text-gray-900">
                   Logout all active devices
                 </div>
                 <div className="text-xs text-gray-500 mt-0.5">
@@ -632,8 +632,8 @@ const PasswordModal: React.FC<PasswordModalProps> = ({
               type="button"
               onClick={handleClose}
               disabled={loading}
-              className="px-4 py-2 text-gray-300 bg-white/[0.04]
-                hover:bg-white/[0.08] rounded-xl transition-colors
+              className="px-4 py-2 text-gray-700 bg-gray-50
+                hover:bg-gray-50 rounded-xl transition-colors
                 disabled:opacity-50 text-sm font-medium"
             >
               Cancel
@@ -644,7 +644,7 @@ const PasswordModal: React.FC<PasswordModalProps> = ({
                 loading || !newPassword || newPassword !== confirmPassword
               }
               className="px-4 py-2 bg-primary-600 hover:bg-primary-700
-                text-white rounded-xl flex items-center gap-2
+                text-gray-900 rounded-xl flex items-center gap-2
                 disabled:opacity-50 transition-colors text-sm font-medium"
             >
               {loading && <Loader2 className="w-4 h-4 animate-spin" />}
@@ -706,16 +706,16 @@ const Pagination: React.FC<PaginationProps> = ({
 
   return (
     <div
-      className="px-4 sm:px-6 py-3 border-t border-white/[0.06] bg-[#050816]
+      className="px-4 sm:px-6 py-3 border-t border-gray-200 bg-gray-50
       flex flex-col sm:flex-row items-center justify-between gap-3"
     >
       {/* Info + Per page */}
-      <div className="flex items-center gap-4 flex-wrap text-xs text-gray-400">
+      <div className="flex items-center gap-4 flex-wrap text-xs text-gray-500">
         <p>
           Showing{' '}
-          <span className="text-white font-medium">{start}</span>–
-          <span className="text-white font-medium">{end}</span> of{' '}
-          <span className="text-white font-medium">
+          <span className="text-gray-900 font-medium">{start}</span>–
+          <span className="text-gray-900 font-medium">{end}</span> of{' '}
+          <span className="text-gray-900 font-medium">
             {total.toLocaleString()}
           </span>
         </p>
@@ -726,8 +726,8 @@ const Pagination: React.FC<PaginationProps> = ({
             value={limit}
             onChange={(e) => onLimitChange(Number(e.target.value))}
             disabled={loading}
-            className="bg-[#0a0e27] border border-white/[0.08] rounded-lg
-              px-2 py-1 text-xs text-gray-300 focus:outline-none
+            className="bg-white border border-gray-200 rounded-lg
+              px-2 py-1 text-xs text-gray-700 focus:outline-none
               focus:border-primary-500 transition-colors disabled:opacity-50"
           >
             <option value={20}>20</option>
@@ -744,8 +744,8 @@ const Pagination: React.FC<PaginationProps> = ({
         <button
           onClick={() => onPageChange(1)}
           disabled={page === 1 || loading}
-          className="p-1.5 rounded-lg text-gray-400 hover:bg-white/[0.06]
-            hover:text-white disabled:opacity-30 disabled:cursor-not-allowed
+          className="p-1.5 rounded-lg text-gray-500 hover:bg-gray-50
+            hover:text-gray-900 disabled:opacity-30 disabled:cursor-not-allowed
             transition-all"
           title="First page"
         >
@@ -756,8 +756,8 @@ const Pagination: React.FC<PaginationProps> = ({
         <button
           onClick={() => onPageChange(page - 1)}
           disabled={page === 1 || loading}
-          className="p-1.5 rounded-lg text-gray-400 hover:bg-white/[0.06]
-            hover:text-white disabled:opacity-30 disabled:cursor-not-allowed
+          className="p-1.5 rounded-lg text-gray-500 hover:bg-gray-50
+            hover:text-gray-900 disabled:opacity-30 disabled:cursor-not-allowed
             transition-all"
           title="Previous page"
         >
@@ -781,7 +781,7 @@ const Pagination: React.FC<PaginationProps> = ({
                   ${
                     p === page
                       ? 'bg-primary-600 text-white'
-                      : 'text-gray-400 hover:bg-white/[0.06] hover:text-white'
+                      : 'text-gray-400 hover:bg-gray-50 hover:text-white'
                   }`}
               >
                 {p}
@@ -794,8 +794,8 @@ const Pagination: React.FC<PaginationProps> = ({
         <button
           onClick={() => onPageChange(page + 1)}
           disabled={page === totalPages || loading}
-          className="p-1.5 rounded-lg text-gray-400 hover:bg-white/[0.06]
-            hover:text-white disabled:opacity-30 disabled:cursor-not-allowed
+          className="p-1.5 rounded-lg text-gray-500 hover:bg-gray-50
+            hover:text-gray-900 disabled:opacity-30 disabled:cursor-not-allowed
             transition-all"
           title="Next page"
         >
@@ -806,8 +806,8 @@ const Pagination: React.FC<PaginationProps> = ({
         <button
           onClick={() => onPageChange(totalPages)}
           disabled={page === totalPages || loading}
-          className="p-1.5 rounded-lg text-gray-400 hover:bg-white/[0.06]
-            hover:text-white disabled:opacity-30 disabled:cursor-not-allowed
+          className="p-1.5 rounded-lg text-gray-500 hover:bg-gray-50
+            hover:text-gray-900 disabled:opacity-30 disabled:cursor-not-allowed
             transition-all"
           title="Last page"
         >
@@ -1062,7 +1062,7 @@ const UserManagement: React.FC = () => {
             }
           />
           <div
-            className="relative bg-[#0a0e27] border border-white/[0.08]
+            className="relative bg-white border border-gray-200
             rounded-2xl shadow-2xl max-w-md w-full p-6"
           >
             <div className="flex items-start gap-4 mb-5">
@@ -1070,10 +1070,10 @@ const UserManagement: React.FC = () => {
                 <AlertCircle className="w-6 h-6 text-red-400" />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-white mb-1">
+                <h3 className="text-lg font-bold text-gray-900 mb-1">
                   User Owns Organizations
                 </h3>
-                <p className="text-sm text-gray-400">
+                <p className="text-sm text-gray-500">
                   This user owns organizations. Force delete will permanently
                   remove all associated data including campaigns, contacts, and
                   templates.
@@ -1097,8 +1097,8 @@ const UserManagement: React.FC = () => {
                     hasOrganizations: false,
                   })
                 }
-                className="w-full p-3 bg-white/[0.04] hover:bg-white/[0.08]
-                  border border-white/[0.08] text-gray-300 rounded-xl
+                className="w-full p-3 bg-gray-50 hover:bg-gray-50
+                  border border-gray-200 text-gray-700 rounded-xl
                   font-medium transition-all text-sm"
               >
                 Cancel
@@ -1111,9 +1111,9 @@ const UserManagement: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white">User Management</h1>
-          <p className="text-sm text-gray-400 mt-1">
-            <span className="text-white font-medium">
+          <h1 className="text-2xl font-bold text-gray-900">User Management</h1>
+          <p className="text-sm text-gray-500 mt-1">
+            <span className="text-gray-900 font-medium">
               {pagination.total.toLocaleString()}
             </span>{' '}
             users total
@@ -1125,8 +1125,8 @@ const UserManagement: React.FC = () => {
             <input
               type="text"
               placeholder="Search users..."
-              className="w-full sm:w-64 pl-9 pr-4 py-2.5 bg-[#0a0e27]
-                border border-white/[0.08] rounded-xl text-sm text-white
+              className="w-full sm:w-64 pl-9 pr-4 py-2.5 bg-white
+                border border-gray-200 rounded-xl text-sm text-gray-900
                 placeholder:text-gray-500 focus:outline-none
                 focus:border-primary-500 transition-colors"
               value={search}
@@ -1139,8 +1139,8 @@ const UserManagement: React.FC = () => {
           <button
             onClick={fetchUsers}
             disabled={loading}
-            className="p-2.5 bg-[#0a0e27] border border-white/[0.08]
-              hover:border-white/[0.15] hover:bg-white/[0.02] rounded-xl
+            className="p-2.5 bg-white border border-gray-200
+              hover:border-gray-300 hover:bg-gray-50 rounded-xl
               transition-all disabled:opacity-50"
           >
             <RefreshCw
@@ -1166,21 +1166,21 @@ const UserManagement: React.FC = () => {
       )}
 
       {/* Table */}
-      <div className="bg-[#0a0e27] border border-white/[0.08] rounded-2xl overflow-hidden">
+      <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
         {loading && users.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20">
             <Loader2 className="w-8 h-8 animate-spin text-primary-400 mb-3" />
-            <p className="text-sm text-gray-400">Loading users...</p>
+            <p className="text-sm text-gray-500">Loading users...</p>
           </div>
         ) : users.length === 0 ? (
           <div className="text-center py-20">
             <div
-              className="w-16 h-16 mx-auto mb-4 bg-white/[0.03] rounded-2xl
-              flex items-center justify-center border border-white/[0.06]"
+              className="w-16 h-16 mx-auto mb-4 bg-gray-50 rounded-2xl
+              flex items-center justify-center border border-gray-200"
             >
               <Users className="w-7 h-7 text-gray-600" />
             </div>
-            <p className="text-gray-400 font-medium">
+            <p className="text-gray-500 font-medium">
               {search
                 ? 'No users match your search'
                 : 'No users found'}
@@ -1201,7 +1201,7 @@ const UserManagement: React.FC = () => {
           <>
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-[#050816] border-b border-white/[0.06]">
+                <thead className="bg-gray-50 border-b border-gray-200">
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                       User
@@ -1217,11 +1217,11 @@ const UserManagement: React.FC = () => {
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-white/[0.04]">
+                <tbody className="divide-y divide-gray-200">
                   {users.map((user) => (
                     <tr
                       key={user.id}
-                      className="hover:bg-white/[0.02] transition-colors"
+                      className="hover:bg-gray-50 transition-colors"
                     >
                       <td className="px-6 py-4">
                         <div className="flex items-center">
@@ -1233,7 +1233,7 @@ const UserManagement: React.FC = () => {
                             {getUserInitials(user)}
                           </div>
                           <div className="ml-3 min-w-0">
-                            <div className="text-sm font-semibold text-white truncate">
+                            <div className="text-sm font-semibold text-gray-900 truncate">
                               {getUserDisplayName(user)}
                             </div>
                             <div className="text-xs text-gray-500 truncate">
@@ -1245,14 +1245,14 @@ const UserManagement: React.FC = () => {
                       <td className="px-6 py-4">
                         <StatusBadge status={user.status} />
                       </td>
-                      <td className="px-6 py-4 text-sm text-gray-400">
+                      <td className="px-6 py-4 text-sm text-gray-500">
                         {formatDate(user.createdAt)}
                       </td>
                       <td className="px-6 py-4 text-right">
                         <div className="flex items-center justify-end gap-1">
                           <button
                             onClick={() => setDetailsModalUser(user)}
-                            className="p-2 text-gray-400 hover:text-primary-400
+                            className="p-2 text-gray-500 hover:text-primary-400
                               hover:bg-primary-500/10 rounded-lg transition-all"
                             title="Quick View"
                           >

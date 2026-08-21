@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, {  } from "react";
 import {
   Instagram,
   Heart,
@@ -9,10 +9,8 @@ import {
   Eye,
   ArrowUpRight,
   Play,
-  Settings,
   Link as LinkIcon,
   CheckCircle,
-  AlertCircle,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -24,8 +22,8 @@ const GlassCard: React.FC<{
 }> = ({ children, className = "" }) => (
   <div
     className={`relative rounded-2xl
-      bg-white/[0.04] backdrop-blur-2xl
-      border border-white/[0.08]
+      bg-gray-50 backdrop-blur-2xl
+      border border-gray-200
       p-6 ${className}`}
   >
     <div
@@ -51,8 +49,8 @@ const IGStatCard: React.FC<{
 }> = ({ title, value, change, icon: Icon, color, subtitle }) => (
   <div
     className="group relative rounded-2xl overflow-hidden
-      bg-white/[0.04] backdrop-blur-2xl
-      border border-white/[0.08] hover:border-white/[0.15]
+      bg-gray-50 backdrop-blur-2xl
+      border border-gray-200 hover:border-gray-300
       hover:-translate-y-0.5 p-5
       transition-all duration-500"
   >
@@ -87,8 +85,8 @@ const IGStatCard: React.FC<{
           </div>
         )}
       </div>
-      <p className="text-xs text-gray-400">{title}</p>
-      <p className="text-2xl lg:text-3xl font-bold text-white mt-1 tracking-tight">
+      <p className="text-xs text-gray-500">{title}</p>
+      <p className="text-2xl lg:text-3xl font-bold text-gray-900 mt-1 tracking-tight">
         {value}
       </p>
       {subtitle && (
@@ -113,11 +111,11 @@ const FeatureCard: React.FC<{
     to={comingSoon ? "#" : href}
     onClick={(e) => comingSoon && e.preventDefault()}
     className={`group relative flex flex-col p-5 rounded-2xl
-      bg-white/[0.04] backdrop-blur-xl
+      bg-gray-50 backdrop-blur-xl
       border transition-all duration-500
       ${comingSoon
-        ? "opacity-60 cursor-not-allowed border-white/[0.06]"
-        : "border-white/[0.08] hover:border-white/[0.15] hover:-translate-y-1 cursor-pointer"
+        ? "opacity-60 cursor-not-allowed border-gray-200"
+        : "border-gray-200 hover:border-gray-300 hover:-translate-y-1 cursor-pointer"
       }
     `}
     style={{
@@ -159,15 +157,15 @@ const FeatureCard: React.FC<{
         ) : (
           <ArrowUpRight
             className="w-4 h-4 text-gray-600
-              group-hover:text-white
+              group-hover:text-gray-900
               group-hover:translate-x-0.5 group-hover:-translate-y-0.5
               transition-all duration-300"
           />
         )}
       </div>
 
-      <h3 className="text-sm font-semibold text-white mb-1.5">{title}</h3>
-      <p className="text-xs text-gray-400 leading-relaxed">{description}</p>
+      <h3 className="text-sm font-semibold text-gray-900 mb-1.5">{title}</h3>
+      <p className="text-xs text-gray-500 leading-relaxed">{description}</p>
     </div>
   </Link>
 );
@@ -177,8 +175,6 @@ const FeatureCard: React.FC<{
 const InstagramDashboard: React.FC = () => {
   // Placeholder - real data API se aayega
   const isConnected = false;
-
-  const igColor = "#e1306c";
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-10">
@@ -194,16 +190,16 @@ const InstagramDashboard: React.FC = () => {
                   "linear-gradient(135deg, #833ab4 0%, #fd1d1d 50%, #fcb045 100%)",
               }}
             >
-              <Instagram className="w-3.5 h-3.5 text-white" />
+              <Instagram className="w-3.5 h-3.5 text-gray-900" />
             </div>
-            <span className="text-xs font-mono uppercase tracking-[0.15em] text-gray-400">
+            <span className="text-xs font-mono uppercase tracking-[0.15em] text-gray-500">
               Instagram Automation
             </span>
           </div>
-          <h1 className="text-3xl lg:text-4xl font-bold text-white tracking-tight">
+          <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 tracking-tight">
             Instagram Hub
           </h1>
-          <p className="mt-2 text-sm text-gray-400">
+          <p className="mt-2 text-sm text-gray-500">
             Automate your Instagram DMs, comments, and story interactions
           </p>
         </div>
@@ -221,7 +217,7 @@ const InstagramDashboard: React.FC = () => {
         ) : (
           <button
             className="flex items-center gap-2 px-5 py-2.5 rounded-xl
-              text-white text-sm font-semibold
+              text-gray-900 text-sm font-semibold
               hover:-translate-y-0.5 transition-all duration-300"
             style={{
               background:
@@ -247,14 +243,14 @@ const InstagramDashboard: React.FC = () => {
                 boxShadow: "0 12px 32px rgba(131,58,180,0.4)",
               }}
             >
-              <Instagram className="w-8 h-8 text-white" />
+              <Instagram className="w-8 h-8 text-gray-900" />
             </div>
 
             <div className="flex-1 text-center md:text-left">
-              <h2 className="text-xl font-bold text-white mb-2">
+              <h2 className="text-xl font-bold text-gray-900 mb-2">
                 Connect your Instagram account
               </h2>
-              <p className="text-sm text-gray-400 mb-4 max-w-lg">
+              <p className="text-sm text-gray-500 mb-4 max-w-lg">
                 Link your Instagram Business account via Meta to start
                 automating DMs, comments, and story interactions.
               </p>
@@ -283,7 +279,7 @@ const InstagramDashboard: React.FC = () => {
 
             <button
               className="flex-shrink-0 flex items-center gap-2 px-6 py-3 rounded-xl
-                text-white text-sm font-semibold
+                text-gray-900 text-sm font-semibold
                 hover:-translate-y-0.5 transition-all duration-300"
               style={{
                 background:
@@ -333,11 +329,11 @@ const InstagramDashboard: React.FC = () => {
       {/* ── Feature Cards ── */}
       <div>
         <div className="flex items-center gap-3 mb-5">
-          <div className="h-px flex-1 bg-white/[0.06]" />
+          <div className="h-px flex-1 bg-gray-50" />
           <span className="text-xs font-mono uppercase tracking-wider text-gray-500">
             Features
           </span>
-          <div className="h-px flex-1 bg-white/[0.06]" />
+          <div className="h-px flex-1 bg-gray-50" />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -391,7 +387,7 @@ const InstagramDashboard: React.FC = () => {
 
       {/* ── Quick Setup Steps ── */}
       <GlassCard>
-        <h3 className="text-base font-semibold text-white mb-5">
+        <h3 className="text-base font-semibold text-gray-900 mb-5">
           Get started in 3 steps
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -421,7 +417,7 @@ const InstagramDashboard: React.FC = () => {
             <div
               key={item.step}
               className="flex items-start gap-4 p-4 rounded-xl
-                bg-white/[0.03] border border-white/[0.06]"
+                bg-gray-50 border border-gray-200"
             >
               <div
                 className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
@@ -437,11 +433,11 @@ const InstagramDashboard: React.FC = () => {
                   <span className="text-[10px] font-mono text-gray-600">
                     {item.step}
                   </span>
-                  <h4 className="text-sm font-semibold text-white">
+                  <h4 className="text-sm font-semibold text-gray-900">
                     {item.title}
                   </h4>
                 </div>
-                <p className="text-xs text-gray-400 leading-relaxed">
+                <p className="text-xs text-gray-500 leading-relaxed">
                   {item.desc}
                 </p>
               </div>

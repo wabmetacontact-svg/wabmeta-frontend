@@ -78,7 +78,7 @@ const MessageSearchBar: React.FC<Props> = ({
               className="
                 p-1.5 rounded-md
                 hover:bg-gray-100
-                text-gray-655 hover:text-gray-900
+                text-gray-600 hover:text-gray-900
                 disabled:opacity-30 disabled:cursor-not-allowed
                 transition-colors
               "
@@ -91,7 +91,7 @@ const MessageSearchBar: React.FC<Props> = ({
               className="
                 p-1.5 rounded-md
                 hover:bg-gray-100
-                text-gray-655 hover:text-gray-900
+                text-gray-600 hover:text-gray-900
                 disabled:opacity-30 disabled:cursor-not-allowed
                 transition-colors
               "
@@ -106,7 +106,7 @@ const MessageSearchBar: React.FC<Props> = ({
           className="
             p-1.5 rounded-md
             hover:bg-gray-100
-            text-gray-655 hover:text-gray-900
+            text-gray-600 hover:text-gray-900
             transition-colors
           "
         >

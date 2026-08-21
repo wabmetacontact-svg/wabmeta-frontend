@@ -222,7 +222,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ chatbot, onChange, onClos
           <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-1.5">
             👋 Welcome Message
           </label>
-          <p className="text-[10px] text-gray-450 font-semibold mb-2">
+          <p className="text-[10px] text-gray-400 font-semibold mb-2">
             Sent before the flow starts (optional)
           </p>
           <textarea
@@ -237,7 +237,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ chatbot, onChange, onClos
           <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-1.5">
             🔄 Fallback Message
           </label>
-          <p className="text-[10px] text-gray-450 font-semibold mb-2">
+          <p className="text-[10px] text-gray-400 font-semibold mb-2">
             Sent when the bot cannot understand the user
           </p>
           <textarea
@@ -667,7 +667,7 @@ const ChatbotBuilder: React.FC = () => {
             {chatbot?.status === 'ACTIVE' ? (
               <button
                 onClick={handleDeactivate}
-                className="flex items-center gap-2 px-4 py-2 bg-yellow-50 text-yellow-700 border border-yellow-250 rounded-xl hover:bg-yellow-100 transition-colors text-xs font-bold"
+                className="flex items-center gap-2 px-4 py-2 bg-yellow-50 text-yellow-700 border border-yellow-200 rounded-xl hover:bg-yellow-100 transition-colors text-xs font-bold"
               >
                 <Pause className="w-4 h-4" />
                 Pause
@@ -676,7 +676,7 @@ const ChatbotBuilder: React.FC = () => {
               <button
                 onClick={handleActivate}
                 disabled={isNewChatbot}
-                className="flex items-center gap-2 px-4 py-2 bg-emerald-50 border border-emerald-250 text-emerald-700 rounded-xl hover:bg-emerald-100 disabled:opacity-40 transition-colors text-xs font-bold"
+                className="flex items-center gap-2 px-4 py-2 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-xl hover:bg-emerald-100 disabled:opacity-40 transition-colors text-xs font-bold"
               >
                 <Play className="w-4 h-4" />
                 Activate

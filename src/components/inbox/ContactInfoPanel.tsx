@@ -12,8 +12,6 @@ import {
   ChevronRight,
   Image as ImageIcon,
   StickyNote,
-  Star,
-  Hash,
   User,
   Calendar,
   Copy,
@@ -188,7 +186,7 @@ const ContactInfoPanel: React.FC<Props> = ({
               flex items-center justify-center
               text-white text-3xl font-bold
               shadow-lg ring-4 ring-gray-100
-              group-hover:ring-emerald-450/30
+              group-hover:ring-emerald-400/30
               transition-all
             `}>
               {conversation.contact.avatar ? (
@@ -303,7 +301,7 @@ const ContactInfoPanel: React.FC<Props> = ({
                 bg-gray-50 hover:bg-gray-100
                 border border-gray-200
                 rounded-lg
-                text-xs font-medium text-gray-650 hover:text-gray-900
+                text-xs font-medium text-gray-600 hover:text-gray-900
                 flex items-center justify-center gap-1.5
                 transition-colors
               "
@@ -373,7 +371,7 @@ const ContactInfoPanel: React.FC<Props> = ({
                 className="
                   w-full flex items-center gap-2.5 px-3 py-2
                   text-sm text-gray-700 hover:text-gray-950
-                  hover:bg-gray-55 rounded-lg
+                  hover:bg-gray-50 rounded-lg
                   transition-colors
                 "
               >
@@ -512,7 +510,7 @@ const InfoRow: React.FC<InfoRowProps> = ({ icon: Icon, label, value, onCopy, act
           onClick={onCopy}
           className="
             p-1.5 rounded-md
-            hover:bg-gray-150
+            hover:bg-gray-100
             text-gray-500 hover:text-gray-900
             opacity-0 group-hover:opacity-100
             transition-all flex-shrink-0

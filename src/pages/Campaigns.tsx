@@ -85,7 +85,7 @@ const Campaigns: React.FC = () => {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [stats, setStats] = useState<CampaignStats>({
     total: 0, totalSent: 0, totalDelivered: 0,
-    totalRead: 0, totalRecipients: 0,
+    totalRead: 0, replied: 0, totalRecipients: 0,
   });
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -143,6 +143,7 @@ const Campaigns: React.FC = () => {
           totalSent: safeNum(d.totalSent),
           totalDelivered: safeNum(d.totalDelivered),
           totalRead: safeNum(d.totalRead),
+          replied: safeNum(d.replied),
           totalRecipients: safeNum(d.totalRecipients),
         });
       }
@@ -364,7 +365,7 @@ const Campaigns: React.FC = () => {
           </div>
           <button
             onClick={() => { setError(null); fetchCampaigns(); }}
-            className="px-3 py-1 bg-red-650 text-white text-xs rounded-lg hover:bg-red-750"
+            className="px-3 py-1 bg-red-600 text-white text-xs rounded-lg hover:bg-red-700"
           >
             Retry
           </button>
@@ -387,7 +388,7 @@ const Campaigns: React.FC = () => {
             </p>
             <Link
               to="/dashboard/wallet"
-              className="inline-flex items-center gap-1.5 mt-2 px-3 py-1.5 bg-red-650 hover:bg-red-700 text-white text-xs font-bold rounded-lg transition-all"
+              className="inline-flex items-center gap-1.5 mt-2 px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded-lg transition-all"
             >
               Add Money to Wallet →
             </Link>
@@ -465,7 +466,7 @@ const Campaigns: React.FC = () => {
         {loading ? (
           <div className="bg-white rounded-2xl border border-gray-200 shadow-sm min-h-[300px] flex flex-col items-center justify-center py-16 animate-pulse">
             <Loader2 className="w-8 h-8 text-emerald-600 animate-spin mb-3" />
-            <p className="text-sm font-semibold text-gray-450">Loading campaigns...</p>
+            <p className="text-sm font-semibold text-gray-400">Loading campaigns...</p>
           </div>
         ) : campaigns.length === 0 ? (
           <div className="bg-white rounded-2xl p-16 text-center border border-gray-200 shadow-sm">
@@ -512,7 +513,7 @@ const Campaigns: React.FC = () => {
                       )}
                     </div>
                     {campaign.description && <p className="text-gray-500 text-sm line-clamp-1 font-normal">{campaign.description}</p>}
-                    {campaign.template?.name && <p className="text-xs text-gray-400 mt-1 font-medium">Template: {campaign.template.name}</p>}
+                    {campaign.templateName && <p className="text-xs text-gray-400 mt-1 font-medium">Template: {campaign.templateName}</p>}
                   </div>
 
                   {/* Actions column */}

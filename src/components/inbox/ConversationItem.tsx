@@ -14,7 +14,6 @@ import {
   Trash2,
   UserCheck,
   Instagram,
-  MessageSquare,
   CheckSquare,
   Square
 } from 'lucide-react';

@@ -248,17 +248,17 @@ const WalletManagement: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white">Wallet Management</h1>
-          <p className="text-sm text-gray-400 mt-1">
+          <h1 className="text-2xl font-bold text-gray-900">Wallet Management</h1>
+          <p className="text-sm text-gray-500 mt-1">
             Manage organization wallets and access requests
           </p>
         </div>
         <button
           onClick={handleRefresh}
           disabled={loading}
-          className="flex items-center gap-2 px-4 py-2.5 bg-[#0a0e27]
-            border border-white/[0.08] hover:border-white/[0.15]
-            hover:bg-white/[0.02] text-gray-300 rounded-xl
+          className="flex items-center gap-2 px-4 py-2.5 bg-white
+            border border-gray-200 hover:border-gray-300
+            hover:bg-gray-50 text-gray-700 rounded-xl
             transition-all disabled:opacity-50 text-sm font-medium"
         >
           <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
@@ -267,7 +267,7 @@ const WalletManagement: React.FC = () => {
       </div>
 
       {/* Tabs */}
-      <div className="border-b border-white/[0.06]">
+      <div className="border-b border-gray-200">
         <div className="flex gap-1">
           <button
             onClick={() => setActiveTab('requests')}
@@ -293,17 +293,17 @@ const WalletManagement: React.FC = () => {
       </div>
 
       {/* Content */}
-      <div className="bg-[#0a0e27] rounded-2xl border border-white/[0.08] overflow-hidden">
+      <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
         {loading ? (
           <div className="p-16 flex flex-col items-center justify-center">
             <Loader2 className="w-8 h-8 text-primary-400 animate-spin mb-3" />
-            <p className="text-sm text-gray-400">Loading...</p>
+            <p className="text-sm text-gray-500">Loading...</p>
           </div>
         ) : activeTab === 'requests' ? (
           /* Requests Table */
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-[#050816] border-b border-white/[0.06]">
+              <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
                   {[
                     'Organization',
@@ -325,17 +325,17 @@ const WalletManagement: React.FC = () => {
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/[0.04]">
+              <tbody className="divide-y divide-gray-200">
                 {requests.length === 0 ? (
                   <tr>
                     <td colSpan={6} className="px-6 py-16 text-center">
                       <div
-                        className="w-16 h-16 mx-auto mb-3 bg-white/[0.03] rounded-2xl
-                        flex items-center justify-center border border-white/[0.06]"
+                        className="w-16 h-16 mx-auto mb-3 bg-gray-50 rounded-2xl
+                        flex items-center justify-center border border-gray-200"
                       >
                         <CheckCircle className="w-7 h-7 text-gray-600" />
                       </div>
-                      <p className="text-gray-400 font-medium">
+                      <p className="text-gray-500 font-medium">
                         No wallet requests found
                       </p>
                     </td>
@@ -344,7 +344,7 @@ const WalletManagement: React.FC = () => {
                   requests.map((req) => (
                     <tr
                       key={req.id}
-                      className="hover:bg-white/[0.02] transition-colors"
+                      className="hover:bg-gray-50 transition-colors"
                     >
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
@@ -353,10 +353,10 @@ const WalletManagement: React.FC = () => {
                               to-blue-700 rounded-lg flex items-center
                               justify-center shrink-0"
                           >
-                            <Building2 className="w-4 h-4 text-white" />
+                            <Building2 className="w-4 h-4 text-gray-900" />
                           </div>
                           <div className="min-w-0">
-                            <p className="font-semibold text-white text-sm truncate">
+                            <p className="font-semibold text-gray-900 text-sm truncate">
                               {req.organization?.name || 'Unknown'}
                             </p>
                             <p className="text-xs text-gray-500">
@@ -365,12 +365,12 @@ const WalletManagement: React.FC = () => {
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-4 text-sm text-gray-300">
+                      <td className="px-6 py-4 text-sm text-gray-700">
                         {req.user?.email || 'Unknown'}
                       </td>
                       <td className="px-6 py-4">
                         <p
-                          className="text-sm text-gray-400 max-w-xs truncate"
+                          className="text-sm text-gray-500 max-w-xs truncate"
                           title={req.reason}
                         >
                           {req.reason}
@@ -431,7 +431,7 @@ const WalletManagement: React.FC = () => {
           /* Wallets Table */
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-[#050816] border-b border-white/[0.06]">
+              <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
                   {[
                     'Organization',
@@ -452,17 +452,17 @@ const WalletManagement: React.FC = () => {
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/[0.04]">
+              <tbody className="divide-y divide-gray-200">
                 {wallets.length === 0 ? (
                   <tr>
                     <td colSpan={5} className="px-6 py-16 text-center">
                       <div
-                        className="w-16 h-16 mx-auto mb-3 bg-white/[0.03] rounded-2xl
-                        flex items-center justify-center border border-white/[0.06]"
+                        className="w-16 h-16 mx-auto mb-3 bg-gray-50 rounded-2xl
+                        flex items-center justify-center border border-gray-200"
                       >
                         <Wallet className="w-7 h-7 text-gray-600" />
                       </div>
-                      <p className="text-gray-400 font-medium">
+                      <p className="text-gray-500 font-medium">
                         No wallets found
                       </p>
                     </td>
@@ -471,7 +471,7 @@ const WalletManagement: React.FC = () => {
                   wallets.map((w) => (
                     <tr
                       key={w.id}
-                      className="hover:bg-white/[0.02] transition-colors"
+                      className="hover:bg-gray-50 transition-colors"
                     >
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
@@ -480,10 +480,10 @@ const WalletManagement: React.FC = () => {
                               to-emerald-700 rounded-lg flex items-center
                               justify-center shrink-0"
                           >
-                            <Building2 className="w-4 h-4 text-white" />
+                            <Building2 className="w-4 h-4 text-gray-900" />
                           </div>
                           <div>
-                            <p className="font-semibold text-white text-sm">
+                            <p className="font-semibold text-gray-900 text-sm">
                               {w.organization?.name || 'Unknown'}
                             </p>
                             <p className="text-xs text-gray-500">
@@ -495,12 +495,12 @@ const WalletManagement: React.FC = () => {
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-1">
                           <IndianRupee className="w-3.5 h-3.5 text-green-400" />
-                          <span className="font-bold text-white text-base">
+                          <span className="font-bold text-gray-900 text-base">
                             {formatINR(w.balance * 100).replace('₹', '')}
                           </span>
                         </div>
                       </td>
-                      <td className="px-6 py-4 text-sm text-gray-300">
+                      <td className="px-6 py-4 text-sm text-gray-700">
                         {w.creditEnabled ? (
                           <span className="text-blue-400 font-medium">
                             {formatINR(w.creditLimit * 100)}
@@ -593,17 +593,17 @@ const WalletManagement: React.FC = () => {
             onClick={() => setShowAdjustModal(false)}
           />
           <div
-            className="relative bg-[#0a0e27] border border-white/[0.08]
+            className="relative bg-white border border-gray-200
             rounded-2xl shadow-2xl max-w-md w-full overflow-hidden"
           >
             {/* Header */}
-            <div className="px-6 py-4 border-b border-white/[0.06] flex items-center justify-between">
+            <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-primary-500/10 border border-primary-500/20 rounded-xl flex items-center justify-center">
                   <Wallet className="w-5 h-5 text-primary-400" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-white">
+                  <h3 className="text-lg font-bold text-gray-900">
                     Adjust Wallet Balance
                   </h3>
                   <p className="text-xs text-gray-500 mt-0.5">
@@ -613,7 +613,7 @@ const WalletManagement: React.FC = () => {
               </div>
               <button
                 onClick={() => setShowAdjustModal(false)}
-                className="p-2 text-gray-400 hover:bg-white/[0.06] rounded-lg transition-colors"
+                className="p-2 text-gray-500 hover:bg-gray-50 rounded-lg transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -634,7 +634,7 @@ const WalletManagement: React.FC = () => {
                       rounded-xl border transition-all text-sm font-semibold ${
                         adjustType === 'admin_credit'
                           ? 'border-green-500 bg-green-500/10 text-green-400'
-                          : 'border-white/[0.08] bg-[#050816] text-gray-400 hover:border-white/[0.15]'
+                          : 'border-gray-200 bg-gray-50 text-gray-400 hover:border-gray-300'
                       }`}
                   >
                     <ArrowUpRight className="w-4 h-4" />
@@ -647,7 +647,7 @@ const WalletManagement: React.FC = () => {
                       rounded-xl border transition-all text-sm font-semibold ${
                         adjustType === 'admin_debit'
                           ? 'border-red-500 bg-red-500/10 text-red-400'
-                          : 'border-white/[0.08] bg-[#050816] text-gray-400 hover:border-white/[0.15]'
+                          : 'border-gray-200 bg-gray-50 text-gray-400 hover:border-gray-300'
                       }`}
                   >
                     <ArrowDownRight className="w-4 h-4" />
@@ -667,8 +667,8 @@ const WalletManagement: React.FC = () => {
                     type="number"
                     value={adjustAmount}
                     onChange={(e) => setAdjustAmount(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2.5 bg-[#050816]
-                      border border-white/[0.08] rounded-xl text-sm text-white
+                    className="w-full pl-10 pr-4 py-2.5 bg-gray-50
+                      border border-gray-200 rounded-xl text-sm text-gray-900
                       placeholder:text-gray-500 focus:outline-none
                       focus:border-primary-500 transition-colors"
                     placeholder="Enter amount in Rupees"
@@ -685,8 +685,8 @@ const WalletManagement: React.FC = () => {
                   type="text"
                   value={adjustNote}
                   onChange={(e) => setAdjustNote(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-[#050816]
-                    border border-white/[0.08] rounded-xl text-sm text-white
+                  className="w-full px-4 py-2.5 bg-gray-50
+                    border border-gray-200 rounded-xl text-sm text-gray-900
                     placeholder:text-gray-500 focus:outline-none
                     focus:border-primary-500 transition-colors"
                   placeholder={
@@ -702,12 +702,12 @@ const WalletManagement: React.FC = () => {
             </div>
 
             {/* Footer */}
-            <div className="px-6 py-4 border-t border-white/[0.06] bg-[#050816] flex justify-end gap-3">
+            <div className="px-6 py-4 border-t border-gray-200 bg-gray-50 flex justify-end gap-3">
               <button
                 onClick={() => setShowAdjustModal(false)}
                 disabled={adjusting}
-                className="px-4 py-2 text-gray-300 bg-white/[0.04]
-                  hover:bg-white/[0.08] rounded-xl text-sm font-medium
+                className="px-4 py-2 text-gray-700 bg-gray-50
+                  hover:bg-gray-50 rounded-xl text-sm font-medium
                   transition-colors disabled:opacity-50"
               >
                 Cancel
@@ -716,7 +716,7 @@ const WalletManagement: React.FC = () => {
                 onClick={handleAdjustBalance}
                 disabled={adjusting}
                 className="flex items-center gap-2 px-5 py-2 bg-primary-600
-                  hover:bg-primary-700 text-white rounded-xl text-sm font-medium
+                  hover:bg-primary-700 text-gray-900 rounded-xl text-sm font-medium
                   transition-colors disabled:opacity-50"
               >
                 {adjusting && <Loader2 className="w-4 h-4 animate-spin" />}
@@ -738,11 +738,11 @@ const WalletManagement: React.FC = () => {
             }}
           />
           <div
-            className="relative bg-[#0a0e27] border border-white/[0.08]
+            className="relative bg-white border border-gray-200
             rounded-2xl shadow-2xl max-w-md w-full overflow-hidden"
           >
             {/* Header */}
-            <div className="px-6 py-4 border-b border-white/[0.06] flex items-center justify-between">
+            <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div
                   className={`w-10 h-10 rounded-xl flex items-center justify-center border ${
@@ -758,7 +758,7 @@ const WalletManagement: React.FC = () => {
                   )}
                 </div>
                 <div className="min-w-0">
-                  <h3 className="text-lg font-bold text-white">
+                  <h3 className="text-lg font-bold text-gray-900">
                     {toggleTarget.currentlyActive
                       ? 'Deactivate Wallet'
                       : 'Activate Wallet'}
@@ -773,7 +773,7 @@ const WalletManagement: React.FC = () => {
                   setShowToggleModal(false);
                   setToggleTarget(null);
                 }}
-                className="p-2 text-gray-400 hover:bg-white/[0.06] rounded-lg transition-colors shrink-0"
+                className="p-2 text-gray-500 hover:bg-gray-50 rounded-lg transition-colors shrink-0"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -829,8 +829,8 @@ const WalletManagement: React.FC = () => {
                 <textarea
                   value={toggleReason}
                   onChange={(e) => setToggleReason(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-[#050816]
-                    border border-white/[0.08] rounded-xl text-sm text-white
+                  className="w-full px-4 py-2.5 bg-gray-50
+                    border border-gray-200 rounded-xl text-sm text-gray-900
                     placeholder:text-gray-500 focus:outline-none
                     focus:border-primary-500 transition-colors resize-none"
                   placeholder={
@@ -844,15 +844,15 @@ const WalletManagement: React.FC = () => {
             </div>
 
             {/* Footer */}
-            <div className="px-6 py-4 border-t border-white/[0.06] bg-[#050816] flex justify-end gap-3">
+            <div className="px-6 py-4 border-t border-gray-200 bg-gray-50 flex justify-end gap-3">
               <button
                 onClick={() => {
                   setShowToggleModal(false);
                   setToggleTarget(null);
                 }}
                 disabled={toggling}
-                className="px-4 py-2 text-gray-300 bg-white/[0.04]
-                  hover:bg-white/[0.08] rounded-xl text-sm font-medium
+                className="px-4 py-2 text-gray-700 bg-gray-50
+                  hover:bg-gray-50 rounded-xl text-sm font-medium
                   transition-colors disabled:opacity-50"
               >
                 Cancel

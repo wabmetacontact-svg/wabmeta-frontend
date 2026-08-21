@@ -80,20 +80,20 @@ const SystemSettings: React.FC = () => {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-white">System Settings</h1>
-        <p className="text-sm text-gray-400 mt-1">
+        <h1 className="text-2xl font-bold text-gray-900">System Settings</h1>
+        <p className="text-sm text-gray-500 mt-1">
           Manage global platform configuration
         </p>
       </div>
 
       {/* General Configuration */}
-      <div className="bg-[#0a0e27] border border-white/[0.08] rounded-2xl p-6">
-        <div className="flex items-center gap-3 mb-5 pb-5 border-b border-white/[0.06]">
+      <div className="bg-white border border-gray-200 rounded-2xl p-6">
+        <div className="flex items-center gap-3 mb-5 pb-5 border-b border-gray-200">
           <div className="p-2 bg-primary-500/10 rounded-lg">
             <Settings className="w-5 h-5 text-primary-400" />
           </div>
           <div>
-            <h3 className="text-lg font-semibold text-white">
+            <h3 className="text-lg font-semibold text-gray-900">
               General Configuration
             </h3>
             <p className="text-xs text-gray-500 mt-0.5">
@@ -105,8 +105,8 @@ const SystemSettings: React.FC = () => {
         <div className="space-y-3">
           {/* Maintenance Mode */}
           <div
-            className="flex items-center justify-between p-4 bg-[#050816]
-              rounded-xl border border-white/[0.06] hover:border-white/[0.1]
+            className="flex items-center justify-between p-4 bg-gray-50
+              rounded-xl border border-gray-200 hover:border-gray-300
               transition-colors"
           >
             <div className="flex items-center gap-3">
@@ -122,7 +122,7 @@ const SystemSettings: React.FC = () => {
                 />
               </div>
               <div>
-                <h4 className="font-medium text-white text-sm">
+                <h4 className="font-medium text-gray-900 text-sm">
                   Maintenance Mode
                 </h4>
                 <p className="text-xs text-gray-500 mt-0.5">
@@ -135,8 +135,8 @@ const SystemSettings: React.FC = () => {
 
           {/* Allow Registration */}
           <div
-            className="flex items-center justify-between p-4 bg-[#050816]
-              rounded-xl border border-white/[0.06] hover:border-white/[0.1]
+            className="flex items-center justify-between p-4 bg-gray-50
+              rounded-xl border border-gray-200 hover:border-gray-300
               transition-colors"
           >
             <div className="flex items-center gap-3">
@@ -152,7 +152,7 @@ const SystemSettings: React.FC = () => {
                 />
               </div>
               <div>
-                <h4 className="font-medium text-white text-sm">
+                <h4 className="font-medium text-gray-900 text-sm">
                   Allow New Registrations
                 </h4>
                 <p className="text-xs text-gray-500 mt-0.5">
@@ -167,7 +167,7 @@ const SystemSettings: React.FC = () => {
           </div>
 
           {/* Message Limit */}
-          <div className="p-4 bg-[#050816] rounded-xl border border-white/[0.06]">
+          <div className="p-4 bg-gray-50 rounded-xl border border-gray-200">
             <label className="block text-xs text-gray-500 font-semibold uppercase tracking-wider mb-2">
               Global Message Limit (Per User/Day)
             </label>
@@ -177,8 +177,8 @@ const SystemSettings: React.FC = () => {
                 type="number"
                 value={messageLimit}
                 onChange={(e) => setMessageLimit(Number(e.target.value))}
-                className="w-full pl-10 pr-4 py-2.5 bg-[#0a0e27]
-                  border border-white/[0.08] rounded-xl text-sm text-white
+                className="w-full pl-10 pr-4 py-2.5 bg-white
+                  border border-gray-200 rounded-xl text-sm text-gray-900
                   focus:outline-none focus:border-primary-500
                   transition-colors"
                 placeholder="1000"
@@ -190,7 +190,7 @@ const SystemSettings: React.FC = () => {
           </div>
 
           {/* Support Email */}
-          <div className="p-4 bg-[#050816] rounded-xl border border-white/[0.06]">
+          <div className="p-4 bg-gray-50 rounded-xl border border-gray-200">
             <label className="block text-xs text-gray-500 font-semibold uppercase tracking-wider mb-2">
               Support Email
             </label>
@@ -200,8 +200,8 @@ const SystemSettings: React.FC = () => {
                 type="email"
                 value={supportEmail}
                 onChange={(e) => setSupportEmail(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 bg-[#0a0e27]
-                  border border-white/[0.08] rounded-xl text-sm text-white
+                className="w-full pl-10 pr-4 py-2.5 bg-white
+                  border border-gray-200 rounded-xl text-sm text-gray-900
                   placeholder:text-gray-500 focus:outline-none
                   focus:border-primary-500 transition-colors"
                   placeholder="support@example.com"
@@ -219,7 +219,7 @@ const SystemSettings: React.FC = () => {
             onClick={handleSave}
             disabled={saving}
             className="flex items-center gap-2 px-5 py-2.5 bg-primary-600
-              hover:bg-primary-700 text-white font-medium rounded-xl
+              hover:bg-primary-700 text-gray-900 font-medium rounded-xl
               transition-colors disabled:opacity-50 text-sm"
           >
             {saving ? (
@@ -233,14 +233,14 @@ const SystemSettings: React.FC = () => {
       </div>
 
       {/* Danger Zone */}
-      <div className="bg-[#0a0e27] border border-red-500/20 rounded-2xl p-6">
+      <div className="bg-white border border-red-500/20 rounded-2xl p-6">
         <div className="flex items-start gap-4">
           <div className="w-12 h-12 bg-red-500/10 border border-red-500/20 rounded-xl flex items-center justify-center shrink-0">
             <AlertTriangle className="w-6 h-6 text-red-400" />
           </div>
           <div className="flex-1">
             <h3 className="text-lg font-bold text-red-400">Danger Zone</h3>
-            <p className="text-sm text-gray-400 mt-1">
+            <p className="text-sm text-gray-500 mt-1">
               Actions here can cause data loss or service disruption. Proceed
               with caution.
             </p>
@@ -248,11 +248,11 @@ const SystemSettings: React.FC = () => {
             <div className="mt-5 space-y-3">
               {/* Clear Cache */}
               <div
-                className="flex items-center justify-between p-4 bg-[#050816]
-                  border border-white/[0.06] rounded-xl"
+                className="flex items-center justify-between p-4 bg-gray-50
+                  border border-gray-200 rounded-xl"
               >
                 <div>
-                  <h4 className="font-medium text-white text-sm">
+                  <h4 className="font-medium text-gray-900 text-sm">
                     Clear All Cache
                   </h4>
                   <p className="text-xs text-gray-500 mt-0.5">
@@ -278,11 +278,11 @@ const SystemSettings: React.FC = () => {
 
               {/* Optional: Add more danger actions here */}
               <div
-                className="flex items-center justify-between p-4 bg-[#050816]
-                  border border-white/[0.06] rounded-xl"
+                className="flex items-center justify-between p-4 bg-gray-50
+                  border border-gray-200 rounded-xl"
               >
                 <div>
-                  <h4 className="font-medium text-white text-sm">
+                  <h4 className="font-medium text-gray-900 text-sm">
                     Force Logout All Users
                   </h4>
                   <p className="text-xs text-gray-500 mt-0.5">

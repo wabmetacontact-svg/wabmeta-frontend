@@ -6,10 +6,9 @@ import { useNotificationsStore } from '../context/NotificationsContext';
 import {
   playNotificationSound,
   showBrowserNotification,
-  requestNotificationPermission,
 } from './useNotifications';
 import toast from 'react-hot-toast';
-import { MessageSquare, X, VolumeX } from 'lucide-react';
+import { X, VolumeX } from 'lucide-react';
 import React, { useState } from 'react';
 import api from '../services/api';
 import { getAvatarColor } from '../utils/inboxHelpers';
@@ -65,24 +64,24 @@ function NotificationToast({
         { className: 'flex-1 min-w-0 pr-2' },
         React.createElement(
           'p',
-          { className: 'font-bold text-gray-900 dark:text-white text-[15px] truncate tracking-tight' },
+          { className: 'font-bold text-gray-900 text-[15px] truncate tracking-tight' },
           contactName
         ),
         React.createElement(
           'p',
-          { className: 'text-gray-500 dark:text-gray-400 text-[13px] truncate mt-0.5 font-medium' },
+          { className: 'text-gray-500 text-[13px] truncate mt-0.5 font-medium' },
           messagePreview
         )
       )
     ),
     React.createElement(
       'div',
-      { className: 'flex flex-col justify-center gap-2 flex-shrink-0 border-l border-gray-100 dark:border-white/10 pl-3 h-full' },
+      { className: 'flex flex-col justify-center gap-2 flex-shrink-0 border-l border-gray-100 pl-3 h-full' },
       React.createElement(
         'button',
         {
           onClick: onClose,
-          className: 'p-1.5 text-gray-400 hover:text-white hover:bg-gray-100 dark:hover:bg-white/10 rounded-lg transition-all active:scale-95',
+          className: 'p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-all active:scale-95',
           title: 'Close',
         },
         React.createElement(X, { className: 'w-4 h-4' })
@@ -97,7 +96,7 @@ function NotificationToast({
               e.stopPropagation();
               setShowMuteOptions(!showMuteOptions);
             },
-            className: 'p-1.5 text-gray-400 hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-all active:scale-95',
+            className: 'p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all active:scale-95',
             title: 'Mute popups options',
           },
           React.createElement(VolumeX, { className: 'w-4 h-4' })
@@ -106,7 +105,7 @@ function NotificationToast({
           React.createElement(
             'div',
             {
-              className: 'absolute right-0 top-full mt-1 w-36 bg-white dark:bg-gray-800 shadow-xl rounded-lg border border-gray-100 dark:border-gray-700 py-1 z-50 text-sm overflow-hidden',
+              className: 'absolute right-0 top-full mt-1 w-36 bg-white shadow-xl rounded-lg border border-gray-100 py-1 z-50 text-sm overflow-hidden',
             },
             [
               { label: 'For 1 Hour', value: 1 },
@@ -123,7 +122,7 @@ function NotificationToast({
                     onMute(opt.value);
                     setShowMuteOptions(false);
                   },
-                  className: 'w-full text-left px-3 py-1.5 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors',
+                  className: 'w-full text-left px-3 py-1.5 text-gray-700 hover:bg-gray-100 transition-colors',
                 },
                 opt.label
               )
@@ -151,7 +150,7 @@ export function useGlobalNotifications() {
         const permission = await Notification.requestPermission();
         if (permission === 'granted') {
           if ('serviceWorker' in navigator && 'PushManager' in window) {
-            const registration = await navigator.serviceWorker.register('/sw.js');
+            await navigator.serviceWorker.register('/sw.js');
             const readyReg = await navigator.serviceWorker.ready;
             
             // Check existing subscription
@@ -199,9 +198,9 @@ export function useGlobalNotifications() {
             {
               className: `${
                 t.visible ? 'animate-enter' : 'animate-leave'
-              } max-w-[360px] w-full bg-white dark:bg-[#0a0e27]/95 dark:backdrop-blur-xl shadow-2xl rounded-2xl 
+              } max-w-[360px] w-full bg-white shadow-2xl rounded-2xl 
               pointer-events-auto flex items-center gap-3 p-3.5
-              border border-gray-100 dark:border-white/[0.08] ring-1 ring-black/5 dark:ring-white/5 transition-all overflow-visible`,
+              border border-gray-100 ring-1 ring-black/5 transition-all overflow-visible`,
             },
             React.createElement(NotificationToast, {
               contactName,

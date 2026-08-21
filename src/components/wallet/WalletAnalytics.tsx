@@ -107,11 +107,11 @@ const Panel: React.FC<PanelProps> = ({
   accentColor = "border-green-500",
   icon,
 }) => (
-  <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-all">
+  <div className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all">
     <div className={`flex items-center justify-between px-4 pt-4 pb-3 border-b-2 ${accentColor}`}>
       <div className="flex items-center gap-2">
         {icon}
-        <span className="text-sm font-semibold text-gray-800 dark:text-gray-100">
+        <span className="text-sm font-semibold text-gray-800">
           {title}
         </span>
         {tooltip && (
@@ -124,7 +124,7 @@ const Panel: React.FC<PanelProps> = ({
         )}
       </div>
       {total !== undefined && (
-        <span className="text-lg font-bold text-gray-900 dark:text-white">
+        <span className="text-lg font-bold text-gray-900">
           {typeof total === "number" ? fmt(total) : total}
         </span>
       )}
@@ -134,13 +134,13 @@ const Panel: React.FC<PanelProps> = ({
       {rows.map((row, i) => (
         <div
           key={i}
-          className="flex items-center justify-between py-2 border-b border-dashed border-gray-100 dark:border-gray-700 last:border-0"
+          className="flex items-center justify-between py-2 border-b border-dashed border-gray-100 last:border-0"
         >
           <div className="flex items-center gap-2">
-            <span className="text-gray-300 dark:text-gray-600 font-mono text-xs">
+            <span className="text-gray-300 font-mono text-xs">
               —
             </span>
-            <span className="text-xs text-gray-600 dark:text-gray-300">
+            <span className="text-xs text-gray-600">
               {row.label}
             </span>
           </div>
@@ -148,9 +148,9 @@ const Panel: React.FC<PanelProps> = ({
             className={`text-xs font-semibold ${
               typeof row.value === "number" && row.value > 0
                 ? row.highlight
-                  ? "text-green-600 dark:text-green-400"
-                  : "text-gray-900 dark:text-white"
-                : "text-gray-400 dark:text-gray-500"
+                  ? "text-green-600"
+                  : "text-gray-900"
+                : "text-gray-400"
             }`}
           >
             {typeof row.value === "number" ? fmt(row.value) : row.value}
@@ -169,14 +169,14 @@ const CountryPreview: React.FC<{
   const percentage = totalSent > 0 ? (country.sent / totalSent) * 100 : 0;
 
   return (
-    <div className="flex items-center justify-between py-3 border-b border-gray-100 dark:border-gray-700 last:border-0">
+    <div className="flex items-center justify-between py-3 border-b border-gray-100 last:border-0">
       <div className="flex items-center gap-3 flex-1">
         <span className="text-2xl">{country.flag}</span>
         <div>
-          <p className="text-sm font-medium text-gray-900 dark:text-white">
+          <p className="text-sm font-medium text-gray-900">
             {country.name}
           </p>
-          <p className="text-xs text-gray-500 dark:text-gray-400">
+          <p className="text-xs text-gray-500">
             {fmt(country.sent)} sent • {fmt(country.delivered)} delivered
           </p>
         </div>
@@ -184,13 +184,13 @@ const CountryPreview: React.FC<{
 
       <div className="flex items-center gap-4">
         <div className="text-right">
-          <p className="text-sm font-bold text-gray-900 dark:text-white">
+          <p className="text-sm font-bold text-gray-900">
             {fmtCost(country.cost)}
           </p>
           <p className="text-xs text-gray-400">{percentage.toFixed(1)}%</p>
         </div>
 
-        <div className="w-16 bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
+        <div className="w-16 bg-gray-200 rounded-full h-1.5">
           <div
             className="bg-green-500 h-1.5 rounded-full transition-all"
             style={{ width: `${Math.min(percentage, 100)}%` }}
@@ -206,15 +206,15 @@ const Skeleton: React.FC = () => (
   <div className="space-y-4 animate-pulse">
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
       {[1, 2, 3].map((i) => (
-        <div key={i} className="h-44 bg-gray-100 dark:bg-gray-700 rounded-xl" />
+        <div key={i} className="h-44 bg-gray-100 rounded-xl" />
       ))}
     </div>
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       {[1, 2].map((i) => (
-        <div key={i} className="h-44 bg-gray-100 dark:bg-gray-700 rounded-xl" />
+        <div key={i} className="h-44 bg-gray-100 rounded-xl" />
       ))}
     </div>
-    <div className="h-64 bg-gray-100 dark:bg-gray-700 rounded-xl" />
+    <div className="h-64 bg-gray-100 rounded-xl" />
   </div>
 );
 
@@ -328,7 +328,7 @@ const WalletAnalytics: React.FC = () => {
       {/* ═══ HEADER ═══ */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <p className="text-sm font-semibold text-gray-700 dark:text-gray-200 flex items-center gap-2">
+          <p className="text-sm font-semibold text-gray-700 flex items-center gap-2">
             📊 Messaging Insights
             {lastUpdated && (
               <span className="text-[10px] text-gray-400 font-normal">
@@ -336,7 +336,7 @@ const WalletAnalytics: React.FC = () => {
               </span>
             )}
           </p>
-          <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
+          <p className="text-xs text-gray-400 mt-0.5">
             Note: All insights data is approximate and may vary slightly due to processing latency.
           </p>
         </div>
@@ -346,7 +346,7 @@ const WalletAnalytics: React.FC = () => {
           <select
             value={dateRange}
             onChange={(e) => setDateRange(e.target.value as any)}
-            className="px-3 py-1.5 text-xs font-medium bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-200 focus:ring-2 focus:ring-green-500"
+            className="px-3 py-1.5 text-xs font-medium bg-white border border-gray-200 rounded-lg text-gray-700 focus:ring-2 focus:ring-green-500"
           >
             <option value="7">Last 7 days</option>
             <option value="30">Last 30 days</option>
@@ -367,7 +367,7 @@ const WalletAnalytics: React.FC = () => {
           {/* Export */}
           <button
             onClick={exportToCSV}
-            className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg text-gray-400 hover:text-green-600 transition-all"
+            className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-400 hover:text-green-600 transition-all"
             title="Export to CSV"
           >
             <Download className="w-4 h-4" />
@@ -377,7 +377,7 @@ const WalletAnalytics: React.FC = () => {
           <button
             onClick={() => fetchData(true)}
             disabled={refreshing}
-            className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg text-gray-400 hover:text-green-600 transition-all"
+            className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-400 hover:text-green-600 transition-all"
             title="Refresh"
           >
             <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
@@ -453,11 +453,11 @@ const WalletAnalytics: React.FC = () => {
 
       {/* ═══ COUNTRY BREAKDOWN (NEW!) ═══ */}
       {countryBreakdown.length > 0 && (
-        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
           <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b-2 border-purple-500">
             <div className="flex items-center gap-2">
               <Globe className="w-4 h-4 text-purple-600" />
-              <span className="text-sm font-semibold text-gray-800 dark:text-gray-100">
+              <span className="text-sm font-semibold text-gray-800">
                 Country-wise Distribution
               </span>
               <span className="text-xs text-gray-400">
@@ -480,7 +480,7 @@ const WalletAnalytics: React.FC = () => {
           </div>
 
           {countryBreakdown.length > 5 && (
-            <div className="px-4 py-3 bg-gray-50 dark:bg-gray-900/50 border-t border-gray-100 dark:border-gray-700">
+            <div className="px-4 py-3 bg-gray-50 border-t border-gray-100">
               <button
                 onClick={() => setShowCountryModal(true)}
                 className="w-full text-xs font-medium text-purple-600 hover:text-purple-700 flex items-center justify-center gap-1"
@@ -493,8 +493,8 @@ const WalletAnalytics: React.FC = () => {
       )}
 
       {/* ═══ RATES REFERENCE ═══ */}
-      <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-xl p-4 border border-green-200 dark:border-green-800">
-        <p className="text-xs font-semibold text-green-800 dark:text-green-300 mb-3 flex items-center gap-2">
+      <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-4 border border-green-200">
+        <p className="text-xs font-semibold text-green-800 mb-3 flex items-center gap-2">
           <TrendingUp className="w-3.5 h-3.5" />
           Meta Rates for India (per delivered message)
         </p>
@@ -507,14 +507,14 @@ const WalletAnalytics: React.FC = () => {
           ].map((r, i) => (
             <div
               key={i}
-              className="bg-white dark:bg-gray-800 rounded-lg p-3 text-center border border-green-100 dark:border-green-900"
+              className="bg-white rounded-lg p-3 text-center border border-green-100"
             >
-              <p className="text-xs text-gray-500 dark:text-gray-400">{r.label}</p>
+              <p className="text-xs text-gray-500">{r.label}</p>
               <p className={`text-base font-bold mt-1 ${r.color}`}>₹{r.rate.toFixed(2)}</p>
             </div>
           ))}
         </div>
-        <p className="text-[10px] text-green-700/70 dark:text-green-400/70 mt-3 text-center">
+        <p className="text-[10px] text-green-700/70 mt-3 text-center">
           💡 Rates shown are for India. International rates vary by country. Click "View by Country" for details.
         </p>
       </div>

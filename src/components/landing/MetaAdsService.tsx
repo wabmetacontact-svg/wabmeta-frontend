@@ -32,7 +32,7 @@ const MetaAdsService = () => {
             </div>
 
             {/* Heading */}
-            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-[1.05] tracking-tight text-gray-955">
+            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-[1.05] tracking-tight text-gray-950">
               <span>We Run Meta Ads That</span>{' '}
               <span className="bg-gradient-to-r from-gray-400 to-gray-500 bg-clip-text text-transparent italic font-light">
                 Bring

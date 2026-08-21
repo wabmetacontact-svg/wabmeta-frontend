@@ -1,6 +1,6 @@
 // src/components/inbox/QuickRepliesPanel.tsx
 import React, { useState, useEffect, useRef } from 'react';
-import { Plus, Edit2, Trash2, X, Check, Zap, Search, Save } from 'lucide-react';
+import { Plus, Edit2, Trash2, X, Zap, Search, Save } from 'lucide-react';
 
 export interface QuickReply {
   id: string;
@@ -154,7 +154,7 @@ const QuickRepliesPanel: React.FC<Props> = ({
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-lg hover:bg-gray-100 text-gray-550 hover:text-gray-900 transition-colors"
+            className="p-2 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-gray-900 transition-colors"
           >
             <X className="w-4 h-4" />
           </button>
@@ -203,7 +203,7 @@ const QuickRepliesPanel: React.FC<Props> = ({
             <div className="space-y-3">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-[10px] font-semibold text-gray-550 uppercase tracking-wider">
+                  <label className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">
                     Shortcut
                   </label>
                   <div className="relative mt-1">
@@ -223,7 +223,7 @@ const QuickRepliesPanel: React.FC<Props> = ({
                   </div>
                 </div>
                 <div>
-                  <label className="text-[10px] font-semibold text-gray-550 uppercase tracking-wider">
+                  <label className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">
                     Category (Optional)
                   </label>
                   <input
@@ -234,14 +234,14 @@ const QuickRepliesPanel: React.FC<Props> = ({
                     className="
                       w-full px-3 py-2 mt-1
                       bg-white border border-gray-200
-                      rounded-lg text-sm text-gray-900 placeholder:text-gray-505
+                      rounded-lg text-sm text-gray-900 placeholder:text-gray-500
                       focus:outline-none focus:border-emerald-500/35 focus:ring-1 focus:ring-emerald-500/10
                     "
                   />
                 </div>
               </div>
               <div>
-                <label className="text-[10px] font-semibold text-gray-550 uppercase tracking-wider">
+                <label className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">
                   Reply Text
                 </label>
                 <textarea
@@ -252,7 +252,7 @@ const QuickRepliesPanel: React.FC<Props> = ({
                   className="
                     w-full px-3 py-2 mt-1
                     bg-white border border-gray-200
-                    rounded-lg text-sm text-gray-900 placeholder:text-gray-550
+                    rounded-lg text-sm text-gray-900 placeholder:text-gray-500
                     focus:outline-none focus:border-emerald-500/35 focus:ring-1 focus:ring-emerald-500/10
                     resize-none
                   "
@@ -290,7 +290,7 @@ const QuickRepliesPanel: React.FC<Props> = ({
             <div className="flex flex-col items-center justify-center py-16 px-4">
               <div className="
                 w-14 h-14 rounded-full
-                bg-gray-100 border border-gray-250
+                bg-gray-100 border border-gray-200
                 flex items-center justify-center mb-3
               ">
                 <Zap className="w-6 h-6 text-gray-500" />
@@ -298,7 +298,7 @@ const QuickRepliesPanel: React.FC<Props> = ({
               <h3 className="text-sm font-medium text-gray-900 mb-1">
                 {search ? 'No matches' : 'No quick replies yet'}
               </h3>
-              <p className="text-xs text-gray-505 text-center max-w-xs">
+              <p className="text-xs text-gray-500 text-center max-w-xs">
                 {search
                   ? 'Try a different search term'
                   : 'Create reusable responses to send messages faster'}
@@ -361,7 +361,7 @@ const QuickRepliesPanel: React.FC<Props> = ({
                                   e.stopPropagation();
                                   startEdit(qr);
                                 }}
-                                className="p-1.5 rounded-md hover:bg-gray-200 text-gray-550 hover:text-gray-900 transition-colors"
+                                className="p-1.5 rounded-md hover:bg-gray-200 text-gray-500 hover:text-gray-900 transition-colors"
                               >
                                 <Edit2 className="w-3 h-3" />
                               </button>
@@ -372,7 +372,7 @@ const QuickRepliesPanel: React.FC<Props> = ({
                                   e.stopPropagation();
                                   onDelete(qr.id);
                                 }}
-                                className="p-1.5 rounded-md hover:bg-red-50 text-gray-550 hover:text-red-650 transition-colors"
+                                className="p-1.5 rounded-md hover:bg-red-50 text-gray-500 hover:text-red-600 transition-colors"
                               >
                                 <Trash2 className="w-3 h-3" />
                               </button>

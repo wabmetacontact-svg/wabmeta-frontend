@@ -63,7 +63,7 @@ const LockedWalletView: React.FC = () => (
     <h1 className="text-3xl font-bold text-gray-900 mb-4">
       Wallet Feature Locked
     </h1>
-    <p className="text-gray-650 mb-8 max-w-md mx-auto">
+    <p className="text-gray-600 mb-8 max-w-md mx-auto">
       The Meta Payment Wallet is a premium feature available for all paid subscription plans.
       Upgrade your plan from Free to manage payments with ease.
     </p>
@@ -130,17 +130,17 @@ const NotActiveView: React.FC<NotActiveViewProps> = ({
           <div className="text-center">
             <div className="flex items-center justify-center gap-2 mb-3">
               <Clock className="w-6 h-6 text-yellow-600 animate-pulse" />
-              <span className="text-lg font-semibold text-yellow-750">
+              <span className="text-lg font-semibold text-yellow-700">
                 Request Under Review
               </span>
             </div>
-            <p className="text-gray-650 text-sm leading-relaxed">
+            <p className="text-gray-600 text-sm leading-relaxed">
               Your wallet access request is being reviewed by our team. We'll
               notify you once it's processed (usually within 24 hours).
             </p>
             <div
               className="mt-4 bg-yellow-50 border border-yellow-200
-                            rounded-xl p-3 text-sm text-yellow-850"
+                            rounded-xl p-3 text-sm text-yellow-800"
             >
               💡 Make sure you are on a paid subscription plan (Monthly or higher).
             </div>
@@ -495,7 +495,7 @@ const ActiveWalletView: React.FC<ActiveWalletViewProps> = ({
                           transition-all
                 ${activeTab === tab.id
                   ? "text-emerald-700 border-b-2 border-emerald-500 bg-white"
-                  : "text-gray-550 hover:text-gray-800 hover:bg-gray-100/50"
+                  : "text-gray-500 hover:text-gray-800 hover:bg-gray-100/50"
                 }`}
             >
               {tab.label}
@@ -552,7 +552,7 @@ const WalletOverview: React.FC<{ walletData: WalletData }> = ({
           label: "Total Used",
           value: `₹${walletData.totalDebited.toLocaleString("en-IN", { minimumFractionDigits: 2 })}`,
           icon: ArrowDownLeft,
-          color: "text-red-750",
+          color: "text-red-700",
           bg: "bg-red-50 border-red-200",
         },
         {

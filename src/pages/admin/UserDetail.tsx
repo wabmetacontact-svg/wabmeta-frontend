@@ -15,7 +15,6 @@ import {
   Phone,
   Mail,
   Calendar,
-  Tag,
   CheckCircle,
   XCircle,
   AlertCircle,
@@ -291,14 +290,14 @@ const StatCard: React.FC<{
   color: string;
   sub?: string;
 }> = ({ label, value, icon: Icon, color, sub }) => (
-  <div className="bg-[#0a0e27] border border-white/[0.08] rounded-xl p-4">
+  <div className="bg-white border border-gray-200 rounded-xl p-4">
     <div className="flex items-center justify-between mb-2">
-      <p className="text-xs text-gray-400 font-medium">{label}</p>
+      <p className="text-xs text-gray-500 font-medium">{label}</p>
       <div className={`p-2 rounded-lg ${color}`}>
-        <Icon className="w-4 h-4 text-white" />
+        <Icon className="w-4 h-4 text-gray-900" />
       </div>
     </div>
-    <p className="text-2xl font-bold text-white">{value}</p>
+    <p className="text-2xl font-bold text-gray-900">{value}</p>
     {sub && <p className="text-xs text-gray-500 mt-1">{sub}</p>}
   </div>
 );
@@ -319,27 +318,27 @@ const Pagination: React.FC<{
   const end = Math.min(page * limit, total);
 
   return (
-    <div className="flex items-center justify-between px-4 py-3 border-t border-white/[0.06]">
-      <p className="text-xs text-gray-400">
+    <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200">
+      <p className="text-xs text-gray-500">
         Showing {start}–{end} of {total}
       </p>
       <div className="flex items-center gap-2">
         <button
           onClick={() => onPageChange(page - 1)}
           disabled={page <= 1}
-          className="p-1.5 rounded-lg hover:bg-white/[0.06] disabled:opacity-40 transition-colors"
+          className="p-1.5 rounded-lg hover:bg-gray-50 disabled:opacity-40 transition-colors"
         >
-          <ChevronLeft className="w-4 h-4 text-gray-400" />
+          <ChevronLeft className="w-4 h-4 text-gray-500" />
         </button>
-        <span className="text-xs text-gray-300 min-w-[60px] text-center">
+        <span className="text-xs text-gray-700 min-w-[60px] text-center">
           {page} / {totalPages}
         </span>
         <button
           onClick={() => onPageChange(page + 1)}
           disabled={page >= totalPages}
-          className="p-1.5 rounded-lg hover:bg-white/[0.06] disabled:opacity-40 transition-colors"
+          className="p-1.5 rounded-lg hover:bg-gray-50 disabled:opacity-40 transition-colors"
         >
-          <ChevronRight className="w-4 h-4 text-gray-400" />
+          <ChevronRight className="w-4 h-4 text-gray-500" />
         </button>
       </div>
     </div>
@@ -412,7 +411,7 @@ const ContactsTab: React.FC<{ userId: string }> = ({ userId }) => {
         <div className="flex items-center gap-3 flex-wrap">
           {/* Search */}
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
             <input
               type="text"
               placeholder="Search contacts..."
@@ -421,8 +420,8 @@ const ContactsTab: React.FC<{ userId: string }> = ({ userId }) => {
                 setSearch(e.target.value);
                 setPage(1);
               }}
-              className="pl-9 pr-4 py-2 bg-[#0a0e27] border border-white/[0.1]
-                rounded-xl text-sm text-white placeholder:text-gray-500
+              className="pl-9 pr-4 py-2 bg-white border border-gray-200
+                rounded-xl text-sm text-gray-900 placeholder:text-gray-500
                 focus:outline-none focus:border-primary-500 w-56"
             />
           </div>
@@ -445,7 +444,7 @@ const ContactsTab: React.FC<{ userId: string }> = ({ userId }) => {
                 after:bg-white after:rounded-full after:h-4 after:w-4
                 after:transition-all peer-checked:after:translate-x-4" />
             </div>
-            <span className="text-xs text-gray-400">Include deleted/blocked</span>
+            <span className="text-xs text-gray-500">Include deleted/blocked</span>
           </label>
         </div>
 
@@ -453,8 +452,8 @@ const ContactsTab: React.FC<{ userId: string }> = ({ userId }) => {
         <div className="flex items-center gap-2">
           <button
             onClick={fetchContacts}
-            className="p-2 border border-white/[0.1] rounded-xl
-              hover:bg-white/[0.04] transition-colors"
+            className="p-2 border border-gray-200 rounded-xl
+              hover:bg-gray-50 transition-colors"
           >
             <RefreshCw className={`w-4 h-4 text-gray-400 ${loading ? 'animate-spin' : ''}`} />
           </button>
@@ -487,7 +486,7 @@ const ContactsTab: React.FC<{ userId: string }> = ({ userId }) => {
       </div>
 
       {/* Table */}
-      <div className="bg-[#0a0e27] border border-white/[0.08] rounded-2xl overflow-hidden">
+      <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
         {loading ? (
           <div className="flex items-center justify-center py-16">
             <Loader2 className="w-6 h-6 animate-spin text-primary-400" />
@@ -495,13 +494,13 @@ const ContactsTab: React.FC<{ userId: string }> = ({ userId }) => {
         ) : contacts.length === 0 ? (
           <div className="text-center py-16">
             <Users className="w-10 h-10 text-gray-600 mx-auto mb-3" />
-            <p className="text-gray-400 font-medium">No contacts found</p>
+            <p className="text-gray-500 font-medium">No contacts found</p>
           </div>
         ) : (
           <>
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-[#050816] border-b border-white/[0.06]">
+                <thead className="bg-gray-50 border-b border-gray-200">
                   <tr>
                     {[
                       'Contact',
@@ -522,16 +521,16 @@ const ContactsTab: React.FC<{ userId: string }> = ({ userId }) => {
                     ))}
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-white/[0.04]">
+                <tbody className="divide-y divide-gray-200">
                   {contacts.map((c) => (
                     <tr
                       key={c.id}
-                      className={`hover:bg-white/[0.02] transition-colors
+                      className={`hover:bg-gray-50 transition-colors
                         ${c.status !== 'ACTIVE' ? 'opacity-60' : ''}`}
                     >
                       <td className="px-4 py-3">
                         <div>
-                          <p className="text-sm font-medium text-white">
+                          <p className="text-sm font-medium text-gray-900">
                             {[c.firstName, c.lastName].filter(Boolean).join(' ') ||
                               'No Name'}
                           </p>
@@ -543,7 +542,7 @@ const ContactsTab: React.FC<{ userId: string }> = ({ userId }) => {
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-1.5">
                           <Phone className="w-3.5 h-3.5 text-gray-500" />
-                          <span className="text-sm text-gray-300 font-mono">
+                          <span className="text-sm text-gray-700 font-mono">
                             {c.phone?.startsWith('+') ? c.phone : `${c.countryCode || ''}${c.phone}`}
                           </span>
                         </div>
@@ -577,7 +576,7 @@ const ContactsTab: React.FC<{ userId: string }> = ({ userId }) => {
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-1">
                           <MessageSquare className="w-3 h-3 text-gray-500" />
-                          <span className="text-sm text-gray-300">
+                          <span className="text-sm text-gray-700">
                             {c.messageCount}
                           </span>
                         </div>
@@ -585,7 +584,7 @@ const ContactsTab: React.FC<{ userId: string }> = ({ userId }) => {
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-1">
                           <Building2 className="w-3 h-3 text-gray-500" />
-                          <span className="text-xs text-gray-400">
+                          <span className="text-xs text-gray-500">
                             {c.organization?.name}
                           </span>
                         </div>
@@ -668,20 +667,20 @@ const TemplatePreviewModal: React.FC<{
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
 
-      <div className="relative bg-[#0a0e27] rounded-2xl shadow-2xl
-        max-w-3xl w-full max-h-[90vh] overflow-hidden border border-white/[0.1]
+      <div className="relative bg-white rounded-2xl shadow-2xl
+        max-w-3xl w-full max-h-[90vh] overflow-hidden border border-gray-200
         flex flex-col">
 
         {/* Header */}
-        <div className="px-6 py-4 border-b border-white/[0.08]
-          flex items-center justify-between shrink-0 bg-[#050816]">
+        <div className="px-6 py-4 border-b border-gray-200
+          flex items-center justify-between shrink-0 bg-gray-50">
           <div className="flex items-center gap-3 min-w-0">
             <div className="w-10 h-10 bg-gradient-to-br from-primary-500
               to-primary-700 rounded-xl flex items-center justify-center shrink-0">
-              <FileText className="w-5 h-5 text-white" />
+              <FileText className="w-5 h-5 text-gray-900" />
             </div>
             <div className="min-w-0">
-              <h2 className="text-lg font-bold text-white truncate">
+              <h2 className="text-lg font-bold text-gray-900 truncate">
                 {template.name}
               </h2>
               <div className="flex items-center gap-2 mt-0.5">
@@ -696,7 +695,7 @@ const TemplatePreviewModal: React.FC<{
 
           <button
             onClick={onClose}
-            className="p-2 text-gray-400 hover:bg-white/[0.06]
+            className="p-2 text-gray-500 hover:bg-gray-50
               rounded-lg transition-colors shrink-0"
           >
             <XCircle className="w-5 h-5" />
@@ -709,8 +708,8 @@ const TemplatePreviewModal: React.FC<{
 
             {/* LEFT: WhatsApp Preview */}
             <div className="p-6 bg-gradient-to-br from-[#0a1929] to-[#0a0e27]
-              border-r border-white/[0.06]">
-              <p className="text-xs font-semibold text-gray-400 uppercase
+              border-r border-gray-200">
+              <p className="text-xs font-semibold text-gray-500 uppercase
                 tracking-wider mb-4 flex items-center gap-2">
                 <MessageSquare className="w-3.5 h-3.5" />
                 Live Preview
@@ -718,7 +717,7 @@ const TemplatePreviewModal: React.FC<{
 
               {/* WhatsApp chat bubble container */}
               <div className="bg-[#0b141a] rounded-xl p-3 max-w-sm mx-auto
-                border border-white/[0.05]"
+                border border-gray-200"
                 style={{
                   backgroundImage: 'url("data:image/svg+xml,%3Csvg width=\'40\' height=\'40\' viewBox=\'0 0 40 40\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'0.02\' fill-rule=\'evenodd\'%3E%3Cpath d=\'M0 40L40 0H20L0 20M40 40V20L20 40\'/%3E%3C/g%3E%3C/svg%3E")',
                 }}
@@ -731,7 +730,7 @@ const TemplatePreviewModal: React.FC<{
                   {template.headerType && template.headerType !== 'NONE' && (
                     <div className="bg-[#004a3d] p-2">
                       {template.headerType === 'TEXT' && template.headerContent && (
-                        <p className="text-white font-bold text-sm break-words">
+                        <p className="text-gray-900 font-bold text-sm break-words">
                           {template.headerContent}
                         </p>
                       )}
@@ -739,8 +738,8 @@ const TemplatePreviewModal: React.FC<{
                         <div className="bg-gray-700 rounded h-32 flex items-center
                           justify-center">
                           <div className="text-center">
-                            <FileText className="w-8 h-8 text-gray-400 mx-auto mb-1" />
-                            <p className="text-xs text-gray-400">Image Header</p>
+                            <FileText className="w-8 h-8 text-gray-500 mx-auto mb-1" />
+                            <p className="text-xs text-gray-500">Image Header</p>
                           </div>
                         </div>
                       )}
@@ -749,14 +748,14 @@ const TemplatePreviewModal: React.FC<{
                           justify-center">
                           <div className="text-center">
                             <span className="text-3xl">🎥</span>
-                            <p className="text-xs text-gray-400 mt-1">Video Header</p>
+                            <p className="text-xs text-gray-500 mt-1">Video Header</p>
                           </div>
                         </div>
                       )}
                       {template.headerType === 'DOCUMENT' && (
                         <div className="bg-gray-700 rounded p-3 flex items-center gap-2">
                           <span className="text-2xl">📄</span>
-                          <span className="text-xs text-gray-300">Document</span>
+                          <span className="text-xs text-gray-700">Document</span>
                         </div>
                       )}
                     </div>
@@ -764,21 +763,21 @@ const TemplatePreviewModal: React.FC<{
 
                   {/* Body */}
                   <div className="p-3">
-                    <p className="text-white text-sm whitespace-pre-wrap break-words
+                    <p className="text-gray-900 text-sm whitespace-pre-wrap break-words
                       leading-relaxed">
                       {formatBodyText(template.bodyText)}
                     </p>
 
                     {/* Footer */}
                     {template.footerText && (
-                      <p className="text-gray-400 text-xs mt-2 italic break-words">
+                      <p className="text-gray-500 text-xs mt-2 italic break-words">
                         {template.footerText}
                       </p>
                     )}
 
                     {/* Timestamp */}
                     <div className="flex items-center justify-end gap-1 mt-2">
-                      <span className="text-[10px] text-gray-400">
+                      <span className="text-[10px] text-gray-500">
                         {new Date().toLocaleTimeString('en-IN', {
                           hour: '2-digit',
                           minute: '2-digit',
@@ -815,7 +814,7 @@ const TemplatePreviewModal: React.FC<{
 
             {/* RIGHT: Template Details */}
             <div className="p-6 space-y-5">
-              <p className="text-xs font-semibold text-gray-400 uppercase
+              <p className="text-xs font-semibold text-gray-500 uppercase
                 tracking-wider flex items-center gap-2">
                 <Activity className="w-3.5 h-3.5" />
                 Template Details
@@ -891,21 +890,21 @@ const TemplatePreviewModal: React.FC<{
               {/* Variables list */}
               {variables.length > 0 && (
                 <div>
-                  <p className="text-xs font-semibold text-gray-400 mb-2">
+                  <p className="text-xs font-semibold text-gray-500 mb-2">
                     Variables
                   </p>
                   <div className="space-y-1.5">
                     {variables.map((v, i) => (
                       <div
                         key={i}
-                        className="flex items-center gap-2 p-2 bg-white/[0.03]
-                          rounded-lg border border-white/[0.05]"
+                        className="flex items-center gap-2 p-2 bg-gray-50
+                          rounded-lg border border-gray-200"
                       >
                         <span className="bg-yellow-500/20 text-yellow-400 px-2 py-0.5
                           rounded text-xs font-mono">
                           {`{{${i + 1}}}`}
                         </span>
-                        <span className="text-xs text-gray-400 truncate">
+                        <span className="text-xs text-gray-500 truncate">
                           {typeof v === 'string' ? v : v.name || v.type || `Variable ${i + 1}`}
                         </span>
                       </div>
@@ -917,23 +916,23 @@ const TemplatePreviewModal: React.FC<{
               {/* Buttons details */}
               {buttons.length > 0 && (
                 <div>
-                  <p className="text-xs font-semibold text-gray-400 mb-2">
+                  <p className="text-xs font-semibold text-gray-500 mb-2">
                     Buttons Details
                   </p>
                   <div className="space-y-2">
                     {buttons.map((btn, i) => (
                       <div
                         key={i}
-                        className="p-2.5 bg-white/[0.03] rounded-lg
-                          border border-white/[0.05]"
+                        className="p-2.5 bg-gray-50 rounded-lg
+                          border border-gray-200"
                       >
                         <div className="flex items-center gap-2 mb-1">
                           <span>{getButtonIcon(btn.type)}</span>
-                          <span className="text-sm font-medium text-white">
+                          <span className="text-sm font-medium text-gray-900">
                             {btn.text}
                           </span>
                           <span className="ml-auto text-[10px] text-gray-500 uppercase
-                            bg-white/[0.05] px-1.5 py-0.5 rounded">
+                            bg-gray-50 px-1.5 py-0.5 rounded">
                             {btn.type}
                           </span>
                         </div>
@@ -959,7 +958,7 @@ const TemplatePreviewModal: React.FC<{
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-3 border-t border-white/[0.08] bg-[#050816]
+        <div className="px-6 py-3 border-t border-gray-200 bg-gray-50
           flex items-center justify-between shrink-0">
           <p className="text-xs text-gray-500">
             Created by user · Admin read-only view
@@ -967,7 +966,7 @@ const TemplatePreviewModal: React.FC<{
           <button
             onClick={onClose}
             className="px-4 py-1.5 bg-primary-600 hover:bg-primary-700
-              text-white text-sm font-medium rounded-lg transition-colors"
+              text-gray-900 text-sm font-medium rounded-lg transition-colors"
           >
             Close
           </button>
@@ -987,7 +986,7 @@ const DetailRow: React.FC<{
   mono?: boolean;
 }> = ({ label, value, mono }) => (
   <div className="flex items-start justify-between gap-3 py-1.5
-    border-b border-white/[0.04] last:border-0">
+    border-b border-gray-200 last:border-0">
     <span className="text-xs text-gray-500 shrink-0 pt-0.5">{label}</span>
     <span
       className={`text-xs text-right break-all text-gray-200
@@ -1056,7 +1055,7 @@ const TemplatesTab: React.FC<{ userId: string }> = ({ userId }) => {
       <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
         <div className="flex items-center gap-3 flex-wrap">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
             <input
               type="text"
               placeholder="Search templates..."
@@ -1065,8 +1064,8 @@ const TemplatesTab: React.FC<{ userId: string }> = ({ userId }) => {
                 setSearch(e.target.value);
                 setPage(1);
               }}
-              className="pl-9 pr-4 py-2 bg-[#0a0e27] border border-white/[0.1]
-                rounded-xl text-sm text-white placeholder:text-gray-500
+              className="pl-9 pr-4 py-2 bg-white border border-gray-200
+                rounded-xl text-sm text-gray-900 placeholder:text-gray-500
                 focus:outline-none focus:border-primary-500 w-52"
             />
           </div>
@@ -1077,8 +1076,8 @@ const TemplatesTab: React.FC<{ userId: string }> = ({ userId }) => {
               setStatusFilter(e.target.value);
               setPage(1);
             }}
-            className="px-3 py-2 bg-[#0a0e27] border border-white/[0.1]
-              rounded-xl text-sm text-gray-300 focus:outline-none
+            className="px-3 py-2 bg-white border border-gray-200
+              rounded-xl text-sm text-gray-700 focus:outline-none
               focus:border-primary-500"
           >
             <option value="">All Statuses</option>
@@ -1090,15 +1089,15 @@ const TemplatesTab: React.FC<{ userId: string }> = ({ userId }) => {
 
         <button
           onClick={fetchTemplates}
-          className="p-2 border border-white/[0.1] rounded-xl
-            hover:bg-white/[0.04] transition-colors"
+          className="p-2 border border-gray-200 rounded-xl
+            hover:bg-gray-50 transition-colors"
         >
           <RefreshCw className={`w-4 h-4 text-gray-400 ${loading ? 'animate-spin' : ''}`} />
         </button>
       </div>
 
       {/* Table */}
-      <div className="bg-[#0a0e27] border border-white/[0.08] rounded-2xl overflow-hidden">
+      <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
         {loading ? (
           <div className="flex items-center justify-center py-16">
             <Loader2 className="w-6 h-6 animate-spin text-primary-400" />
@@ -1106,13 +1105,13 @@ const TemplatesTab: React.FC<{ userId: string }> = ({ userId }) => {
         ) : templates.length === 0 ? (
           <div className="text-center py-16">
             <FileText className="w-10 h-10 text-gray-600 mx-auto mb-3" />
-            <p className="text-gray-400 font-medium">No templates found</p>
+            <p className="text-gray-500 font-medium">No templates found</p>
           </div>
         ) : (
           <>
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-[#050816] border-b border-white/[0.06]">
+                <thead className="bg-gray-50 border-b border-gray-200">
                   <tr>
                     {[
                       'Template Name',
@@ -1134,15 +1133,15 @@ const TemplatesTab: React.FC<{ userId: string }> = ({ userId }) => {
                     ))}
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-white/[0.04]">
+                <tbody className="divide-y divide-gray-200">
                   {templates.map((t) => (
                     <tr
                       key={t.id}
-                      className="hover:bg-white/[0.02] transition-colors"
+                      className="hover:bg-gray-50 transition-colors"
                     >
                       <td className="px-4 py-3 max-w-md">
                         <div>
-                          <p className="text-sm font-semibold text-white">
+                          <p className="text-sm font-semibold text-gray-900">
                             {t.name}
                           </p>
                           {/* ✅ Body text - 2 lines max with full preview hint */}
@@ -1159,7 +1158,7 @@ const TemplatesTab: React.FC<{ userId: string }> = ({ userId }) => {
                               </span>
                               {t.footerText && (
                                 <span className="text-[10px] bg-gray-500/10
-                                  text-gray-400 px-1.5 py-0.5 rounded font-medium">
+                                  text-gray-500 px-1.5 py-0.5 rounded font-medium">
                                   FOOTER
                                 </span>
                               )}
@@ -1186,7 +1185,7 @@ const TemplatesTab: React.FC<{ userId: string }> = ({ userId }) => {
                           {t.category}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-sm text-gray-300">
+                      <td className="px-4 py-3 text-sm text-gray-700">
                         {t.language}
                       </td>
                       <td className="px-4 py-3">
@@ -1195,7 +1194,7 @@ const TemplatesTab: React.FC<{ userId: string }> = ({ userId }) => {
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-1">
                           <Zap className="w-3 h-3 text-gray-500" />
-                          <span className="text-sm text-gray-300">
+                          <span className="text-sm text-gray-700">
                             {t._count?.campaigns || 0} campaigns
                           </span>
                         </div>
@@ -1203,7 +1202,7 @@ const TemplatesTab: React.FC<{ userId: string }> = ({ userId }) => {
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-1">
                           <Building2 className="w-3 h-3 text-gray-500" />
-                          <span className="text-xs text-gray-400">
+                          <span className="text-xs text-gray-500">
                             {t.organization?.name}
                           </span>
                         </div>
@@ -1278,7 +1277,7 @@ const AnalyticsTab: React.FC<{ userId: string }> = ({ userId }) => {
 
   if (!analytics) {
     return (
-      <div className="text-center py-16 text-gray-400">
+      <div className="text-center py-16 text-gray-500">
         No analytics data available
       </div>
     );
@@ -1337,8 +1336,8 @@ const AnalyticsTab: React.FC<{ userId: string }> = ({ userId }) => {
       <div className="flex justify-end">
         <button
           onClick={fetchAnalytics}
-          className="flex items-center gap-2 px-3 py-2 border border-white/[0.1]
-            rounded-xl text-sm text-gray-400 hover:bg-white/[0.04] transition-colors"
+          className="flex items-center gap-2 px-3 py-2 border border-gray-200
+            rounded-xl text-sm text-gray-500 hover:bg-gray-50 transition-colors"
         >
           <RefreshCw className="w-4 h-4" />
           Refresh
@@ -1353,8 +1352,8 @@ const AnalyticsTab: React.FC<{ userId: string }> = ({ userId }) => {
       </div>
 
       {/* Message breakdown */}
-      <div className="bg-[#0a0e27] border border-white/[0.08] rounded-2xl p-5">
-        <h3 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
+      <div className="bg-white border border-gray-200 rounded-2xl p-5">
+        <h3 className="text-sm font-semibold text-gray-900 mb-4 flex items-center gap-2">
           <TrendingUp className="w-4 h-4 text-primary-400" />
           Message Delivery Stats
         </h3>
@@ -1367,7 +1366,7 @@ const AnalyticsTab: React.FC<{ userId: string }> = ({ userId }) => {
           ].map((m) => (
             <div
               key={m.label}
-              className="text-center p-3 bg-white/[0.03] rounded-xl border border-white/[0.06]"
+              className="text-center p-3 bg-gray-50 rounded-xl border border-gray-200"
             >
               <p className={`text-2xl font-bold ${m.color}`}>
                 {m.value.toLocaleString()}
@@ -1380,8 +1379,8 @@ const AnalyticsTab: React.FC<{ userId: string }> = ({ userId }) => {
 
       {/* Campaign status breakdown */}
       {Object.keys(campaigns.byStatus).length > 0 && (
-        <div className="bg-[#0a0e27] border border-white/[0.08] rounded-2xl p-5">
-          <h3 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
+        <div className="bg-white border border-gray-200 rounded-2xl p-5">
+          <h3 className="text-sm font-semibold text-gray-900 mb-4 flex items-center gap-2">
             <Zap className="w-4 h-4 text-primary-400" />
             Campaign Status Breakdown
           </h3>
@@ -1390,10 +1389,10 @@ const AnalyticsTab: React.FC<{ userId: string }> = ({ userId }) => {
               <div
                 key={status}
                 className="flex items-center gap-2 px-3 py-2
-                  bg-white/[0.03] rounded-xl border border-white/[0.06]"
+                  bg-gray-50 rounded-xl border border-gray-200"
               >
                 <StatusBadge status={status} small />
-                <span className="text-sm font-bold text-white">{count}</span>
+                <span className="text-sm font-bold text-gray-900">{count}</span>
               </div>
             ))}
           </div>
@@ -1402,16 +1401,16 @@ const AnalyticsTab: React.FC<{ userId: string }> = ({ userId }) => {
 
       {/* Last 5 campaigns */}
       {campaigns.last5.length > 0 && (
-        <div className="bg-[#0a0e27] border border-white/[0.08] rounded-2xl overflow-hidden">
-          <div className="px-5 py-4 border-b border-white/[0.06]">
-            <h3 className="text-sm font-semibold text-white flex items-center gap-2">
+        <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
+          <div className="px-5 py-4 border-b border-gray-200">
+            <h3 className="text-sm font-semibold text-gray-900 flex items-center gap-2">
               <Activity className="w-4 h-4 text-primary-400" />
               Recent Campaigns
             </h3>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-[#050816]">
+              <thead className="bg-gray-50">
                 <tr>
                   {['Name', 'Status', 'Total', 'Sent', 'Delivered', 'Read', 'Failed', 'Date'].map(
                     (h) => (
@@ -1426,19 +1425,19 @@ const AnalyticsTab: React.FC<{ userId: string }> = ({ userId }) => {
                   )}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/[0.04]">
+              <tbody className="divide-y divide-gray-200">
                 {campaigns.last5.map((c) => (
                   <tr
                     key={c.id}
-                    className="hover:bg-white/[0.02] transition-colors"
+                    className="hover:bg-gray-50 transition-colors"
                   >
-                    <td className="px-4 py-3 text-sm font-medium text-white">
+                    <td className="px-4 py-3 text-sm font-medium text-gray-900">
                       {c.name}
                     </td>
                     <td className="px-4 py-3">
                       <StatusBadge status={c.status} small />
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-300">
+                    <td className="px-4 py-3 text-sm text-gray-700">
                       {c.totalContacts}
                     </td>
                     <td className="px-4 py-3 text-sm text-blue-400">
@@ -1466,24 +1465,24 @@ const AnalyticsTab: React.FC<{ userId: string }> = ({ userId }) => {
 
       {/* Recent activity */}
       {recentActivity.length > 0 && (
-        <div className="bg-[#0a0e27] border border-white/[0.08] rounded-2xl overflow-hidden">
-          <div className="px-5 py-4 border-b border-white/[0.06]">
-            <h3 className="text-sm font-semibold text-white flex items-center gap-2">
+        <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
+          <div className="px-5 py-4 border-b border-gray-200">
+            <h3 className="text-sm font-semibold text-gray-900 flex items-center gap-2">
               <Clock className="w-4 h-4 text-primary-400" />
               Recent Activity (Last 30 Days)
             </h3>
           </div>
-          <div className="divide-y divide-white/[0.04]">
+          <div className="divide-y divide-gray-200">
             {recentActivity.map((a) => (
               <div
                 key={a.id}
                 className="px-5 py-3 flex items-center justify-between
-                  hover:bg-white/[0.02] transition-colors"
+                  hover:bg-gray-50 transition-colors"
               >
                 <div className="flex items-center gap-3">
                   <div className="w-2 h-2 rounded-full bg-primary-500 shrink-0" />
-                  <span className="text-sm text-gray-300">
-                    <span className="font-medium text-white">{a.action}</span>
+                  <span className="text-sm text-gray-700">
+                    <span className="font-medium text-gray-900">{a.action}</span>
                     {a.entity && (
                       <span className="text-gray-500"> on {a.entity}</span>
                     )}
@@ -1561,8 +1560,8 @@ const WalletTab: React.FC<{ userId: string }> = ({ userId }) => {
       <div className="flex justify-end">
         <button
           onClick={fetchWallet}
-          className="p-2 border border-white/[0.1] rounded-xl
-            hover:bg-white/[0.04] transition-colors"
+          className="p-2 border border-gray-200 rounded-xl
+            hover:bg-gray-50 transition-colors"
         >
           <RefreshCw
             className={`w-4 h-4 text-gray-400 ${loading ? 'animate-spin' : ''}`}
@@ -1573,11 +1572,11 @@ const WalletTab: React.FC<{ userId: string }> = ({ userId }) => {
       {/* Organization info */}
       {walletData?.organization && (
         <div className="flex items-center gap-2 px-4 py-3
-          bg-white/[0.03] border border-white/[0.06] rounded-xl">
-          <Building2 className="w-4 h-4 text-gray-400" />
-          <span className="text-sm text-gray-300">
+          bg-gray-50 border border-gray-200 rounded-xl">
+          <Building2 className="w-4 h-4 text-gray-500" />
+          <span className="text-sm text-gray-700">
             Organization:{' '}
-            <strong className="text-white">
+            <strong className="text-gray-900">
               {walletData.organization.name}
             </strong>
           </span>
@@ -1586,9 +1585,9 @@ const WalletTab: React.FC<{ userId: string }> = ({ userId }) => {
 
       {/* No wallet */}
       {!wallet ? (
-        <div className="text-center py-16 bg-[#0a0e27] border border-white/[0.08] rounded-2xl">
+        <div className="text-center py-16 bg-white border border-gray-200 rounded-2xl">
           <Wallet className="w-10 h-10 text-gray-600 mx-auto mb-3" />
-          <p className="text-gray-400 font-medium">No wallet created yet</p>
+          <p className="text-gray-500 font-medium">No wallet created yet</p>
           <p className="text-xs text-gray-600 mt-1">
             User needs to request wallet access first
           </p>
@@ -1647,7 +1646,7 @@ const WalletTab: React.FC<{ userId: string }> = ({ userId }) => {
 
           {/* Wallet meta info */}
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-            <div className="p-3 bg-[#0a0e27] border border-white/[0.06] rounded-xl">
+            <div className="p-3 bg-white border border-gray-200 rounded-xl">
               <p className="text-xs text-gray-500 mb-1">Wallet Status</p>
               <div className="flex items-center gap-1.5">
                 {wallet.isActive ? (
@@ -1657,25 +1656,25 @@ const WalletTab: React.FC<{ userId: string }> = ({ userId }) => {
                   </>
                 ) : (
                   <>
-                    <ShieldOff className="w-3.5 h-3.5 text-gray-400" />
-                    <span className="text-sm font-medium text-gray-400">Inactive</span>
+                    <ShieldOff className="w-3.5 h-3.5 text-gray-500" />
+                    <span className="text-sm font-medium text-gray-500">Inactive</span>
                   </>
                 )}
               </div>
             </div>
 
-            <div className="p-3 bg-[#0a0e27] border border-white/[0.06] rounded-xl">
+            <div className="p-3 bg-white border border-gray-200 rounded-xl">
               <p className="text-xs text-gray-500 mb-1">Credit Limit</p>
-              <p className="text-sm font-medium text-white">
+              <p className="text-sm font-medium text-gray-900">
                 {wallet.creditEnabled
                   ? `₹${wallet.creditLimitRupees?.toFixed(2)}`
                   : 'Not Enabled'}
               </p>
             </div>
 
-            <div className="p-3 bg-[#0a0e27] border border-white/[0.06] rounded-xl">
+            <div className="p-3 bg-white border border-gray-200 rounded-xl">
               <p className="text-xs text-gray-500 mb-1">Access Granted</p>
-              <p className="text-sm font-medium text-white">
+              <p className="text-sm font-medium text-gray-900">
                 {wallet.accessGrantedAt
                   ? formatDate(wallet.accessGrantedAt)
                   : 'N/A'}
@@ -1684,10 +1683,10 @@ const WalletTab: React.FC<{ userId: string }> = ({ userId }) => {
           </div>
 
           {/* Transactions */}
-          <div className="bg-[#0a0e27] border border-white/[0.08] rounded-2xl overflow-hidden">
-            <div className="px-5 py-4 border-b border-white/[0.06]
+          <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
+            <div className="px-5 py-4 border-b border-gray-200
               flex items-center justify-between">
-              <h3 className="text-sm font-semibold text-white">
+              <h3 className="text-sm font-semibold text-gray-900">
                 Transaction History ({total})
               </h3>
               <select
@@ -1696,8 +1695,8 @@ const WalletTab: React.FC<{ userId: string }> = ({ userId }) => {
                   setTxTypeFilter(e.target.value);
                   setPage(1);
                 }}
-                className="px-3 py-1.5 bg-[#050816] border border-white/[0.1]
-                  rounded-lg text-xs text-gray-300 focus:outline-none"
+                className="px-3 py-1.5 bg-gray-50 border border-gray-200
+                  rounded-lg text-xs text-gray-700 focus:outline-none"
               >
                 <option value="">All Types</option>
                 <option value="credit">Credit</option>
@@ -1711,13 +1710,13 @@ const WalletTab: React.FC<{ userId: string }> = ({ userId }) => {
             {transactions.length === 0 ? (
               <div className="text-center py-12">
                 <IndianRupee className="w-8 h-8 text-gray-600 mx-auto mb-2" />
-                <p className="text-gray-400 text-sm">No transactions found</p>
+                <p className="text-gray-500 text-sm">No transactions found</p>
               </div>
             ) : (
               <>
                 <div className="overflow-x-auto">
                   <table className="w-full">
-                    <thead className="bg-[#050816]">
+                    <thead className="bg-gray-50">
                       <tr>
                         {[
                           'Description',
@@ -1737,7 +1736,7 @@ const WalletTab: React.FC<{ userId: string }> = ({ userId }) => {
                         ))}
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-white/[0.04]">
+                    <tbody className="divide-y divide-gray-200">
                       {transactions.map((tx) => {
                         const isCredit = ['credit', 'refund', 'admin_credit', 'released'].includes(
                           tx.type
@@ -1745,11 +1744,11 @@ const WalletTab: React.FC<{ userId: string }> = ({ userId }) => {
                         return (
                           <tr
                             key={tx.id}
-                            className="hover:bg-white/[0.02] transition-colors"
+                            className="hover:bg-gray-50 transition-colors"
                           >
                             <td className="px-4 py-3">
                               <div>
-                                <p className="text-sm text-white">{tx.description}</p>
+                                <p className="text-sm text-gray-900">{tx.description}</p>
                                 {tx.note && (
                                   <p className="text-xs text-gray-500 mt-0.5">
                                     {tx.note}
@@ -1781,7 +1780,7 @@ const WalletTab: React.FC<{ userId: string }> = ({ userId }) => {
                                 {formatRupees(tx.amountPaise)}
                               </span>
                             </td>
-                            <td className="px-4 py-3 text-sm text-gray-300 font-mono">
+                            <td className="px-4 py-3 text-sm text-gray-700 font-mono">
                               {formatRupees(tx.balanceAfterPaise)}
                             </td>
                             <td className="px-4 py-3">
@@ -1841,7 +1840,7 @@ const UserDetail: React.FC = () => {
 
   if (!userId) {
     return (
-      <div className="text-center py-20 text-gray-400">Invalid user ID</div>
+      <div className="text-center py-20 text-gray-500">Invalid user ID</div>
     );
   }
 
@@ -1850,7 +1849,7 @@ const UserDetail: React.FC = () => {
       {/* Back button */}
       <button
         onClick={() => navigate('/manage-wabmeta-admin/users')}
-        className="flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors"
+        className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-900 transition-colors"
       >
         <ArrowLeft className="w-4 h-4" />
         Back to Users
@@ -1858,24 +1857,24 @@ const UserDetail: React.FC = () => {
 
       {/* User Header Profile */}
       {userLoading ? (
-        <div className="flex items-center gap-4 bg-[#0a0e27] border border-white/[0.08] rounded-2xl p-6">
+        <div className="flex items-center gap-4 bg-white border border-gray-200 rounded-2xl p-6">
           <Loader2 className="w-6 h-6 animate-spin text-primary-400" />
-          <span className="text-gray-400 text-sm">Loading user profile...</span>
+          <span className="text-gray-500 text-sm">Loading user profile...</span>
         </div>
       ) : user ? (
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-[#0a0e27] border border-white/[0.08] rounded-2xl p-6">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white border border-gray-200 rounded-2xl p-6">
           <div className="flex items-center gap-4">
-            <div className="w-16 h-16 bg-primary-500 rounded-full flex items-center justify-center text-white text-2xl font-bold">
+            <div className="w-16 h-16 bg-primary-500 rounded-full flex items-center justify-center text-gray-900 text-2xl font-bold">
               {getUserInitials(user)}
             </div>
             <div>
               <div className="flex items-center gap-3">
-                <h1 className="text-xl font-bold text-white">
+                <h1 className="text-xl font-bold text-gray-900">
                   {getUserDisplayName(user)}
                 </h1>
                 <StatusBadge status={user.status} />
               </div>
-              <p className="text-sm text-gray-400 mt-1 flex items-center gap-1.5 font-mono">
+              <p className="text-sm text-gray-500 mt-1 flex items-center gap-1.5 font-mono">
                 <Mail className="w-3.5 h-3.5 text-gray-500" />
                 {user.email}
               </p>
@@ -1907,7 +1906,7 @@ const UserDetail: React.FC = () => {
       )}
 
       {/* Tabs */}
-      <div className="border-b border-white/[0.08] flex items-center gap-1">
+      <div className="border-b border-gray-200 flex items-center gap-1">
         {TABS.map((t) => {
           const Icon = t.icon;
           const isActive = activeTab === t.key;

@@ -91,13 +91,13 @@ const LockCard: React.FC<{
       ${
         checked
           ? 'bg-red-500/10 border-red-500/30'
-          : 'bg-[#050816] border-white/[0.06] hover:border-white/[0.1]'
+          : 'bg-gray-50 border-gray-200 hover:border-gray-300'
       }`}
   >
     <div className="flex items-center gap-3">
       <div
         className={`p-2 rounded-lg ${
-          checked ? 'bg-red-500/20' : 'bg-white/[0.04]'
+          checked ? 'bg-red-500/20' : 'bg-gray-50'
         }`}
       >
         <Icon
@@ -195,7 +195,7 @@ export default function OrganizationFeatures() {
       {/* Back button */}
       <button
         onClick={() => navigate(-1)}
-        className="flex items-center gap-2 text-gray-400 hover:text-white
+        className="flex items-center gap-2 text-gray-500 hover:text-gray-900
           transition-colors group"
       >
         <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
@@ -203,16 +203,16 @@ export default function OrganizationFeatures() {
       </button>
 
       {/* Org Header */}
-      <div className="bg-[#0a0e27] border border-white/[0.08] rounded-2xl p-6">
+      <div className="bg-white border border-gray-200 rounded-2xl p-6">
         <div className="flex items-center gap-4">
           <div
             className="w-14 h-14 bg-gradient-to-br from-blue-500 to-blue-700
               rounded-2xl flex items-center justify-center shrink-0"
           >
-            <Building2 className="w-7 h-7 text-white" />
+            <Building2 className="w-7 h-7 text-gray-900" />
           </div>
           <div className="min-w-0">
-            <h1 className="text-xl font-bold text-white truncate">{orgName}</h1>
+            <h1 className="text-xl font-bold text-gray-900 truncate">{orgName}</h1>
             <div className="flex items-center gap-2 mt-1">
               <span className="text-xs text-gray-500">Current Plan:</span>
               <span
@@ -227,13 +227,13 @@ export default function OrganizationFeatures() {
       </div>
 
       {/* Features Card */}
-      <div className="bg-[#0a0e27] rounded-2xl border border-white/[0.08] p-6">
-        <div className="flex items-center gap-3 mb-6 pb-5 border-b border-white/[0.06]">
+      <div className="bg-white rounded-2xl border border-gray-200 p-6">
+        <div className="flex items-center gap-3 mb-6 pb-5 border-b border-gray-200">
           <div className="p-2 bg-primary-500/10 rounded-lg">
             <Shield className="w-5 h-5 text-primary-400" />
           </div>
           <div>
-            <h2 className="text-lg font-semibold text-white">
+            <h2 className="text-lg font-semibold text-gray-900">
               Feature Access Control
             </h2>
             <p className="text-xs text-gray-500 mt-0.5">
@@ -248,7 +248,7 @@ export default function OrganizationFeatures() {
             className={`p-5 rounded-xl border-2 transition-all ${
               features.adminOverride
                 ? 'border-yellow-500/40 bg-yellow-500/5'
-                : 'border-white/[0.08] bg-[#050816]'
+                : 'border-gray-200 bg-gray-50'
             }`}
           >
             <div className="flex items-center justify-between gap-4">
@@ -257,7 +257,7 @@ export default function OrganizationFeatures() {
                   className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${
                     features.adminOverride
                       ? 'bg-yellow-500/20 border border-yellow-500/30'
-                      : 'bg-white/[0.04]'
+                      : 'bg-gray-50'
                   }`}
                 >
                   <Shield
@@ -269,10 +269,10 @@ export default function OrganizationFeatures() {
                   />
                 </div>
                 <div className="min-w-0">
-                  <p className="font-bold text-white text-base">
+                  <p className="font-bold text-gray-900 text-base">
                     Admin Override
                   </p>
-                  <p className="text-xs text-gray-400 mt-0.5">
+                  <p className="text-xs text-gray-500 mt-0.5">
                     When enabled, plan restrictions are ignored and you control
                     access manually
                   </p>
@@ -304,8 +304,8 @@ export default function OrganizationFeatures() {
           >
             {/* Simple Bulk Paste */}
             <div
-              className="p-4 bg-[#050816] rounded-xl border border-white/[0.06]
-                hover:border-white/[0.1] transition-colors"
+              className="p-4 bg-gray-50 rounded-xl border border-gray-200
+                hover:border-gray-300 transition-colors"
             >
               <div className="flex items-center justify-between gap-4">
                 <div className="flex items-center gap-3 min-w-0">
@@ -313,7 +313,7 @@ export default function OrganizationFeatures() {
                     <Upload className="w-4 h-4 text-blue-400" />
                   </div>
                   <div className="min-w-0">
-                    <p className="font-semibold text-white text-sm">
+                    <p className="font-semibold text-gray-900 text-sm">
                       Simple Bulk Paste
                     </p>
                     <p className="text-xs text-gray-500 mt-0.5">
@@ -338,8 +338,8 @@ export default function OrganizationFeatures() {
 
             {/* CSV Upload */}
             <div
-              className="p-4 bg-[#050816] rounded-xl border border-white/[0.06]
-                hover:border-white/[0.1] transition-colors"
+              className="p-4 bg-gray-50 rounded-xl border border-gray-200
+                hover:border-gray-300 transition-colors"
             >
               <div className="flex items-center justify-between gap-4">
                 <div className="flex items-center gap-3 min-w-0">
@@ -347,7 +347,7 @@ export default function OrganizationFeatures() {
                     <FileSpreadsheet className="w-4 h-4 text-purple-400" />
                   </div>
                   <div className="min-w-0">
-                    <p className="font-semibold text-white text-sm">
+                    <p className="font-semibold text-gray-900 text-sm">
                       CSV Import
                     </p>
                     <p className="text-xs text-gray-500 mt-0.5">
@@ -367,10 +367,10 @@ export default function OrganizationFeatures() {
             </div>
 
             {/* ────────── LOCK MODULES SECTION ────────── */}
-            <div className="pt-4 pb-2 border-t border-white/[0.06] mt-2">
+            <div className="pt-4 pb-2 border-t border-gray-200 mt-2">
               <div className="flex items-center gap-2 mb-1">
                 <Lock className="w-4 h-4 text-red-400" />
-                <h3 className="text-white font-semibold text-sm">
+                <h3 className="text-gray-900 font-semibold text-sm">
                   Disable / Lock Modules
                 </h3>
               </div>
@@ -421,10 +421,10 @@ export default function OrganizationFeatures() {
           </div>
 
           {/* ────────── CONNECTION LOCK (INDEPENDENT) ────────── */}
-          <div className="pt-6 mt-2 border-t border-white/[0.06]">
+          <div className="pt-6 mt-2 border-t border-gray-200">
             <div className="flex items-center gap-2 mb-1">
               <Link2Off className="w-4 h-4 text-orange-400" />
-              <h3 className="text-white font-semibold text-sm">
+              <h3 className="text-gray-900 font-semibold text-sm">
                 Connection Lock
               </h3>
               <span className="ml-1 text-[10px] font-medium px-1.5 py-0.5 rounded
@@ -442,7 +442,7 @@ export default function OrganizationFeatures() {
                 ${
                   features.connectionLocked
                     ? 'border-orange-500/40 bg-orange-500/5'
-                    : 'border-white/[0.08] bg-[#050816]'
+                    : 'border-gray-200 bg-gray-50'
                 }`}
             >
               <div className="flex items-center gap-3 min-w-0">
@@ -450,7 +450,7 @@ export default function OrganizationFeatures() {
                   className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${
                     features.connectionLocked
                       ? 'bg-orange-500/20 border border-orange-500/30'
-                      : 'bg-white/[0.04]'
+                      : 'bg-gray-50'
                   }`}
                 >
                   <Link2Off
@@ -460,10 +460,10 @@ export default function OrganizationFeatures() {
                   />
                 </div>
                 <div className="min-w-0">
-                  <p className="font-bold text-white text-sm">
+                  <p className="font-bold text-gray-900 text-sm">
                     Lock Account Connection / Disconnection
                   </p>
-                  <p className="text-xs text-gray-400 mt-0.5">
+                  <p className="text-xs text-gray-500 mt-0.5">
                     {features.connectionLocked
                       ? '🔒 Locked — user cannot connect or disconnect any account'
                       : 'Allow user to connect/disconnect WhatsApp, Meta, Instagram'}
@@ -497,12 +497,12 @@ export default function OrganizationFeatures() {
         </div>
 
         {/* Save Button */}
-        <div className="mt-6 pt-5 border-t border-white/[0.06] flex justify-end">
+        <div className="mt-6 pt-5 border-t border-gray-200 flex justify-end">
           <button
             onClick={handleSave}
             disabled={saving}
             className="flex items-center gap-2 px-6 py-2.5 bg-primary-600
-              hover:bg-primary-700 text-white rounded-xl font-medium
+              hover:bg-primary-700 text-gray-900 rounded-xl font-medium
               transition-colors disabled:opacity-50 text-sm"
           >
             {saving ? (

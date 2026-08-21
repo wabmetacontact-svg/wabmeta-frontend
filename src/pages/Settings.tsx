@@ -93,7 +93,7 @@ const Settings: React.FC = () => {
           <SettingsIcon className="w-8 h-8 mr-3 text-gray-500" />
           Settings
         </h1>
-        <p className="mt-1 text-gray-650">
+        <p className="mt-1 text-gray-600">
           Manage your account and application settings
         </p>
       </div>
@@ -115,7 +115,7 @@ const Settings: React.FC = () => {
                   <tab.icon className={`w-5 h-5 mr-3 ${activeTab === tab.id ? 'text-emerald-600' : 'text-gray-500'
                     }`} />
                   <div>
-                    <p className={`font-medium ${activeTab === tab.id ? 'text-emerald-600 font-semibold' : 'text-gray-750'
+                    <p className={`font-medium ${activeTab === tab.id ? 'text-emerald-600 font-semibold' : 'text-gray-700'
                       }`}>
                       {tab.name}
                     </p>

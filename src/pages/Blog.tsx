@@ -86,19 +86,19 @@ const Blog: React.FC = () => {
     const categories = ['All', 'Tutorial', 'Marketing', 'Guide', 'Automation', 'Business', 'Case Study'];
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+        <div className="min-h-screen bg-gray-50">
             {/* Header */}
-            <nav className="bg-white dark:bg-gray-800 shadow-sm">
+            <nav className="bg-white shadow-sm">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between h-16 items-center">
                         <Link to="/" className="flex items-center">
                             <MessageCircle className="h-8 w-8 text-green-500" />
-                            <span className="ml-2 text-xl font-bold text-gray-900 dark:text-white">WabMeta</span>
-                            <span className="ml-2 text-sm text-gray-500 dark:text-gray-400">/ Blog</span>
+                            <span className="ml-2 text-xl font-bold text-gray-900">WabMeta</span>
+                            <span className="ml-2 text-sm text-gray-500">/ Blog</span>
                         </Link>
                         <Link
                             to="/"
-                            className="text-gray-600 dark:text-gray-300 hover:text-green-500 transition-colors"
+                            className="text-gray-600 hover:text-green-500 transition-colors"
                         >
                             ← Back to Home
                         </Link>
@@ -124,7 +124,7 @@ const Blog: React.FC = () => {
                     {categories.map((category) => (
                         <button
                             key={category}
-                            className="px-4 py-2 rounded-full text-sm font-medium bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-green-100 dark:hover:bg-green-900 hover:text-green-700 dark:hover:text-green-300 transition-colors shadow-sm"
+                            className="px-4 py-2 rounded-full text-sm font-medium bg-white text-gray-700 hover:bg-green-100 hover:text-green-700 transition-colors shadow-sm"
                         >
                             {category}
                         </button>
@@ -135,7 +135,7 @@ const Blog: React.FC = () => {
             {/* Featured Post */}
             {featuredPost && (
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden">
+                    <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
                         <div className="md:flex">
                             <div className="md:w-1/2">
                                 <img
@@ -145,16 +145,16 @@ const Blog: React.FC = () => {
                                 />
                             </div>
                             <div className="md:w-1/2 p-8 flex flex-col justify-center">
-                                <span className="inline-block bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 text-xs font-semibold px-3 py-1 rounded-full mb-4 w-fit">
+                                <span className="inline-block bg-green-100 text-green-700 text-xs font-semibold px-3 py-1 rounded-full mb-4 w-fit">
                                     Featured
                                 </span>
-                                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+                                <h2 className="text-2xl font-bold text-gray-900 mb-4">
                                     {featuredPost.title}
                                 </h2>
-                                <p className="text-gray-600 dark:text-gray-300 mb-6">
+                                <p className="text-gray-600 mb-6">
                                     {featuredPost.excerpt}
                                 </p>
-                                <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 mb-6">
+                                <div className="flex items-center text-sm text-gray-500 mb-6">
                                     <User className="w-4 h-4 mr-1" />
                                     <span className="mr-4">{featuredPost.author}</span>
                                     <Calendar className="w-4 h-4 mr-1" />
@@ -162,7 +162,7 @@ const Blog: React.FC = () => {
                                     <Clock className="w-4 h-4 mr-1" />
                                     <span>{featuredPost.readTime}</span>
                                 </div>
-                                <button className="inline-flex items-center text-green-600 dark:text-green-400 font-semibold hover:text-green-700 transition-colors">
+                                <button className="inline-flex items-center text-green-600 font-semibold hover:text-green-700 transition-colors">
                                     Read More <ArrowRight className="w-4 h-4 ml-2" />
                                 </button>
                             </div>
@@ -173,14 +173,14 @@ const Blog: React.FC = () => {
 
             {/* Blog Grid */}
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-8">
                     Latest Articles
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {regularPosts.map((post) => (
                         <article
                             key={post.id}
-                            className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow"
+                            className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow"
                         >
                             <img
                                 src={post.image}
@@ -188,16 +188,16 @@ const Blog: React.FC = () => {
                                 className="h-48 w-full object-cover"
                             />
                             <div className="p-6">
-                                <span className="inline-block bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-xs font-semibold px-3 py-1 rounded-full mb-3">
+                                <span className="inline-block bg-gray-100 text-gray-600 text-xs font-semibold px-3 py-1 rounded-full mb-3">
                                     {post.category}
                                 </span>
-                                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2 line-clamp-2">
+                                <h3 className="text-lg font-bold text-gray-900 mb-2 line-clamp-2">
                                     {post.title}
                                 </h3>
-                                <p className="text-gray-600 dark:text-gray-300 text-sm mb-4 line-clamp-2">
+                                <p className="text-gray-600 text-sm mb-4 line-clamp-2">
                                     {post.excerpt}
                                 </p>
-                                <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+                                <div className="flex items-center justify-between text-xs text-gray-500">
                                     <div className="flex items-center">
                                         <User className="w-3 h-3 mr-1" />
                                         <span>{post.author}</span>

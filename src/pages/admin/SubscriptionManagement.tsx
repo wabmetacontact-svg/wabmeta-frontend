@@ -64,15 +64,15 @@ const StatCard: React.FC<StatCardProps> = ({
 
   return (
     <div
-      className="bg-[#0a0e27] rounded-2xl p-5 border border-white/[0.08]
-        hover:border-white/[0.12] transition-colors"
+      className="bg-white rounded-2xl p-5 border border-gray-200
+        hover:border-gray-300 transition-colors"
     >
       <div className="flex items-center justify-between">
         <div>
           <p className="text-xs text-gray-500 font-semibold uppercase tracking-wider">
             {title}
           </p>
-          <p className="text-3xl font-bold text-white mt-2">
+          <p className="text-3xl font-bold text-gray-900 mt-2">
             {value.toLocaleString()}
           </p>
         </div>
@@ -163,7 +163,7 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
         onClick={onCancel}
       />
       <div
-        className="relative bg-[#0a0e27] border border-white/[0.08]
+        className="relative bg-white border border-gray-200
         rounded-2xl shadow-2xl max-w-md w-full p-6"
       >
         <div className="flex items-start gap-4 mb-5">
@@ -174,8 +174,8 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
             <XCircle className="w-6 h-6 text-red-400" />
           </div>
           <div>
-            <h3 className="text-lg font-bold text-white mb-1">{title}</h3>
-            <p className="text-sm text-gray-400 whitespace-pre-line">
+            <h3 className="text-lg font-bold text-gray-900 mb-1">{title}</h3>
+            <p className="text-sm text-gray-500 whitespace-pre-line">
               {message}
             </p>
           </div>
@@ -184,8 +184,8 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
           <button
             onClick={onCancel}
             disabled={loading}
-            className="px-4 py-2 text-gray-300 bg-white/[0.04]
-              hover:bg-white/[0.08] rounded-xl transition-colors
+            className="px-4 py-2 text-gray-700 bg-gray-50
+              hover:bg-gray-50 rounded-xl transition-colors
               disabled:opacity-50 text-sm font-medium"
           >
             Cancel
@@ -328,7 +328,7 @@ const SubscriptionManagement: React.FC = () => {
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="text-center">
           <Loader2 className="w-10 h-10 animate-spin text-primary-400 mx-auto" />
-          <p className="mt-4 text-gray-400 text-sm">Loading subscriptions...</p>
+          <p className="mt-4 text-gray-500 text-sm">Loading subscriptions...</p>
         </div>
       </div>
     );
@@ -360,10 +360,10 @@ const SubscriptionManagement: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white">
+          <h1 className="text-2xl font-bold text-gray-900">
             Subscription Management
           </h1>
-          <p className="text-sm text-gray-400 mt-1">
+          <p className="text-sm text-gray-500 mt-1">
             Manage user subscriptions and plans
           </p>
         </div>
@@ -371,9 +371,9 @@ const SubscriptionManagement: React.FC = () => {
           <button
             onClick={fetchData}
             disabled={loading}
-            className="flex items-center gap-2 px-4 py-2.5 bg-[#0a0e27]
-              border border-white/[0.08] hover:border-white/[0.15]
-              hover:bg-white/[0.02] text-gray-300 rounded-xl
+            className="flex items-center gap-2 px-4 py-2.5 bg-white
+              border border-gray-200 hover:border-gray-300
+              hover:bg-gray-50 text-gray-700 rounded-xl
               transition-all disabled:opacity-50 text-sm font-medium"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
@@ -382,7 +382,7 @@ const SubscriptionManagement: React.FC = () => {
           <button
             onClick={() => setAssignModalOpen(true)}
             className="px-4 py-2.5 bg-primary-600 hover:bg-primary-700
-              text-white rounded-xl flex items-center gap-2 text-sm font-medium
+              text-gray-900 rounded-xl flex items-center gap-2 text-sm font-medium
               transition-colors"
           >
             <Plus className="w-4 h-4" />
@@ -422,7 +422,7 @@ const SubscriptionManagement: React.FC = () => {
       )}
 
       {/* Tabs */}
-      <div className="border-b border-white/[0.06]">
+      <div className="border-b border-gray-200">
         <div className="flex gap-1 overflow-x-auto">
           {tabs.map((tab) => {
             const Icon = tab.icon;
@@ -451,7 +451,7 @@ const SubscriptionManagement: React.FC = () => {
       </div>
 
       {/* Filters */}
-      <div className="bg-[#0a0e27] rounded-2xl border border-white/[0.08] p-4">
+      <div className="bg-white rounded-2xl border border-gray-200 p-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           {/* Search */}
           <div>
@@ -468,8 +468,8 @@ const SubscriptionManagement: React.FC = () => {
                   setPage(1);
                 }}
                 placeholder="Search organizations..."
-                className="w-full pl-10 pr-4 py-2.5 bg-[#050816]
-                  border border-white/[0.08] rounded-xl text-sm text-white
+                className="w-full pl-10 pr-4 py-2.5 bg-gray-50
+                  border border-gray-200 rounded-xl text-sm text-gray-900
                   placeholder:text-gray-500 focus:outline-none
                   focus:border-primary-500 transition-colors"
               />
@@ -488,9 +488,9 @@ const SubscriptionManagement: React.FC = () => {
                 setPage(1);
               }}
               disabled={activeTab !== 'all'}
-              className="w-full px-4 py-2.5 bg-[#050816] border border-white/[0.08]
-                rounded-xl text-sm text-gray-300 focus:outline-none
-                focus:border-primary-500 disabled:bg-[#050816] disabled:opacity-50"
+              className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200
+                rounded-xl text-sm text-gray-700 focus:outline-none
+                focus:border-primary-500 disabled:bg-gray-50 disabled:opacity-50"
             >
               <option value="">All Statuses</option>
               <option value="ACTIVE">Active</option>
@@ -511,9 +511,9 @@ const SubscriptionManagement: React.FC = () => {
                 setPage(1);
               }}
               disabled={activeTab === 'free'}
-              className="w-full px-4 py-2.5 bg-[#050816] border border-white/[0.08]
-                rounded-xl text-sm text-gray-300 focus:outline-none
-                focus:border-primary-500 disabled:bg-[#050816] disabled:opacity-50"
+              className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200
+                rounded-xl text-sm text-gray-700 focus:outline-none
+                focus:border-primary-500 disabled:bg-gray-50 disabled:opacity-50"
             >
               <option value="">All Plans</option>
               <option value="FREE_DEMO">Free Demo</option>
@@ -527,10 +527,10 @@ const SubscriptionManagement: React.FC = () => {
       </div>
 
       {/* Subscriptions Table */}
-      <div className="bg-[#0a0e27] rounded-2xl border border-white/[0.08] overflow-hidden">
+      <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-[#050816] border-b border-white/[0.06]">
+            <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
                 {[
                   'Organization',
@@ -552,11 +552,11 @@ const SubscriptionManagement: React.FC = () => {
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/[0.04]">
+            <tbody className="divide-y divide-gray-200">
               {subscriptions.map((sub) => (
                 <tr
                   key={sub.id}
-                  className="hover:bg-white/[0.02] transition-colors"
+                  className="hover:bg-gray-50 transition-colors"
                 >
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
@@ -565,13 +565,13 @@ const SubscriptionManagement: React.FC = () => {
                           to-blue-700 rounded-xl flex items-center
                           justify-center shrink-0"
                       >
-                        <Building2 className="w-5 h-5 text-white" />
+                        <Building2 className="w-5 h-5 text-gray-900" />
                       </div>
                       <div className="min-w-0">
-                        <p className="font-semibold text-white truncate">
+                        <p className="font-semibold text-gray-900 truncate">
                           {sub.organization?.name || 'N/A'}
                         </p>
-                        <p className="text-xs text-gray-400 truncate">
+                        <p className="text-xs text-gray-500 truncate">
                           {sub.organization?.owner?.firstName}{' '}
                           {sub.organization?.owner?.lastName}
                         </p>
@@ -582,7 +582,7 @@ const SubscriptionManagement: React.FC = () => {
                     </div>
                   </td>
                   <td className="px-6 py-4">
-                    <span className="text-sm font-medium text-white">
+                    <span className="text-sm font-medium text-gray-900">
                       {sub.plan?.name || 'Unknown'}
                     </span>
                   </td>
@@ -590,7 +590,7 @@ const SubscriptionManagement: React.FC = () => {
                     <StatusBadge status={sub.status} />
                   </td>
                   <td className="px-6 py-4">
-                    <div className="text-sm text-white">
+                    <div className="text-sm text-gray-900">
                       {new Date(sub.currentPeriodEnd).toLocaleDateString(
                         'en-IN'
                       )}
@@ -639,8 +639,8 @@ const SubscriptionManagement: React.FC = () => {
                     </button>
                     <Link
                       to={`/manage-wabmeta-admin/organizations/${sub.organizationId}/features`}
-                      className="p-1.5 text-gray-400 hover:text-gray-300
-                        hover:bg-white/[0.06] rounded-lg transition-all inline-block"
+                      className="p-1.5 text-gray-500 hover:text-gray-700
+                        hover:bg-gray-50 rounded-lg transition-all inline-block"
                       title="Features & Locks"
                     >
                       <Settings className="w-4 h-4" />
@@ -655,26 +655,26 @@ const SubscriptionManagement: React.FC = () => {
         {/* Pagination */}
         {totalPages > 1 && (
           <div
-            className="px-6 py-4 border-t border-white/[0.06] bg-[#050816]
+            className="px-6 py-4 border-t border-gray-200 bg-gray-50
             flex justify-between items-center"
           >
             <button
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={page === 1}
-              className="px-4 py-2 text-sm text-gray-300 bg-[#0a0e27]
-                border border-white/[0.08] rounded-xl hover:bg-white/[0.02]
+              className="px-4 py-2 text-sm text-gray-700 bg-white
+                border border-gray-200 rounded-xl hover:bg-gray-50
                 disabled:opacity-50"
             >
               Previous
             </button>
-            <span className="text-sm text-gray-400">
+            <span className="text-sm text-gray-500">
               Page {page} of {totalPages}
             </span>
             <button
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
               disabled={page === totalPages}
-              className="px-4 py-2 text-sm text-gray-300 bg-[#0a0e27]
-                border border-white/[0.08] rounded-xl hover:bg-white/[0.02]
+              className="px-4 py-2 text-sm text-gray-700 bg-white
+                border border-gray-200 rounded-xl hover:bg-gray-50
                 disabled:opacity-50"
             >
               Next

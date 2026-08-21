@@ -520,7 +520,7 @@ const Help: React.FC = () => {
             >
               <button
                 onClick={() => toggleFAQ(index)}
-                className="w-full flex items-center justify-between p-5 text-left hover:bg-gray-55 transition-colors"
+                className="w-full flex items-center justify-between p-5 text-left hover:bg-gray-50 transition-colors"
               >
                 <span className="font-medium text-gray-900 pr-4">
                   {faq.question}

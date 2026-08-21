@@ -2,8 +2,6 @@ import { useEffect, useState } from 'react';
 import {
   Phone,
   Trash2,
-  CheckCircle,
-  XCircle,
   Building2,
   RefreshCw,
   Loader2,
@@ -71,7 +69,7 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
       />
 
       <div
-        className="relative bg-[#0a0e27] border border-white/[0.08]
+        className="relative bg-white border border-gray-200
         rounded-2xl shadow-2xl max-w-md w-full p-6"
       >
         <div className="flex items-start gap-4 mb-5">
@@ -82,8 +80,8 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
             <WifiOff className="w-6 h-6 text-red-400" />
           </div>
           <div>
-            <h3 className="text-lg font-bold text-white mb-1">{title}</h3>
-            <p className="text-sm text-gray-400">{message}</p>
+            <h3 className="text-lg font-bold text-gray-900 mb-1">{title}</h3>
+            <p className="text-sm text-gray-500">{message}</p>
           </div>
         </div>
 
@@ -91,8 +89,8 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
           <button
             onClick={onCancel}
             disabled={loading}
-            className="px-4 py-2 text-gray-300 bg-white/[0.04]
-              hover:bg-white/[0.08] rounded-xl transition-colors
+            className="px-4 py-2 text-gray-700 bg-gray-50
+              hover:bg-gray-50 rounded-xl transition-colors
               disabled:opacity-50 text-sm font-medium"
           >
             Cancel
@@ -270,10 +268,10 @@ export default function WhatsAppConnections() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white">
+          <h1 className="text-2xl font-bold text-gray-900">
             WhatsApp Connections
           </h1>
-          <p className="text-sm text-gray-400 mt-1">
+          <p className="text-sm text-gray-500 mt-1">
             Manage all connected WhatsApp accounts across organizations
           </p>
         </div>
@@ -281,9 +279,9 @@ export default function WhatsAppConnections() {
         <button
           onClick={fetchConnections}
           disabled={loading}
-          className="flex items-center gap-2 px-4 py-2.5 bg-[#0a0e27]
-            border border-white/[0.08] hover:border-white/[0.15]
-            hover:bg-white/[0.02] text-gray-300 rounded-xl
+          className="flex items-center gap-2 px-4 py-2.5 bg-white
+            border border-gray-200 hover:border-gray-300
+            hover:bg-gray-50 text-gray-700 rounded-xl
             transition-all disabled:opacity-50 text-sm font-medium"
         >
           <RefreshCw
@@ -296,8 +294,8 @@ export default function WhatsAppConnections() {
       {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div
-          className="bg-[#0a0e27] border border-white/[0.08]
-          rounded-2xl p-5 hover:border-white/[0.12] transition-colors"
+          className="bg-white border border-gray-200
+          rounded-2xl p-5 hover:border-gray-300 transition-colors"
         >
           <div className="flex items-center justify-between mb-2">
             <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold">
@@ -307,14 +305,14 @@ export default function WhatsAppConnections() {
               <Phone className="w-4 h-4 text-blue-400" />
             </div>
           </div>
-          <p className="text-3xl font-bold text-white">
+          <p className="text-3xl font-bold text-gray-900">
             {connections.length}
           </p>
         </div>
 
         <div
-          className="bg-[#0a0e27] border border-white/[0.08]
-          rounded-2xl p-5 hover:border-white/[0.12] transition-colors"
+          className="bg-white border border-gray-200
+          rounded-2xl p-5 hover:border-gray-300 transition-colors"
         >
           <div className="flex items-center justify-between mb-2">
             <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold">
@@ -328,8 +326,8 @@ export default function WhatsAppConnections() {
         </div>
 
         <div
-          className="bg-[#0a0e27] border border-white/[0.08]
-          rounded-2xl p-5 hover:border-white/[0.12] transition-colors"
+          className="bg-white border border-gray-200
+          rounded-2xl p-5 hover:border-gray-300 transition-colors"
         >
           <div className="flex items-center justify-between mb-2">
             <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold">
@@ -351,29 +349,29 @@ export default function WhatsAppConnections() {
           placeholder="Search by organization, email, phone, or name..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full pl-11 pr-4 py-3 bg-[#0a0e27] border border-white/[0.08]
-            rounded-xl text-sm text-white placeholder:text-gray-500
+          className="w-full pl-11 pr-4 py-3 bg-white border border-gray-200
+            rounded-xl text-sm text-gray-900 placeholder:text-gray-500
             focus:outline-none focus:border-primary-500
             transition-colors"
         />
       </div>
 
       {/* Table */}
-      <div className="bg-[#0a0e27] border border-white/[0.08] rounded-2xl overflow-hidden">
+      <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
         {loading ? (
           <div className="flex flex-col items-center justify-center py-20">
             <Loader2 className="w-8 h-8 animate-spin text-primary-400 mb-3" />
-            <p className="text-sm text-gray-400">Loading connections...</p>
+            <p className="text-sm text-gray-500">Loading connections...</p>
           </div>
         ) : filteredConnections.length === 0 ? (
           <div className="text-center py-20">
             <div
-              className="w-16 h-16 mx-auto mb-4 bg-white/[0.03] rounded-2xl
-              flex items-center justify-center border border-white/[0.06]"
+              className="w-16 h-16 mx-auto mb-4 bg-gray-50 rounded-2xl
+              flex items-center justify-center border border-gray-200"
             >
               <Phone className="w-7 h-7 text-gray-600" />
             </div>
-            <p className="text-gray-400 font-medium">
+            <p className="text-gray-500 font-medium">
               {search
                 ? 'No connections match your search'
                 : 'No WhatsApp connections found'}
@@ -390,7 +388,7 @@ export default function WhatsAppConnections() {
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-[#050816] border-b border-white/[0.06]">
+              <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
                   {[
                     'Organization',
@@ -412,11 +410,11 @@ export default function WhatsAppConnections() {
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/[0.04]">
+              <tbody className="divide-y divide-gray-200">
                 {filteredConnections.map((conn) => (
                   <tr
                     key={conn.id}
-                    className="hover:bg-white/[0.02] transition-colors"
+                    className="hover:bg-gray-50 transition-colors"
                   >
                     {/* Organization */}
                     <td className="px-6 py-4">
@@ -426,10 +424,10 @@ export default function WhatsAppConnections() {
                             to-blue-700 rounded-xl flex items-center
                             justify-center shrink-0"
                         >
-                          <Building2 className="w-5 h-5 text-white" />
+                          <Building2 className="w-5 h-5 text-gray-900" />
                         </div>
                         <div className="min-w-0">
-                          <p className="font-semibold text-white truncate">
+                          <p className="font-semibold text-gray-900 truncate">
                             {conn.organization?.name || 'N/A'}
                           </p>
                           <p className="text-xs text-gray-500 truncate">
@@ -443,7 +441,7 @@ export default function WhatsAppConnections() {
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
                         <Phone className="w-3.5 h-3.5 text-gray-500 shrink-0" />
-                        <span className="font-mono font-medium text-white text-sm">
+                        <span className="font-mono font-medium text-gray-900 text-sm">
                           {conn.phoneNumber}
                         </span>
                       </div>
@@ -504,16 +502,16 @@ export default function WhatsAppConnections() {
         {/* Footer info */}
         {!loading && filteredConnections.length > 0 && (
           <div
-            className="px-6 py-3 border-t border-white/[0.06] bg-[#050816]
+            className="px-6 py-3 border-t border-gray-200 bg-gray-50
             flex items-center justify-between"
           >
             <p className="text-xs text-gray-500">
               Showing{' '}
-              <span className="text-gray-300 font-medium">
+              <span className="text-gray-700 font-medium">
                 {filteredConnections.length}
               </span>{' '}
               of{' '}
-              <span className="text-gray-300 font-medium">
+              <span className="text-gray-700 font-medium">
                 {connections.length}
               </span>{' '}
               connections

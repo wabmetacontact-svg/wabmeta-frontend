@@ -67,43 +67,43 @@ const TYPE_CONFIG: Record<
   credit: {
     label: "Added",
     textColor: "text-green-600",
-    bgColor: "bg-green-100 dark:bg-green-900/30",
+    bgColor: "bg-green-100",
     isCredit: true,
   },
   debit: {
     label: "Meta Charge",
     textColor: "text-red-600",
-    bgColor: "bg-red-100 dark:bg-red-900/30",
+    bgColor: "bg-red-100",
     isCredit: false,
   },
   admin_credit: {
     label: "Adjustment by Meta",
     textColor: "text-blue-600",
-    bgColor: "bg-blue-100 dark:bg-blue-900/30",
+    bgColor: "bg-blue-100",
     isCredit: true,
   },
   admin_debit: {
     label: "Adjustment by Meta",
     textColor: "text-orange-600",
-    bgColor: "bg-orange-100 dark:bg-orange-900/30",
+    bgColor: "bg-orange-100",
     isCredit: false,
   },
   refund: {
     label: "Refund",
     textColor: "text-purple-600",
-    bgColor: "bg-purple-100 dark:bg-purple-900/30",
+    bgColor: "bg-purple-100",
     isCredit: true,
   },
   reserved: {
     label: "Reserved",
     textColor: "text-gray-600",
-    bgColor: "bg-gray-100 dark:bg-gray-700",
+    bgColor: "bg-gray-100",
     isCredit: false,
   },
   released: {
     label: "Released",
     textColor: "text-teal-600",
-    bgColor: "bg-teal-100 dark:bg-teal-900/30",
+    bgColor: "bg-teal-100",
     isCredit: true,
   },
 };
@@ -136,7 +136,7 @@ const TransactionItem: React.FC<{ txn: Transaction }> = ({ txn }) => {
   return (
     <div
       className="flex items-center gap-3 p-3 rounded-xl
-                    hover:bg-gray-50 dark:hover:bg-gray-700/50
+                    hover:bg-gray-50
                     transition-all group"
     >
       {/* Icon */}
@@ -154,7 +154,7 @@ const TransactionItem: React.FC<{ txn: Transaction }> = ({ txn }) => {
       {/* Details */}
       <div className="flex-1 min-w-0">
         <p
-          className="text-sm font-medium text-gray-900 dark:text-white
+          className="text-sm font-medium text-gray-900
                         truncate"
         >
           {formatTransactionDescription(txn.description)}
@@ -256,7 +256,7 @@ const TransactionHistory: React.FC = () => {
                           transition-all
                 ${filter === opt.value
                   ? "bg-green-600 text-white shadow-sm"
-                  : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                 }`}
             >
               {opt.label}
@@ -279,12 +279,12 @@ const TransactionHistory: React.FC = () => {
       ) : transactions.length === 0 ? (
         <div className="text-center py-12">
           <div
-            className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full
+            className="w-16 h-16 bg-gray-100 rounded-full
                           flex items-center justify-center mx-auto mb-3"
           >
             <Search className="w-8 h-8 text-gray-400" />
           </div>
-          <p className="text-gray-500 dark:text-gray-400 font-medium">
+          <p className="text-gray-500 font-medium">
             No transactions found
           </p>
           <p className="text-gray-400 text-sm mt-1">
@@ -308,17 +308,17 @@ const TransactionHistory: React.FC = () => {
             onClick={() => setPage((p) => Math.max(1, p - 1))}
             disabled={page === 1}
             className="flex items-center gap-1 px-3 py-1.5 rounded-lg
-                       bg-gray-100 dark:bg-gray-700 disabled:opacity-40
+                       bg-gray-100 disabled:opacity-40
                        disabled:cursor-not-allowed text-sm font-medium
-                       hover:bg-gray-200 dark:hover:bg-gray-600 transition-all"
+                       hover:bg-gray-200 transition-all"
           >
             <ChevronLeft className="w-4 h-4" />
             Prev
           </button>
 
-          <span className="text-sm text-gray-500 dark:text-gray-400">
+          <span className="text-sm text-gray-500">
             Page{" "}
-            <span className="font-semibold text-gray-900 dark:text-white">
+            <span className="font-semibold text-gray-900">
               {page}
             </span>{" "}
             of {totalPages}
@@ -328,9 +328,9 @@ const TransactionHistory: React.FC = () => {
             onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
             disabled={page === totalPages}
             className="flex items-center gap-1 px-3 py-1.5 rounded-lg
-                       bg-gray-100 dark:bg-gray-700 disabled:opacity-40
+                       bg-gray-100 disabled:opacity-40
                        disabled:cursor-not-allowed text-sm font-medium
-                       hover:bg-gray-200 dark:hover:bg-gray-600 transition-all"
+                       hover:bg-gray-200 transition-all"
           >
             Next
             <ChevronRight className="w-4 h-4" />

@@ -61,7 +61,7 @@ const Navbar = () => {
               <button
                 key={link.label}
                 onClick={() => scrollToSection(link.id)}
-                className="flex items-center gap-1 px-4 py-2 text-gray-700 hover:text-gray-955 hover:bg-gray-100/80 text-sm font-medium rounded-full transition-all duration-200 cursor-pointer"
+                className="flex items-center gap-1 px-4 py-2 text-gray-700 hover:text-gray-950 hover:bg-gray-100/80 text-sm font-medium rounded-full transition-all duration-200 cursor-pointer"
               >
                 {link.label}
               </button>

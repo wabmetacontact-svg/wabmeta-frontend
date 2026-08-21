@@ -7,17 +7,13 @@ import {
   Search,
   Info,
   MoreVertical,
-  X,
   Star,
   Archive,
   Trash2,
   VolumeX,
   Volume2,
-  UserCheck,
   Tag,
   Download,
-  Bell,
-  BellOff,
 } from 'lucide-react';
 import {
   getContactName,

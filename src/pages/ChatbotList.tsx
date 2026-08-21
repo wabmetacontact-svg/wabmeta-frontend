@@ -226,7 +226,7 @@ const ChatbotList: React.FC = () => {
             </div>
 
             {chatbot.description && (
-              <p className="text-sm text-gray-650 mb-3 line-clamp-2 relative z-10">{chatbot.description}</p>
+              <p className="text-sm text-gray-600 mb-3 line-clamp-2 relative z-10">{chatbot.description}</p>
             )}
 
             <div className="space-y-2 relative z-10">
@@ -278,7 +278,7 @@ const ChatbotList: React.FC = () => {
           <div className="col-span-full text-center py-12 bg-white rounded-2xl border border-gray-200 shadow-sm">
             <Bot className="w-16 h-16 mx-auto text-gray-400 mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">No chatbots yet</h3>
-            <p className="text-gray-650 mb-4">Create your first chatbot and start automating conversations</p>
+            <p className="text-gray-600 mb-4">Create your first chatbot and start automating conversations</p>
             <Link
               to="/dashboard/chatbots/new"
               className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"

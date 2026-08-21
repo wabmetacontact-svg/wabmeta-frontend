@@ -58,7 +58,7 @@ const Terms: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 font-sans">
+    <div className="min-h-screen bg-gray-50 font-sans">
       {/* ── Hero Header ─────────────────────────────────────────────────────── */}
       <div className="bg-gradient-to-br from-green-600 via-emerald-600 to-teal-700 text-white">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
@@ -87,8 +87,8 @@ const Terms: React.FC = () => {
 
           {/* ── Sticky TOC Sidebar ── */}
           <aside className="hidden lg:block w-64 flex-shrink-0 sticky top-6">
-            <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-4">
-              <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-3 px-1">
+            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4">
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 px-1">
                 Table of Contents
               </p>
               <nav className="space-y-0.5">
@@ -100,8 +100,8 @@ const Terms: React.FC = () => {
                       key={s.id}
                       onClick={() => scrollTo(s.id)}
                       className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-left text-sm transition-all ${isActive
-                          ? "bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-400 font-medium"
-                          : "text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700/50 hover:text-gray-800 dark:hover:text-gray-200"
+                          ? "bg-green-50 text-green-700 font-medium"
+                          : "text-gray-500 hover:bg-gray-50 hover:text-gray-800"
                         }`}
                     >
                       <Icon className={`w-3.5 h-3.5 flex-shrink-0 ${isActive ? "text-green-600" : "text-gray-400"}`} />
@@ -146,7 +146,7 @@ const Terms: React.FC = () => {
                 "Complete all onboarding steps as required",
               ]} />
 
-              <p className="mt-4 mb-3 font-medium text-gray-800 dark:text-gray-200">Users can choose between the following options:</p>
+              <p className="mt-4 mb-3 font-medium text-gray-800">Users can choose between the following options:</p>
 
               <div className="space-y-3">
                 <InfoBox icon="🖥️" title="a) Self-Onboarding" color="blue">
@@ -180,7 +180,7 @@ const Terms: React.FC = () => {
                 "Incomplete onboarding process from the user's end",
                 "Delays or decisions from WhatsApp (Meta) or other third-party platforms",
               ]} />
-              <p className="mt-4 text-sm text-gray-600 dark:text-gray-400 italic">
+              <p className="mt-4 text-sm text-gray-600 italic">
                 By proceeding with the payment, users acknowledge and accept this policy.
               </p>
             </Section>
@@ -232,7 +232,7 @@ const Terms: React.FC = () => {
                 "Suspend or terminate services in case of policy violations",
                 "Restrict access in cases of misuse or non-compliance",
               ]} />
-              <p className="mt-3 text-sm text-gray-600 dark:text-gray-400">
+              <p className="mt-3 text-sm text-gray-600">
                 We aim to maintain a safe and compliant platform for all users.
               </p>
             </Section>
@@ -262,25 +262,25 @@ const Terms: React.FC = () => {
               <p className="mb-4">
                 If you have any questions, feedback, or require support, feel free to reach out to us:
               </p>
-              <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-2xl p-5 border border-green-200 dark:border-green-800 space-y-3">
+              <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-5 border border-green-200 space-y-3">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-green-100 dark:bg-green-900/40 rounded-xl flex items-center justify-center">
+                  <div className="w-8 h-8 bg-green-100 rounded-xl flex items-center justify-center">
                     <FileText className="w-4 h-4 text-green-600" />
                   </div>
                   <div>
-                    <p className="text-xs text-gray-400 dark:text-gray-500">Company Name</p>
-                    <p className="font-semibold text-gray-900 dark:text-white">Wabmeta</p>
+                    <p className="text-xs text-gray-400">Company Name</p>
+                    <p className="font-semibold text-gray-900">Wabmeta</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-green-100 dark:bg-green-900/40 rounded-xl flex items-center justify-center">
+                  <div className="w-8 h-8 bg-green-100 rounded-xl flex items-center justify-center">
                     <Mail className="w-4 h-4 text-green-600" />
                   </div>
                   <div>
-                    <p className="text-xs text-gray-400 dark:text-gray-500">Email</p>
+                    <p className="text-xs text-gray-400">Email</p>
                     <a
                       href="mailto:wabmetacontact@gmail.com"
-                      className="font-semibold text-green-700 dark:text-green-400 hover:underline"
+                      className="font-semibold text-green-700 hover:underline"
                     >
                       wabmetacontact@gmail.com
                     </a>
@@ -290,11 +290,11 @@ const Terms: React.FC = () => {
             </Section>
 
             {/* Footer note */}
-            <div className="bg-gray-100 dark:bg-gray-800 rounded-2xl p-5 text-center border border-gray-200 dark:border-gray-700">
-              <p className="text-sm text-gray-500 dark:text-gray-400">
+            <div className="bg-gray-100 rounded-2xl p-5 text-center border border-gray-200">
+              <p className="text-sm text-gray-500">
                 By using Wabmeta's services you confirm that you have read, understood, and agree to be bound by these Terms &amp; Conditions.
               </p>
-              <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">
+              <p className="text-xs text-gray-400 mt-2">
                 © {new Date().getFullYear()} Wabmeta. All rights reserved.
               </p>
             </div>
@@ -318,21 +318,21 @@ interface SectionProps {
 const Section: React.FC<SectionProps> = ({ id, number, title, icon: Icon, children }) => (
   <section
     id={id}
-    className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm scroll-mt-6"
+    className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm scroll-mt-6"
   >
     {/* Section header */}
-    <div className="flex items-center gap-3 mb-5 pb-4 border-b border-gray-100 dark:border-gray-700">
+    <div className="flex items-center gap-3 mb-5 pb-4 border-b border-gray-100">
       <div className="w-9 h-9 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-sm flex-shrink-0">
         <Icon className="w-4 h-4 text-white" />
       </div>
       <div className="flex items-baseline gap-2">
-        <span className="text-xs font-bold text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/30 px-2 py-0.5 rounded-full">
+        <span className="text-xs font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-full">
           {number}
         </span>
-        <h2 className="text-lg font-bold text-gray-900 dark:text-white">{title}</h2>
+        <h2 className="text-lg font-bold text-gray-900">{title}</h2>
       </div>
     </div>
-    <div className="text-gray-700 dark:text-gray-300 leading-relaxed text-sm space-y-2">
+    <div className="text-gray-700 leading-relaxed text-sm space-y-2">
       {children}
     </div>
   </section>
@@ -351,8 +351,8 @@ const BulletList: React.FC<{ items: string[] }> = ({ items }) => (
 
 const AlertBox: React.FC<{ type: "warning" | "info"; children: React.ReactNode }> = ({ type, children }) => {
   const styles = {
-    warning: "bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300",
-    info: "bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800 text-blue-800 dark:text-blue-300",
+    warning: "bg-amber-50 border-amber-200 text-amber-800",
+    info: "bg-blue-50 border-blue-200 text-blue-800",
   };
   return (
     <div className={`${styles[type]} rounded-xl p-4 border text-sm leading-relaxed`}>
@@ -364,15 +364,15 @@ const AlertBox: React.FC<{ type: "warning" | "info"; children: React.ReactNode }
 
 const InfoBox: React.FC<{ icon: string; title: string; color: "blue" | "green"; children: React.ReactNode }> = ({ icon, title, color, children }) => {
   const styles = {
-    blue: "bg-blue-50 dark:bg-blue-900/20 border-blue-100 dark:border-blue-900/40",
-    green: "bg-green-50 dark:bg-green-900/20 border-green-100 dark:border-green-900/40",
+    blue: "bg-blue-50 border-blue-100",
+    green: "bg-green-50 border-green-100",
   };
   return (
     <div className={`${styles[color]} rounded-xl p-4 border`}>
-      <p className="font-semibold text-gray-800 dark:text-gray-200 text-sm mb-1.5">
+      <p className="font-semibold text-gray-800 text-sm mb-1.5">
         {icon} {title}
       </p>
-      <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">{children}</p>
+      <p className="text-sm text-gray-600 leading-relaxed">{children}</p>
     </div>
   );
 };

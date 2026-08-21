@@ -128,7 +128,7 @@ const AddPhoneModal: React.FC<AddPhoneModalProps> = ({
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4
                     bg-black/60 backdrop-blur-sm animate-fade-in">
-      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl
+      <div className="bg-white rounded-2xl shadow-2xl
                       max-w-md w-full overflow-hidden animate-scale-in">
 
         {/* Header */}

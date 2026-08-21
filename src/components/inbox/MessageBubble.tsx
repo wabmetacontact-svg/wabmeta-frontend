@@ -622,7 +622,7 @@ const MessageBubble: React.FC<Props> = ({
       <div className="relative max-w-xs">
         {imageLoading && !imageError && (
           <div className={`w-56 h-40 ${isOutbound ? 'bg-black/10 border-white/10' : 'bg-gray-100 border-gray-200'} rounded-xl flex items-center justify-center animate-pulse border`}>
-            <div className={`w-7 h-7 border-2 ${isOutbound ? 'border-emerald-350' : 'border-emerald-500'} border-t-transparent rounded-full animate-spin`} />
+            <div className={`w-7 h-7 border-2 ${isOutbound ? 'border-emerald-300' : 'border-emerald-500'} border-t-transparent rounded-full animate-spin`} />
           </div>
         )}
         {imageError && (
@@ -684,7 +684,7 @@ const MessageBubble: React.FC<Props> = ({
     const vidSrc = src || getMediaSrc(message);
     if (!vidSrc) {
       return (
-        <div className="w-64 h-40 bg-black/5 rounded-xl flex flex-col items-center justify-center text-gray-450 border border-white/10">
+        <div className="w-64 h-40 bg-black/5 rounded-xl flex flex-col items-center justify-center text-gray-400 border border-white/10">
           <Video className="w-8 h-8 mb-2 opacity-50 text-gray-400" />
           <span className="text-xs font-semibold">Video unavailable</span>
         </div>
@@ -692,7 +692,7 @@ const MessageBubble: React.FC<Props> = ({
     }
     return (
       <div className="relative max-w-xs animate-scale-in">
-        <video src={vidSrc} controls className="max-w-full rounded-xl shadow-lg border border-gray-150" preload="metadata" style={{ maxHeight: 300 }} />
+        <video src={vidSrc} controls className="max-w-full rounded-xl shadow-lg border border-gray-100" preload="metadata" style={{ maxHeight: 300 }} />
         {caption && <p className="mt-1.5 text-sm px-1 leading-relaxed font-semibold">{caption}</p>}
       </div>
     );
@@ -733,13 +733,13 @@ const MessageBubble: React.FC<Props> = ({
     const getDocIconClass = () => {
       if (isOutbound) return 'from-white/15 to-white/25 border-white/20 text-white';
       const colors: Record<string, string> = {
-        pdf: 'from-red-50 to-red-100 border-red-200 text-red-750',
-        doc: 'from-blue-50 to-blue-100 border-blue-200 text-blue-750',
-        docx: 'from-blue-50 to-blue-100 border-blue-200 text-blue-750',
-        xls: 'from-green-50 to-green-100 border-green-200 text-green-750',
-        xlsx: 'from-green-50 to-green-100 border-green-200 text-green-750',
-        ppt: 'from-orange-50 to-orange-100 border-orange-200 text-orange-750',
-        pptx: 'from-orange-50 to-orange-100 border-orange-200 text-orange-750',
+        pdf: 'from-red-50 to-red-100 border-red-200 text-red-700',
+        doc: 'from-blue-50 to-blue-100 border-blue-200 text-blue-700',
+        docx: 'from-blue-50 to-blue-100 border-blue-200 text-blue-700',
+        xls: 'from-green-50 to-green-100 border-green-200 text-green-700',
+        xlsx: 'from-green-50 to-green-100 border-green-200 text-green-700',
+        ppt: 'from-orange-50 to-orange-100 border-orange-200 text-orange-700',
+        pptx: 'from-orange-50 to-orange-100 border-orange-200 text-orange-700',
       };
       return colors[ext] || 'from-gray-50 to-gray-100 border-gray-200 text-gray-600';
     };
@@ -805,7 +805,7 @@ const MessageBubble: React.FC<Props> = ({
                   e.stopPropagation();
                   window.open(docSrc, '_blank', 'noopener,noreferrer');
                 }}
-                className={`p-2 rounded-full ${isOutbound ? 'bg-white/10 hover:bg-white/20 text-white/90' : 'bg-gray-100 hover:bg-gray-200 text-gray-750'} transition-colors`}
+                className={`p-2 rounded-full ${isOutbound ? 'bg-white/10 hover:bg-white/20 text-white/90' : 'bg-gray-100 hover:bg-gray-200 text-gray-700'} transition-colors`}
                 title="View PDF"
               >
                 <ExternalLink className="w-4 h-4" />
@@ -860,7 +860,7 @@ const MessageBubble: React.FC<Props> = ({
     if (!loc.latitude || !loc.longitude) {
       return (
         <div className={`flex items-center gap-2 px-3 py-2 ${isOutbound ? 'bg-white/10' : 'bg-gray-100'} rounded-lg`}>
-          <MapPin className="w-4 h-4 text-red-505" />
+          <MapPin className="w-4 h-4 text-red-500" />
           <span className={`text-sm font-semibold ${isOutbound ? 'text-white' : 'text-gray-900'}`}>Location shared</span>
         </div>
       );
@@ -873,9 +873,9 @@ const MessageBubble: React.FC<Props> = ({
         </div>
         <div className={`p-3 ${isOutbound ? 'bg-black/10' : 'bg-gray-50'}`}>
           {loc.name && <p className={`text-sm font-bold ${isOutbound ? 'text-white' : 'text-gray-900'}`}>{loc.name}</p>}
-          {loc.address && <p className={`text-xs mt-0.5 ${isOutbound ? 'text-white/70' : 'text-gray-650'}`}>{loc.address}</p>}
+          {loc.address && <p className={`text-xs mt-0.5 ${isOutbound ? 'text-white/70' : 'text-gray-600'}`}>{loc.address}</p>}
           <p className={`text-[10px] font-mono mt-1 ${isOutbound ? 'text-white/50' : 'text-gray-400'}`}>{loc.latitude.toFixed(6)}, {loc.longitude.toFixed(6)}</p>
-          <a href={mapUrl} target="_blank" rel="noopener noreferrer" className={`inline-flex items-center gap-1.5 mt-2 text-xs ${isOutbound ? 'text-emerald-300 hover:text-emerald-250 font-bold' : 'text-emerald-600 hover:text-emerald-700 font-bold'} font-medium`}>
+          <a href={mapUrl} target="_blank" rel="noopener noreferrer" className={`inline-flex items-center gap-1.5 mt-2 text-xs ${isOutbound ? 'text-emerald-300 hover:text-emerald-200 font-bold' : 'text-emerald-600 hover:text-emerald-700 font-bold'} font-medium`}>
             <ExternalLink className="w-3.5 h-3.5 animate-pulse" /> Open in Maps
           </a>
         </div>
@@ -915,7 +915,7 @@ const MessageBubble: React.FC<Props> = ({
           <div className={`flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider ${isOutbound ? 'text-white/50' : 'text-emerald-600'}`}>
             <MessageSquare className="w-3 h-3" /> Button Reply
           </div>
-          <div className={`flex items-center gap-2 px-3 py-2 rounded-lg border ${isOutbound ? 'bg-black/15 border border-white/15 text-white' : 'bg-emerald-50 border border-emerald-250 text-emerald-800'}`}>
+          <div className={`flex items-center gap-2 px-3 py-2 rounded-lg border ${isOutbound ? 'bg-black/15 border border-white/15 text-white' : 'bg-emerald-50 border border-emerald-200 text-emerald-800'}`}>
             <ChevronRight className="w-4 h-4 flex-shrink-0" />
             <span className="text-sm font-semibold">{reply.title || message.content || 'Button clicked'}</span>
           </div>
@@ -927,7 +927,7 @@ const MessageBubble: React.FC<Props> = ({
       const reply = merged?.list_reply || {};
       return (
         <div className="space-y-1">
-          <div className={`flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider ${isOutbound ? 'text-white/50' : 'text-blue-650'}`}>
+          <div className={`flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider ${isOutbound ? 'text-white/50' : 'text-blue-600'}`}>
             <ChevronRight className="w-3 h-3" /> List Reply
           </div>
           <div className={`px-3 py-2 rounded-lg border ${isOutbound ? 'bg-black/15 border border-white/15 text-white' : 'bg-blue-50 border border-blue-200 text-blue-800'}`}>
@@ -991,7 +991,7 @@ const MessageBubble: React.FC<Props> = ({
         {buttons.length > 0 && (
           <div className={`border-t ${isOutbound ? 'border-white/10' : 'border-gray-200'}`}>
             {buttons.map((btn, i) => (
-              <div key={i} className={`flex items-center justify-center gap-1.5 px-3 py-2.5 text-xs font-bold ${isOutbound ? 'text-emerald-300 hover:bg-white/5' : 'text-emerald-600 hover:bg-gray-150'} cursor-default transition-all duration-150 ${i < buttons.length - 1 ? (isOutbound ? 'border-b border-white/10' : 'border-b border-gray-200') : ''}`}>
+              <div key={i} className={`flex items-center justify-center gap-1.5 px-3 py-2.5 text-xs font-bold ${isOutbound ? 'text-emerald-300 hover:bg-white/5' : 'text-emerald-600 hover:bg-gray-100'} cursor-default transition-all duration-150 ${i < buttons.length - 1 ? (isOutbound ? 'border-b border-white/10' : 'border-b border-gray-200') : ''}`}>
                 {btn.type === 'URL' && <ExternalLink className="w-3.5 h-3.5" />}
                 {btn.type === 'PHONE_NUMBER' && <Phone className="w-3.5 h-3.5" />}
                 {btn.type === 'QUICK_REPLY' && <ChevronRight className="w-3.5 h-3.5" />}

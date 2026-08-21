@@ -1,5 +1,5 @@
 import { 
-  Zap, ChevronRight, Check, MessageCircle, Instagram, 
+  Zap, ChevronRight, Check, 
   Bot, ShieldCheck, BookOpen, Headphones, Sparkles,
   ArrowRight
 } from 'lucide-react';

@@ -13,7 +13,7 @@ import VariableMapper from "../components/campaigns/VariableMapper";
 import SchedulePicker from "../components/campaigns/SchedulePicker";
 import TemplatePreview from "../components/templates/TemplatePreview";
 
-import type { CampaignFormData, Campaign } from "../types/campaign";
+import type { CampaignFormData } from "../types/campaign";
 import {
   templates as templateApi,
   contacts as contactApi,
@@ -599,10 +599,10 @@ const CreateCampaign: React.FC = () => {
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {apiError && (
           <div className="mb-6 bg-red-50 border border-red-200 rounded-xl p-4 flex items-start gap-3 shadow-sm animate-in slide-in-from-top-4 duration-200">
-            <AlertCircle className="w-5 h-5 text-red-650 shrink-0 mt-0.5" />
+            <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
             <div className="flex-1">
-              <p className="text-red-750 font-bold text-sm">Error</p>
-              <p className="text-red-650 text-sm font-semibold mt-0.5">{apiError}</p>
+              <p className="text-red-700 font-bold text-sm">Error</p>
+              <p className="text-red-600 text-sm font-semibold mt-0.5">{apiError}</p>
             </div>
             <button onClick={() => setApiError(null)} className="text-red-400 hover:text-red-600 text-xl font-bold">×</button>
           </div>
@@ -621,7 +621,7 @@ const CreateCampaign: React.FC = () => {
                           ? "bg-emerald-600 text-white"
                           : step.number === currentStep
                             ? "bg-emerald-600 text-white ring-4 ring-emerald-100"
-                            : "bg-gray-250 text-gray-500"}`}
+                            : "bg-gray-200 text-gray-500"}`}
                     >
                       {step.number < currentStep ? <Check className="w-5 h-5" /> : <step.icon className="w-5 h-5" />}
                     </div>
@@ -694,7 +694,7 @@ const CreateCampaign: React.FC = () => {
                 {templates.length === 0 ? (
                   <div className="text-center py-8 bg-yellow-50 rounded-xl border border-yellow-200">
                     <AlertCircle className="w-8 h-8 text-yellow-500 mx-auto mb-2 animate-bounce" />
-                    <p className="text-yellow-850 font-bold">No approved templates found</p>
+                    <p className="text-yellow-800 font-bold">No approved templates found</p>
                     <p className="text-yellow-600 text-xs mt-1 font-semibold">
                       Create and get a template approved under{" "}
                       <Link to="/dashboard/templates/new" className="underline font-bold">Templates</Link> section.
@@ -756,7 +756,7 @@ const CreateCampaign: React.FC = () => {
                 />
               ) : (
                 <div className="text-center py-10 bg-emerald-50/50 rounded-2xl border border-emerald-100 shadow-sm animate-scale-in">
-                  <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-3 border border-emerald-250"><Check className="w-8 h-8 text-emerald-600" /></div>
+                  <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-3 border border-emerald-200"><Check className="w-8 h-8 text-emerald-600" /></div>
                   <p className="text-lg text-emerald-700 font-bold">No Variables Required</p>
                   <p className="text-emerald-600 mt-1 max-w-sm mx-auto text-xs font-semibold">This template configuration sends uniform static messages to all recipients.</p>
                 </div>
@@ -858,7 +858,7 @@ const CreateCampaign: React.FC = () => {
                               0,
                               walletEstimate.availableBalance - walletEstimate.estimatedCost
                             ).toFixed(2)}`,
-                            color: walletEstimate.canProceed ? "text-gray-700" : "text-red-750",
+                            color: walletEstimate.canProceed ? "text-gray-700" : "text-red-700",
                             bg: walletEstimate.canProceed ? "bg-gray-50 border-gray-200" : "bg-red-50 border-red-200",
                           },
                         ].map(card => (
@@ -884,9 +884,9 @@ const CreateCampaign: React.FC = () => {
 
                       {!walletEstimate.canProceed && (
                         <div className="p-4 bg-red-50 border border-red-200 rounded-xl flex items-start gap-3 shadow-sm animate-shake">
-                          <AlertCircle className="w-5 h-5 text-red-650 shrink-0 mt-0.5" />
+                          <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
                           <div>
-                            <p className="text-red-750 font-bold text-sm">Insufficient Balance</p>
+                            <p className="text-red-700 font-bold text-sm">Insufficient Balance</p>
                             <p className="text-red-600 text-xs mt-1 font-semibold">You need ₹{walletEstimate.shortfall.toFixed(2)} more to run this campaign. Please top up your wallet.</p>
                             <Link to="/dashboard/wallet" className="inline-flex items-center gap-1.5 mt-2 text-xs font-bold text-red-600 hover:text-red-700 underline">
                               <Wallet className="w-4 h-4" /> Go to Wallet

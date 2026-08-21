@@ -31,8 +31,8 @@ const WalletStats: React.FC<Props> = ({
       })}`,
       icon: TrendingUp,
       iconColor: "text-green-600",
-      iconBg: "bg-green-100 dark:bg-green-900/30",
-      textColor: "text-green-600 dark:text-green-400",
+      iconBg: "bg-green-100",
+      textColor: "text-green-600",
     },
     {
       label: "Total Used",
@@ -42,8 +42,8 @@ const WalletStats: React.FC<Props> = ({
       })}`,
       icon: TrendingDown,
       iconColor: "text-red-500",
-      iconBg: "bg-red-100 dark:bg-red-900/30",
-      textColor: "text-red-500 dark:text-red-400",
+      iconBg: "bg-red-100",
+      textColor: "text-red-500",
     },
     {
       label: "Net Savings",
@@ -55,12 +55,12 @@ const WalletStats: React.FC<Props> = ({
       iconColor: netBalance >= 0 ? "text-blue-600" : "text-orange-600",
       iconBg:
         netBalance >= 0
-          ? "bg-blue-100 dark:bg-blue-900/30"
-          : "bg-orange-100 dark:bg-orange-900/30",
+          ? "bg-blue-100"
+          : "bg-orange-100",
       textColor:
         netBalance >= 0
-          ? "text-blue-600 dark:text-blue-400"
-          : "text-orange-600 dark:text-orange-400",
+          ? "text-blue-600"
+          : "text-orange-600",
     },
     {
       label: "Last Activity",
@@ -73,8 +73,8 @@ const WalletStats: React.FC<Props> = ({
         : "No transactions yet",
       icon: Clock,
       iconColor: "text-gray-500",
-      iconBg: "bg-gray-100 dark:bg-gray-700",
-      textColor: "text-gray-700 dark:text-gray-300",
+      iconBg: "bg-gray-100",
+      textColor: "text-gray-700",
       small: !lastTransactionAt,
     },
   ];

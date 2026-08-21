@@ -121,7 +121,7 @@ const ConversationList: React.FC<Props> = ({
         {isSelectionMode ? (
           <div className="flex items-center justify-between mb-4 h-8">
             <div className="flex items-center gap-3">
-              <button onClick={onClearSelection} className="p-1 hover:bg-gray-150 rounded-full transition-colors text-gray-500">
+              <button onClick={onClearSelection} className="p-1 hover:bg-gray-100 rounded-full transition-colors text-gray-500">
                 <X className="w-5 h-5" />
               </button>
               <span className="text-sm font-bold text-emerald-700">{selectedConversationIds.length} Selected</span>
@@ -138,7 +138,7 @@ const ConversationList: React.FC<Props> = ({
               ) : (
                 <button
                   onClick={() => onBulkArchive?.(true)}
-                  className="p-1.5 rounded-lg hover:bg-gray-150 text-gray-600 hover:text-gray-900 transition-all"
+                  className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-600 hover:text-gray-900 transition-all"
                   title="Archive"
                 >
                   <Archive className="w-4 h-4" />
@@ -259,7 +259,7 @@ const ConversationList: React.FC<Props> = ({
                 onClick={() => onFilterChange(filter === l.label ? 'all' : l.label)}
                 className={`flex-shrink-0 px-2.5 py-1 text-[11px] font-semibold rounded-full border transition-all flex items-center gap-1.5 ${filter === l.label
                     ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
-                    : 'bg-gray-50 border-gray-200 text-gray-500 hover:bg-gray-150 hover:text-gray-800'
+                    : 'bg-gray-50 border-gray-200 text-gray-500 hover:bg-gray-100 hover:text-gray-800'
                   }`}
               >
                 {l.label}

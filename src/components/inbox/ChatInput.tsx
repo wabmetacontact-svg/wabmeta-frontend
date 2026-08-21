@@ -60,7 +60,6 @@ const ChatInput: React.FC<Props> = ({
   quickReplies = [],
 }) => {
   const [message, setMessage] = useState('');
-  const [sending, setSending] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [showEmoji, setShowEmoji] = useState(false);
   const [showAttachments, setShowAttachments] = useState(false);
@@ -459,7 +458,7 @@ const ChatInput: React.FC<Props> = ({
                 ">
                   /{qr.shortcut}
                 </span>
-                <p className="text-xs text-gray-750 line-clamp-2 group-hover:text-gray-900">
+                <p className="text-xs text-gray-700 line-clamp-2 group-hover:text-gray-900">
                   {qr.text}
                 </p>
               </div>
@@ -478,28 +477,28 @@ const ChatInput: React.FC<Props> = ({
         ">
           <button
             onClick={() => wrapSelection('*', '*')}
-            className="p-1.5 rounded-md hover:bg-gray-105 text-gray-500 hover:text-gray-800 transition-colors"
+            className="p-1.5 rounded-md hover:bg-gray-100 text-gray-500 hover:text-gray-800 transition-colors"
             title="Bold (Ctrl+B)"
           >
             <Bold className="w-3.5 h-3.5" />
           </button>
           <button
             onClick={() => wrapSelection('_', '_')}
-            className="p-1.5 rounded-md hover:bg-gray-105 text-gray-500 hover:text-gray-800 transition-colors"
+            className="p-1.5 rounded-md hover:bg-gray-100 text-gray-500 hover:text-gray-800 transition-colors"
             title="Italic (Ctrl+I)"
           >
             <Italic className="w-3.5 h-3.5" />
           </button>
           <button
             onClick={() => wrapSelection('```', '```')}
-            className="p-1.5 rounded-md hover:bg-gray-105 text-gray-500 hover:text-gray-800 transition-colors"
+            className="p-1.5 rounded-md hover:bg-gray-100 text-gray-500 hover:text-gray-800 transition-colors"
             title="Code"
           >
             <Code className="w-3.5 h-3.5" />
           </button>
           <button
             onClick={() => wrapSelection('~', '~')}
-            className="p-1.5 rounded-md hover:bg-gray-105 text-gray-500 hover:text-gray-800 transition-colors text-sm font-medium"
+            className="p-1.5 rounded-md hover:bg-gray-100 text-gray-500 hover:text-gray-800 transition-colors text-sm font-medium"
             title="Strikethrough"
           >
             <span className="line-through">S</span>
@@ -507,7 +506,7 @@ const ChatInput: React.FC<Props> = ({
           <div className="ml-auto">
             <button
               onClick={() => setShowFormatting(false)}
-              className="p-1.5 rounded-md hover:bg-gray-105 text-gray-500 hover:text-gray-800 transition-colors"
+              className="p-1.5 rounded-md hover:bg-gray-100 text-gray-500 hover:text-gray-800 transition-colors"
             >
               <X className="w-3.5 h-3.5" />
             </button>
@@ -541,7 +540,7 @@ const ChatInput: React.FC<Props> = ({
                 transition-all hover:scale-105 active:scale-95
                 ${showAttachments
                   ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                  : 'hover:bg-gray-105 text-gray-500 hover:text-gray-800 border border-transparent'
+                  : 'hover:bg-gray-100 text-gray-500 hover:text-gray-800 border border-transparent'
                 }
                 disabled:opacity-50 disabled:cursor-not-allowed
               `}
@@ -571,7 +570,7 @@ const ChatInput: React.FC<Props> = ({
               transition-all hover:scale-105 active:scale-95
               ${showFormatting
                 ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                : 'hover:bg-gray-105 text-gray-500 hover:text-gray-800 border border-transparent'
+                : 'hover:bg-gray-100 text-gray-500 hover:text-gray-800 border border-transparent'
               }
             `}
             title="Formatting"
@@ -587,11 +586,11 @@ const ChatInput: React.FC<Props> = ({
               onChange={(e) => setMessage(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder={placeholder}
-              disabled={disabled || sending || uploading}
+              disabled={disabled || uploading}
               rows={1}
               className="
                 w-full px-4 py-3
-                bg-gray-50 border border-gray-205
+                bg-gray-50 border border-gray-200
                 rounded-2xl
                 text-gray-900 placeholder:text-gray-400
                 text-sm leading-relaxed
@@ -628,7 +627,7 @@ const ChatInput: React.FC<Props> = ({
                 transition-all hover:scale-105 active:scale-95
                 ${showEmoji
                   ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                  : 'hover:bg-gray-105 text-gray-500 hover:text-gray-800 border border-transparent'
+                  : 'hover:bg-gray-100 text-gray-500 hover:text-gray-800 border border-transparent'
                 }
               `}
               title="Emoji"
@@ -647,7 +646,7 @@ const ChatInput: React.FC<Props> = ({
           {message.trim() ? (
             <button
               type="submit"
-              disabled={sending || disabled || uploading || message.length > 4096}
+              disabled={disabled || uploading || message.length > 4096}
               className="
                 flex-shrink-0 p-2.5 rounded-xl
                 bg-gradient-to-br from-emerald-600 to-emerald-700
@@ -659,11 +658,7 @@ const ChatInput: React.FC<Props> = ({
               "
               title="Send (Enter)"
             >
-              {sending ? (
-                <Loader2 className="w-5 h-5 animate-spin" />
-              ) : (
-                <Send className="w-5 h-5" />
-              )}
+              <Send className="w-5 h-5" />
             </button>
           ) : (
             onSendVoice && (

@@ -77,18 +77,18 @@ const Contact: React.FC = () => {
     ];
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+        <div className="min-h-screen bg-gray-50">
             {/* Header */}
-            <nav className="bg-white dark:bg-gray-800 shadow-sm">
+            <nav className="bg-white shadow-sm">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between h-16 items-center">
                         <Link to="/" className="flex items-center">
                             <MessageCircle className="h-8 w-8 text-green-500" />
-                            <span className="ml-2 text-xl font-bold text-gray-900 dark:text-white">WabMeta</span>
+                            <span className="ml-2 text-xl font-bold text-gray-900">WabMeta</span>
                         </Link>
                         <Link
                             to="/"
-                            className="text-gray-600 dark:text-gray-300 hover:text-green-500 transition-colors"
+                            className="text-gray-600 hover:text-green-500 transition-colors"
                         >
                             ← Back to Home
                         </Link>
@@ -115,21 +115,21 @@ const Contact: React.FC = () => {
 
                     {/* Contact Info Cards */}
                     <div className="lg:col-span-1 space-y-6">
-                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
+                        <h2 className="text-2xl font-bold text-gray-900 mb-6">
                             Contact Information
                         </h2>
 
                         {contactInfo.map((info, index) => (
                             <div
                                 key={index}
-                                className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow"
+                                className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow"
                             >
                                 <div className="flex items-start space-x-4">
-                                    <div className={`${info.color} bg-gray-100 dark:bg-gray-700 p-3 rounded-full`}>
+                                    <div className={`${info.color} bg-gray-100 p-3 rounded-full`}>
                                         <info.icon className="w-6 h-6" />
                                     </div>
                                     <div>
-                                        <h3 className="font-semibold text-gray-900 dark:text-white">
+                                        <h3 className="font-semibold text-gray-900">
                                             {info.title}
                                         </h3>
                                         {info.link ? (
@@ -137,12 +137,12 @@ const Contact: React.FC = () => {
                                                 href={info.link}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
-                                                className="text-gray-600 dark:text-gray-300 hover:text-green-500 transition-colors"
+                                                className="text-gray-600 hover:text-green-500 transition-colors"
                                             >
                                                 {info.value}
                                             </a>
                                         ) : (
-                                            <p className="text-gray-600 dark:text-gray-300">{info.value}</p>
+                                            <p className="text-gray-600">{info.value}</p>
                                         )}
                                     </div>
                                 </div>
@@ -163,18 +163,18 @@ const Contact: React.FC = () => {
 
                     {/* Contact Form */}
                     <div className="lg:col-span-2">
-                        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8">
-                            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
+                        <div className="bg-white rounded-2xl shadow-xl p-8">
+                            <h2 className="text-2xl font-bold text-gray-900 mb-6">
                                 Send us a Message
                             </h2>
 
                             {isSubmitted ? (
                                 <div className="text-center py-12">
                                     <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
-                                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                                    <h3 className="text-xl font-semibold text-gray-900 mb-2">
                                         Message Sent Successfully!
                                     </h3>
-                                    <p className="text-gray-600 dark:text-gray-300">
+                                    <p className="text-gray-600">
                                         We'll get back to you within 24 hours.
                                     </p>
                                 </div>
@@ -182,7 +182,7 @@ const Contact: React.FC = () => {
                                 <form onSubmit={handleSubmit} className="space-y-6">
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">
                                                 Your Name *
                                             </label>
                                             <input
@@ -191,12 +191,12 @@ const Contact: React.FC = () => {
                                                 value={formData.name}
                                                 onChange={handleChange}
                                                 required
-                                                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                                                 placeholder="John Doe"
                                             />
                                         </div>
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">
                                                 Email Address *
                                             </label>
                                             <input
@@ -205,14 +205,14 @@ const Contact: React.FC = () => {
                                                 value={formData.email}
                                                 onChange={handleChange}
                                                 required
-                                                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                                                 placeholder="john@example.com"
                                             />
                                         </div>
                                     </div>
 
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">
                                             Subject *
                                         </label>
                                         <select
@@ -220,7 +220,7 @@ const Contact: React.FC = () => {
                                             value={formData.subject}
                                             onChange={handleChange}
                                             required
-                                            className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                                         >
                                             <option value="">Select a subject</option>
                                             <option value="general">General Inquiry</option>
@@ -232,7 +232,7 @@ const Contact: React.FC = () => {
                                     </div>
 
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">
                                             Message *
                                         </label>
                                         <textarea
@@ -241,7 +241,7 @@ const Contact: React.FC = () => {
                                             onChange={handleChange}
                                             required
                                             rows={5}
-                                            className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent dark:bg-gray-700 dark:text-white resize-none"
+                                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
                                             placeholder="Tell us how we can help you..."
                                         />
                                     </div>

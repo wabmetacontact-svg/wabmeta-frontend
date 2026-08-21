@@ -4,7 +4,7 @@ import { GitBranch } from 'lucide-react';
 
 const ConditionNode: React.FC<{ data: any }> = ({ data }) => {
   return (
-    <div className="px-4 py-3 bg-[#0a0e27] dark:bg-gray-700 rounded-lg shadow-lg border-2 border-yellow-400 min-w-[180px]">
+    <div className="px-4 py-3 bg-[#0a0e27] rounded-lg shadow-lg border-2 border-yellow-400 min-w-[180px]">
       <Handle type="target" position={Position.Top} className="w-3 h-3 bg-yellow-500" />
       <div className="flex items-center gap-2 mb-2">
         <GitBranch className="w-4 h-4 text-yellow-500" />

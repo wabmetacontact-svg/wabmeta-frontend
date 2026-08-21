@@ -126,17 +126,17 @@ const AddToGroupModal: React.FC<AddToGroupModalProps> = ({
         onClick={submitting ? undefined : onClose}
       />
       
-      <div className="relative w-full max-w-md bg-[#0a0e27] border border-white/[0.1] rounded-2xl shadow-xl animate-scale-in">
-        <div className="flex items-center justify-between p-4 sm:p-6 border-b border-white/[0.1]">
+      <div className="relative w-full max-w-md bg-white border border-gray-200 rounded-2xl shadow-xl animate-scale-in">
+        <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200">
           <div>
-            <h2 className="text-xl font-bold text-white">Add to Group</h2>
-            <p className="text-sm text-gray-400 mt-1">
+            <h2 className="text-xl font-bold text-gray-900">Add to Group</h2>
+            <p className="text-sm text-gray-500 mt-1">
               Adding {selectedContactIds.length} contact(s)
             </p>
           </div>
           <button 
             onClick={onClose}
-            className="p-2 text-gray-400 hover:text-white hover:bg-white/[0.04] rounded-xl transition-colors"
+            className="p-2 text-gray-500 hover:text-gray-900 hover:bg-gray-50 rounded-xl transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -150,12 +150,12 @@ const AddToGroupModal: React.FC<AddToGroupModalProps> = ({
           )}
 
           {/* Toggle between existing and new group */}
-          <div className="flex bg-[#050816] p-1 rounded-xl">
+          <div className="flex bg-gray-50 p-1 rounded-xl">
             <button
               onClick={() => setIsCreatingNew(false)}
               className={`flex-1 py-2 text-sm font-medium rounded-lg transition-colors ${
                 !isCreatingNew 
-                  ? 'bg-[#0a0e27] text-white shadow-sm border border-white/[0.1]' 
+                  ? 'bg-white text-white shadow-sm border border-gray-200' 
                   : 'text-gray-400 hover:text-gray-200'
               }`}
             >
@@ -165,7 +165,7 @@ const AddToGroupModal: React.FC<AddToGroupModalProps> = ({
               onClick={() => setIsCreatingNew(true)}
               className={`flex-1 py-2 text-sm font-medium rounded-lg transition-colors ${
                 isCreatingNew 
-                  ? 'bg-[#0a0e27] text-white shadow-sm border border-white/[0.1]' 
+                  ? 'bg-white text-white shadow-sm border border-gray-200' 
                   : 'text-gray-400 hover:text-gray-200'
               }`}
             >
@@ -176,7 +176,7 @@ const AddToGroupModal: React.FC<AddToGroupModalProps> = ({
           {isCreatingNew ? (
             <div className="space-y-4 animate-fade-in">
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1.5">
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">
                   Group Name
                 </label>
                 <input
@@ -184,7 +184,7 @@ const AddToGroupModal: React.FC<AddToGroupModalProps> = ({
                   value={newGroupName}
                   onChange={(e) => setNewGroupName(e.target.value)}
                   placeholder="e.g., VIP Customers"
-                  className="w-full px-4 py-2.5 bg-[#050816] border border-white/[0.1] rounded-xl text-white placeholder:text-gray-600 focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-colors"
+                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder:text-gray-600 focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-colors"
                 />
               </div>
             </div>
@@ -198,7 +198,7 @@ const AddToGroupModal: React.FC<AddToGroupModalProps> = ({
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search groups..."
-                  className="w-full pl-9 pr-4 py-2 bg-[#050816] border border-white/[0.1] rounded-xl text-white placeholder:text-gray-600 focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-colors text-sm"
+                  className="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder:text-gray-600 focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-colors text-sm"
                 />
               </div>
 
@@ -226,12 +226,12 @@ const AddToGroupModal: React.FC<AddToGroupModalProps> = ({
                       className={`w-full flex items-center justify-between p-3 rounded-xl border transition-all ${
                         selectedGroupId === group.id
                           ? 'bg-green-500/10 border-green-500/50'
-                          : 'bg-[#050816] border-white/[0.05] hover:border-white/[0.15]'
+                          : 'bg-gray-50 border-gray-200 hover:border-gray-300'
                       }`}
                     >
                       <div className="flex items-center gap-3">
                         <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${
-                          selectedGroupId === group.id ? 'bg-green-500/20 text-green-400' : 'bg-white/[0.04] text-gray-400'
+                          selectedGroupId === group.id ? 'bg-green-500/20 text-green-400' : 'bg-gray-50 text-gray-400'
                         }`}>
                           <Users className="w-5 h-5" />
                         </div>
@@ -247,7 +247,7 @@ const AddToGroupModal: React.FC<AddToGroupModalProps> = ({
                       
                       {selectedGroupId === group.id && (
                         <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
-                          <Check className="w-3 h-3 text-white" />
+                          <Check className="w-3 h-3 text-gray-900" />
                         </div>
                       )}
                     </button>
@@ -258,11 +258,11 @@ const AddToGroupModal: React.FC<AddToGroupModalProps> = ({
           )}
         </div>
 
-        <div className="p-4 sm:p-6 border-t border-white/[0.1] flex justify-end gap-3 bg-[#050816] rounded-b-2xl">
+        <div className="p-4 sm:p-6 border-t border-gray-200 flex justify-end gap-3 bg-gray-50 rounded-b-2xl">
           <button
             onClick={onClose}
             disabled={submitting}
-            className="px-4 py-2 text-sm font-medium text-gray-300 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] rounded-xl transition-colors"
+            className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 bg-gray-50 hover:bg-gray-50 rounded-xl transition-colors"
           >
             Cancel
           </button>

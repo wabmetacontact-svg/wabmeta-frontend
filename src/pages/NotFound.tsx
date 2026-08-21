@@ -13,7 +13,7 @@ const NotFound: React.FC = () => {
         <div className="mt-8 flex justify-center space-x-4">
           <button
             onClick={() => window.history.back()}
-            className="flex items-center space-x-2 px-6 py-3 bg-white border border-gray-200 text-gray-750 font-medium rounded-xl hover:bg-gray-50 transition-colors shadow-sm"
+            className="flex items-center space-x-2 px-6 py-3 bg-white border border-gray-200 text-gray-700 font-medium rounded-xl hover:bg-gray-50 transition-colors shadow-sm"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>Go Back</span>

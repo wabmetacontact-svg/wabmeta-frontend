@@ -26,7 +26,7 @@ const About = () => {
             </span>
           </div>
 
-          <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-[1.05] tracking-tight text-gray-955 mb-6">
+          <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-[1.05] tracking-tight text-gray-950 mb-6">
             <span>Built for businesses</span>{' '}
             <span className="bg-gradient-to-r from-gray-400 to-gray-500 bg-clip-text text-transparent italic font-light">
               that
@@ -125,7 +125,7 @@ const About = () => {
               <div className="w-11 h-11 bg-gradient-to-br from-purple-500 to-violet-600 rounded-2xl flex items-center justify-center shadow-lg shadow-purple-500/30 mb-4">
                 <Rocket size={20} className="text-white" />
               </div>
-              <h3 className="font-heading font-bold text-xl text-purple-955 mb-2">
+              <h3 className="font-heading font-bold text-xl text-purple-950 mb-2">
                 Our Mission
               </h3>
               <p className="text-sm text-purple-800/80 leading-relaxed">
@@ -139,7 +139,7 @@ const About = () => {
               <div className="w-11 h-11 bg-gradient-to-br from-pink-500 to-rose-600 rounded-2xl flex items-center justify-center shadow-lg shadow-pink-500/30 mb-4">
                 <Target size={20} className="text-white" />
               </div>
-              <h3 className="font-heading font-bold text-xl text-pink-955 mb-2">
+              <h3 className="font-heading font-bold text-xl text-pink-950 mb-2">
                 Our Vision
               </h3>
               <p className="text-sm text-pink-800/80 leading-relaxed">
@@ -153,7 +153,7 @@ const About = () => {
               <div className="w-11 h-11 bg-gradient-to-br from-blue-500 to-sky-600 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/30 mb-4">
                 <Users size={20} className="text-white" />
               </div>
-              <h3 className="font-heading font-bold text-xl text-blue-955 mb-2">
+              <h3 className="font-heading font-bold text-xl text-blue-950 mb-2">
                 Customer First
               </h3>
               <p className="text-sm text-blue-800/80 leading-relaxed">
@@ -167,7 +167,7 @@ const About = () => {
               <div className="w-11 h-11 bg-gradient-to-br from-orange-500 to-amber-600 rounded-2xl flex items-center justify-center shadow-lg shadow-orange-500/30 mb-4">
                 <Heart size={20} className="text-white" />
               </div>
-              <h3 className="font-heading font-bold text-xl text-orange-955 mb-2">
+              <h3 className="font-heading font-bold text-xl text-orange-950 mb-2">
                 Built with Heart
               </h3>
               <p className="text-sm text-orange-800/80 leading-relaxed">

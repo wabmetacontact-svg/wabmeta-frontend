@@ -4,8 +4,6 @@ import {
   Image as ImageIcon,
   Video,
   FileText,
-  MapPin,
-  User,
   Camera,
   Music,
 } from 'lucide-react';

@@ -80,29 +80,29 @@ const CountryBreakdownModal: React.FC<Props> = ({
       onClick={onClose}
     >
       <div
-        className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-4xl w-full max-h-[85vh] overflow-hidden flex flex-col"
+        className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[85vh] overflow-hidden flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-purple-50 to-blue-50">
           <div>
-            <h2 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+            <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
               🌍 Country-wise Message Distribution
             </h2>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+            <p className="text-xs text-gray-500 mt-0.5">
               {countries.length} countries • {fmt(totalSent)} total messages • {fmtCost(totalCost)} total cost
             </p>
           </div>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-white/50 dark:hover:bg-gray-700 rounded-lg transition-all"
+            className="p-2 hover:bg-white/50 rounded-lg transition-all"
           >
             <X className="w-5 h-5 text-gray-600" />
           </button>
         </div>
 
         {/* Toolbar */}
-        <div className="flex items-center gap-3 px-6 py-3 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
+        <div className="flex items-center gap-3 px-6 py-3 border-b border-gray-100 bg-gray-50">
           <div className="relative flex-1">
             <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
             <input
@@ -110,14 +110,14 @@ const CountryBreakdownModal: React.FC<Props> = ({
               placeholder="Search country..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 text-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              className="w-full pl-9 pr-4 py-2 text-sm bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
             />
           </div>
 
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value as any)}
-            className="px-3 py-2 text-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500"
+            className="px-3 py-2 text-sm bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500"
           >
             <option value="sent">Sort by Sent</option>
             <option value="delivered">Sort by Delivered</option>
@@ -148,14 +148,14 @@ const CountryBreakdownModal: React.FC<Props> = ({
                 return (
                   <div
                     key={country.code}
-                    className="p-4 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl hover:border-purple-300 dark:hover:border-purple-700 transition-all"
+                    className="p-4 bg-white border border-gray-200 rounded-xl hover:border-purple-300 transition-all"
                   >
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center gap-3">
                         <span className="text-3xl">{country.flag}</span>
                         <div>
                           <div className="flex items-center gap-2">
-                            <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                            <p className="text-sm font-semibold text-gray-900">
                               {country.name}
                             </p>
                             <span className="text-xs text-gray-400">
@@ -168,7 +168,7 @@ const CountryBreakdownModal: React.FC<Props> = ({
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="text-lg font-bold text-gray-900 dark:text-white">
+                        <p className="text-lg font-bold text-gray-900">
                           {fmtCost(country.cost)}
                         </p>
                         <p className="text-xs text-gray-500">
@@ -179,15 +179,15 @@ const CountryBreakdownModal: React.FC<Props> = ({
 
                     {/* Stats Grid */}
                     <div className="grid grid-cols-3 gap-2 mb-3">
-                      <div className="text-center py-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                      <div className="text-center py-2 bg-blue-50 rounded-lg">
                         <p className="text-xs text-gray-500">Sent</p>
                         <p className="text-sm font-bold text-blue-600">{fmt(country.sent)}</p>
                       </div>
-                      <div className="text-center py-2 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                      <div className="text-center py-2 bg-green-50 rounded-lg">
                         <p className="text-xs text-gray-500">Delivered</p>
                         <p className="text-sm font-bold text-green-600">{fmt(country.delivered)}</p>
                       </div>
-                      <div className="text-center py-2 bg-red-50 dark:bg-red-900/20 rounded-lg">
+                      <div className="text-center py-2 bg-red-50 rounded-lg">
                         <p className="text-xs text-gray-500">Failed</p>
                         <p className="text-sm font-bold text-red-600">{fmt(country.failed)}</p>
                       </div>
@@ -200,12 +200,12 @@ const CountryBreakdownModal: React.FC<Props> = ({
                         .map(([cat, count]) => (
                           <div
                             key={cat}
-                            className="px-2.5 py-1 bg-gray-100 dark:bg-gray-800 rounded-full text-xs"
+                            className="px-2.5 py-1 bg-gray-100 rounded-full text-xs"
                           >
-                            <span className="text-gray-600 dark:text-gray-400">
+                            <span className="text-gray-600">
                               {cat.charAt(0) + cat.slice(1).toLowerCase()}:
                             </span>
-                            <span className="ml-1 font-semibold text-gray-900 dark:text-white">
+                            <span className="ml-1 font-semibold text-gray-900">
                               {count}
                             </span>
                           </div>
@@ -213,7 +213,7 @@ const CountryBreakdownModal: React.FC<Props> = ({
                     </div>
 
                     {/* Progress Bar */}
-                    <div className="mt-3 w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
+                    <div className="mt-3 w-full bg-gray-200 rounded-full h-1.5">
                       <div
                         className="bg-gradient-to-r from-purple-500 to-blue-500 h-1.5 rounded-full transition-all"
                         style={{ width: `${Math.min(percentage, 100)}%` }}
@@ -227,13 +227,13 @@ const CountryBreakdownModal: React.FC<Props> = ({
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-3 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50 flex items-center justify-between">
+        <div className="px-6 py-3 border-t border-gray-200 bg-gray-50 flex items-center justify-between">
           <p className="text-xs text-gray-500">
             💡 Rates are calculated based on recipient country as per Meta's pricing
           </p>
           <button
             onClick={onClose}
-            className="px-4 py-1.5 text-sm font-medium bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 rounded-lg transition-all"
+            className="px-4 py-1.5 text-sm font-medium bg-gray-200 hover:bg-gray-300 rounded-lg transition-all"
           >
             Close
           </button>

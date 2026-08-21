@@ -4,9 +4,9 @@
 import { useState } from 'react';
 import { 
   MessageCircle, Instagram, Code2, Target, TrendingUp,
-  ArrowUpRight, X, Sparkles, Check, ArrowRight,
-  BarChart3, Bot, Smartphone, ShoppingBag, Globe,
-  Zap, Users, Send
+  ArrowUpRight, X, ArrowRight,
+  BarChart3, Smartphone, ShoppingBag, Globe,
+  Zap, Users
 } from 'lucide-react';
 
 interface Service {
@@ -50,7 +50,7 @@ const WorkShowcase = () => {
               </span>
             </div>
 
-            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-[1.05] tracking-tight text-gray-955">
+            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-[1.05] tracking-tight text-gray-950">
               <span className="bg-gradient-to-r from-green-700 via-emerald-600 to-green-700 bg-clip-text text-transparent">
                 Services
               </span>{' '}

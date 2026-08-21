@@ -1,6 +1,7 @@
 // src/context/NotificationsProvider.tsx
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import { NotificationsContext, AppNotification } from './NotificationsContext';
+import { NotificationsContext } from './NotificationsContext';
+import type { AppNotification } from './NotificationsContext';
 import { useAuth } from './AuthContext';
 
 const STORAGE_KEY = 'wabmeta_notifications';

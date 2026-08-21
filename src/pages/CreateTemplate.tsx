@@ -965,15 +965,15 @@ const CreateTemplate: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* ✅ Edit page pe approved template warning */}
         {isApprovedTemplate && (
-          <div className="mb-6 bg-blue-50 dark:bg-blue-900/20 border 
-                          border-blue-200 dark:border-blue-800 
+          <div className="mb-6 bg-blue-50 border 
+                          border-blue-200 
                           rounded-xl p-4 flex items-start space-x-3">
             <Info className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
             <div>
-              <p className="text-blue-800 dark:text-blue-200 font-medium">
+              <p className="text-blue-800 font-medium">
                 Approved Template - Limited Editing
               </p>
-              <p className="text-blue-700 dark:text-blue-300 text-sm mt-1">
+              <p className="text-blue-700 text-sm mt-1">
                 This template is approved by Meta. You can only 
                 re-upload the expired image. Content cannot be changed.
               </p>
@@ -983,14 +983,14 @@ const CreateTemplate: React.FC = () => {
 
         {/* Success Message */}
         {successMessage && (
-          <div className="mb-6 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl p-4 flex items-start space-x-3 animate-fade-in">
-            <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400 shrink-0 mt-0.5" />
+          <div className="mb-6 bg-green-50 border border-green-200 rounded-xl p-4 flex items-start space-x-3 animate-fade-in">
+            <CheckCircle className="w-5 h-5 text-green-600 shrink-0 mt-0.5" />
             <div className="flex-1">
-              <p className="text-green-800 dark:text-green-200 font-medium">{successMessage}</p>
+              <p className="text-green-800 font-medium">{successMessage}</p>
             </div>
             <button
               onClick={clearMessages}
-              className="text-green-400 hover:text-green-600 dark:hover:text-green-200"
+              className="text-green-400 hover:text-green-600"
             >
               ×
             </button>
@@ -999,19 +999,19 @@ const CreateTemplate: React.FC = () => {
 
         {/* API Error Banner */}
         {apiError && (
-          <div className="mb-6 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4 flex items-start space-x-3 animate-fade-in">
-            <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400 shrink-0 mt-0.5" />
+          <div className="mb-6 bg-red-50 border border-red-200 rounded-xl p-4 flex items-start space-x-3 animate-fade-in">
+            <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
             <div className="flex-1">
-              <h3 className="text-sm font-medium text-red-800 dark:text-red-200">
+              <h3 className="text-sm font-medium text-red-800">
                 Submission Failed
               </h3>
-              <pre className="text-sm text-red-600 dark:text-red-400 mt-1 whitespace-pre-wrap font-sans">
+              <pre className="text-sm text-red-600 mt-1 whitespace-pre-wrap font-sans">
                 {apiError}
               </pre>
             </div>
             <button
               onClick={clearMessages}
-              className="text-red-400 hover:text-red-600 dark:hover:text-red-200"
+              className="text-red-400 hover:text-red-600"
             >
               ×
             </button>
@@ -1020,25 +1020,25 @@ const CreateTemplate: React.FC = () => {
 
         {/* No Account Warning */}
         {!loadingAccounts && whatsappAccounts.length === 0 && (
-          <div className="mb-6 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-xl p-4 flex items-start space-x-3">
-            <AlertCircle className="w-5 h-5 text-yellow-600 dark:text-yellow-400 shrink-0 mt-0.5" />
+          <div className="mb-6 bg-yellow-50 border border-yellow-200 rounded-xl p-4 flex items-start space-x-3">
+            <AlertCircle className="w-5 h-5 text-yellow-600 shrink-0 mt-0.5" />
             <div className="flex-1">
-              <h3 className="text-sm font-medium text-yellow-800 dark:text-yellow-200">
+              <h3 className="text-sm font-medium text-yellow-800">
                 No WhatsApp Account Connected
               </h3>
-              <p className="text-sm text-yellow-600 dark:text-yellow-400 mt-1">
+              <p className="text-sm text-yellow-600 mt-1">
                 {accountsError || 'You need to connect a WhatsApp Business Account before creating templates.'}
               </p>
               <div className="flex items-center space-x-4 mt-2">
                 <Link
                   to="/dashboard/settings"
-                  className="inline-flex items-center text-sm font-medium text-yellow-700 dark:text-yellow-300 hover:text-yellow-800 dark:hover:text-yellow-200"
+                  className="inline-flex items-center text-sm font-medium text-yellow-700 hover:text-yellow-800"
                 >
                   Go to Settings →
                 </Link>
                 <button
                   onClick={loadAccounts}
-                  className="inline-flex items-center text-sm font-medium text-yellow-700 dark:text-yellow-300 hover:text-yellow-800 dark:hover:text-yellow-200"
+                  className="inline-flex items-center text-sm font-medium text-yellow-700 hover:text-yellow-800"
                 >
                   <RefreshCw className="w-4 h-4 mr-1" />
                   Retry
@@ -1049,11 +1049,11 @@ const CreateTemplate: React.FC = () => {
         )}
 
         {/* Info Box */}
-        <div className="mb-6 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4 flex items-start">
-          <Info className="w-5 h-5 text-blue-600 dark:text-blue-400 mr-3 mt-0.5 shrink-0" />
+        <div className="mb-6 bg-blue-50 border border-blue-200 rounded-xl p-4 flex items-start">
+          <Info className="w-5 h-5 text-blue-600 mr-3 mt-0.5 shrink-0" />
           <div>
-            <p className="text-blue-800 dark:text-blue-200 font-medium">Template Guidelines</p>
-            <ul className="text-blue-700 dark:text-blue-300 text-sm mt-1 space-y-1 list-disc list-inside">
+            <p className="text-blue-800 font-medium">Template Guidelines</p>
+            <ul className="text-blue-700 text-sm mt-1 space-y-1 list-disc list-inside">
               <li>Templates must be approved by Meta before use (usually 24-48 hours)</li>
               <li>Use variables like {'{{1}}'}, {'{{2}}'} for dynamic content</li>
               <li>Marketing templates require opt-in from recipients</li>
@@ -1166,7 +1166,7 @@ const CreateTemplate: React.FC = () => {
                           placeholder="Enter header text"
                           maxLength={60}
                           className={`w-full px-4 py-2.5 border rounded-xl bg-white text-gray-950 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all ${errors.headerText
-                            ? 'border-red-350 focus:ring-red-500/20'
+                            ? 'border-red-300 focus:ring-red-500/20'
                             : 'border-gray-200 focus:ring-primary-500/20 focus:border-primary-500'
                             }`}
                         />
@@ -1246,9 +1246,9 @@ const CreateTemplate: React.FC = () => {
                           )}
                         </div>
 
-                        <div className="bg-blue-50 dark:bg-blue-900/10 rounded-lg p-3 flex items-start space-x-2">
+                        <div className="bg-blue-50 rounded-lg p-3 flex items-start space-x-2">
                           <Info className="w-4 h-4 text-blue-500 mt-0.5 shrink-0" />
-                          <p className="text-xs text-blue-700 dark:text-blue-300">
+                          <p className="text-xs text-blue-700">
                             This media is uploaded to Meta and will be used as the approval sample.
                             Max size: 50MB
                           </p>
@@ -1368,7 +1368,7 @@ const CreateTemplate: React.FC = () => {
                                       ...prev,
                                       [`body_${varIndex}`]: e.target.value,
                                     }))}
-                                    className={`flex-1 px-3 py-1.5 border border-amber-250 rounded-lg text-sm bg-white text-gray-950 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all ${errors.variables
+                                    className={`flex-1 px-3 py-1.5 border border-amber-200 rounded-lg text-sm bg-white text-gray-950 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all ${errors.variables
                                       ? 'border-red-300 focus:ring-red-500/20'
                                       : 'border-gray-200'
                                       }`}
@@ -1416,7 +1416,7 @@ const CreateTemplate: React.FC = () => {
                               },
                             ])
                           }
-                          className="inline-flex items-center text-sm text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300"
+                          className="inline-flex items-center text-sm text-primary-600 hover:text-primary-700"
                         >
                           <Plus className="w-4 h-4 mr-1" />
                           Add Button
@@ -1433,7 +1433,7 @@ const CreateTemplate: React.FC = () => {
                     {formData.buttons.map((button, index) => (
                       <div
                         key={button.id}
-                        className="bg-gray-50 border border-gray-250 rounded-lg p-4 space-y-3"
+                        className="bg-gray-50 border border-gray-200 rounded-lg p-4 space-y-3"
                       >
                         <div className="flex items-center justify-between">
                           <span className="font-medium text-gray-700">
@@ -1447,7 +1447,7 @@ const CreateTemplate: React.FC = () => {
                                 formData.buttons.filter((_, i) => i !== index)
                               )
                             }
-                            className="text-red-500 hover:text-red-750"
+                            className="text-red-500 hover:text-red-700"
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
@@ -1488,8 +1488,8 @@ const CreateTemplate: React.FC = () => {
                               placeholder="Button text"
                               maxLength={25}
                               className={`w-full px-3 py-2 border rounded-lg text-sm bg-white text-gray-950 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all ${errors[`button_${index}_text`]
-                                  ? 'border-red-350 focus:ring-red-500/20'
-                                : 'border-gray-250'
+                                  ? 'border-red-300 focus:ring-red-500/20'
+                                : 'border-gray-200'
                                 }`}
                             />
                           </div>
@@ -1510,8 +1510,8 @@ const CreateTemplate: React.FC = () => {
                               }}
                               placeholder="https://example.com"
                               className={`w-full px-3 py-2 border rounded-lg text-sm bg-white text-gray-950 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all ${errors[`button_${index}_url`]
-                                  ? 'border-red-350 focus:ring-red-500/20'
-                                : 'border-gray-250'
+                                  ? 'border-red-300 focus:ring-red-500/20'
+                                : 'border-gray-200'
                                 }`}
                             />
                           </div>
@@ -1532,8 +1532,8 @@ const CreateTemplate: React.FC = () => {
                               }}
                               placeholder="+1234567890"
                               className={`w-full px-3 py-2 border rounded-lg text-sm bg-white text-gray-950 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all ${errors[`button_${index}_phone`]
-                                  ? 'border-red-350 focus:ring-red-500/20'
-                                : 'border-gray-250'
+                                  ? 'border-red-300 focus:ring-red-500/20'
+                                : 'border-gray-200'
                                 }`}
                             />
                           </div>
@@ -1542,14 +1542,14 @@ const CreateTemplate: React.FC = () => {
                     ))}
 
                     {Object.keys(errors).filter((k) => k.startsWith('button_')).length > 0 && (
-                      <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3">
-                        <p className="text-sm text-red-600 dark:text-red-400 font-medium">
+                      <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                        <p className="text-sm text-red-600 font-medium">
                           Button Errors:
                         </p>
                         {Object.entries(errors)
                           .filter(([k]) => k.startsWith('button_'))
                           .map(([key, msg]) => (
-                            <p key={key} className="text-sm text-red-600 dark:text-red-400">
+                            <p key={key} className="text-sm text-red-600">
                               • {msg}
                             </p>
                           ))}
@@ -1572,27 +1572,27 @@ const CreateTemplate: React.FC = () => {
                           <span>Loading WhatsApp accounts...</span>
                         </div>
                       ) : whatsappAccounts.length === 0 ? (
-                        <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
+                        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
                           <div className="flex items-center space-x-2">
-                            <AlertCircle className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
-                            <p className="text-yellow-800 dark:text-yellow-200 font-medium">
+                            <AlertCircle className="w-5 h-5 text-yellow-600" />
+                            <p className="text-yellow-800 font-medium">
                               No accounts connected
                             </p>
                           </div>
-                          <p className="text-yellow-600 dark:text-yellow-400 text-sm mt-1">
+                          <p className="text-yellow-600 text-sm mt-1">
                             {accountsError || 'Please connect a WhatsApp Business Account in Settings.'}
                           </p>
                           <div className="flex items-center space-x-4 mt-3">
                             <Link
                               to="/dashboard/settings"
-                              className="inline-flex items-center text-sm font-medium text-yellow-700 dark:text-yellow-300 hover:text-yellow-800"
+                              className="inline-flex items-center text-sm font-medium text-yellow-700 hover:text-yellow-800"
                             >
                               <MessageSquare className="w-4 h-4 mr-1" />
                               Go to Settings
                             </Link>
                             <button
                               onClick={loadAccounts}
-                              className="inline-flex items-center text-sm font-medium text-yellow-700 dark:text-yellow-300 hover:text-yellow-800"
+                              className="inline-flex items-center text-sm font-medium text-yellow-700 hover:text-yellow-800"
                             >
                               <RefreshCw className="w-4 h-4 mr-1" />
                               Refresh
@@ -1632,14 +1632,14 @@ const CreateTemplate: React.FC = () => {
                             </p>
                           )}
                           {selectedAccount && (
-                            <div className="mt-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-3">
+                            <div className="mt-3 bg-green-50 border border-green-200 rounded-lg p-3">
                               <div className="flex items-center space-x-2">
                                 <CheckCircle className="w-4 h-4 text-green-500" />
-                                <span className="text-sm font-medium text-green-800 dark:text-green-200">
+                                <span className="text-sm font-medium text-green-800">
                                   Selected: {getAccountDisplayName(selectedAccount)}
                                 </span>
                               </div>
-                              <div className="mt-1 text-xs text-green-600 dark:text-green-400 space-y-0.5">
+                              <div className="mt-1 text-xs text-green-600 space-y-0.5">
                                 <p>📱 Phone: {selectedAccount.phoneNumber}</p>
                                 {selectedAccount.wabaId && (
                                   <p>🏢 WABA ID: {selectedAccount.wabaId}</p>
@@ -1653,7 +1653,7 @@ const CreateTemplate: React.FC = () => {
                           <button
                             type="button"
                             onClick={loadAccounts}
-                            className="mt-2 inline-flex items-center text-xs text-gray-400 hover:text-gray-300 dark:hover:text-gray-200"
+                            className="mt-2 inline-flex items-center text-xs text-gray-400 hover:text-gray-300"
                           >
                             <RefreshCw className="w-3 h-3 mr-1" />
                             Refresh accounts
@@ -1718,16 +1718,16 @@ const CreateTemplate: React.FC = () => {
                     </div>
 
                     {/* Info Box */}
-                    <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4">
+                    <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
                       <div className="flex items-start space-x-3">
-                        <Info className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 shrink-0" />
-                        <div className="text-sm text-blue-800 dark:text-blue-200">
+                        <Info className="w-5 h-5 text-blue-600 mt-0.5 shrink-0" />
+                        <div className="text-sm text-blue-800">
                           <p className="font-medium mb-1">Review Process</p>
                           <p>
                             After submission, your template will be reviewed by Meta. This usually
                             takes 24-48 hours. You'll be notified once approved.
                           </p>
-                          <ul className="mt-2 space-y-1 text-blue-700 dark:text-blue-300">
+                          <ul className="mt-2 space-y-1 text-blue-700">
                             <li>• Marketing templates need clear opt-out option</li>
                             <li>• Utility templates are for transactional messages</li>
                             <li>• Authentication templates are for OTPs only</li>

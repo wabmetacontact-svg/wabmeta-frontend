@@ -4,7 +4,7 @@ import { Zap } from 'lucide-react';
 
 const ActionNode: React.FC<{ data: any }> = ({ data }) => {
     return (
-        <div className="px-4 py-3 bg-[#0a0e27] dark:bg-gray-700 rounded-lg shadow-lg border-2 border-pink-400 min-w-[160px]">
+        <div className="px-4 py-3 bg-[#0a0e27] rounded-lg shadow-lg border-2 border-pink-400 min-w-[160px]">
             <Handle type="target" position={Position.Top} className="w-3 h-3 bg-pink-500" />
             <div className="flex items-center gap-2 mb-1">
                 <Zap className="w-4 h-4 text-pink-500" />

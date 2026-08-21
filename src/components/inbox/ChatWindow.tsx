@@ -1,6 +1,6 @@
 // src/components/inbox/ChatWindow.tsx
 import React, { useRef, useEffect, useState, useCallback, useMemo } from 'react';
-import { ArrowDown, MessageSquare, Loader2 } from 'lucide-react';
+import { ArrowDown, MessageSquare } from 'lucide-react';
 import MessageBubble, { type Message } from './MessageBubble';
 import { formatDateSeparator } from '../../utils/inboxHelpers';
 import toast from 'react-hot-toast';
@@ -202,7 +202,7 @@ const ChatWindow: React.FC<Props> = ({
             <MessageSquare className="w-9 h-9 text-emerald-600" />
           </div>
           <h3 className="text-base font-semibold text-gray-800">No messages yet</h3>
-          <p className="text-sm text-gray-450 max-w-xs">
+          <p className="text-sm text-gray-400 max-w-xs">
             Start the conversation by sending a message below
           </p>
         </div>

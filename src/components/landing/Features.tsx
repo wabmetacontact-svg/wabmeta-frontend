@@ -1,9 +1,4 @@
-import React from 'react';
-import { 
-  MessageCircle, Bot, MessageSquare, Instagram, 
-  Users, BarChart3, Check, Send, TrendingUp,
-  Zap, Image as ImageIcon, Hash, Smile, Mic
-} from 'lucide-react';
+import { MessageCircle, Bot, Instagram, Users, Zap } from 'lucide-react';
 
 const Features = () => {
   return (

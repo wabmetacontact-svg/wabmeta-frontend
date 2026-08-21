@@ -379,7 +379,7 @@ const ImportContacts: React.FC = () => {
 
       {/* Free Plan Info (Not Warning) */}
       {importStats && importStats.planName.toLowerCase().includes('free') && importStats.canImport && (
-        <div className="bg-green-50 border border-green-150 rounded-xl p-4">
+        <div className="bg-green-50 border border-green-100 rounded-xl p-4">
           <div className="flex items-center gap-3">
             <Info className="w-5 h-5 text-green-600" />
             <div className="flex-1">
@@ -545,12 +545,12 @@ const ImportContacts: React.FC = () => {
               <table className="w-full">
                 <thead className="bg-gray-50 sticky top-0 border-b border-gray-200">
                   <tr>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-650 uppercase">Row</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-655 uppercase">First</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-655 uppercase">Last</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-655 uppercase">Phone</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-655 uppercase">Email</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-655 uppercase">Status</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Row</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">First</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Last</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Phone</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Email</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Status</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
@@ -558,11 +558,11 @@ const ImportContacts: React.FC = () => {
                     const ok = c.phone && /^\+\d{7,15}$/.test(c.phone);
                     return (
                       <tr key={idx} className="hover:bg-gray-50/50">
-                        <td className="px-4 py-3 text-sm text-gray-550">{c.__rowIndex}</td>
+                        <td className="px-4 py-3 text-sm text-gray-500">{c.__rowIndex}</td>
                         <td className="px-4 py-3 text-sm text-gray-800">{c.firstName || "-"}</td>
                         <td className="px-4 py-3 text-sm text-gray-800">{c.lastName || "-"}</td>
                         <td className="px-4 py-3 text-sm text-gray-800 font-mono">{c.phone || "-"}</td>
-                        <td className="px-4 py-3 text-sm text-gray-650">{c.email || "-"}</td>
+                        <td className="px-4 py-3 text-sm text-gray-600">{c.email || "-"}</td>
                         <td className="px-4 py-3 text-sm">
                           {ok ? (
                             <span className="inline-flex items-center gap-1 text-green-600 font-semibold">
@@ -623,7 +623,7 @@ const ImportContacts: React.FC = () => {
                   <p className="text-sm text-gray-500 mt-1 font-semibold">Imported</p>
                 </div>
                 <div className="bg-yellow-50 border border-yellow-100 rounded-xl p-4">
-                  <p className="text-3xl font-bold text-yellow-750">{importResult.duplicates}</p>
+                  <p className="text-3xl font-bold text-yellow-700">{importResult.duplicates}</p>
                   <p className="text-sm text-gray-500 mt-1 font-semibold">Duplicates Skipped</p>
                 </div>
                 <div className="bg-red-50 border border-red-100 rounded-xl p-4">
@@ -641,7 +641,7 @@ const ImportContacts: React.FC = () => {
                 </button>
                 <button
                   onClick={resetAll}
-                  className="px-6 py-2.5 text-gray-650 rounded-xl border border-gray-200 hover:bg-gray-50 flex items-center gap-2 transition-all shadow-sm"
+                  className="px-6 py-2.5 text-gray-600 rounded-xl border border-gray-200 hover:bg-gray-50 flex items-center gap-2 transition-all shadow-sm"
                 >
                   <RefreshCw className="w-4 h-4 text-gray-500" />
                   Import More
@@ -655,7 +655,7 @@ const ImportContacts: React.FC = () => {
                   <h3 className="text-lg font-semibold text-gray-900">Import Errors</h3>
                   <button
                     onClick={downloadErrorCsv}
-                    className="flex items-center gap-2 text-green-600 hover:text-green-750 font-semibold"
+                    className="flex items-center gap-2 text-green-600 hover:text-green-700 font-semibold"
                   >
                     <Download className="w-4 h-4" />
                     Download error report
@@ -666,8 +666,8 @@ const ImportContacts: React.FC = () => {
                   <table className="w-full">
                     <thead className="bg-gray-50 border-b border-gray-200">
                       <tr>
-                        <th className="px-4 py-3 text-left text-xs font-semibold text-gray-650 uppercase">Row</th>
-                        <th className="px-4 py-3 text-left text-xs font-semibold text-gray-650 uppercase">Error</th>
+                        <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Row</th>
+                        <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Error</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100">

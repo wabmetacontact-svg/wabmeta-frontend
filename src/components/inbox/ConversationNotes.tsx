@@ -76,7 +76,7 @@ const ConversationNotes: React.FC<Props> = ({ notes, onAdd, onUpdate, onDelete }
             bg-gray-50 hover:bg-gray-100
             border border-dashed border-gray-200 hover:border-emerald-500/30
             rounded-lg
-            text-xs font-medium text-gray-550 hover:text-emerald-600
+            text-xs font-medium text-gray-500 hover:text-emerald-600
             transition-all
           "
         >
@@ -107,9 +107,9 @@ const ConversationNotes: React.FC<Props> = ({ notes, onAdd, onUpdate, onDelete }
               focus:outline-none resize-none
             "
           />
-          <div className="flex items-center justify-between mt-2 pt-2 border-t border-gray-150">
+          <div className="flex items-center justify-between mt-2 pt-2 border-t border-gray-100">
             <p className="text-[10px] text-gray-500">
-              <kbd className="px-1 bg-gray-105 border border-gray-200 rounded">Ctrl+Enter</kbd> to save
+              <kbd className="px-1 bg-gray-100 border border-gray-200 rounded">Ctrl+Enter</kbd> to save
             </p>
             <div className="flex items-center gap-1">
               <button
@@ -144,7 +144,7 @@ const ConversationNotes: React.FC<Props> = ({ notes, onAdd, onUpdate, onDelete }
         !isAdding && (
           <div className="flex flex-col items-center py-4 text-center">
             <StickyNote className="w-6 h-6 text-gray-400 mb-2" />
-            <p className="text-[10px] text-gray-505">
+            <p className="text-[10px] text-gray-500">
               No notes yet. Add internal notes about this conversation.
             </p>
           </div>
@@ -181,7 +181,7 @@ const ConversationNotes: React.FC<Props> = ({ notes, onAdd, onUpdate, onDelete }
                   <button
                     onClick={() => setEditingId(null)}
                     disabled={saving}
-                    className="p-1 hover:bg-gray-100 rounded text-gray-550 transition-colors"
+                    className="p-1 hover:bg-gray-100 rounded text-gray-500 transition-colors"
                   >
                     <X className="w-3.5 h-3.5" />
                   </button>

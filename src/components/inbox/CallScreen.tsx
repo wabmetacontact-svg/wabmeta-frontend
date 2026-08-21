@@ -5,7 +5,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
-  Phone, PhoneOff, Mic, MicOff, Volume2, VolumeX,
+  PhoneOff, Mic, MicOff, Volume2, VolumeX,
   Circle, Square, Loader2, X, Info, CheckCircle2,
   PhoneCall, MessageSquare,
 } from 'lucide-react';

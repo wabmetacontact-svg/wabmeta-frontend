@@ -124,9 +124,9 @@ const ForgotPassword: React.FC = () => {
             </p>
           </div>
 
-          <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 text-sm text-slate-650">
+          <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 text-sm text-slate-600">
             <p className="font-semibold text-slate-800 mb-2">Didn't receive the email?</p>
-            <ul className="list-disc list-inside space-y-1 text-left text-slate-550">
+            <ul className="list-disc list-inside space-y-1 text-left text-slate-500">
               <li>Check your spam or junk folder</li>
               <li>Make sure the email address is correct</li>
               <li>Wait a few minutes and check again</li>

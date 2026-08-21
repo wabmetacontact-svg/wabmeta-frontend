@@ -71,22 +71,22 @@ const CountryTable: React.FC<{ breakdown: CostBreakdown }> = ({ breakdown }) => 
 
   return (
     <div>
-      <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300
+      <h3 className="text-sm font-semibold text-gray-700
                      mb-2 flex items-center gap-2">
         <Globe className="w-4 h-4 text-primary-500" />
         Country-wise Breakdown
       </h3>
 
-      <div className="bg-gray-50 dark:bg-gray-800 rounded-xl overflow-hidden
-                      border border-gray-200 dark:border-gray-700">
+      <div className="bg-gray-50 rounded-xl overflow-hidden
+                      border border-gray-200">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-gray-200 dark:border-gray-700">
+            <tr className="border-b border-gray-200">
               {['Country', 'Recipients', 'Rate', 'Cost'].map((h, i) => (
                 <th
                   key={h}
                   className={`py-2.5 px-3 text-xs font-semibold
-                              text-gray-500 dark:text-gray-400
+                              text-gray-500
                               ${i === 0 ? 'text-left' : 'text-right'}`}
                 >
                   {h}
@@ -98,38 +98,38 @@ const CountryTable: React.FC<{ breakdown: CostBreakdown }> = ({ breakdown }) => 
             {items.map((item, idx) => (
               <tr
                 key={idx}
-                className="border-b border-gray-100 dark:border-gray-700/50
+                className="border-b border-gray-100
                            last:border-0 hover:bg-gray-100
-                           dark:hover:bg-gray-700/50 transition-colors"
+ transition-colors"
               >
                 <td className="py-2.5 px-3 font-medium text-gray-900
-                               dark:text-gray-100">
+">
                   {item.country}
                 </td>
                 <td className="py-2.5 px-3 text-right text-gray-600
-                               dark:text-gray-400">
+">
                   {item.count.toLocaleString()}
                 </td>
                 <td className="py-2.5 px-3 text-right text-gray-600
-                               dark:text-gray-400">
+">
                   {formatINR(item.rate)}
                 </td>
                 <td className="py-2.5 px-3 text-right font-semibold
-                               text-gray-900 dark:text-gray-100">
+                               text-gray-900">
                   {formatINR(item.cost)}
                 </td>
               </tr>
             ))}
           </tbody>
           <tfoot>
-            <tr className="bg-gray-100 dark:bg-gray-700/50">
+            <tr className="bg-gray-100">
               <td colSpan={3}
                 className="py-2.5 px-3 font-bold text-gray-900
-                             dark:text-gray-100 text-xs">
+ text-xs">
                 TOTAL ({breakdown.totalRecipients.toLocaleString()} recipients)
               </td>
               <td className="py-2.5 px-3 text-right font-bold text-gray-900
-                             dark:text-gray-100">
+">
                 {formatINR(
                   breakdown.countryBreakdown.reduce((s, i) => s + i.cost, 0)
                 )}
@@ -144,7 +144,7 @@ const CountryTable: React.FC<{ breakdown: CostBreakdown }> = ({ breakdown }) => 
         <button
           onClick={() => setExpanded(e => !e)}
           className="w-full mt-2 py-1.5 text-xs text-gray-500
-                     hover:text-gray-700 dark:hover:text-gray-300
+                     hover:text-gray-700
                      flex items-center justify-center gap-1 transition-colors"
         >
           <ChevronDown
@@ -178,17 +178,17 @@ const WalletCostModal: React.FC<WalletCostModalProps> = ({
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-        <div className="relative bg-white dark:bg-gray-900 rounded-2xl
+        <div className="relative bg-white rounded-2xl
                         shadow-2xl w-full max-w-md p-8 text-center">
-          <div className="w-16 h-16 bg-primary-100 dark:bg-primary-900/30
+          <div className="w-16 h-16 bg-primary-100
                           rounded-full flex items-center justify-center
                           mx-auto mb-4 animate-pulse">
             <Wallet className="w-8 h-8 text-primary-600" />
           </div>
-          <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+          <h2 className="text-xl font-bold text-gray-900 mb-2">
             Calculating Cost...
           </h2>
-          <p className="text-gray-500 dark:text-gray-400 text-sm">
+          <p className="text-gray-500 text-sm">
             Analyzing recipients and computing country-wise rates
           </p>
           <div className="mt-6 flex gap-1 justify-center">
@@ -219,33 +219,33 @@ const WalletCostModal: React.FC<WalletCostModalProps> = ({
           className="absolute inset-0 bg-black/60 backdrop-blur-sm"
           onClick={onClose}
         />
-        <div className="relative bg-white dark:bg-gray-900 rounded-2xl
+        <div className="relative bg-white rounded-2xl
                         shadow-2xl w-full max-w-md p-6">
           <button
             onClick={onClose}
             className="absolute top-4 right-4 p-2 hover:bg-gray-100
-                       dark:hover:bg-gray-800 rounded-lg transition-colors"
+ rounded-lg transition-colors"
           >
             <X className="w-5 h-5 text-gray-500" />
           </button>
 
           <div className="text-center mb-6">
-            <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30
+            <div className="w-16 h-16 bg-blue-100
                             rounded-full flex items-center justify-center
                             mx-auto mb-4">
               <Info className="w-8 h-8 text-blue-600" />
             </div>
-            <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+            <h2 className="text-xl font-bold text-gray-900 mb-2">
               No Wallet Connected
             </h2>
-            <p className="text-gray-500 dark:text-gray-400 text-sm">
+            <p className="text-gray-500 text-sm">
               Campaign charges will be billed directly by Meta to your
               registered payment method.
             </p>
           </div>
 
-          <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4
-                          mb-6 text-sm text-blue-700 dark:text-blue-300">
+          <div className="bg-blue-50 rounded-xl p-4
+                          mb-6 text-sm text-blue-700">
             <strong>"{campaignName}"</strong> will send to{' '}
             <strong>{recipients.toLocaleString()}</strong> recipients.
           </div>
@@ -254,8 +254,8 @@ const WalletCostModal: React.FC<WalletCostModalProps> = ({
             <button
               onClick={onClose}
               className="flex-1 px-4 py-3 border border-gray-200
-                         dark:border-gray-700 text-gray-700 dark:text-gray-300
-                         rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800
+ text-gray-700
+                         rounded-xl hover:bg-gray-50
                          font-medium transition-colors"
             >
               Cancel
@@ -297,7 +297,7 @@ const WalletCostModal: React.FC<WalletCostModalProps> = ({
         className="absolute inset-0 bg-black/60 backdrop-blur-sm"
         onClick={onClose}
       />
-      <div className="relative bg-white dark:bg-gray-900 rounded-2xl
+      <div className="relative bg-white rounded-2xl
                       shadow-2xl w-full max-w-lg overflow-hidden">
 
         {/* ── Header ── */}
@@ -340,15 +340,15 @@ const WalletCostModal: React.FC<WalletCostModalProps> = ({
 
           {/* Insufficient Warning */}
           {insufficient && (
-            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200
-                            dark:border-red-800 rounded-xl p-4">
+            <div className="bg-red-50 border border-red-200
+ rounded-xl p-4">
               <div className="flex items-start gap-3">
                 <AlertTriangle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
                 <div>
-                  <p className="font-semibold text-red-700 dark:text-red-400 text-sm">
+                  <p className="font-semibold text-red-700 text-sm">
                     Wallet balance insufficient!
                   </p>
-                  <p className="text-red-600 dark:text-red-300 text-sm mt-1">
+                  <p className="text-red-600 text-sm mt-1">
                     You need{' '}
                     <span className="font-bold">
                       {formatINR(estimate.shortfall)}
@@ -362,22 +362,22 @@ const WalletCostModal: React.FC<WalletCostModalProps> = ({
 
           {/* Balance Cards */}
           <div className="grid grid-cols-2 gap-3">
-            <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4
-                            border border-gray-200 dark:border-gray-700">
+            <div className="bg-gray-50 rounded-xl p-4
+                            border border-gray-200">
               <p className="text-xs text-gray-500 mb-1">Wallet Balance</p>
               <p className={`text-xl font-bold ${insufficient
-                  ? 'text-red-600 dark:text-red-400'
-                  : 'text-green-600 dark:text-green-400'
+                  ? 'text-red-600'
+                  : 'text-green-600'
                 }`}>
                 {formatINR(estimate.availableBalance)}
               </p>
               <p className="text-xs text-gray-400 mt-1">Available</p>
             </div>
 
-            <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4
-                            border border-gray-200 dark:border-gray-700">
+            <div className="bg-gray-50 rounded-xl p-4
+                            border border-gray-200">
               <p className="text-xs text-gray-500 mb-1">Estimated Cost</p>
-              <p className="text-xl font-bold text-gray-900 dark:text-gray-100">
+              <p className="text-xl font-bold text-gray-900">
                 {formatINR(estimate.estimatedCost)}
               </p>
               <p className="text-xs text-gray-400 mt-1">
@@ -388,18 +388,18 @@ const WalletCostModal: React.FC<WalletCostModalProps> = ({
 
           {/* After Campaign Balance */}
           {!insufficient && (
-            <div className="bg-green-50 dark:bg-green-900/20 border
-                            border-green-200 dark:border-green-800
+            <div className="bg-green-50 border
+                            border-green-200
                             rounded-xl p-4 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <CheckCircle className="w-5 h-5 text-green-500" />
                 <span className="text-sm font-medium text-green-700
-                                 dark:text-green-400">
+">
                   Balance after campaign
                 </span>
               </div>
               <span className="text-lg font-bold text-green-700
-                               dark:text-green-400">
+">
                 {formatINR(Math.max(0, afterBalance))}
               </span>
             </div>
@@ -429,8 +429,8 @@ const WalletCostModal: React.FC<WalletCostModalProps> = ({
 
           {/* Note */}
           <div className="flex items-start gap-2 text-xs text-gray-500
-                          bg-gray-50 dark:bg-gray-800 rounded-lg p-3
-                          border border-gray-200 dark:border-gray-700">
+                          bg-gray-50 rounded-lg p-3
+                          border border-gray-200">
             <Info className="w-4 h-4 shrink-0 mt-0.5" />
             <p>
               Cost is estimated based on Meta's country-wise pricing.
@@ -441,14 +441,14 @@ const WalletCostModal: React.FC<WalletCostModalProps> = ({
         </div>
 
         {/* ── Footer ── */}
-        <div className="px-6 py-4 bg-gray-50 dark:bg-gray-800/50
-                        border-t border-gray-200 dark:border-gray-700
+        <div className="px-6 py-4 bg-gray-50
+                        border-t border-gray-200
                         flex gap-3">
           <button
             onClick={onClose}
             className="flex-1 px-4 py-3 border border-gray-200
-                       dark:border-gray-700 text-gray-700 dark:text-gray-300
-                       rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700
+ text-gray-700
+                       rounded-xl hover:bg-gray-100
                        font-medium transition-colors"
           >
             Cancel

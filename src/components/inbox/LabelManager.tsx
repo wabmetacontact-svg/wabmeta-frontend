@@ -1,6 +1,6 @@
 // src/components/inbox/LabelManager.tsx
 import React, { useState, useRef, useEffect } from 'react';
-import { Plus, X, Tag } from 'lucide-react';
+import { Plus, X } from 'lucide-react';
 import { AVAILABLE_LABELS, getLabelStyle } from '../../utils/inboxHelpers';
 
 interface Props {

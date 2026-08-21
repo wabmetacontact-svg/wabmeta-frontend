@@ -199,26 +199,26 @@ const Documentation: React.FC = () => {
     const currentSection = docSections.find(s => s.id === activeSection);
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+        <div className="min-h-screen bg-gray-50">
             {/* Header */}
-            <nav className="bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-50">
+            <nav className="bg-white shadow-sm sticky top-0 z-50">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between h-16 items-center">
                         <Link to="/" className="flex items-center">
                             <MessageCircle className="h-8 w-8 text-green-500" />
-                            <span className="ml-2 text-xl font-bold text-gray-900 dark:text-white">WabMeta</span>
-                            <span className="ml-2 text-sm text-gray-500 dark:text-gray-400">/ Docs</span>
+                            <span className="ml-2 text-xl font-bold text-gray-900">WabMeta</span>
+                            <span className="ml-2 text-sm text-gray-500">/ Docs</span>
                         </Link>
                         <div className="flex items-center space-x-4">
                             <Link
                                 to="/contact"
-                                className="text-gray-600 dark:text-gray-300 hover:text-green-500 transition-colors"
+                                className="text-gray-600 hover:text-green-500 transition-colors"
                             >
                                 Contact Support
                             </Link>
                             <Link
                                 to="/"
-                                className="text-gray-600 dark:text-gray-300 hover:text-green-500 transition-colors"
+                                className="text-gray-600 hover:text-green-500 transition-colors"
                             >
                                 ← Back to Home
                             </Link>
@@ -258,16 +258,16 @@ const Documentation: React.FC = () => {
                 <div className="flex flex-col lg:flex-row gap-8">
                     {/* Sidebar */}
                     <div className="lg:w-64 flex-shrink-0">
-                        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4 sticky top-24">
-                            <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Contents</h3>
+                        <div className="bg-white rounded-xl shadow-lg p-4 sticky top-24">
+                            <h3 className="font-semibold text-gray-900 mb-4">Contents</h3>
                             <nav className="space-y-1">
                                 {filteredSections.map((section) => (
                                     <button
                                         key={section.id}
                                         onClick={() => setActiveSection(section.id)}
                                         className={`w-full flex items-center px-3 py-2 text-sm rounded-lg transition-colors ${activeSection === section.id
-                                                ? 'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300'
-                                                : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                                                ? 'bg-green-100 text-green-700'
+                                                : 'text-gray-600 hover:bg-gray-100'
                                             }`}
                                     >
                                         <section.icon className="w-4 h-4 mr-2" />
@@ -284,10 +284,10 @@ const Documentation: React.FC = () => {
                     {/* Main Content */}
                     <div className="flex-1">
                         {currentSection && (
-                            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8">
+                            <div className="bg-white rounded-xl shadow-lg p-8">
                                 <div className="flex items-center mb-6">
                                     <currentSection.icon className="w-8 h-8 text-green-500 mr-3" />
-                                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                                    <h2 className="text-2xl font-bold text-gray-900">
                                         {currentSection.title}
                                     </h2>
                                 </div>
@@ -295,10 +295,10 @@ const Documentation: React.FC = () => {
                                 <div className="space-y-8">
                                     {currentSection.content.map((item, index) => (
                                         <div key={index} className="border-l-4 border-green-500 pl-6">
-                                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                                            <h3 className="text-lg font-semibold text-gray-900 mb-2">
                                                 {item.title}
                                             </h3>
-                                            <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
+                                            <p className="text-gray-600 leading-relaxed">
                                                 {item.description}
                                             </p>
                                         </div>
@@ -306,18 +306,18 @@ const Documentation: React.FC = () => {
                                 </div>
 
                                 {/* Help Box */}
-                                <div className="mt-12 bg-green-50 dark:bg-green-900/20 rounded-xl p-6">
-                                    <h4 className="font-semibold text-green-800 dark:text-green-300 mb-2">
+                                <div className="mt-12 bg-green-50 rounded-xl p-6">
+                                    <h4 className="font-semibold text-green-800 mb-2">
                                         Need more help?
                                     </h4>
-                                    <p className="text-green-700 dark:text-green-400 mb-4">
+                                    <p className="text-green-700 mb-4">
                                         Can't find what you're looking for? Our support team is here to help.
                                     </p>
                                     <a
                                         href="https://wa.me/919310010763?text=Hi, I need help with WabMeta documentation"
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="inline-flex items-center text-green-600 dark:text-green-400 hover:text-green-700 font-medium"
+                                        className="inline-flex items-center text-green-600 hover:text-green-700 font-medium"
                                     >
                                         Contact Support <ExternalLink className="w-4 h-4 ml-1" />
                                     </a>

@@ -75,19 +75,19 @@ const WalletRequestModal: React.FC<Props> = ({ onClose, onSuccess }) => {
     return (
       <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
         <div
-          className="bg-white dark:bg-gray-800 rounded-2xl p-8
+          className="bg-white rounded-2xl p-8
                         text-center max-w-sm w-full mx-4 shadow-2xl"
         >
           <div
-            className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full
+            className="w-16 h-16 bg-green-100 rounded-full
                           flex items-center justify-center mx-auto mb-4"
           >
             <CheckCircle className="w-8 h-8 text-green-600" />
           </div>
-          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+          <h3 className="text-xl font-bold text-gray-900 mb-2">
             Request Submitted!
           </h3>
-          <p className="text-gray-500 dark:text-gray-400 text-sm">
+          <p className="text-gray-500 text-sm">
             Our team will review your request within 24 hours and notify you
             via email.
           </p>
@@ -100,24 +100,24 @@ const WalletRequestModal: React.FC<Props> = ({ onClose, onSuccess }) => {
   return (
     <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
       <div
-        className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl
+        className="bg-white rounded-2xl shadow-2xl
                       w-full max-w-md max-h-[90vh] overflow-y-auto"
       >
         {/* Header */}
         <div
           className="flex items-center justify-between p-6
-                        border-b border-gray-200 dark:border-gray-700 sticky top-0
-                        bg-white dark:bg-gray-800 z-10"
+                        border-b border-gray-200 sticky top-0
+                        bg-white z-10"
         >
           <div className="flex items-center gap-2">
             <Wallet className="w-5 h-5 text-green-600" />
-            <h2 className="font-semibold text-gray-900 dark:text-white">
+            <h2 className="font-semibold text-gray-900">
               Request Wallet Access
             </h2>
           </div>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+            className="p-2 hover:bg-gray-100 rounded-lg"
           >
             <X className="w-5 h-5" />
           </button>
@@ -126,7 +126,7 @@ const WalletRequestModal: React.FC<Props> = ({ onClose, onSuccess }) => {
         <div className="p-6 space-y-5">
           {/* Quick Reasons */}
           <div>
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 block mb-2">
+            <label className="text-sm font-medium text-gray-700 block mb-2">
               Select a common reason
             </label>
             <div className="space-y-2">
@@ -137,8 +137,8 @@ const WalletRequestModal: React.FC<Props> = ({ onClose, onSuccess }) => {
                   className={`w-full text-left px-4 py-3 rounded-xl text-sm
                               transition-all border flex items-start gap-2 group
                     ${reason === r
-                      ? "bg-green-50 dark:bg-green-900/30 border-green-500 text-green-700 dark:text-green-300"
-                      : "border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700"
+                      ? "bg-green-50 border-green-500 text-green-700"
+                      : "border-gray-200 text-gray-600 hover:bg-gray-50"
                     }`}
                 >
                   <ChevronRight
@@ -153,7 +153,7 @@ const WalletRequestModal: React.FC<Props> = ({ onClose, onSuccess }) => {
 
           {/* Custom Reason */}
           <div>
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 block mb-1.5">
+            <label className="text-sm font-medium text-gray-700 block mb-1.5">
               Your reason{" "}
               <span className="text-red-500">*</span>
             </label>
@@ -166,9 +166,9 @@ const WalletRequestModal: React.FC<Props> = ({ onClose, onSuccess }) => {
               placeholder="Describe why you need wallet access for Meta payments..."
               rows={4}
               maxLength={500}
-              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600
-                         rounded-xl bg-white dark:bg-gray-700 text-gray-900
-                         dark:text-white text-sm resize-none
+              className="w-full px-4 py-3 border border-gray-300
+                         rounded-xl bg-white text-gray-900
+ text-sm resize-none
                          focus:outline-none focus:ring-2 focus:ring-green-500
                          focus:border-transparent"
             />
@@ -184,7 +184,7 @@ const WalletRequestModal: React.FC<Props> = ({ onClose, onSuccess }) => {
 
           {/* Additional Info */}
           <div>
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 block mb-1.5">
+            <label className="text-sm font-medium text-gray-700 block mb-1.5">
               Additional information{" "}
               <span className="text-gray-400 font-normal">(optional)</span>
             </label>
@@ -194,20 +194,20 @@ const WalletRequestModal: React.FC<Props> = ({ onClose, onSuccess }) => {
               onChange={(e) => setAdditionalInfo(e.target.value)}
               placeholder="Any other details that might help..."
               maxLength={500}
-              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600
-                         rounded-xl bg-white dark:bg-gray-700 text-gray-900
-                         dark:text-white text-sm
+              className="w-full px-4 py-3 border border-gray-300
+                         rounded-xl bg-white text-gray-900
+ text-sm
                          focus:outline-none focus:ring-2 focus:ring-green-500"
             />
           </div>
 
           {/* Requirements Note */}
           <div
-            className="flex items-start gap-2 bg-amber-50 dark:bg-amber-900/20
-                          rounded-xl p-4 border border-amber-200 dark:border-amber-800"
+            className="flex items-start gap-2 bg-amber-50
+                          rounded-xl p-4 border border-amber-200"
           >
             <AlertCircle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
-            <div className="text-xs text-amber-700 dark:text-amber-400 space-y-1">
+            <div className="text-xs text-amber-700 space-y-1">
               <p className="font-semibold">Requirements:</p>
               <ul className="space-y-0.5 list-disc list-inside">
                 <li>Active subscription required</li>
@@ -229,9 +229,9 @@ const WalletRequestModal: React.FC<Props> = ({ onClose, onSuccess }) => {
           <div className="flex gap-3 pt-1">
             <button
               onClick={onClose}
-              className="flex-1 py-3 border border-gray-300 dark:border-gray-600
-                         rounded-xl text-gray-700 dark:text-gray-300 font-medium
-                         hover:bg-gray-50 dark:hover:bg-gray-700 transition-all"
+              className="flex-1 py-3 border border-gray-300
+                         rounded-xl text-gray-700 font-medium
+                         hover:bg-gray-50 transition-all"
             >
               Cancel
             </button>
@@ -239,7 +239,7 @@ const WalletRequestModal: React.FC<Props> = ({ onClose, onSuccess }) => {
               onClick={handleSubmit}
               disabled={loading || reason.trim().length < 20}
               className="flex-1 py-3 bg-green-600 hover:bg-green-700
-                         disabled:bg-gray-300 dark:disabled:bg-gray-600
+                         disabled:bg-gray-300
                          disabled:cursor-not-allowed
                          text-white rounded-xl font-semibold transition-all
                          flex items-center justify-center gap-2"

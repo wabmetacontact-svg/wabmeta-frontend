@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import toast from "react-hot-toast";
 import {
   MessageCircle,
   Plus,
@@ -6,14 +7,11 @@ import {
   Search,
   Edit3,
   Trash2,
-  Eye,
   ArrowUpRight,
   Hash,
   Heart,
   BookOpen,
   Play,
-  Pause,
-  Settings,
 } from "lucide-react";
 
 interface AutomationRule {
@@ -63,8 +61,8 @@ const GlassCard: React.FC<{
   className?: string;
 }> = ({ children, className = "" }) => (
   <div
-    className={`relative rounded-2xl bg-white/[0.04] backdrop-blur-2xl
-      border border-white/[0.08] p-6 ${className}`}
+    className={`relative rounded-2xl bg-gray-50 backdrop-blur-2xl
+      border border-gray-200 p-6 ${className}`}
   >
     <div
       className="absolute inset-0 rounded-2xl pointer-events-none"
@@ -80,7 +78,6 @@ const GlassCard: React.FC<{
 const DMAutomation: React.FC = () => {
   const [rules, setRules] = useState<AutomationRule[]>(mockRules);
   const [searchQuery, setSearchQuery] = useState("");
-  const [showCreateModal, setShowCreateModal] = useState(false);
 
   const filteredRules = rules.filter((r) =>
     r.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -103,22 +100,22 @@ const DMAutomation: React.FC = () => {
         <div>
           <div className="flex items-center gap-2 mb-2">
             <MessageCircle className="w-4 h-4 text-[#e1306c]" />
-            <span className="text-xs font-mono uppercase tracking-wider text-gray-400">
+            <span className="text-xs font-mono uppercase tracking-wider text-gray-500">
               DM Automation
             </span>
           </div>
-          <h1 className="text-2xl lg:text-3xl font-bold text-white">
+          <h1 className="text-2xl lg:text-3xl font-bold text-gray-900">
             DM Automation Rules
           </h1>
-          <p className="text-sm text-gray-400 mt-1">
+          <p className="text-sm text-gray-500 mt-1">
             Auto-reply to Instagram DMs based on triggers and keywords
           </p>
         </div>
 
         <button
-          onClick={() => setShowCreateModal(true)}
+          onClick={() => toast("Rule creation is not available yet.")}
           className="flex items-center gap-2 px-5 py-2.5 rounded-xl
-            text-white text-sm font-semibold
+            text-gray-900 text-sm font-semibold
             hover:-translate-y-0.5 transition-all duration-300"
           style={{
             background: igGradient,
@@ -170,8 +167,8 @@ const DMAutomation: React.FC = () => {
                 <stat.icon className="w-4 h-4" style={{ color: stat.color }} />
               </div>
               <div>
-                <p className="text-xs text-gray-400">{stat.label}</p>
-                <p className="text-xl font-bold text-white">{stat.value}</p>
+                <p className="text-xs text-gray-500">{stat.label}</p>
+                <p className="text-xl font-bold text-gray-900">{stat.value}</p>
               </div>
             </div>
           </GlassCard>
@@ -181,7 +178,7 @@ const DMAutomation: React.FC = () => {
       {/* ── Rules List ── */}
       <GlassCard className="p-0 overflow-hidden">
         {/* Search bar */}
-        <div className="p-4 border-b border-white/[0.06] flex items-center gap-3">
+        <div className="p-4 border-b border-gray-200 flex items-center gap-3">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
             <input
@@ -190,8 +187,8 @@ const DMAutomation: React.FC = () => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-9 pr-4 py-2.5 text-sm
-                bg-white/[0.04] border border-white/[0.08] rounded-xl
-                text-white placeholder:text-gray-500
+                bg-gray-50 border border-gray-200 rounded-xl
+                text-gray-900 placeholder:text-gray-500
                 focus:outline-none focus:border-[#e1306c]/50
                 transition-all duration-300"
             />
@@ -199,7 +196,7 @@ const DMAutomation: React.FC = () => {
         </div>
 
         {/* Rules */}
-        <div className="divide-y divide-white/[0.04]">
+        <div className="divide-y divide-gray-200">
           {filteredRules.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-center">
               <div
@@ -211,15 +208,15 @@ const DMAutomation: React.FC = () => {
               >
                 <MessageCircle className="w-7 h-7 text-[#e1306c]" />
               </div>
-              <p className="text-sm font-medium text-white mb-1">
+              <p className="text-sm font-medium text-gray-900 mb-1">
                 No rules yet
               </p>
-              <p className="text-xs text-gray-400 mb-4">
+              <p className="text-xs text-gray-500 mb-4">
                 Create your first DM automation rule
               </p>
               <button
-                onClick={() => setShowCreateModal(true)}
-                className="px-4 py-2 rounded-xl text-white text-xs font-semibold"
+                onClick={() => toast("Rule creation is not available yet.")}
+                className="px-4 py-2 rounded-xl text-gray-900 text-xs font-semibold"
                 style={{ background: igGradient }}
               >
                 Create First Rule
@@ -232,7 +229,7 @@ const DMAutomation: React.FC = () => {
               return (
                 <div
                   key={rule.id}
-                  className="flex items-center gap-4 p-4 hover:bg-white/[0.02] transition-colors"
+                  className="flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors"
                 >
                   {/* Trigger icon */}
                   <div
@@ -248,7 +245,7 @@ const DMAutomation: React.FC = () => {
                   {/* Info */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <p className="text-sm font-semibold text-white truncate">
+                      <p className="text-sm font-semibold text-gray-900 truncate">
                         {rule.name}
                       </p>
                       <span
@@ -270,7 +267,7 @@ const DMAutomation: React.FC = () => {
                           <span
                             key={kw}
                             className="px-1.5 py-0.5 rounded text-[9px] font-mono
-                              bg-white/[0.05] border border-white/[0.08] text-gray-400"
+                              bg-gray-50 border border-gray-200 text-gray-500"
                           >
                             #{kw}
                           </span>
@@ -293,7 +290,7 @@ const DMAutomation: React.FC = () => {
                   <button
                     onClick={() => toggleRule(rule.id)}
                     className={`relative w-10 h-5 rounded-full transition-all duration-300 flex-shrink-0
-                      ${rule.isActive ? "" : "bg-white/[0.08]"}`}
+                      ${rule.isActive ? "" : "bg-gray-50"}`}
                     style={
                       rule.isActive
                         ? {
@@ -313,8 +310,8 @@ const DMAutomation: React.FC = () => {
                   {/* Actions */}
                   <div className="flex items-center gap-1">
                     <button
-                      className="p-1.5 rounded-lg text-gray-500 hover:text-white
-                        hover:bg-white/[0.05] transition-all duration-300"
+                      className="p-1.5 rounded-lg text-gray-500 hover:text-gray-900
+                        hover:bg-gray-50 transition-all duration-300"
                     >
                       <Edit3 className="w-3.5 h-3.5" />
                     </button>
