@@ -9,7 +9,7 @@ import {
   Clock, RefreshCw, AlertCircle, Loader2, CheckCircle,
   MessageCircle, Search, MoreVertical, Edit2, Trash2,
   Mail, Tag, Calendar, CheckSquare, Square, AlertTriangle,
-  Layers, ArrowLeft, FileSpreadsheet, Lock, Crown, UserPlus,
+  Layers, ArrowLeft, FileSpreadsheet, Lock, UserPlus,
 } from 'lucide-react';
 
 import AddContactModal from '../components/contacts/AddContactModal';
@@ -721,14 +721,6 @@ const Contacts: React.FC = () => {
   ], [statsApi, loadingStats]);
 
   // ─── Render ───────────────────────────────────────────────
-  if (loading && contacts.length === 0) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="w-10 h-10 text-primary-500 animate-spin" />
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -936,8 +928,18 @@ const Contacts: React.FC = () => {
             </div>
           )}
 
+          {/* ✅ INLINE LOADER (Templates style) */}
+          {loading && contacts.length === 0 && (
+            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm
+                            min-h-[360px] flex flex-col items-center justify-center py-16">
+              <Loader2 className="w-8 h-8 text-green-600 animate-spin mb-3" />
+              <p className="text-sm font-medium text-gray-500">Loading contacts...</p>
+              <p className="text-xs text-gray-400 mt-1">Fetching your contact list</p>
+            </div>
+          )}
+
           {/* Empty State */}
-          {meta.total === 0 && !error && !loading && (
+          {!loading && meta.total === 0 && contacts.length === 0 && !error && (
             <div className="bg-white rounded-xl border border-gray-200 p-12 text-center shadow-sm">
               <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-gray-100">
                 <Users className="w-8 h-8 text-gray-400" />
@@ -945,9 +947,12 @@ const Contacts: React.FC = () => {
               <h3 className="text-lg font-semibold text-gray-900">No Contacts Yet</h3>
               <p className="text-gray-600 mt-2 mb-6">Add your first contact to get started.</p>
               <div className="flex justify-center gap-3">
-                <button onClick={() => setShowAddModal(true)}
-                  className="px-4 py-2.5 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-colors shadow-sm">
-                  <Plus className="w-4 h-4 inline mr-1" />Add Contact
+                <button
+                  onClick={() => setShowAddModal(true)}
+                  className="px-4 py-2.5 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-colors shadow-sm"
+                >
+                  <Plus className="w-4 h-4 inline mr-1" />
+                  Add Contact
                 </button>
               </div>
             </div>

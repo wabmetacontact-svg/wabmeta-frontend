@@ -17,7 +17,7 @@ import {
   Smartphone,
   Monitor
 } from 'lucide-react';
-import { auth, users } from '../services/api';
+import api, { auth, users } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import PageSkeleton from '../components/common/PageSkeleton';
 
@@ -150,84 +150,95 @@ const Profile: React.FC = () => {
     setSuccess(false);
 
     try {
-      // ✅ Phone clean karo (spaces/dashes hatao)
       const cleanPhone = formData.phone
         ? formData.phone.replace(/[\s\-\(\)]/g, '')
         : undefined;
 
-      // ✅ Avatar sirf tab bhejo jab woh URL ho — base64 mat bhejo yahan
-      const isBase64Avatar = formData.avatar?.startsWith('data:');
-
-      const payload: {
-        firstName?: string;
-        lastName?: string;
-        phone?: string;
-        avatar?: string;
-      } = {
+      // ✅ avatar yahan mat bhejo
+      const response = await users.updateProfile({
         firstName: formData.firstName.trim(),
         lastName: formData.lastName?.trim() || undefined,
         phone: cleanPhone || undefined,
-      };
-
-      // Sirf existing URL avatar bhejo; naya base64 alag upload flow se hoga
-      if (formData.avatar && !isBase64Avatar) {
-        payload.avatar = formData.avatar;
-      }
-
-      // ✅ Naya avatar ho toh pehle avatar endpoint use karo
-      if (isBase64Avatar && formData.avatar) {
-        await users.updateAvatar(formData.avatar);
-      }
-
-      const response = await users.updateProfile(payload);
-
-      console.log('✅ Profile Updated:', response.data);
+      });
 
       const updatedUser = response.data?.data || response.data;
       if (updatedUser) {
         setProfile((prev) => (prev ? { ...prev, ...updatedUser } : updatedUser));
-
-        // ✅ Sync Global State
         updateUser(updatedUser);
       }
 
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
     } catch (err: any) {
-      console.error('❌ Failed to update profile:', err);
-
-      // ✅ Asli error message extract karo
-      const message =
-        err?.response?.data?.message ||
-        err?.response?.data?.error ||
-        (Array.isArray(err?.response?.data?.errors)
-          ? err.response.data.errors.map((e: any) => e.message || e).join(', ')
-          : null) ||
-        err?.message ||
-        'Failed to update profile';
-
-      setError(message);
+      setError(err?.response?.data?.message || err?.message || 'Failed to update profile');
     } finally {
       setSaving(false);
     }
   };
 
   // ==========================================
-  // HANDLE AVATAR CHANGE
+  // HANDLE AVATAR CHANGE (UPLOAD)
   // ==========================================
-  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      if (file.size > 2 * 1024 * 1024) {
-        setError('Image size should be less than 2MB');
-        return;
+    if (!file) return;
+
+    if (file.size > 2 * 1024 * 1024) {
+      setError('Image size should be less than 2MB');
+      return;
+    }
+
+    if (!file.type.startsWith('image/')) {
+      setError('Please select a valid image file');
+      return;
+    }
+
+    // Local preview only (base64 sirf UI ke liye)
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setFormData((prev) => ({ ...prev, avatar: reader.result as string }));
+    };
+    reader.readAsDataURL(file);
+
+    // ✅ Actual upload
+    try {
+      setSaving(true);
+      setError(null);
+
+      const form = new FormData();
+      form.append('file', file);
+      form.append('folder', 'avatars');
+
+      const uploadRes = await api.post('/upload', form, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+
+      const avatarUrl =
+        uploadRes.data?.data?.url ||
+        uploadRes.data?.data?.secure_url ||
+        uploadRes.data?.data?.cloudinaryUrl;
+
+      if (!avatarUrl || avatarUrl.length > 500) {
+        throw new Error('Invalid avatar URL returned from upload');
       }
 
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setFormData({ ...formData, avatar: reader.result as string });
-      };
-      reader.readAsDataURL(file);
+      // ✅ Sirf short URL save karo
+      await users.updateAvatar(avatarUrl);
+
+      setFormData((prev) => ({ ...prev, avatar: avatarUrl }));
+      setProfile((prev) => (prev ? { ...prev, avatar: avatarUrl } : prev));
+      updateUser({ avatar: avatarUrl });
+      setSuccess(true);
+      setTimeout(() => setSuccess(false), 3000);
+    } catch (err: any) {
+      console.error('Avatar upload failed:', err);
+      setError(
+        err?.response?.data?.message ||
+        err?.message ||
+        'Failed to upload avatar'
+      );
+    } finally {
+      setSaving(false);
     }
   };
 
