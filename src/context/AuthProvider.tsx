@@ -1,89 +1,38 @@
-// src/context/AuthProvider.tsx - FIXED VERSION
-// ✅ FIX 1: refreshAccessToken now uses shared performTokenRefresh() from api.ts
-//    (removed local isRefreshing mutex — no more racing refresh calls)
-// ✅ FIX 2: verifySession no longer force-logs-out a VALID session just because
-//    /organizations/current failed transiently (cold start / network blip)
-
+// src/context/AuthProvider.tsx
 import React, { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext, type User, type Organization } from './AuthContext';
-import api, { auth, setAuthToken, removeAuthToken, performTokenRefresh } from '../services/api'; // ✅ FIX: import performTokenRefresh
+import api, { auth, setAuthToken, removeAuthToken, performTokenRefresh } from '../services/api';
 import toast from 'react-hot-toast';
 
-// ============================================
-// ✅ PROFESSIONAL SESSION EXPIRED POPUP
-// ============================================
 interface ForceLogoutPopupProps {
   title: string;
   message: string;
   countdown: number;
 }
 
-const ForceLogoutPopup: React.FC<ForceLogoutPopupProps> = ({
-  title,
-  message,
-  countdown,
-}) => (
+const ForceLogoutPopup: React.FC<ForceLogoutPopupProps> = ({ title, message, countdown }) => (
   <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
     <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-sm w-full mx-4 animate-in zoom-in-95 duration-200">
       <div className="w-14 h-14 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-5">
-        <svg
-          className="w-7 h-7 text-blue-600"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          strokeWidth={2}
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-          />
+        <svg className="w-7 h-7 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
         </svg>
       </div>
-
-      <h2 className="text-lg font-semibold text-slate-900 text-center mb-2">
-        {title}
-      </h2>
-
-      <p className="text-slate-500 text-sm text-center mb-6 leading-relaxed">
-        {message}
-      </p>
-
+      <h2 className="text-lg font-semibold text-slate-900 text-center mb-2">{title}</h2>
+      <p className="text-slate-500 text-sm text-center mb-6 leading-relaxed">{message}</p>
       <div className="bg-slate-50 rounded-xl p-4 mb-4">
         <div className="flex items-center justify-center gap-2 mb-2">
-          <svg
-            className="w-4 h-4 text-slate-400"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth={2}
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-            />
+          <svg className="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
-          <p className="text-xs text-slate-500">
-            Redirecting in{' '}
-            <span className="font-semibold text-slate-700">
-              {countdown}s
-            </span>
-          </p>
+          <p className="text-xs text-slate-500">Redirecting in <span className="font-semibold text-slate-700">{countdown}s</span></p>
         </div>
-
         <div className="w-full bg-slate-200 rounded-full h-1 overflow-hidden">
-          <div
-            className="h-full bg-blue-500 rounded-full transition-all duration-1000 ease-linear"
-            style={{ width: `${((5 - countdown) / 5) * 100}%` }}
-          />
+          <div className="h-full bg-blue-500 rounded-full transition-all duration-1000 ease-linear" style={{ width: `${((5 - countdown) / 5) * 100}%` }} />
         </div>
       </div>
-
-      <p className="text-xs text-slate-400 text-center">
-        You will be redirected to the sign in page
-      </p>
+      <p className="text-xs text-slate-400 text-center">You will be redirected to the sign in page</p>
     </div>
   </div>
 );
@@ -97,10 +46,24 @@ const TOKEN_KEYS = {
   LEGACY_WABMETA: 'wabmeta_token',
 } as const;
 
-const isValidJWT = (token: string | null): boolean => {
-  if (!token || typeof token !== 'string') return false;
+// Safe UTF-8 Base64 decoding utility
+const safeDecodeJWT = (token: string | null): any | null => {
+  if (!token || typeof token !== 'string') return null;
   const parts = token.split('.');
-  return parts.length === 3;
+  if (parts.length !== 3) return null;
+  try {
+    const base64Url = parts[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split('')
+        .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+        .join('')
+    );
+    return JSON.parse(jsonPayload);
+  } catch {
+    return null;
+  }
 };
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -133,8 +96,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   });
 
   const initialCheckDone = useRef(false);
-  // ❌ REMOVED: isRefreshing ref — performTokenRefresh() in api.ts is now the
-  // single source of truth for in-flight refresh dedup (was causing race conditions)
   const forceLogoutTimer = useRef<NodeJS.Timeout | null>(null);
   const countdownTimer = useRef<NodeJS.Timeout | null>(null);
 
@@ -143,7 +104,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       localStorage.getItem(TOKEN_KEYS.ACCESS) ||
       localStorage.getItem(TOKEN_KEYS.LEGACY_TOKEN) ||
       localStorage.getItem(TOKEN_KEYS.LEGACY_WABMETA);
-    return isValidJWT(token) ? token : null;
+    return safeDecodeJWT(token) ? token : null;
   }, []);
 
   const loadSavedData = useCallback((): { user: User | null; org: Organization | null } => {
@@ -199,6 +160,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     (title: string, message: string) => {
       console.log('🔒 Session expired:', message);
 
+      // ✅ Clear any pre-existing timer loops to prevent collisions
+      if (countdownTimer.current) clearInterval(countdownTimer.current);
+      if (forceLogoutTimer.current) clearTimeout(forceLogoutTimer.current);
+
       setForceLogoutState({
         show: true,
         title,
@@ -215,9 +180,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }));
 
         if (remaining <= 0) {
-          if (countdownTimer.current) {
-            clearInterval(countdownTimer.current);
-          }
+          if (countdownTimer.current) clearInterval(countdownTimer.current);
         }
       }, 1000);
 
@@ -274,7 +237,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     window.addEventListener('force_logout', handleForceLogout as EventListener);
-
     return () => {
       window.removeEventListener('force_logout', handleForceLogout as EventListener);
     };
@@ -282,19 +244,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const verifySession = useCallback(
     async (attempt = 1): Promise<boolean> => {
-      const MAX_ATTEMPTS = 3; // ✅ 2 → 3
+      const MAX_ATTEMPTS = 3;
       const accessToken = getAccessToken();
 
-      // ✅ FIX: Token nahi hai toh pehle refresh karo
       if (!accessToken) {
         console.log('⚠️ [Verify] No access token, trying refresh...');
-        
         const refreshToken = localStorage.getItem('refreshToken');
-        if (!refreshToken) {
-          console.log('⚠️ [Verify] No refresh token either');
-          return false;
-        }
-        
+        if (!refreshToken) return false;
+
         try {
           await performTokenRefresh();
           return await verifySession(attempt + 1);
@@ -303,39 +260,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
       }
 
-      // ✅ FIX: Token expire check PEHLE karo - unnecessary 401 avoid karo
-      try {
-        const parts = accessToken.split('.');
-        if (parts.length === 3) {
-          const payload = JSON.parse(atob(parts[1]));
-          const expiresAt = payload.exp * 1000;
-          const timeLeft = expiresAt - Date.now();
-          
-          // ✅ Agar 60 seconds se kam time bacha hai toh pehle refresh karo
-          if (timeLeft < 60_000) {
-            console.log(`⏳ [Verify] Token expires in ${Math.round(timeLeft/1000)}s, refreshing first...`);
-            try {
-              await performTokenRefresh();
-              // ✅ Fresh token ke saath retry
-              return await verifySession(attempt + 1);
-            } catch (refreshErr) {
-              if (timeLeft <= 0) {
-                // Token already expired aur refresh fail - logout
-                console.error('❌ [Verify] Token expired and refresh failed');
-                return false;
-              }
-              // Refresh fail lekin token abhi valid - continue
-              console.warn('⚠️ [Verify] Refresh failed but token still valid, continuing');
-            }
+      // Pre-validation to avoid redundant 401 exceptions
+      const decoded = safeDecodeJWT(accessToken);
+      if (decoded) {
+        const expiresAt = decoded.exp * 1000;
+        const timeLeft = expiresAt - Date.now();
+
+        if (timeLeft < 60_000) {
+          console.log(`⏳ [Verify] Token expires in ${Math.round(timeLeft / 1000)}s, refreshing...`);
+          try {
+            await performTokenRefresh();
+            return await verifySession(attempt + 1);
+          } catch (refreshErr) {
+            if (timeLeft <= 0) return false;
           }
         }
-      } catch {
-        // Token decode fail - continue with verify
       }
 
       try {
         const userResponse = await auth.me();
-
         if (!userResponse.data?.success || !userResponse.data?.data) {
           return false;
         }
@@ -349,8 +292,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             org = orgResponse.data.data;
           }
         } catch {
-          const saved = loadSavedData();
-          org = saved.org;
+          org = loadSavedData().org;
         }
 
         saveToStorage(user, org);
@@ -363,25 +305,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         });
 
         return true;
-
       } catch (error: any) {
         const status = error?.response?.status;
 
         if (status === 401 && attempt < MAX_ATTEMPTS) {
-          console.log(`🔄 [Verify] 401 received, refresh attempt ${attempt}/${MAX_ATTEMPTS}`);
           try {
             await performTokenRefresh();
-            // ✅ Thoda wait karo token propagate hone ke liye
             await new Promise(r => setTimeout(r, 100));
             return await verifySession(attempt + 1);
-          } catch (refreshError: any) {
-            console.error('❌ [Verify] Refresh failed:', refreshError?.message);
+          } catch {
             return false;
           }
         }
 
         if (!status || status >= 500) {
-          console.warn('⚠️ [Verify] Server error - keeping session');
           const saved = loadSavedData();
           if (saved.user) {
             setState(prev => ({
@@ -398,7 +335,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return false;
       }
     },
-    [getAccessToken, loadSavedData, saveToStorage, performTokenRefresh]
+    [getAccessToken, loadSavedData, saveToStorage]
   );
 
   useEffect(() => {
@@ -407,7 +344,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const initAuth = async () => {
       try {
         const accessToken = getAccessToken();
-
         if (!accessToken) {
           if (isMounted) {
             setState(prev => ({ ...prev, isLoading: false, isAuthenticated: false }));
@@ -426,7 +362,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
 
         const isValid = await verifySession();
-
         if (!isValid && isMounted) {
           clearAuthData();
           setState({
@@ -440,8 +375,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         } else if (isMounted) {
           setState(prev => ({ ...prev, isLoading: false }));
         }
-      } catch (error) {
-        console.error('💥 Auth init failed:', error);
+      } catch {
         if (isMounted) {
           setState(prev => ({ ...prev, isLoading: false, isAuthenticated: false }));
         }
@@ -456,31 +390,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => { isMounted = false; };
   }, []);
 
-  const login = useCallback(async (
-    email: string,
-    password: string
-  ): Promise<{ success: boolean; error?: string }> => {
+  const login = useCallback(async (email: string, password: string) => {
     setState(prev => ({ ...prev, isLoading: true, error: null }));
-
     try {
       const response = await auth.login({ email, password });
-
       if (response.data?.success && response.data?.data) {
         const { user, tokens, organization } = response.data.data;
+        if (!organization) throw new Error('Organization not assigned');
 
-        if (!organization) {
-          toast.error('Login failed: Organization not assigned.');
-          throw new Error('Organization not assigned');
-        }
-
-        // ✅ CRITICAL: Token PEHLE set karo, state baad mein
-        // AppProvider isAuthenticated watch karta hai
-        // Token set hone ke baad hi isAuthenticated true hona chahiye
         setAuthToken(tokens.accessToken, tokens.refreshToken);
         saveToStorage(user, organization || null);
-
-        // ✅ Small delay - ensure localStorage write complete ho
-        await new Promise(r => setTimeout(r, 50));
 
         setState({
           user,
@@ -492,7 +411,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         return { success: true };
       }
-
       throw new Error(response.data?.message || 'Login failed');
     } catch (error: any) {
       const message = error.response?.data?.message || error.message || 'Login failed';
@@ -501,15 +419,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [saveToStorage]);
 
-
-  const register = useCallback(async (
-    data: any
-  ): Promise<{ success: boolean; error?: string }> => {
+  const register = useCallback(async (data: any) => {
     setState(prev => ({ ...prev, isLoading: true, error: null }));
-
     try {
       const response = await auth.register(data);
-
       if (response.data?.success && response.data?.data) {
         const result = response.data.data;
 
@@ -532,10 +445,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         } else {
           setState(prev => ({ ...prev, isLoading: false }));
         }
-
         return { success: true };
       }
-
       throw new Error(response.data?.message || 'Registration failed');
     } catch (error: any) {
       const message = error.response?.data?.message || error.message || 'Registration failed';
@@ -544,21 +455,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [saveToStorage]);
 
-  const googleLogin = useCallback(async (
-    credential: string
-  ): Promise<{ success: boolean; error?: string }> => {
+  const googleLogin = useCallback(async (credential: string) => {
     setState(prev => ({ ...prev, isLoading: true, error: null }));
-
     try {
       const response = await auth.googleLogin({ credential });
-
       if (response.data?.success && response.data?.data) {
         const { user, tokens, organization } = response.data.data;
-
-        if (!organization) {
-          toast.error('Login failed: Organization not assigned.');
-          throw new Error('Organization not assigned');
-        }
+        if (!organization) throw new Error('Organization not assigned');
 
         setAuthToken(tokens.accessToken, tokens.refreshToken);
         saveToStorage(user, organization || null);
@@ -570,10 +473,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           isLoading: false,
           error: null,
         });
-
         return { success: true };
       }
-
       throw new Error(response.data?.message || 'Google login failed');
     } catch (error: any) {
       const message = error.response?.data?.message || error.message || 'Google login failed';

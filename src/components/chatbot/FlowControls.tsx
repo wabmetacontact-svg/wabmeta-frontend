@@ -1,5 +1,4 @@
-import React from 'react';
-import { Panel } from 'reactflow';
+import { Panel } from '@xyflow/react';
 import { 
   ZoomIn, 
   ZoomOut, 

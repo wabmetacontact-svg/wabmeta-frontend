@@ -1,5 +1,5 @@
 import React from 'react';
-import { Handle, Position } from 'reactflow';
+import { Handle, Position } from '@xyflow/react';
 import { StopCircle } from 'lucide-react';
 
 const EndNode: React.FC<{ data: any }> = ({ data: _data }) => {

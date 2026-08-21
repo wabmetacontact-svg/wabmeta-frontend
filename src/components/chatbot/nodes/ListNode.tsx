@@ -1,5 +1,5 @@
 import React from 'react';
-import { Handle, Position } from 'reactflow';
+import { Handle, Position } from '@xyflow/react';
 import { List } from 'lucide-react';
 
 const ListNode: React.FC<{ data: any; selected?: boolean }> = ({ 

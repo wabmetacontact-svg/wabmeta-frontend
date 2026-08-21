@@ -2,7 +2,8 @@
 
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import ReactFlow, {
+import {
+  ReactFlow,
   ReactFlowProvider,
   addEdge,
   useNodesState,
@@ -13,8 +14,8 @@ import ReactFlow, {
   type Connection,
   type Node,
   type NodeTypes,
-} from 'reactflow';
-import 'reactflow/dist/style.css';
+} from '@xyflow/react';
+import '@xyflow/react/dist/style.css';
 import {
   Save, Play, ArrowLeft, Loader2, Settings, GitBranch,
   Plus, X, Zap, ToggleLeft, ToggleRight, Pause, Info

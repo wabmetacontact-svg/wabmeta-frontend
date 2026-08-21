@@ -1,15 +1,11 @@
-// src/context/AppProvider.tsx - FIXED
-// ✅ FIX 1: Token validate karo PEHLE API call karne se
-// ✅ FIX 2: 401 pe silently fail karo - logout mat karo
-// ✅ FIX 3: Retry logic with delay
-
+// src/context/AppProvider.tsx
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { AppContext } from './AppContext';
 import { useSocket } from './SocketContext';
 import { useAuth } from './AuthContext';
 import { inbox as inboxApi, contacts as contactsApi } from '../services/api';
 
-// ✅ Token valid hai ya nahi check karo
+// Safe token verification without thread stalling
 const isTokenCurrentlyValid = (): boolean => {
   try {
     const token =
@@ -22,10 +18,16 @@ const isTokenCurrentlyValid = (): boolean => {
     const parts = token.split('.');
     if (parts.length !== 3) return false;
 
-    const payload = JSON.parse(atob(parts[1]));
+    const payload = JSON.parse(
+      decodeURIComponent(
+        atob(parts[1].replace(/-/g, '+').replace(/_/g, '/'))
+          .split('')
+          .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+          .join('')
+      )
+    );
     if (!payload.exp) return false;
 
-    // ✅ 30 second buffer - agar 30s se kam time bacha hai toh invalid maano
     return payload.exp * 1000 > Date.now() + 30_000;
   } catch {
     return false;
@@ -36,42 +38,39 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [unreadCount, setUnreadCount] = useState(0);
   const [totalContacts, setTotalContacts] = useState(0);
   const unreadConversations = useRef<Set<string>>(new Set());
-  
-  // ✅ Track fetch state to prevent duplicate calls
-  const isFetchingRef = useRef(false);
-  const fetchAttemptRef = useRef(0);
 
+  const isFetchingRef = useRef(false);
   const { socket } = useSocket();
   const { isAuthenticated } = useAuth();
 
-  // ============================================
-  // ✅ FIXED: Initial fetch with token validation
-  // ============================================
   useEffect(() => {
+    let isMounted = true; // ✅ Prevents memory leak in recursive stack
+    let activeTimer: NodeJS.Timeout | null = null;
+
     if (!isAuthenticated) {
       setUnreadCount(0);
       setTotalContacts(0);
       unreadConversations.current.clear();
       isFetchingRef.current = false;
-      fetchAttemptRef.current = 0;
       return;
     }
 
-    // ✅ Prevent duplicate concurrent fetches
     if (isFetchingRef.current) return;
 
     const fetchWithRetry = async (attempt = 1): Promise<void> => {
-      // ✅ CRITICAL: Token valid hai tabhi call karo
+      if (!isMounted) return;
+
       if (!isTokenCurrentlyValid()) {
         console.log(`⏳ [AppProvider] Token not ready (attempt ${attempt}), waiting...`);
-        
+
         if (attempt <= 5) {
-          // Exponential backoff: 500ms, 1s, 2s, 4s, 8s
           const delay = Math.min(500 * Math.pow(2, attempt - 1), 8000);
-          await new Promise(r => setTimeout(r, delay));
+          await new Promise<void>((resolve) => {
+            if (isMounted) activeTimer = setTimeout(resolve, delay);
+          });
           return fetchWithRetry(attempt + 1);
         }
-        
+
         console.warn('[AppProvider] Token never became valid after 5 attempts');
         return;
       }
@@ -79,13 +78,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       isFetchingRef.current = true;
 
       try {
-        // ✅ Conversations fetch
         const convRes = await inboxApi.getConversations({
           limit: 200,
           isArchived: false,
         });
 
-        if (convRes.data?.success) {
+        if (isMounted && convRes.data?.success) {
           let convs: any[] = [];
           const d = convRes.data.data;
           if (Array.isArray(d)) convs = d;
@@ -104,7 +102,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           console.log(`📬 [AppProvider] Initial unread: ${count}`);
         }
       } catch (e: any) {
-        // ✅ 401 pe retry mat karo - interceptor handle karega
         if (e?.response?.status === 401 || e?.response?.status === 403) {
           console.warn('[AppProvider] Auth error on conversations fetch - skipping');
         } else {
@@ -113,9 +110,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }
 
       try {
-        // ✅ Contacts stats fetch
         const statsRes = await contactsApi.stats();
-        if (statsRes.data?.success) {
+        if (isMounted && statsRes.data?.success) {
           const total = statsRes.data.data?.total || 0;
           setTotalContacts(total);
         }
@@ -124,23 +120,23 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           console.error('[AppProvider] Contacts stats fetch failed:', e?.message);
         }
       } finally {
-        isFetchingRef.current = false;
+        if (isMounted) {
+          isFetchingRef.current = false;
+        }
       }
     };
 
-    // ✅ Small initial delay - AuthProvider ko token set karne ka time do
-    const timer = setTimeout(() => {
+    const initTimer = setTimeout(() => {
       fetchWithRetry(1);
     }, 300);
 
     return () => {
-      clearTimeout(timer);
+      isMounted = false; // ✅ Kills any active retry processing chains
+      clearTimeout(initTimer);
+      if (activeTimer) clearTimeout(activeTimer);
     };
   }, [isAuthenticated]);
 
-  // ============================================
-  // ✅ Socket handlers (unchanged - ye sahi tha)
-  // ============================================
   useEffect(() => {
     if (!socket) return;
 
@@ -151,8 +147,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
       if (direction !== 'INBOUND' || !convId) return;
 
-      const currentPath = window.location.pathname;
-      const isViewingThisConv = currentPath.includes(`/inbox/${convId}`);
+      const isViewingThisConv = window.location.pathname.includes(`/inbox/${convId}`);
       if (isViewingThisConv) return;
 
       if (!unreadConversations.current.has(convId)) {
@@ -180,9 +175,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
   }, [socket]);
 
-  // ============================================
-  // Helpers
-  // ============================================
   const incrementUnread = useCallback((conversationId?: string) => {
     if (conversationId) {
       if (!unreadConversations.current.has(conversationId)) {

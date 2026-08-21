@@ -1,5 +1,5 @@
 import React from 'react';
-import { Handle, Position } from 'reactflow';
+import { Handle, Position } from '@xyflow/react';
 import { MessageCircle, Brain } from 'lucide-react';
 
 const AiNode: React.FC<{ data: any; selected?: boolean }> = ({ 

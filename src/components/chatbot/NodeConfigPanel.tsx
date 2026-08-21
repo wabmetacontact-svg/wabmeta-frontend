@@ -1,6 +1,6 @@
 import React from 'react';
 import { X, Trash2, Plus, Info, Sparkles } from 'lucide-react';
-import type { Node } from 'reactflow';
+import type { Node } from '@xyflow/react';
 
 interface Props {
   node: Node;

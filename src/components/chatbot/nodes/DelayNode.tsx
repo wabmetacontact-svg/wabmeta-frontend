@@ -1,5 +1,5 @@
 import React from 'react';
-import { Handle, Position } from 'reactflow';
+import { Handle, Position } from '@xyflow/react';
 import { Clock } from 'lucide-react';
 
 const DelayNode: React.FC<{ data: any }> = ({ data }) => {

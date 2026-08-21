@@ -1,5 +1,5 @@
 import React from 'react';
-import { Handle, Position } from 'reactflow';
+import { Handle, Position } from '@xyflow/react';
 import { MessageSquare, PauseCircle } from 'lucide-react';
 
 const MessageNode: React.FC<{ data: any }> = ({ data }) => {

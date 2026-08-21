@@ -13,8 +13,9 @@ const getSocketUrl = (): string => {
       .replace(/\/v1\/?$/, '')
       .replace(/\/$/, '');
   }
+  // ✅ Standard production socket domain align to prevent routing handshakes drops
   return import.meta.env.PROD
-    ? 'https://wabmeta-api.onrender.com'
+    ? 'https://api.wabmeta.com'
     : 'http://localhost:10000';
 };
 
@@ -25,7 +26,7 @@ const getOrgId = (): string | null => {
       const parsed = JSON.parse(orgData);
       if (parsed?.id) return parsed.id;
     }
-  } catch {}
+  } catch { }
   return localStorage.getItem('currentOrganizationId');
 };
 
@@ -37,7 +38,6 @@ const getToken = (): string | null => {
   );
 };
 
-// ✅ NEW: User ID get karo localStorage se
 const getUserId = (): string | null => {
   try {
     const userData = localStorage.getItem('wabmeta_user');
@@ -45,7 +45,7 @@ const getUserId = (): string | null => {
       const parsed = JSON.parse(userData);
       if (parsed?.id) return parsed.id;
     }
-  } catch {}
+  } catch { }
   return null;
 };
 
@@ -74,18 +74,12 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }
 
     const token = getToken();
-    if (!token) {
-      console.log('⚠️ No auth token despite isAuthenticated');
-      return;
-    }
+    if (!token) return;
 
-    if (socketRef.current?.connected) {
-      console.log('⚡ Socket already connected, skipping');
-      return;
-    }
+    if (socketRef.current?.connected) return;
 
     const organizationId = getOrgId();
-    const userId = user?.id || getUserId(); // ✅ User ID get karo
+    const userId = user?.id || getUserId();
 
     orgIdRef.current = organizationId;
     userIdRef.current = userId;
@@ -112,31 +106,24 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       console.log('✅ Socket connected:', newSocket.id);
       setIsConnected(true);
 
-      // ✅ Org room join
       const orgId = orgIdRef.current;
       if (orgId) {
         newSocket.emit('org:join', orgId);
-        console.log('📂 Joined org room:', orgId);
       }
 
-      // ✅ NEW: User room join (force logout ke liye)
       const uId = userIdRef.current;
       if (uId) {
         newSocket.emit('user:join', uId);
-        console.log('👤 Joined user room:', uId);
       }
     });
 
-    // ✅ Force logout event handler
     newSocket.on('force_logout', (data: {
       reason: string;
-      title?: string;        // ✅ NEW
+      title?: string;
       message: string;
       timestamp: string;
     }) => {
       console.log('🔒 Session expired event received');
-
-      // ✅ Custom event dispatch with title
       window.dispatchEvent(
         new CustomEvent('force_logout', {
           detail: {
@@ -160,11 +147,9 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
     newSocket.on('reconnect', (attempt) => {
       console.log(`🔄 Socket reconnected after ${attempt} attempts`);
-
       const orgId = orgIdRef.current;
       if (orgId) newSocket.emit('org:join', orgId);
 
-      // ✅ Reconnect pe bhi user room rejoin karo
       const uId = userIdRef.current;
       if (uId) newSocket.emit('user:join', uId);
     });
@@ -174,7 +159,6 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     return () => {
       console.log('🔌 Socket cleanup');
       if (socketRef.current) {
-        // ✅ force_logout listener remove karo
         socketRef.current.off('force_logout');
         socketRef.current.disconnect();
         socketRef.current = null;
