@@ -225,7 +225,7 @@ const AssignPlanModal: React.FC<AssignPlanModalProps> = ({
                         <div className="space-y-4">
                             <div className="relative">
                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
-                                <input
+                                <input aria-label="Search by organization name or email..."
                                     type="text"
                                     value={orgSearch}
                                     onChange={(e) => setOrgSearch(e.target.value)}
@@ -411,10 +411,10 @@ const AssignPlanModal: React.FC<AssignPlanModalProps> = ({
                                     {validityType === 'custom' && (
                                         <div className="ml-6 grid grid-cols-2 gap-4">
                                             <div>
-                                                <label className="block text-xs text-gray-500 mb-1">
+                                                <label htmlFor="assignplanmodal-days" className="block text-xs text-gray-500 mb-1">
                                                     Days
                                                 </label>
-                                                <input
+                                                <input id="assignplanmodal-days"
                                                     type="number"
                                                     value={customDays}
                                                     onChange={(e) => {
@@ -427,10 +427,10 @@ const AssignPlanModal: React.FC<AssignPlanModalProps> = ({
                                                 />
                                             </div>
                                             <div>
-                                                <label className="block text-xs text-gray-500 mb-1">
+                                                <label htmlFor="assignplanmodal-or-end-date" className="block text-xs text-gray-500 mb-1">
                                                     Or End Date
                                                 </label>
-                                                <input
+                                                <input id="assignplanmodal-or-end-date"
                                                     type="date"
                                                     value={customEndDate}
                                                     onChange={(e) => setCustomEndDate(e.target.value)}
@@ -445,10 +445,10 @@ const AssignPlanModal: React.FC<AssignPlanModalProps> = ({
 
                             {/* Reason */}
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                <label htmlFor="assignplanmodal-reason-optional" className="block text-sm font-medium text-gray-700 mb-2">
                                     Reason (Optional)
                                 </label>
-                                <textarea
+                                <textarea id="assignplanmodal-reason-optional"
                                     value={reason}
                                     onChange={(e) => setReason(e.target.value)}
                                     placeholder="Enter reason for this assignment..."

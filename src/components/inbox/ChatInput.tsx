@@ -520,7 +520,7 @@ const ChatInput: React.FC<Props> = ({
       {/* Main input area */}
       <form onSubmit={handleSubmit} className="p-3 sm:p-4 bg-white">
         {/* Hidden file input */}
-        <input
+        <input aria-label="Attach a file"
           ref={fileInputRef}
           type="file"
           accept={fileAccept.current}
@@ -583,7 +583,7 @@ const ChatInput: React.FC<Props> = ({
 
           {/* Text input */}
           <div className="flex-1 relative bg-white">
-            <textarea
+            <textarea aria-label="Message"
               ref={textareaRef}
               value={message}
               onChange={(e) => setMessage(e.target.value)}

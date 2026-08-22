@@ -366,7 +366,7 @@ const SendTemplateModal: React.FC<SendTemplateModalProps> = ({
                             {/* Search */}
                             <div className="relative">
                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                                <input
+                                <input aria-label="Search templates..."
                                     type="text"
                                     value={search}
                                     onChange={(e) => setSearch(e.target.value)}
@@ -449,10 +449,10 @@ const SendTemplateModal: React.FC<SendTemplateModalProps> = ({
                                         {selectedTemplate.headerType} Header
                                     </p>
                                     <div>
-                                        <label className="block text-xs text-gray-500 mb-1">
+                                        <label htmlFor="sendtemplatemodal-media-url" className="block text-xs text-gray-500 mb-1">
                                             Media URL
                                         </label>
-                                        <input
+                                        <input id="sendtemplatemodal-media-url"
                                             type="text"
                                             value={headerMediaUrl}
                                             onChange={(e) => setHeaderMediaUrl(e.target.value)}
@@ -479,7 +479,7 @@ const SendTemplateModal: React.FC<SendTemplateModalProps> = ({
                                             <label className="block text-xs text-gray-500 mb-1">
                                                 Variable {variable}
                                             </label>
-                                            <input
+                                            <input aria-label="Variable"
                                                 type="text"
                                                 value={variableValues[variable] || ''}
                                                 onChange={(e) => setVariableValues({

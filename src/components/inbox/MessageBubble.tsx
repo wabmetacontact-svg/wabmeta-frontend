@@ -1257,7 +1257,7 @@ const MessageBubble: React.FC<Props> = ({
 
           {isEditing ? (
             <div className="flex flex-col gap-2 min-w-[220px]">
-              <textarea
+              <textarea aria-label="Edit message"
                 ref={editRef}
                 value={editText}
                 onChange={(e) => setEditText(e.target.value)}

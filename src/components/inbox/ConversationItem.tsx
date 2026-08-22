@@ -528,7 +528,7 @@ const ConversationItem: React.FC<Props> = ({
               ))}
             </div>
             <div className="flex gap-1">
-              <input
+              <input aria-label="New custom label..."
                 type="text"
                 placeholder="New custom label..."
                 value={newLabelName}

@@ -651,7 +651,7 @@ const CreateCampaign: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">WhatsApp Account *</label>
-                  <select
+                  <select aria-label="Send from WhatsApp account"
                     value={selectedAccountId}
                     onChange={e => setSelectedAccountId(e.target.value)}
                     className="w-full h-11 px-4 border border-gray-200 rounded-xl bg-white text-gray-900 focus:ring-2 focus:ring-emerald-500 focus:outline-none focus:border-emerald-500 font-semibold"
@@ -666,7 +666,7 @@ const CreateCampaign: React.FC = () => {
 
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">Campaign Name *</label>
-                  <input
+                  <input aria-label="e.g. Diwali Mega Sale"
                     type="text"
                     value={formData.name}
                     onChange={e => setFormData(f => ({ ...f, name: e.target.value }))}
@@ -677,7 +677,7 @@ const CreateCampaign: React.FC = () => {
 
                 <div className="md:col-span-2">
                   <label className="block text-sm font-semibold text-gray-700 mb-2">Description (Optional)</label>
-                  <textarea
+                  <textarea aria-label="Description optional"
                     value={formData.description}
                     onChange={e => setFormData(f => ({ ...f, description: e.target.value }))}
                     rows={2}

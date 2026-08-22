@@ -252,7 +252,7 @@ const CallingSettings: React.FC = () => {
 
                 {h.enabled ? (
                   <>
-                    <input
+                    <input aria-label="Opening time"
                       type="time"
                       value={`${h.openTime.substring(0, 2)}:${h.openTime.substring(2)}`}
                       onChange={(e) =>
@@ -261,7 +261,7 @@ const CallingSettings: React.FC = () => {
                       className="text-xs border border-slate-200 rounded px-2 py-1 bg-white text-slate-800 w-28 focus:outline-none focus:ring-1 focus:ring-green-500"
                     />
                     <span className="text-xs text-slate-500">to</span>
-                    <input
+                    <input aria-label="Closing time"
                       type="time"
                       value={`${h.closeTime.substring(0, 2)}:${h.closeTime.substring(2)}`}
                       onChange={(e) =>

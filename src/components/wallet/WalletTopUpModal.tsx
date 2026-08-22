@@ -444,7 +444,7 @@ const WalletTopUpModal: React.FC<Props> = ({
               <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-medium text-lg">
                 ₹
               </span>
-              <input
+              <input aria-label="Enter amount"
                 type="number"
                 value={amount}
                 onChange={(e) => {

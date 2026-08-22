@@ -344,7 +344,7 @@ export default function WhatsAppConnections() {
       {/* Search Bar */}
       <div className="relative">
         <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
-        <input
+        <input aria-label="Search by organization, email, phone, or name..."
           type="text"
           placeholder="Search by organization, email, phone, or name..."
           value={search}

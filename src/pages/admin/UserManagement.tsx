@@ -524,11 +524,11 @@ const PasswordModal: React.FC<PasswordModalProps> = ({
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           {/* New Password */}
           <div>
-            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+            <label htmlFor="usermanagement-new-password" className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
               New Password
             </label>
             <div className="relative">
-              <input
+              <input id="usermanagement-new-password"
                 type={showPassword ? 'text' : 'password'}
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
@@ -570,11 +570,11 @@ const PasswordModal: React.FC<PasswordModalProps> = ({
 
           {/* Confirm Password */}
           <div>
-            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+            <label htmlFor="usermanagement-confirm-password" className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
               Confirm Password
             </label>
             <div className="relative">
-              <input
+              <input id="usermanagement-confirm-password"
                 type={showConfirm ? 'text' : 'password'}
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
@@ -722,7 +722,7 @@ const Pagination: React.FC<PaginationProps> = ({
 
         <div className="flex items-center gap-2">
           <span>Per page:</span>
-          <select
+          <select aria-label="Rows per page"
             value={limit}
             onChange={(e) => onLimitChange(Number(e.target.value))}
             disabled={loading}
@@ -1122,7 +1122,7 @@ const UserManagement: React.FC = () => {
         <div className="flex space-x-2 w-full sm:w-auto">
           <div className="relative flex-1 sm:flex-none">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
-            <input
+            <input aria-label="Search users..."
               type="text"
               placeholder="Search users..."
               className="w-full sm:w-64 pl-9 pr-4 py-2.5 bg-white

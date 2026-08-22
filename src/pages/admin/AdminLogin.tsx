@@ -77,12 +77,12 @@ const AdminLogin: React.FC = () => {
 
           <form onSubmit={handleLogin} className="space-y-5">
             <div>
-              <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">
+              <label htmlFor="adminlogin-admin-email" className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">
                 Admin Email
               </label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                <input
+                <input id="adminlogin-admin-email"
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -95,12 +95,12 @@ const AdminLogin: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">
+              <label htmlFor="adminlogin-password" className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">
                 Password
               </label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                <input
+                <input id="adminlogin-password"
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}

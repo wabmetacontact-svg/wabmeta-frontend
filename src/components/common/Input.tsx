@@ -1,4 +1,4 @@
-import React, { useState, forwardRef } from 'react';
+import React, { useId, useState, forwardRef } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
@@ -12,13 +12,21 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
   ({ label, error, icon, type = 'text', helperText, className = '', ...props }, ref) => {
     const [showPassword, setShowPassword] = useState(false);
 
+    // The label rendered below had no htmlFor, so screen readers announced
+    // nothing for any input built on this component. Fall back to a generated
+    // id when the caller doesn't supply one.
+    const generatedId = useId();
+    const inputId = props.id || generatedId;
+    const errorId = `${inputId}-error`;
+    const helperId = `${inputId}-helper`;
+
     const isPassword = type === 'password';
     const inputType = isPassword ? (showPassword ? 'text' : 'password') : type;
 
     return (
       <div className="w-full">
         {label && (
-          <label className="mb-1.5 block text-sm font-medium text-gray-700">
+          <label htmlFor={inputId} className="mb-1.5 block text-sm font-medium text-gray-700">
             {label}
             {props.required && <span className="ml-1 text-red-500">*</span>}
           </label>
@@ -36,6 +44,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
 
           <input
             ref={ref}
+            id={inputId}
             type={inputType}
             className={`
               w-full rounded-xl bg-white text-gray-900 placeholder:text-gray-400
@@ -51,6 +60,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
               ${className}
             `}
             aria-invalid={!!error}
+            aria-describedby={error ? errorId : helperText ? helperId : undefined}
             {...props}
           />
 
@@ -69,14 +79,14 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
         </div>
 
         {error && (
-          <p className="mt-1.5 flex items-center gap-1.5 text-sm text-red-500">
+          <p id={errorId} role="alert" className="mt-1.5 flex items-center gap-1.5 text-sm text-red-500">
             <span className="h-1 w-1 rounded-full bg-red-500" />
             {error}
           </p>
         )}
 
         {helperText && !error && (
-          <p className="mt-1.5 text-sm text-gray-500">{helperText}</p>
+          <p id={helperId} className="mt-1.5 text-sm text-gray-500">{helperText}</p>
         )}
       </div>
     );

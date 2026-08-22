@@ -157,7 +157,7 @@ const WalletRequestModal: React.FC<Props> = ({ onClose, onSuccess }) => {
               Your reason{" "}
               <span className="text-red-500">*</span>
             </label>
-            <textarea
+            <textarea aria-label="Describe why you need wallet access for Meta payments..."
               value={reason}
               onChange={(e) => {
                 setReason(e.target.value);
@@ -188,7 +188,7 @@ const WalletRequestModal: React.FC<Props> = ({ onClose, onSuccess }) => {
               Additional information{" "}
               <span className="text-gray-400 font-normal">(optional)</span>
             </label>
-            <input
+            <input aria-label="Additional information optional"
               type="text"
               value={additionalInfo}
               onChange={(e) => setAdditionalInfo(e.target.value)}

@@ -663,7 +663,7 @@ const WalletManagement: React.FC = () => {
                 </label>
                 <div className="relative">
                   <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
-                  <input
+                  <input aria-label="Enter amount in Rupees"
                     type="number"
                     value={adjustAmount}
                     onChange={(e) => setAdjustAmount(e.target.value)}
@@ -681,7 +681,7 @@ const WalletManagement: React.FC = () => {
                 <label className="block text-xs text-gray-500 font-semibold uppercase tracking-wider mb-2">
                   Admin Note <span className="text-red-400">*</span>
                 </label>
-                <input
+                <input aria-label="Adjustment note"
                   type="text"
                   value={adjustNote}
                   onChange={(e) => setAdjustNote(e.target.value)}
@@ -816,7 +816,7 @@ const WalletManagement: React.FC = () => {
               )}
 
               <div>
-                <label className="block text-xs text-gray-500 font-semibold uppercase tracking-wider mb-2">
+                <label htmlFor="walletmanagement-reason" className="block text-xs text-gray-500 font-semibold uppercase tracking-wider mb-2">
                   Reason{' '}
                   {toggleTarget.currentlyActive ? (
                     <span className="text-red-400 normal-case">*</span>
@@ -826,7 +826,7 @@ const WalletManagement: React.FC = () => {
                     </span>
                   )}
                 </label>
-                <textarea
+                <textarea id="walletmanagement-reason"
                   value={toggleReason}
                   onChange={(e) => setToggleReason(e.target.value)}
                   className="w-full px-4 py-2.5 bg-gray-50

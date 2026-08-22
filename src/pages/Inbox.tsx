@@ -193,17 +193,17 @@ const Inbox: React.FC = () => {
     saveQuickReplies(quickReplies);
   }, [quickReplies]);
 
-  useEffect(() => {
-    if (selectedConversation) {
-      setNotes(loadNotes(selectedConversation.id));
-    }
-  }, [selectedConversation?.id]);
+  // Depend on the id itself rather than the object: only the id is used, and a
+  // new object identity for the same conversation shouldn't re-run these.
+  const selectedConvId = selectedConversation?.id;
 
   useEffect(() => {
-    if (selectedConversation) {
-      saveNotes(selectedConversation.id, notes);
-    }
-  }, [notes, selectedConversation?.id]);
+    if (selectedConvId) setNotes(loadNotes(selectedConvId));
+  }, [selectedConvId]);
+
+  useEffect(() => {
+    if (selectedConvId) saveNotes(selectedConvId, notes);
+  }, [notes, selectedConvId]);
 
   useEffect(() => {
     const fetchAccount = async () => {
@@ -674,7 +674,7 @@ const Inbox: React.FC = () => {
       setMessages([]);
       toast.success('Chat cleared locally');
     }
-  }, []);
+  }, [confirm]);
 
   const handleToggleSelection = useCallback((id: string) => {
     setSelectedConversationIds((prev) =>
@@ -731,7 +731,7 @@ const Inbox: React.FC = () => {
         toast.error('Failed to delete conversations');
       }
     }
-  }, [selectedConversationIds, handleClearSelection, selectedConversation]);
+  }, [selectedConversationIds, handleClearSelection, selectedConversation, confirm]);
 
   const handleAddLabel = useCallback(async (conv: Conversation, label: string) => {
     try {
@@ -743,11 +743,11 @@ const Inbox: React.FC = () => {
             : c
         )
       );
-      if (selectedConversation?.id === conv.id) {
-        setSelectedConversation((prev) =>
-          prev ? { ...prev, labels: [label] } : prev
-        );
-      }
+      // Compare inside the updater so this callback doesn't need the selected
+      // conversation as a dependency.
+      setSelectedConversation((prev) =>
+        prev && prev.id === conv.id ? { ...prev, labels: [label] } : prev
+      );
       fetchLabels();
     } catch (err) {
       console.error('Add label failed:', err);
@@ -1090,14 +1090,16 @@ const Inbox: React.FC = () => {
     }, [])
   );
 
+  // One effect instead of two: fetchConversations is a useCallback keyed on
+  // [searchQuery, filter], so depending on it covers both triggers. Only typing
+  // is debounced -- changing the filter dropdown should feel immediate.
+  const prevSearchRef = useRef(searchQuery);
   useEffect(() => {
-    fetchConversations();
-  }, [filter]);
-
-  useEffect(() => {
-    const t = setTimeout(() => fetchConversations(), 400);
+    const isTyping = prevSearchRef.current !== searchQuery;
+    prevSearchRef.current = searchQuery;
+    const t = setTimeout(() => fetchConversations(), isTyping ? 400 : 0);
     return () => clearTimeout(t);
-  }, [searchQuery]);
+  }, [fetchConversations, searchQuery]);
 
   useEffect(() => {
     if (!urlConvId || conversations.length === 0) return;

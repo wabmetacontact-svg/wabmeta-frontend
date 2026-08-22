@@ -1,5 +1,5 @@
 // src/pages/Dashboard.tsx
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import {
   MessageSquare,
   Send,
@@ -80,7 +80,7 @@ const Dashboard: React.FC = () => {
     return () => clearInterval(timer);
   }, []);
 
-  const fetchStats = async () => {
+  const fetchStats = useCallback(async () => {
     try {
       const res = await dashboard.getStats();
       if (res?.data?.success && res?.data?.data) {
@@ -91,9 +91,9 @@ const Dashboard: React.FC = () => {
     } finally {
       setLoadingStats(false);
     }
-  };
+  }, []);
 
-  const fetchWidgets = async () => {
+  const fetchWidgets = useCallback(async () => {
     try {
       const res = await dashboard.getWidgets(dateRange);
       if (res?.data?.success && res?.data?.data) {
@@ -104,9 +104,9 @@ const Dashboard: React.FC = () => {
     } finally {
       setLoadingWidgets(false);
     }
-  };
+  }, [dateRange]);
 
-  const fetchActivity = async () => {
+  const fetchActivity = useCallback(async () => {
     try {
       const res = await dashboard.getActivity(10);
       if (res?.data?.success && Array.isArray(res?.data?.data)) {
@@ -117,32 +117,32 @@ const Dashboard: React.FC = () => {
     } finally {
       setLoadingActivity(false);
     }
-  };
+  }, []);
 
-  const fetchAll = () => {
+  const fetchAll = useCallback(() => {
     fetchStats();
     fetchWidgets();
     fetchActivity();
-  };
+  }, [fetchStats, fetchWidgets, fetchActivity]);
 
+  // Mount: load everything once.
   useEffect(() => {
-    fetchAll();
-  }, []);
+    fetchStats();
+    fetchActivity();
+  }, [fetchStats, fetchActivity]);
 
+  // Widgets reload whenever the range changes -- fetchWidgets is keyed on it.
   useEffect(() => {
     setLoadingWidgets(true);
     fetchWidgets();
-  }, [dateRange]);
+  }, [fetchWidgets]);
 
   useEffect(() => {
     if (!socket) return;
 
     const debouncedRefetch = () => {
       if (refetchTimerRef.current) clearTimeout(refetchTimerRef.current);
-      refetchTimerRef.current = setTimeout(() => {
-        fetchStats();
-        fetchWidgets();
-      }, 3000);
+      refetchTimerRef.current = setTimeout(fetchAll, 3000);
     };
 
     socket.on('message:new', debouncedRefetch);
@@ -159,7 +159,7 @@ const Dashboard: React.FC = () => {
       socket.off('campaign:completed', debouncedRefetch);
       if (refetchTimerRef.current) clearTimeout(refetchTimerRef.current);
     };
-  }, [socket]);
+  }, [socket, fetchAll]);
 
   const handleRefresh = async () => {
     setRefreshing(true);

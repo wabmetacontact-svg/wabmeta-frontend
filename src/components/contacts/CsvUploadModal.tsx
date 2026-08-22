@@ -410,7 +410,7 @@ export default function CsvUploadModal({ isOpen, onClose, onSuccess, groups = []
                                 : 'border-gray-300 hover:border-purple-400'}`}
                             onClick={() => document.getElementById('csv-input')?.click()}
                         >
-                            <input id="csv-input" type="file" accept=".csv" onChange={handleFileSelect} className="hidden" />
+                            <input aria-label="Choose a CSV file" id="csv-input" type="file" accept=".csv" onChange={handleFileSelect} className="hidden" />
                             {file ? (
                                 <div>
                                     <CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-3" />
@@ -536,7 +536,7 @@ export default function CsvUploadModal({ isOpen, onClose, onSuccess, groups = []
                             </label>
                             {!showCreateGroup ? (
                                 <div className="flex gap-2">
-                                    <select value={selectedGroup} onChange={(e) => setSelectedGroup(e.target.value)}
+                                    <select aria-label="Add to group optional" value={selectedGroup} onChange={(e) => setSelectedGroup(e.target.value)}
                                         className="flex-1 px-4 py-2.5 border rounded-xl focus:ring-2 focus:ring-purple-500">
                                         <option value="">No group</option>
                                         {localGroups.map(g => <option key={g.id} value={g.id}>{g.name}</option>)}
@@ -549,7 +549,7 @@ export default function CsvUploadModal({ isOpen, onClose, onSuccess, groups = []
                                 </div>
                             ) : (
                                 <div className="flex gap-2">
-                                    <input type="text" value={newGroupName} onChange={(e) => setNewGroupName(e.target.value)}
+                                    <input aria-label="Group name..." type="text" value={newGroupName} onChange={(e) => setNewGroupName(e.target.value)}
                                         placeholder="Group name..." autoFocus
                                         className="flex-1 px-4 py-2.5 border border-purple-300 rounded-xl focus:ring-2 focus:ring-purple-500"
                                         onKeyDown={(e) => {
@@ -574,10 +574,10 @@ export default function CsvUploadModal({ isOpen, onClose, onSuccess, groups = []
                     {/* Tags */}
                     {validContacts.length > 0 && !loading && !result && (
                         <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-2">
+                            <label htmlFor="csvuploadmodal-tags-optional" className="block text-sm font-semibold text-gray-700 mb-2">
                                 Tags (Optional)
                             </label>
-                            <input type="text" value={tags} onChange={(e) => setTags(e.target.value)}
+                            <input id="csvuploadmodal-tags-optional" type="text" value={tags} onChange={(e) => setTags(e.target.value)}
                                 placeholder="e.g., csv-import, leads"
                                 className="w-full px-4 py-2.5 border rounded-xl focus:ring-2 focus:ring-purple-500" />
                         </div>

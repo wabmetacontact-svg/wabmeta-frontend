@@ -22,10 +22,10 @@ const GeneralSettings: React.FC = () => {
       <div className="bg-white border border-slate-200 rounded-xl shadow-sm p-6 space-y-5">
         {/* Organization Name */}
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1.5">
+          <label htmlFor="generalsettings-organization-name" className="block text-sm font-medium text-slate-700 mb-1.5">
             Organization Name
           </label>
-          <input
+          <input id="generalsettings-organization-name"
             type="text"
             className={inputClass}
             placeholder="Your Organization"
@@ -34,10 +34,10 @@ const GeneralSettings: React.FC = () => {
 
         {/* Timezone */}
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1.5">
+          <label htmlFor="generalsettings-timezone" className="block text-sm font-medium text-slate-700 mb-1.5">
             Timezone
           </label>
-          <select className={inputClass}>
+          <select id="generalsettings-timezone" className={inputClass}>
             <option value="Asia/Kolkata">Asia/Kolkata (IST)</option>
             <option value="UTC">UTC</option>
           </select>
@@ -45,10 +45,10 @@ const GeneralSettings: React.FC = () => {
 
         {/* Website */}
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1.5">
+          <label htmlFor="generalsettings-website" className="block text-sm font-medium text-slate-700 mb-1.5">
             Website
           </label>
-          <input
+          <input id="generalsettings-website"
             type="url"
             className={inputClass}
             placeholder="https://yourwebsite.com"

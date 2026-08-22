@@ -412,7 +412,7 @@ const ContactsTab: React.FC<{ userId: string }> = ({ userId }) => {
           {/* Search */}
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
-            <input
+            <input aria-label="Search contacts..."
               type="text"
               placeholder="Search contacts..."
               value={search}
@@ -1056,7 +1056,7 @@ const TemplatesTab: React.FC<{ userId: string }> = ({ userId }) => {
         <div className="flex items-center gap-3 flex-wrap">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
-            <input
+            <input aria-label="Search templates..."
               type="text"
               placeholder="Search templates..."
               value={search}
@@ -1070,7 +1070,7 @@ const TemplatesTab: React.FC<{ userId: string }> = ({ userId }) => {
             />
           </div>
 
-          <select
+          <select aria-label="Filter by status"
             value={statusFilter}
             onChange={(e) => {
               setStatusFilter(e.target.value);
@@ -1689,7 +1689,7 @@ const WalletTab: React.FC<{ userId: string }> = ({ userId }) => {
               <h3 className="text-sm font-semibold text-gray-900">
                 Transaction History ({total})
               </h3>
-              <select
+              <select aria-label="Filter by transaction type"
                 value={txTypeFilter}
                 onChange={(e) => {
                   setTxTypeFilter(e.target.value);

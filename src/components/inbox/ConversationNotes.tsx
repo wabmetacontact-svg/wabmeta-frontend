@@ -88,7 +88,7 @@ const ConversationNotes: React.FC<Props> = ({ notes, onAdd, onUpdate, onDelete }
           bg-white border border-emerald-500/30
           rounded-lg p-2 animate-fade-in shadow-sm
         ">
-          <textarea
+          <textarea aria-label="Write a note (internal only)..."
             ref={addRef}
             value={newNote}
             onChange={(e) => setNewNote(e.target.value)}
@@ -162,7 +162,7 @@ const ConversationNotes: React.FC<Props> = ({ notes, onAdd, onUpdate, onDelete }
           >
             {editingId === note.id ? (
               <div>
-                <textarea
+                <textarea aria-label="Edit note"
                   ref={editRef}
                   value={editText}
                   onChange={(e) => setEditText(e.target.value)}

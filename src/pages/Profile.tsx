@@ -473,7 +473,7 @@ const Profile: React.FC = () => {
                     </label>
                     <div className="relative">
                       <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                      <input
+                      <input aria-label="John"
                         type="text"
                         value={formData.firstName}
                         onChange={(e) =>
@@ -486,12 +486,12 @@ const Profile: React.FC = () => {
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label htmlFor="profile-last-name" className="block text-sm font-medium text-gray-700 mb-2">
                       Last Name
                     </label>
                     <div className="relative">
                       <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                      <input
+                      <input id="profile-last-name"
                         type="text"
                         value={formData.lastName}
                         onChange={(e) =>
@@ -505,12 +505,12 @@ const Profile: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="profile-email-address" className="block text-sm font-medium text-gray-700 mb-2">
                     Email Address
                   </label>
                   <div className="relative">
                     <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                    <input
+                    <input id="profile-email-address"
                       type="email"
                       value={profile?.email || ''}
                       disabled
@@ -521,12 +521,12 @@ const Profile: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="profile-phone-number" className="block text-sm font-medium text-gray-700 mb-2">
                     Phone Number
                   </label>
                   <div className="relative">
                     <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                    <input
+                    <input id="profile-phone-number"
                       type="tel"
                       value={formData.phone}
                       onChange={(e) =>

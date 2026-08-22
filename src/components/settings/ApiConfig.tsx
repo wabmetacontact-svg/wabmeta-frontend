@@ -66,10 +66,10 @@ const ApiConfig: React.FC = () => {
 
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
+            <label htmlFor="apiconfig-webhook-url" className="block text-sm font-medium text-slate-700 mb-2">
               Webhook URL
             </label>
-            <input
+            <input id="apiconfig-webhook-url"
               type="url"
               className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-green-500/20 focus:border-green-500 bg-white text-slate-900 focus:outline-none"
               placeholder="https://your-server.com/webhook"
@@ -77,10 +77,10 @@ const ApiConfig: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
+            <label htmlFor="apiconfig-webhook-secret" className="block text-sm font-medium text-slate-700 mb-2">
               Webhook Secret
             </label>
-            <input
+            <input id="apiconfig-webhook-secret"
               type="text"
               className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-green-500/20 focus:border-green-500 bg-white text-slate-900 focus:outline-none"
               placeholder="Your webhook secret"

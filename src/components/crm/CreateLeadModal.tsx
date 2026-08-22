@@ -89,7 +89,7 @@ const CreateLeadModal: React.FC<Props> = ({ pipelineId, onClose, onCreated }) =>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                             Lead Title *
                         </label>
-                        <input
+                        <input aria-label="e.g., Website Development Project"
                             type="text"
                             value={formData.title}
                             onChange={(e) => setFormData({ ...formData, title: e.target.value })}
@@ -123,7 +123,7 @@ const CreateLeadModal: React.FC<Props> = ({ pipelineId, onClose, onCreated }) =>
                         ) : (
                             <div className="relative">
                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
-                                <input
+                                <input aria-label="Search contacts..."
                                     type="text"
                                     value={searchContact}
                                     onChange={(e) => setSearchContact(e.target.value)}
@@ -158,7 +158,7 @@ const CreateLeadModal: React.FC<Props> = ({ pipelineId, onClose, onCreated }) =>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
                                 Deal Value (₹)
                             </label>
-                            <input
+                            <input aria-label="Lead value"
                                 type="number"
                                 value={formData.value}
                                 onChange={(e) => setFormData({ ...formData, value: e.target.value })}
@@ -167,10 +167,10 @@ const CreateLeadModal: React.FC<Props> = ({ pipelineId, onClose, onCreated }) =>
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                            <label htmlFor="createleadmodal-priority" className="block text-sm font-medium text-gray-700 mb-1">
                                 Priority
                             </label>
-                            <select
+                            <select id="createleadmodal-priority"
                                 value={formData.priority}
                                 onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
                                 className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg"
@@ -186,10 +186,10 @@ const CreateLeadModal: React.FC<Props> = ({ pipelineId, onClose, onCreated }) =>
                     {/* Source & Expected Close Date */}
                     <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                            <label htmlFor="createleadmodal-source" className="block text-sm font-medium text-gray-700 mb-1">
                                 Source
                             </label>
-                            <input
+                            <input id="createleadmodal-source"
                                 type="text"
                                 value={formData.source}
                                 onChange={(e) => setFormData({ ...formData, source: e.target.value })}
@@ -198,10 +198,10 @@ const CreateLeadModal: React.FC<Props> = ({ pipelineId, onClose, onCreated }) =>
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                            <label htmlFor="createleadmodal-expected-close" className="block text-sm font-medium text-gray-700 mb-1">
                                 Expected Close
                             </label>
-                            <input
+                            <input id="createleadmodal-expected-close"
                                 type="date"
                                 value={formData.expectedCloseDate}
                                 onChange={(e) => setFormData({ ...formData, expectedCloseDate: e.target.value })}

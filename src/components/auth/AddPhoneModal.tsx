@@ -198,7 +198,7 @@ const AddPhoneModal: React.FC<AddPhoneModalProps> = ({
                   WhatsApp Number <span className="text-red-500">*</span>
                 </label>
                 <div className="flex">
-                  <select
+                  <select aria-label="Country code"
                     value={countryCode}
                     onChange={(e) => {
                       setCountryCode(e.target.value);
@@ -215,7 +215,7 @@ const AddPhoneModal: React.FC<AddPhoneModalProps> = ({
                     ))}
                   </select>
 
-                  <input
+                  <input aria-label="Phone number"
                     type="tel"
                     placeholder={`${currentCountry?.digits || 10} digits`}
                     value={phone}

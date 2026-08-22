@@ -156,21 +156,16 @@ const Templates: React.FC = () => {
     }
   }, [search, statusF, categoryF]);
 
-  // ─── Mount fetch ───────────────────────────────────────────
+  // ─── Fetch on mount and whenever the filters change ────────
+  // One effect instead of two: fetchTemplates is a useCallback keyed on the
+  // filters, so depending on it covers both cases. The first run fires
+  // immediately; later ones debounce so typing doesn't spam the API.
   useEffect(() => {
-    fetchTemplates();
-  }, []);
-
-  // ─── Filter change fetch (debounced) ──────────────────────
-  // ✅ FIX: Skip first render (mount already fetched)
-  useEffect(() => {
-    if (isFirstMount.current) {
-      isFirstMount.current = false;
-      return;
-    }
-    const t = setTimeout(fetchTemplates, 300);
+    const delay = isFirstMount.current ? 0 : 300;
+    isFirstMount.current = false;
+    const t = setTimeout(fetchTemplates, delay);
     return () => clearTimeout(t);
-  }, [search, statusF, categoryF]);
+  }, [fetchTemplates]);
 
   // ─── Sync ──────────────────────────────────────────────────
   const handleSync = async () => {
@@ -344,7 +339,7 @@ const Templates: React.FC = () => {
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2
                                w-5 h-5 text-gray-400" />
-            <input
+            <input aria-label="Search templates..."
               type="text"
               placeholder="Search templates..."
               value={search}
@@ -402,7 +397,7 @@ const Templates: React.FC = () => {
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Status
               </label>
-              <select
+              <select aria-label="Status"
                 value={statusF}
                 onChange={e => setStatusF(e.target.value)}
                 className="px-3 py-2 border border-gray-200 rounded-lg
@@ -420,7 +415,7 @@ const Templates: React.FC = () => {
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Category
               </label>
-              <select
+              <select aria-label="Category"
                 value={categoryF}
                 onChange={e => setCategoryF(e.target.value)}
                 className="px-3 py-2 border border-gray-200 rounded-lg

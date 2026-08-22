@@ -221,10 +221,10 @@ const VerifyEmail: React.FC = () => {
 
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2 text-left">
+              <label htmlFor="verifyemail-enter-your-email-to-resend-verification" className="block text-sm font-medium text-slate-700 mb-2 text-left">
                 Enter your email to resend verification
               </label>
-              <input
+              <input id="verifyemail-enter-your-email-to-resend-verification"
                 type="email"
                 placeholder="your@email.com"
                 value={email}
@@ -326,7 +326,7 @@ const VerifyEmail: React.FC = () => {
 
             {!email ? (
               <div className="mb-3">
-                <input
+                <input aria-label="Enter your email"
                   type="email"
                   placeholder="Enter your email"
                   value={email}

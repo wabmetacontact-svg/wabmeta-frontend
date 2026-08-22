@@ -299,7 +299,7 @@ const AudienceSelector: React.FC<AudienceSelectorProps> = ({
             {loadingGroups && <Loader2 className="w-4 h-4 animate-spin text-emerald-600" />}
           </div>
 
-          <select
+          <select aria-label="Contact group"
             value={selectedGroup}
             onChange={e => onGroupChange(e.target.value)}
             className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 bg-gray-50 text-gray-900 font-semibold text-sm transition-all"
@@ -384,7 +384,7 @@ const AudienceSelector: React.FC<AudienceSelectorProps> = ({
 
           <div className="relative">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <input
+            <input aria-label="Search by name, phone number, or email..."
               type="text"
               placeholder="Search by name, phone number, or email..."
               value={searchQuery}

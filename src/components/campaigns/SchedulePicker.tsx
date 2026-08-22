@@ -88,7 +88,7 @@ const SchedulePicker: React.FC<SchedulePickerProps> = ({
               </label>
               <div className="relative">
                 <Calendar className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-                <input
+                <input aria-label="Send date"
                   type="date"
                   value={scheduledDate}
                   min={today}
@@ -105,7 +105,7 @@ const SchedulePicker: React.FC<SchedulePickerProps> = ({
               </label>
               <div className="relative">
                 <Clock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-                <input
+                <input aria-label="Send time"
                   type="time"
                   value={scheduledTime}
                   min={scheduledDate === today ? minTime : undefined}

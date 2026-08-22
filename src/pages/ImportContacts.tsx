@@ -450,7 +450,7 @@ const ImportContacts: React.FC = () => {
             </div>
             <div className="border-2 border-dashed border-gray-200 bg-gray-50 rounded-2xl p-12 text-center hover:bg-gray-100/50 hover:border-green-300 transition-all cursor-pointer group"
               onClick={() => document.getElementById('file-upload')?.click()}>
-              <input
+              <input aria-label="Choose a CSV file"
                 id="file-upload"
                 type="file"
                 accept=".csv"
@@ -486,7 +486,7 @@ const ImportContacts: React.FC = () => {
                     <label className="block text-sm font-semibold text-gray-700 mb-1">
                       {field.label} {field.required && <span className="text-red-500">*</span>}
                     </label>
-                    <select
+                    <select aria-label="Map CSV column"
                       value={fieldMapping[field.key] || ""}
                       onChange={(e) => setFieldMapping({ ...fieldMapping, [field.key]: e.target.value })}
                       className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-800 focus:ring-2 focus:ring-green-500 focus:outline-none"

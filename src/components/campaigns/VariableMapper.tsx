@@ -200,7 +200,7 @@ const VariableMapper: React.FC<VariableMapperProps> = ({
               {/* Selector vs Input */}
               {currentMode === 'field' ? (
                 <div className="space-y-2">
-                  <select
+                  <select aria-label={`Contact field for ${variable}`}
                     value={currentValue.startsWith('{{contact.') ? currentValue : ''}
                     onChange={e => updateValue(variable, e.target.value)}
                     className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-xs font-bold focus:outline-none focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
@@ -221,7 +221,7 @@ const VariableMapper: React.FC<VariableMapperProps> = ({
                 </div>
               ) : (
                 <div className="space-y-1.5">
-                  <input
+                  <input aria-label={`Custom value for ${variable}`}
                     type="text"
                     value={getCustomValue(currentValue)}
                     onChange={e => updateValue(variable, e.target.value)}

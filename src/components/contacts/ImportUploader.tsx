@@ -248,7 +248,7 @@ const ImportUploader: React.FC<ImportUploaderProps> = ({
                   : 'border-gray-300 bg-gray-50 hover:bg-gray-100'
                 }`}
             >
-              <input
+              <input aria-label="Choose a CSV file"
                 ref={inputRef}
                 type="file"
                 accept=".csv"
@@ -315,7 +315,7 @@ const ImportUploader: React.FC<ImportUploaderProps> = ({
                       />
                       <span className="text-sm font-medium text-gray-700">Existing Group</span>
                     </label>
-                    <label className="flex items-center gap-2 cursor-pointer">
+                    <label htmlFor="importuploader-create-new-group" className="flex items-center gap-2 cursor-pointer">
                       <input
                         type="radio"
                         name="groupOption"
@@ -329,7 +329,7 @@ const ImportUploader: React.FC<ImportUploaderProps> = ({
 
                   {createNewGroup ? (
                     <div>
-                      <input
+                      <input id="importuploader-create-new-group"
                         type="text"
                         value={newGroupName}
                         onChange={(e) => setNewGroupName(e.target.value)}
@@ -342,7 +342,7 @@ const ImportUploader: React.FC<ImportUploaderProps> = ({
                     </div>
                   ) : (
                     <div>
-                      <select
+                      <select aria-label="Add imported contacts to group"
                         value={selectedGroupId}
                         onChange={(e) => setSelectedGroupId(e.target.value)}
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"

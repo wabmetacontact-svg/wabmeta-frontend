@@ -23,8 +23,8 @@ const CreateCommentRuleModal = ({ isOpen, onClose, onSave }: any) => {
         {/* Form */}
         <div className="p-6 space-y-5">
           <div>
-            <label className="block text-xs font-mono text-gray-500 uppercase mb-2">Rule Name</label>
-            <input 
+            <label htmlFor="createcommentrulemodal-rule-name" className="block text-xs font-mono text-gray-500 uppercase mb-2">Rule Name</label>
+            <input id="createcommentrulemodal-rule-name" 
               className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 outline-none focus:border-[#e1306c]"
               placeholder="e.g. Summer Sale Auto-reply"
               onChange={(e) => setFormData({...formData, name: e.target.value})}
@@ -32,8 +32,8 @@ const CreateCommentRuleModal = ({ isOpen, onClose, onSave }: any) => {
           </div>
 
           <div>
-            <label className="block text-xs font-mono text-gray-500 uppercase mb-2">Keywords (Comma separated)</label>
-            <input 
+            <label htmlFor="createcommentrulemodal-keywords-comma-separated" className="block text-xs font-mono text-gray-500 uppercase mb-2">Keywords (Comma separated)</label>
+            <input id="createcommentrulemodal-keywords-comma-separated" 
               className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 outline-none focus:border-[#e1306c]"
               placeholder="price, info, interested"
               onChange={(e) => setFormData({...formData, keywords: e.target.value})}
@@ -43,10 +43,10 @@ const CreateCommentRuleModal = ({ isOpen, onClose, onSave }: any) => {
 
           <div className="p-4 rounded-xl bg-gray-50 border border-gray-200 space-y-4">
             <div>
-              <label className="flex items-center gap-2 text-xs font-bold text-gray-900 mb-2">
+              <label htmlFor="createcommentrulemodal-public-comment-reply" className="flex items-center gap-2 text-xs font-bold text-gray-900 mb-2">
                 <Send size={14} className="text-[#833ab4]" /> Public Comment Reply
               </label>
-              <textarea 
+              <textarea id="createcommentrulemodal-public-comment-reply" 
                 className="w-full bg-gray-50 border border-gray-200 rounded-lg p-3 text-sm text-gray-900 outline-none h-20"
                 placeholder="Thanks! Check your DM for details."
                 onChange={(e) => setFormData({...formData, commentReply: e.target.value})}
@@ -54,10 +54,10 @@ const CreateCommentRuleModal = ({ isOpen, onClose, onSave }: any) => {
             </div>
 
             <div>
-              <label className="flex items-center gap-2 text-xs font-bold text-gray-900 mb-2">
+              <label htmlFor="createcommentrulemodal-private-dm-message" className="flex items-center gap-2 text-xs font-bold text-gray-900 mb-2">
                 <MessageCircle size={14} className="text-[#e1306c]" /> Private DM Message
               </label>
-              <textarea 
+              <textarea id="createcommentrulemodal-private-dm-message" 
                 className="w-full bg-gray-50 border border-gray-200 rounded-lg p-3 text-sm text-gray-900 outline-none h-20"
                 placeholder="Hi! Here is the pricing information you requested..."
                 onChange={(e) => setFormData({...formData, dmMessage: e.target.value})}

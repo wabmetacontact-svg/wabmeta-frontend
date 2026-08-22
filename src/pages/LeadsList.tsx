@@ -1,6 +1,6 @@
 // src/pages/LeadsList.tsx - COMPLETE UPDATED VERSION
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Plus, Search, LayoutGrid, List, Loader2,
@@ -159,18 +159,7 @@ const LeadsList: React.FC = () => {
   const [syncing, setSyncing]   = useState(false);
 
   // ─────────────────────────────────────────
-  useEffect(() => { loadPipelines(); }, []);
-
-  useEffect(() => {
-    if (selectedPipeline && activeTab === 'pipeline') loadLeads();
-  }, [selectedPipeline, search, activeTab]);
-
-  useEffect(() => {
-    if (activeTab === 'interested') loadInterestedLeads();
-  }, [activeTab, search]);
-
-  // ─────────────────────────────────────────
-  const loadPipelines = async () => {
+  const loadPipelines = useCallback(async () => {
     try {
       const res = await crmApi.getPipelines();
       if (res.data.success) {
@@ -183,9 +172,9 @@ const LeadsList: React.FC = () => {
     } catch {
       toast.error('Failed to load pipelines');
     }
-  };
+  }, [searchParams]);
 
-  const loadLeads = async () => {
+  const loadLeads = useCallback(async () => {
     if (!selectedPipeline) return;
     setLoading(true);
     try {
@@ -211,9 +200,9 @@ const LeadsList: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedPipeline, search]);
 
-  const loadInterestedLeads = async () => {
+  const loadInterestedLeads = useCallback(async () => {
     setLoading(true);
     setLoadError(null);
     try {
@@ -255,7 +244,18 @@ const LeadsList: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [search]);
+
+  // ─────────────────────────────────────────
+  useEffect(() => { loadPipelines(); }, [loadPipelines]);
+
+  useEffect(() => {
+    if (selectedPipeline && activeTab === 'pipeline') loadLeads();
+  }, [selectedPipeline, activeTab, loadLeads]);
+
+  useEffect(() => {
+    if (activeTab === 'interested') loadInterestedLeads();
+  }, [activeTab, loadInterestedLeads]);
 
   // ─────────────────────────────────────────
   const handleSync = async () => {
@@ -323,7 +323,7 @@ const LeadsList: React.FC = () => {
 
       {/* ── HEADER ─────────────────────────────── */}
       <div className="flex-shrink-0 bg-white border-b border-gray-200 px-6 py-4">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-4">
             <h1 className="text-xl font-bold text-gray-900">Leads</h1>
 
@@ -360,7 +360,7 @@ const LeadsList: React.FC = () => {
 
             {/* Pipeline selector - only in pipeline tab */}
             {activeTab === 'pipeline' && (
-              <select
+              <select aria-label="Pipeline"
                 value={selectedPipeline?.id || ''}
                 onChange={e => {
                   const pip = pipelines.find(p => p.id === e.target.value);
@@ -375,11 +375,11 @@ const LeadsList: React.FC = () => {
             )}
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3 min-w-0">
             {/* Search */}
-            <div className="relative">
+            <div className="relative min-w-0 flex-1 sm:flex-none">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <input
+              <input aria-label="Search leads"
                 type="text"
                 placeholder={
                   activeTab === 'interested'

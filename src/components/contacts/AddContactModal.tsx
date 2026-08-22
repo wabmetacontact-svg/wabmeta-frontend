@@ -346,7 +346,7 @@ const AddContactModal: React.FC<AddContactModalProps> = ({
               </label>
               <div className="relative">
                 <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input
+                <input aria-label="Enter first name"
                   type="text"
                   value={formData.firstName}
                   onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
@@ -368,10 +368,10 @@ const AddContactModal: React.FC<AddContactModalProps> = ({
 
             {/* Last Name */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              <label htmlFor="addcontactmodal-last-name" className="block text-sm font-medium text-gray-700 mb-1.5">
                 Last Name
               </label>
-              <input
+              <input id="addcontactmodal-last-name"
                 type="text"
                 value={formData.lastName}
                 onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
@@ -389,7 +389,7 @@ const AddContactModal: React.FC<AddContactModalProps> = ({
             </label>
             <div className="relative">
               <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-              <input
+              <input aria-label="+919876543210"
                 type="tel"
                 value={formData.phone}
                 onChange={(e) => handlePhoneChange(e.target.value)}
@@ -437,12 +437,12 @@ const AddContactModal: React.FC<AddContactModalProps> = ({
 
           {/* Email */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">
+            <label htmlFor="addcontactmodal-email" className="block text-sm font-medium text-gray-700 mb-1.5">
               Email
             </label>
             <div className="relative">
               <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-              <input
+              <input id="addcontactmodal-email"
                 type="email"
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
@@ -464,10 +464,10 @@ const AddContactModal: React.FC<AddContactModalProps> = ({
 
           {/* Company (Optional) */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">
+            <label htmlFor="addcontactmodal-company" className="block text-sm font-medium text-gray-700 mb-1.5">
               Company
             </label>
-            <input
+            <input id="addcontactmodal-company"
               type="text"
               value={formData.company}
               onChange={(e) => setFormData({ ...formData, company: e.target.value })}
@@ -479,10 +479,10 @@ const AddContactModal: React.FC<AddContactModalProps> = ({
 
           {/* Address (Optional) */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">
+            <label htmlFor="addcontactmodal-address" className="block text-sm font-medium text-gray-700 mb-1.5">
               Address
             </label>
-            <input
+            <input id="addcontactmodal-address"
               type="text"
               value={formData.address}
               onChange={(e) => setFormData({ ...formData, address: e.target.value })}
@@ -523,7 +523,7 @@ const AddContactModal: React.FC<AddContactModalProps> = ({
 
             {/* Add New Tag */}
             <div className="flex gap-2">
-              <input
+              <input aria-label="Add tag (press Enter)"
                 type="text"
                 value={newTag}
                 onChange={(e) => setNewTag(e.target.value)}
@@ -545,10 +545,10 @@ const AddContactModal: React.FC<AddContactModalProps> = ({
 
           {/* Notes */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">
+            <label htmlFor="addcontactmodal-notes" className="block text-sm font-medium text-gray-700 mb-1.5">
               Notes
             </label>
-            <textarea
+            <textarea id="addcontactmodal-notes"
               value={formData.notes}
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
               rows={3}

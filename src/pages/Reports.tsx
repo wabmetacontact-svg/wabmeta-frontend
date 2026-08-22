@@ -1,6 +1,6 @@
 // src/pages/Reports.tsx - COMPLETE WITH REAL DATA
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   BarChart3,
   TrendingUp,
@@ -67,11 +67,7 @@ const Reports: React.FC = () => {
   const [campaignData, setCampaignData] = useState<any>(null);
   const [contactData, setContactData] = useState<any>(null);
 
-  useEffect(() => {
-    fetchAllData();
-  }, [dateRange]);
-
-  const fetchAllData = async (isRefresh = false) => {
+  const fetchAllData = useCallback(async (isRefresh = false) => {
     try {
       if (isRefresh) {
         setRefreshing(true);
@@ -114,7 +110,11 @@ const Reports: React.FC = () => {
       setLoading(false);
       setRefreshing(false);
     }
-  };
+  }, [dateRange]);
+
+  useEffect(() => {
+    fetchAllData();
+  }, [fetchAllData]);
 
   const handleExport = async (type: string) => {
     try {
@@ -157,7 +157,7 @@ const Reports: React.FC = () => {
 
         <div className="flex items-center gap-3">
           {/* Date Range Filter */}
-          <select
+          <select aria-label="Date range"
             value={dateRange}
             onChange={(e) => setDateRange(e.target.value as any)}
             className="px-4 py-2 border border-gray-200 rounded-lg bg-white text-gray-900 focus:ring-2 focus:ring-green-500 shadow-sm"

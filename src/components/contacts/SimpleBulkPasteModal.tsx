@@ -207,7 +207,7 @@ export default function SimpleBulkPasteModal({ isOpen, onClose, onSuccess, group
                             <Phone className="w-4 h-4" />
                             Phone Numbers <span className="text-red-500">*</span>
                         </label>
-                        <textarea
+                        <textarea aria-label="Phone numbers, one per line"
                             value={phoneNumbers}
                             onChange={(e) => setPhoneNumbers(e.target.value)}
                             placeholder={`Paste numbers with country code...
@@ -232,13 +232,13 @@ Examples:
 
                     {/* Group Selection with Create Option */}
                     <div>
-                        <label className="block text-sm font-semibold text-gray-800 mb-2">
+                        <label htmlFor="simplebulkpastemodal-add-to-group-optional" className="block text-sm font-semibold text-gray-800 mb-2">
                             Add to Group (Optional)
                         </label>
 
                         {!showCreateGroup ? (
                             <div className="flex gap-2">
-                                <select
+                                <select id="simplebulkpastemodal-add-to-group-optional"
                                     value={selectedGroup}
                                     onChange={(e) => setSelectedGroup(e.target.value)}
                                     className="flex-1 px-4 py-2.5 border border-gray-300 rounded-xl bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -260,7 +260,7 @@ Examples:
                             </div>
                         ) : (
                             <div className="flex gap-2">
-                                <input
+                                <input aria-label="Enter group name..."
                                     type="text"
                                     value={newGroupName}
                                     onChange={(e) => setNewGroupName(e.target.value)}
@@ -301,10 +301,10 @@ Examples:
 
                     {/* Tags */}
                     <div>
-                        <label className="block text-sm font-semibold text-gray-800 mb-2">
+                        <label htmlFor="simplebulkpastemodal-tags-optional" className="block text-sm font-semibold text-gray-800 mb-2">
                             Tags (Optional)
                         </label>
-                        <input
+                        <input id="simplebulkpastemodal-tags-optional"
                             type="text"
                             value={tags}
                             onChange={(e) => setTags(e.target.value)}

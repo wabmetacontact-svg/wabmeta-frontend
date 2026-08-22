@@ -343,7 +343,7 @@ const WalletAnalytics: React.FC = () => {
 
         <div className="flex items-center gap-2">
           {/* Date Range Selector */}
-          <select
+          <select aria-label="Date range"
             value={dateRange}
             onChange={(e) => setDateRange(e.target.value as any)}
             className="px-3 py-1.5 text-xs font-medium bg-white border border-gray-200 rounded-lg text-gray-700 focus:ring-2 focus:ring-green-500"

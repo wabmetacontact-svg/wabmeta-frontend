@@ -1095,7 +1095,7 @@ const CreateTemplate: React.FC = () => {
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Template Name *
                       </label>
-                      <input
+                      <input aria-label="e.g., order_confirmation"
                         type="text"
                         value={formData.name}
                         disabled={isApprovedTemplate}
@@ -1154,7 +1154,7 @@ const CreateTemplate: React.FC = () => {
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           Header Text *
                         </label>
-                        <input
+                        <input aria-label="Enter header text"
                           type="text"
                           value={formData.header.text || ''}
                           onChange={(e) =>
@@ -1261,7 +1261,7 @@ const CreateTemplate: React.FC = () => {
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Message Body *
                       </label>
-                      <textarea
+                      <textarea aria-label="Message body"
                         value={formData.body}
                         disabled={isApprovedTemplate}
                         onChange={(e) => updateFormData('body', e.target.value)}
@@ -1290,10 +1290,10 @@ const CreateTemplate: React.FC = () => {
 
                     {/* Footer */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label htmlFor="createtemplate-footer-optional" className="block text-sm font-medium text-gray-700 mb-2">
                         Footer (Optional)
                       </label>
-                      <input
+                      <input id="createtemplate-footer-optional"
                         type="text"
                         value={formData.footer}
                         onChange={(e) => updateFormData('footer', e.target.value)}
@@ -1331,7 +1331,7 @@ const CreateTemplate: React.FC = () => {
                               {headerVariables.map((varIndex) => (
                                 <div key={`header_${varIndex}`} className="flex items-center gap-3 mb-2">
                                   <span className="w-16 text-sm text-gray-500">{`{{${varIndex}}}`}</span>
-                                  <input
+                                  <input aria-label={`Header sample for variable ${varIndex}`}
                                     type="text"
                                     placeholder={`Header sample for {{${varIndex}}}`}
                                     value={sampleVariables[`header_${varIndex}`] || ''}
@@ -1360,7 +1360,7 @@ const CreateTemplate: React.FC = () => {
                               {bodyVariables.map((varIndex) => (
                                 <div key={`body_${varIndex}`} className="flex items-center gap-3 mb-2">
                                   <span className="w-16 text-sm text-gray-500">{`{{${varIndex}}}`}</span>
-                                  <input
+                                  <input aria-label={`Body sample for variable ${varIndex}`}
                                     type="text"
                                     placeholder={`Body sample for {{${varIndex}}}`}
                                     value={sampleVariables[`body_${varIndex}`] || ''}
@@ -1458,7 +1458,7 @@ const CreateTemplate: React.FC = () => {
                             <label className="block text-sm font-medium text-gray-700 mb-1">
                               Button Type
                             </label>
-                            <select
+                            <select aria-label="Button type"
                               value={button.type}
                               onChange={(e) => {
                                 const updated = [...formData.buttons];
@@ -1477,7 +1477,7 @@ const CreateTemplate: React.FC = () => {
                             <label className="block text-sm font-medium text-gray-700 mb-1">
                               Button Text *
                             </label>
-                            <input
+                            <input aria-label="Button text"
                               type="text"
                               value={button.text}
                               onChange={(e) => {
@@ -1500,7 +1500,7 @@ const CreateTemplate: React.FC = () => {
                             <label className="block text-sm font-medium text-gray-700 mb-1">
                               URL *
                             </label>
-                            <input
+                            <input aria-label="https://example.com"
                               type="url"
                               value={button.url || ''}
                               onChange={(e) => {
@@ -1522,7 +1522,7 @@ const CreateTemplate: React.FC = () => {
                             <label className="block text-sm font-medium text-gray-700 mb-1">
                               Phone Number *
                             </label>
-                            <input
+                            <input aria-label="+1234567890"
                               type="tel"
                               value={button.phoneNumber || ''}
                               onChange={(e) => {
@@ -1601,7 +1601,7 @@ const CreateTemplate: React.FC = () => {
                         </div>
                       ) : (
                         <>
-                          <select
+                          <select aria-label="WhatsApp account"
                             value={selectedAccountId}
                             onChange={(e) => {
                               setSelectedAccountId(e.target.value);
@@ -1704,7 +1704,7 @@ const CreateTemplate: React.FC = () => {
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Language *
                       </label>
-                      <select
+                      <select aria-label="Template language"
                         value={formData.language}
                         onChange={(e) => updateFormData('language', e.target.value)}
                         className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 bg-white text-gray-950 transition-all"

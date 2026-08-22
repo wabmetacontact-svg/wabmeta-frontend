@@ -230,7 +230,7 @@ const Blog: React.FC = () => {
                         Get the latest WhatsApp Business tips and updates delivered to your inbox
                     </p>
                     <div className="flex flex-col sm:flex-row gap-4 justify-center max-w-md mx-auto">
-                        <input
+                        <input aria-label="Enter your email"
                             type="email"
                             placeholder="Enter your email"
                             className="flex-1 px-4 py-3 rounded-lg focus:ring-2 focus:ring-green-300 border-0"

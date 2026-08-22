@@ -124,12 +124,12 @@ const BusinessProfile: React.FC<Props> = ({ organization, onUpdate }) => {
 
         {/* Organization Name */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label htmlFor="businessprofile-organization-name" className="block text-sm font-medium text-gray-700 mb-2">
             Organization Name
           </label>
           <div className="relative">
             <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
-            <input
+            <input id="businessprofile-organization-name"
               type="text"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
@@ -141,12 +141,12 @@ const BusinessProfile: React.FC<Props> = ({ organization, onUpdate }) => {
 
         {/* Website */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label htmlFor="businessprofile-website" className="block text-sm font-medium text-gray-700 mb-2">
             Website
           </label>
           <div className="relative">
             <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
-            <input
+            <input id="businessprofile-website"
               type="url"
               value={formData.website}
               onChange={(e) => setFormData({ ...formData, website: e.target.value })}
@@ -158,10 +158,10 @@ const BusinessProfile: React.FC<Props> = ({ organization, onUpdate }) => {
 
         {/* Industry */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label htmlFor="businessprofile-industry" className="block text-sm font-medium text-gray-700 mb-2">
             Industry
           </label>
-          <select
+          <select id="businessprofile-industry"
             value={formData.industry}
             onChange={(e) => setFormData({ ...formData, industry: e.target.value })}
             className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 bg-white"
@@ -182,7 +182,7 @@ const BusinessProfile: React.FC<Props> = ({ organization, onUpdate }) => {
           </label>
           <div className="relative">
             <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
-            <select
+            <select aria-label="Timezone"
               value={formData.timezone}
               onChange={(e) => setFormData({ ...formData, timezone: e.target.value })}
               className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 bg-white appearance-none"

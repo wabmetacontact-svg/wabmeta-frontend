@@ -215,8 +215,8 @@ const CreateAutomation: React.FC = () => {
             
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1.5">Name</label>
-                <input
+                <label htmlFor="createautomation-name" className="block text-sm font-semibold text-gray-700 mb-1.5">Name</label>
+                <input id="createautomation-name"
                   type="text"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
@@ -226,8 +226,8 @@ const CreateAutomation: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1.5">Description (Optional)</label>
-                <textarea
+                <label htmlFor="createautomation-description-optional" className="block text-sm font-semibold text-gray-700 mb-1.5">Description (Optional)</label>
+                <textarea id="createautomation-description-optional"
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   placeholder="What does this automation do?"
@@ -353,7 +353,7 @@ const CreateAutomation: React.FC = () => {
               {formData.trigger === 'KEYWORD' && (
                 <div className="p-4 bg-gray-50 rounded-xl border border-gray-200 animate-in fade-in slide-in-from-top-2 duration-300">
                   <label className="block text-sm font-bold text-gray-700 mb-2">Keyword(s)</label>
-                  <input
+                  <input aria-label="Keyword (s)"
                     type="text"
                     value={formData.triggerConfig.keywords?.join(', ') || ''}
                     onChange={(e) => setFormData({
@@ -382,8 +382,8 @@ const CreateAutomation: React.FC = () => {
               {formData.trigger === 'SCHEDULE' && (
                 <div className="grid grid-cols-2 gap-4 p-4 bg-gray-50 rounded-xl border border-gray-200 animate-in fade-in slide-in-from-top-2 duration-300">
                   <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2">Time</label>
-                    <input
+                    <label htmlFor="createautomation-time" className="block text-sm font-bold text-gray-700 mb-2">Time</label>
+                    <input id="createautomation-time"
                       type="time"
                       value={formData.triggerConfig.time || '09:00'}
                       onChange={(e) => setFormData({
@@ -394,8 +394,8 @@ const CreateAutomation: React.FC = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2">Recursion</label>
-                    <select
+                    <label htmlFor="createautomation-recursion" className="block text-sm font-bold text-gray-700 mb-2">Recursion</label>
+                    <select id="createautomation-recursion"
                       value={formData.triggerConfig.days || 'daily'}
                       onChange={(e) => setFormData({
                         ...formData,
@@ -418,7 +418,7 @@ const CreateAutomation: React.FC = () => {
                     Trigger after inactive for:
                   </label>
                   <div className="flex items-center gap-3">
-                    <input
+                    <input aria-label="Hours"
                       type="number"
                       min="1"
                       max="720"
@@ -558,8 +558,8 @@ const ActionItem: React.FC<ActionItemProps> = ({ action, index, templates, onUpd
         <div className="p-4 space-y-4">
           {action.type === 'send_text' && (
             <div>
-              <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-1.5 ml-1">Message Body</label>
-              <textarea
+              <label htmlFor="createautomation-message-body" className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-1.5 ml-1">Message Body</label>
+              <textarea id="createautomation-message-body"
                 value={config.text || ''}
                 onChange={(e) => onUpdate(action.id, { ...config, text: e.target.value })}
                 rows={3}
@@ -571,8 +571,8 @@ const ActionItem: React.FC<ActionItemProps> = ({ action, index, templates, onUpd
 
           {action.type === 'send_template' && (
             <div>
-              <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-1.5 ml-1">Select Template</label>
-              <select
+              <label htmlFor="createautomation-select-template" className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-1.5 ml-1">Select Template</label>
+              <select id="createautomation-select-template"
                 value={config.templateId || ''}
                 onChange={(e) => onUpdate(action.id, { ...config, templateId: e.target.value })}
                 className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-emerald-500 text-gray-900"
@@ -589,7 +589,7 @@ const ActionItem: React.FC<ActionItemProps> = ({ action, index, templates, onUpd
             <div className="flex items-center gap-4">
               <div className="flex-1">
                 <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-1.5 ml-1">Value</label>
-                <input
+                <input aria-label="Value"
                   type="number"
                   value={config.value || 0}
                   onChange={(e) => onUpdate(action.id, { ...config, value: parseInt(e.target.value) })}
@@ -598,7 +598,7 @@ const ActionItem: React.FC<ActionItemProps> = ({ action, index, templates, onUpd
               </div>
               <div className="flex-1">
                 <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-1.5 ml-1">Unit</label>
-                <select
+                <select aria-label="Unit"
                   value={config.unit || 'minutes'}
                   onChange={(e) => onUpdate(action.id, { ...config, unit: e.target.value })}
                   className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-emerald-500 text-gray-900"
@@ -616,7 +616,7 @@ const ActionItem: React.FC<ActionItemProps> = ({ action, index, templates, onUpd
              <div>
                 <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-1.5 ml-1">Tag Name</label>
                 <div className="flex gap-2">
-                  <input
+                  <input aria-label="Tag name"
                     type="text"
                     value={config.tagName || ''}
                     onChange={(e) => onUpdate(action.id, { ...config, tagName: e.target.value })}
@@ -633,7 +633,7 @@ const ActionItem: React.FC<ActionItemProps> = ({ action, index, templates, onUpd
           {action.type === 'webhook' && (
             <div>
               <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-1.5 ml-1">Webhook URL (POST)</label>
-              <input
+              <input aria-label="Webhook url post"
                 type="url"
                 value={config.url || ''}
                 onChange={(e) => onUpdate(action.id, { ...config, url: e.target.value })}

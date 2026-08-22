@@ -185,7 +185,7 @@ const Contact: React.FC = () => {
                                             <label className="block text-sm font-medium text-gray-700 mb-2">
                                                 Your Name *
                                             </label>
-                                            <input
+                                            <input aria-label="John Doe"
                                                 type="text"
                                                 name="name"
                                                 value={formData.name}
@@ -199,7 +199,7 @@ const Contact: React.FC = () => {
                                             <label className="block text-sm font-medium text-gray-700 mb-2">
                                                 Email Address *
                                             </label>
-                                            <input
+                                            <input aria-label="john@example.com"
                                                 type="email"
                                                 name="email"
                                                 value={formData.email}
@@ -215,7 +215,7 @@ const Contact: React.FC = () => {
                                         <label className="block text-sm font-medium text-gray-700 mb-2">
                                             Subject *
                                         </label>
-                                        <select
+                                        <select aria-label="Subject"
                                             name="subject"
                                             value={formData.subject}
                                             onChange={handleChange}
@@ -235,7 +235,7 @@ const Contact: React.FC = () => {
                                         <label className="block text-sm font-medium text-gray-700 mb-2">
                                             Message *
                                         </label>
-                                        <textarea
+                                        <textarea aria-label="Tell us how we can help you..."
                                             name="message"
                                             value={formData.message}
                                             onChange={handleChange}

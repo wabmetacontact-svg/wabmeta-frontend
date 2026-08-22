@@ -448,7 +448,7 @@ const Signup: React.FC = () => {
                 WhatsApp number <span className="text-red-500">*</span>
               </label>
               <div className="flex">
-                <select
+                <select aria-label="Country code"
                   value={countryCode}
                   onChange={e => setCountryCode(e.target.value)}
                   className="h-11 px-3 text-sm bg-gray-50 border border-r-0 border-gray-200 rounded-l-xl focus:outline-none focus:ring-2 focus:ring-emerald-100 min-w-[130px]"
@@ -460,7 +460,7 @@ const Signup: React.FC = () => {
                   ))}
                 </select>
 
-                <input
+                <input aria-label="Phone number"
                   type="tel"
                   inputMode="numeric"
                   placeholder={`${COUNTRIES.find(c => c.code === countryCode)?.digits || 10} digits`}

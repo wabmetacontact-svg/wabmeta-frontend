@@ -179,10 +179,10 @@ const AddToGroupModal: React.FC<AddToGroupModalProps> = ({
           {isCreatingNew ? (
             <div className="space-y-4 animate-fade-in">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                <label htmlFor="addtogroupmodal-group-name" className="block text-sm font-medium text-gray-700 mb-1.5">
                   Group Name
                 </label>
-                <input
+                <input id="addtogroupmodal-group-name"
                   type="text"
                   value={newGroupName}
                   onChange={(e) => setNewGroupName(e.target.value)}
@@ -196,7 +196,7 @@ const AddToGroupModal: React.FC<AddToGroupModalProps> = ({
               {/* Search */}
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
-                <input
+                <input aria-label="Search groups..."
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}

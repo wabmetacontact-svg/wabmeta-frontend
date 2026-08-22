@@ -164,7 +164,7 @@ const QuickRepliesPanel: React.FC<Props> = ({
         <div className="flex-shrink-0 px-5 py-3 border-b border-gray-200 flex items-center gap-2">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
-            <input
+            <input aria-label="Search replies..."
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -208,7 +208,7 @@ const QuickRepliesPanel: React.FC<Props> = ({
                   </label>
                   <div className="relative mt-1">
                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-emerald-600 font-mono text-sm">/</span>
-                    <input
+                    <input aria-label="welcome"
                       type="text"
                       value={form.shortcut}
                       onChange={(e) => setForm({ ...form, shortcut: e.target.value.replace(/^\//, '') })}
@@ -223,10 +223,10 @@ const QuickRepliesPanel: React.FC<Props> = ({
                   </div>
                 </div>
                 <div>
-                  <label className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">
+                  <label htmlFor="quickrepliespanel-category-optional" className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">
                     Category (Optional)
                   </label>
-                  <input
+                  <input id="quickrepliespanel-category-optional"
                     type="text"
                     value={form.category}
                     onChange={(e) => setForm({ ...form, category: e.target.value })}
@@ -241,10 +241,10 @@ const QuickRepliesPanel: React.FC<Props> = ({
                 </div>
               </div>
               <div>
-                <label className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">
+                <label htmlFor="quickrepliespanel-reply-text" className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">
                   Reply Text
                 </label>
-                <textarea
+                <textarea id="quickrepliespanel-reply-text"
                   value={form.text}
                   onChange={(e) => setForm({ ...form, text: e.target.value })}
                   placeholder="Hello! Thanks for reaching out. How can I help you today?"

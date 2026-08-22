@@ -862,7 +862,7 @@ const Contacts: React.FC = () => {
             <div className="flex flex-col md:flex-row md:items-center gap-4">
               <div className="flex-1 relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input
+                <input aria-label="Search by name, phone, or email..."
                   type="text"
                   value={searchQuery}
                   onChange={e => setSearchQuery(e.target.value)}
@@ -871,14 +871,14 @@ const Contacts: React.FC = () => {
                              placeholder:text-gray-400 focus:outline-none focus:border-green-500 focus:bg-white transition-colors"
                 />
               </div>
-              <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)}
+              <select aria-label="Filter by status" value={statusFilter} onChange={e => setStatusFilter(e.target.value)}
                 className="px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-700 focus:outline-none focus:border-green-500">
                 <option value="all">All Status</option>
                 <option value="active">Active</option>
                 <option value="blocked">Blocked</option>
                 <option value="unsubscribed">Unsubscribed</option>
               </select>
-              <select value={whatsappFilter} onChange={e => setWhatsappFilter(e.target.value)}
+              <select aria-label="Filter by WhatsApp status" value={whatsappFilter} onChange={e => setWhatsappFilter(e.target.value)}
                 className="px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-700 focus:outline-none focus:border-green-500">
                 <option value="all">All WhatsApp</option>
                 <option value="verified">Verified</option>
@@ -1116,10 +1116,10 @@ const Contacts: React.FC = () => {
             <h2 className="text-xl font-bold text-gray-900 text-center">Delete All Contacts</h2>
             <p className="text-gray-600 text-center mt-2 text-sm">This will permanently delete ALL contacts.</p>
             <div className="mt-6">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="contacts-type-delete-to-confirm" className="block text-sm font-medium text-gray-700 mb-2">
                 Type <strong className="text-red-600">DELETE</strong> to confirm
               </label>
-              <input type="text" value={deleteAllInput} onChange={e => setDeleteAllInput(e.target.value)}
+              <input id="contacts-type-delete-to-confirm" type="text" value={deleteAllInput} onChange={e => setDeleteAllInput(e.target.value)}
                 placeholder="DELETE"
                 className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-red-500" />
             </div>

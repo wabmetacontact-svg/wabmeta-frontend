@@ -124,6 +124,10 @@ const Help: React.FC = () => {
     { id: 'troubleshooting', label: 'Troubleshooting', icon: HelpCircle },
   ];
 
+  // Ids like YOUR_YOUTUBE_VIDEO_ID_1 are placeholders, not real videos.
+  const realVideoId = (v: VideoTutorial) =>
+    v.youtubeId && !v.youtubeId.startsWith('YOUR_YOUTUBE_VIDEO_ID') ? v.youtubeId : undefined;
+
   const filteredVideos = videoTutorials.filter(
     video => activeCategory === 'all' || video.category === activeCategory
   );
@@ -406,8 +410,14 @@ const Help: React.FC = () => {
           {filteredVideos.map((video) => (
             <div
               key={video.id}
-              className="bg-white rounded-xl overflow-hidden border border-gray-200 hover:shadow-md transition-all duration-300 cursor-pointer group"
-              onClick={() => setSelectedVideo(video)}
+              className={`bg-white rounded-xl overflow-hidden border border-gray-200 transition-all duration-300 group ${
+                realVideoId(video) || video.videoUrl
+                  ? 'hover:shadow-md cursor-pointer'
+                  : 'opacity-70'
+              }`}
+              onClick={() => {
+                if (realVideoId(video) || video.videoUrl) setSelectedVideo(video);
+              }}
             >
               {/* Thumbnail */}
               <div className="relative aspect-video bg-gradient-to-br from-green-500 to-emerald-600 overflow-hidden">
@@ -417,13 +427,18 @@ const Help: React.FC = () => {
                     alt={video.title}
                     className="w-full h-full object-cover"
                   />
-                ) : video.youtubeId ? (
+                ) : realVideoId(video) ? (
                   <img
-                    src={`https://img.youtube.com/vi/${video.youtubeId}/maxresdefault.jpg`}
+                    src={`https://img.youtube.com/vi/${realVideoId(video)}/maxresdefault.jpg`}
                     alt={video.title}
                     className="w-full h-full object-cover"
                     onError={(e) => {
-                      e.currentTarget.src = `https://img.youtube.com/vi/${video.youtubeId}/hqdefault.jpg`;
+                      // Only retry once: maxresdefault is missing for many videos,
+                      // but re-assigning on every error loops.
+                      const img = e.currentTarget;
+                      if (img.dataset.fallback) return;
+                      img.dataset.fallback = '1';
+                      img.src = `https://img.youtube.com/vi/${realVideoId(video)}/hqdefault.jpg`;
                     }}
                   />
                 ) : (
@@ -507,7 +522,7 @@ const Help: React.FC = () => {
 
           <div className="relative w-full sm:w-64">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <input
+            <input aria-label="Search FAQs..."
               type="text"
               placeholder="Search FAQs..."
               value={searchQuery}

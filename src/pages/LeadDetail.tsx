@@ -185,8 +185,8 @@ const LeadDetail: React.FC = () => {
                 {/* Stage & Info */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6 pt-6 border-t border-gray-200">
                     <div>
-                        <label className="text-sm text-gray-500">Stage</label>
-                        <select
+                        <label htmlFor="leaddetail-stage" className="text-sm text-gray-500">Stage</label>
+                        <select id="leaddetail-stage"
                             value={lead.stageId || ''}
                             onChange={(e) => handleStageChange(e.target.value)}
                             className="mt-1 w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg font-semibold focus:ring-2 focus:ring-green-500 focus:outline-none"
@@ -264,7 +264,7 @@ const LeadDetail: React.FC = () => {
                         <div className="space-y-4">
                             {/* Add Note */}
                             <div className="flex gap-2">
-                                <textarea
+                                <textarea aria-label="Add a note..."
                                     value={newNote}
                                     onChange={(e) => setNewNote(e.target.value)}
                                     placeholder="Add a note..."
@@ -303,14 +303,14 @@ const LeadDetail: React.FC = () => {
                             {/* Add Task */}
                             {showTaskForm ? (
                                 <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg space-y-3">
-                                    <input
+                                    <input aria-label="Task title..."
                                         type="text"
                                         value={newTask.title}
                                         onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
                                         placeholder="Task title..."
                                         className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 text-gray-900 text-sm focus:outline-none"
                                     />
-                                    <input
+                                    <input aria-label="Task due date"
                                         type="date"
                                         value={newTask.dueDate}
                                         onChange={(e) => setNewTask({ ...newTask, dueDate: e.target.value })}

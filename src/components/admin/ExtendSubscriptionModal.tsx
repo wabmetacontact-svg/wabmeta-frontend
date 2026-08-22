@@ -164,11 +164,11 @@ const ExtendSubscriptionModal: React.FC<ExtendSubscriptionModalProps> = ({
 
                     {/* Custom Days Input */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label htmlFor="extendsubscriptionmodal-or-enter-custom-days" className="block text-sm font-medium text-gray-700 mb-2">
                             Or Enter Custom Days
                         </label>
                         <div className="flex items-center space-x-2">
-                            <input
+                            <input id="extendsubscriptionmodal-or-enter-custom-days"
                                 type="number"
                                 value={additionalDays}
                                 onChange={(e) => setAdditionalDays(parseInt(e.target.value) || 0)}
@@ -204,10 +204,10 @@ const ExtendSubscriptionModal: React.FC<ExtendSubscriptionModalProps> = ({
 
                     {/* Reason */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label htmlFor="extendsubscriptionmodal-reason-optional" className="block text-sm font-medium text-gray-700 mb-2">
                             Reason (Optional)
                         </label>
-                        <textarea
+                        <textarea id="extendsubscriptionmodal-reason-optional"
                             value={reason}
                             onChange={(e) => setReason(e.target.value)}
                             placeholder="Enter reason for extension..."

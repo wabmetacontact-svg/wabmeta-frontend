@@ -31,10 +31,10 @@ const NodeConfigPanel: React.FC<Props> = ({ node, onUpdate, onDelete, onClose })
         return (
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium mb-1 text-gray-700">
+              <label htmlFor="nodeconfigpanel-message-type" className="block text-sm font-medium mb-1 text-gray-700">
                 Message Type
               </label>
-              <select
+              <select id="nodeconfigpanel-message-type"
                 value={msgType}
                 onChange={(e) => onUpdate({ messageType: e.target.value as ChatbotNodeData['messageType'] })}
                 className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white text-gray-900 mb-4"
@@ -48,10 +48,10 @@ const NodeConfigPanel: React.FC<Props> = ({ node, onUpdate, onDelete, onClose })
 
               {msgType !== 'text' && (
                 <div className="mb-4">
-                  <label className="block text-sm font-medium mb-1 text-gray-700">
+                  <label htmlFor="nodeconfigpanel-media-url" className="block text-sm font-medium mb-1 text-gray-700">
                     Media URL
                   </label>
-                  <input
+                  <input id="nodeconfigpanel-media-url"
                     type="url"
                     value={node.data.mediaUrl || ''}
                     onChange={(e) => onUpdate({ mediaUrl: e.target.value })}
@@ -64,7 +64,7 @@ const NodeConfigPanel: React.FC<Props> = ({ node, onUpdate, onDelete, onClose })
               <label className="block text-sm font-medium mb-1 text-gray-700">
                 {msgType === 'text' ? 'Message Text' : 'Media Caption (Optional)'}
               </label>
-              <textarea
+              <textarea aria-label="Message text"
                 value={node.data.message || ''}
                 onChange={(e) => onUpdate({ message: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-200 rounded-lg resize-none h-32 text-sm bg-white text-gray-900 focus:ring-2 focus:ring-green-500 focus:border-transparent"
@@ -129,7 +129,7 @@ const NodeConfigPanel: React.FC<Props> = ({ node, onUpdate, onDelete, onClose })
               <label className="block text-sm font-medium mb-1 text-gray-700">
                 Message
               </label>
-              <textarea
+              <textarea aria-label="Message"
                 value={node.data.message || ''}
                 onChange={(e) => onUpdate({ message: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-200 rounded-lg resize-none h-20 text-sm bg-white text-gray-900"
@@ -145,7 +145,7 @@ const NodeConfigPanel: React.FC<Props> = ({ node, onUpdate, onDelete, onClose })
                 {(node.data.buttons || []).map((btn: any, i: number) => (
                   <div key={btn.id || i} className="flex gap-2 items-center">
                     <span className="text-xs text-gray-500 w-5">{i + 1}.</span>
-                    <input
+                    <input aria-label={`Button ${i + 1} label`}
                       type="text"
                       value={btn.text}
                       maxLength={20}
@@ -202,10 +202,10 @@ const NodeConfigPanel: React.FC<Props> = ({ node, onUpdate, onDelete, onClose })
         return (
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium mb-1 text-gray-700">
+              <label htmlFor="nodeconfigpanel-message-body" className="block text-sm font-medium mb-1 text-gray-700">
                 Message Body
               </label>
-              <textarea
+              <textarea id="nodeconfigpanel-message-body"
                 value={node.data.message || ''}
                 onChange={(e) => onUpdate({ message: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-200 rounded-lg resize-none h-16 text-sm bg-white text-gray-900"
@@ -213,10 +213,10 @@ const NodeConfigPanel: React.FC<Props> = ({ node, onUpdate, onDelete, onClose })
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1 text-gray-700">
+              <label htmlFor="nodeconfigpanel-menu-button-text-max-20-chars" className="block text-sm font-medium mb-1 text-gray-700">
                 Menu Button Text (max 20 chars)
               </label>
-              <input
+              <input id="nodeconfigpanel-menu-button-text-max-20-chars"
                 type="text"
                 value={node.data.listButtonText || 'View Options'}
                 maxLength={20}
@@ -233,7 +233,7 @@ const NodeConfigPanel: React.FC<Props> = ({ node, onUpdate, onDelete, onClose })
                 {sections.map((sec: any, sIdx: number) => (
                   <div key={sIdx} className="p-3 border border-gray-200 rounded-lg bg-gray-50">
                     <div className="flex items-center gap-2 mb-2">
-                      <input
+                      <input aria-label="Section Title"
                         type="text"
                         value={sec.title || ''}
                         maxLength={24}
@@ -260,7 +260,7 @@ const NodeConfigPanel: React.FC<Props> = ({ node, onUpdate, onDelete, onClose })
                       {(sec.rows || []).map((row: any, rIdx: number) => (
                         <div key={rIdx} className="relative pl-2 border-l-2 border-indigo-200">
                           <div className="flex items-center gap-2 mb-1">
-                            <input
+                            <input aria-label="Row Title"
                               type="text"
                               value={row.title || ''}
                               maxLength={24}
@@ -283,7 +283,7 @@ const NodeConfigPanel: React.FC<Props> = ({ node, onUpdate, onDelete, onClose })
                               <X className="w-3 h-3" />
                             </button>
                           </div>
-                          <input
+                          <input aria-label="Description (Optional)"
                             type="text"
                             value={row.description || ''}
                             maxLength={72}
@@ -348,10 +348,10 @@ const NodeConfigPanel: React.FC<Props> = ({ node, onUpdate, onDelete, onClose })
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1 text-emerald-700 flex items-center gap-2">
+              <label htmlFor="nodeconfigpanel-ai-system-prompt" className="block text-sm font-medium mb-1 text-emerald-700 flex items-center gap-2">
                 <Sparkles className="w-4 h-4" /> AI System Prompt
               </label>
-              <textarea
+              <textarea id="nodeconfigpanel-ai-system-prompt"
                 value={node.data.systemPrompt || ''}
                 onChange={(e) => onUpdate({ systemPrompt: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-200 rounded-lg resize-none h-40 text-sm bg-white text-gray-900 focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
@@ -435,7 +435,7 @@ const NodeConfigPanel: React.FC<Props> = ({ node, onUpdate, onDelete, onClose })
               <label className="block text-sm font-medium mb-1 text-gray-700">
                 Variable
               </label>
-              <select
+              <select aria-label="Variable"
                 value={node.data.condition?.variable || 'lastInput'}
                 onChange={(e) =>
                   onUpdate({
@@ -455,7 +455,7 @@ const NodeConfigPanel: React.FC<Props> = ({ node, onUpdate, onDelete, onClose })
               <label className="block text-sm font-medium mb-1 text-gray-700">
                 Operator
               </label>
-              <select
+              <select aria-label="Operator"
                 value={node.data.condition?.operator || 'equals'}
                 onChange={(e) =>
                   onUpdate({
@@ -476,10 +476,10 @@ const NodeConfigPanel: React.FC<Props> = ({ node, onUpdate, onDelete, onClose })
 
             {!['is_empty', 'is_not_empty'].includes(node.data.condition?.operator || '') && (
               <div>
-                <label className="block text-sm font-medium mb-1 text-gray-700">
+                <label htmlFor="nodeconfigpanel-value-2" className="block text-sm font-medium mb-1 text-gray-700">
                   Value
                 </label>
-                <input
+                <input id="nodeconfigpanel-value-2"
                   type="text"
                   value={node.data.condition?.value || ''}
                   onChange={(e) =>
@@ -505,10 +505,10 @@ const NodeConfigPanel: React.FC<Props> = ({ node, onUpdate, onDelete, onClose })
         return (
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium mb-1 text-gray-700">
+              <label htmlFor="nodeconfigpanel-delay-seconds" className="block text-sm font-medium mb-1 text-gray-700">
                 Delay (seconds)
               </label>
-              <input
+              <input id="nodeconfigpanel-delay-seconds"
                 type="number"
                 value={Math.round((node.data.delay || 1000) / 1000)}
                 onChange={(e) => onUpdate({ delay: Number(e.target.value) * 1000 })}
@@ -528,10 +528,10 @@ const NodeConfigPanel: React.FC<Props> = ({ node, onUpdate, onDelete, onClose })
         return (
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium mb-1 text-gray-700">
+              <label htmlFor="nodeconfigpanel-action-type" className="block text-sm font-medium mb-1 text-gray-700">
                 Action Type
               </label>
-              <select
+              <select id="nodeconfigpanel-action-type"
                 value={node.data.action?.type || 'tagContact'}
                 onChange={(e) =>
                   onUpdate({ action: { type: e.target.value, params: {} } })
@@ -547,10 +547,10 @@ const NodeConfigPanel: React.FC<Props> = ({ node, onUpdate, onDelete, onClose })
 
             {node.data.action?.type === 'tagContact' && (
               <div>
-                <label className="block text-sm font-medium mb-1 text-gray-700">
+                <label htmlFor="nodeconfigpanel-tag-name" className="block text-sm font-medium mb-1 text-gray-700">
                   Tag Name
                 </label>
-                <input
+                <input id="nodeconfigpanel-tag-name"
                   type="text"
                   value={node.data.action?.params?.tag || ''}
                   onChange={(e) =>
@@ -570,10 +570,10 @@ const NodeConfigPanel: React.FC<Props> = ({ node, onUpdate, onDelete, onClose })
             {node.data.action?.type === 'setVariable' && (
               <div className="space-y-2">
                 <div>
-                  <label className="block text-sm font-medium mb-1 text-gray-700">
+                  <label htmlFor="nodeconfigpanel-variable-name" className="block text-sm font-medium mb-1 text-gray-700">
                     Variable Name
                   </label>
-                  <input
+                  <input id="nodeconfigpanel-variable-name"
                     type="text"
                     value={node.data.action?.params?.name || ''}
                     onChange={(e) =>
@@ -589,10 +589,10 @@ const NodeConfigPanel: React.FC<Props> = ({ node, onUpdate, onDelete, onClose })
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1 text-gray-700">
+                  <label htmlFor="nodeconfigpanel-value" className="block text-sm font-medium mb-1 text-gray-700">
                     Value
                   </label>
-                  <input
+                  <input id="nodeconfigpanel-value"
                     type="text"
                     value={node.data.action?.params?.value || ''}
                     onChange={(e) =>
@@ -612,10 +612,10 @@ const NodeConfigPanel: React.FC<Props> = ({ node, onUpdate, onDelete, onClose })
 
             {node.data.action?.type === 'createLead' && (
               <div>
-                <label className="block text-sm font-medium mb-1 text-gray-700">
+                <label htmlFor="nodeconfigpanel-lead-title" className="block text-sm font-medium mb-1 text-gray-700">
                   Lead Title
                 </label>
-                <input
+                <input id="nodeconfigpanel-lead-title"
                   type="text"
                   value={node.data.action?.params?.title || ''}
                   onChange={(e) =>
@@ -635,10 +635,10 @@ const NodeConfigPanel: React.FC<Props> = ({ node, onUpdate, onDelete, onClose })
             {node.data.action?.type === 'webhook' && (
               <div className="space-y-2">
                 <div>
-                  <label className="block text-sm font-medium mb-1 text-gray-700">
+                  <label htmlFor="nodeconfigpanel-webhook-url" className="block text-sm font-medium mb-1 text-gray-700">
                     Webhook URL
                   </label>
-                  <input
+                  <input id="nodeconfigpanel-webhook-url"
                     type="url"
                     value={node.data.action?.params?.url || ''}
                     onChange={(e) =>
@@ -657,10 +657,10 @@ const NodeConfigPanel: React.FC<Props> = ({ node, onUpdate, onDelete, onClose })
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1 text-gray-700">
+                  <label htmlFor="nodeconfigpanel-method" className="block text-sm font-medium mb-1 text-gray-700">
                     Method
                   </label>
-                  <select
+                  <select id="nodeconfigpanel-method"
                     value={node.data.action?.params?.method || 'POST'}
                     onChange={(e) =>
                       onUpdate({

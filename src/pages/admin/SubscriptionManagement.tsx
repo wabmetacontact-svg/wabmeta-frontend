@@ -460,7 +460,7 @@ const SubscriptionManagement: React.FC = () => {
             </label>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
-              <input
+              <input aria-label="Search"
                 type="text"
                 value={search}
                 onChange={(e) => {
@@ -481,7 +481,7 @@ const SubscriptionManagement: React.FC = () => {
             <label className="block text-xs text-gray-500 font-semibold uppercase tracking-wider mb-2">
               Status
             </label>
-            <select
+            <select aria-label="Status"
               value={statusFilter}
               onChange={(e) => {
                 setStatusFilter(e.target.value);
@@ -501,10 +501,10 @@ const SubscriptionManagement: React.FC = () => {
 
           {/* Plan Type */}
           <div>
-            <label className="block text-xs text-gray-500 font-semibold uppercase tracking-wider mb-2">
+            <label htmlFor="subscriptionmanagement-plan-type" className="block text-xs text-gray-500 font-semibold uppercase tracking-wider mb-2">
               Plan Type
             </label>
-            <select
+            <select id="subscriptionmanagement-plan-type"
               value={planFilter}
               onChange={(e) => {
                 setPlanFilter(e.target.value);

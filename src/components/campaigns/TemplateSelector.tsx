@@ -95,7 +95,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <input
+          <input aria-label="Search templates by name or text..."
             type="text"
             placeholder="Search templates by name or text..."
             value={searchQuery}
@@ -103,7 +103,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
             className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-gray-900 font-semibold text-xs transition-all placeholder:text-gray-400"
           />
         </div>
-        <select
+        <select aria-label="Filter templates by category"
           value={categoryFilter}
           onChange={e => setCategoryFilter(e.target.value)}
           className="px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 text-gray-900 font-semibold text-xs transition-all"

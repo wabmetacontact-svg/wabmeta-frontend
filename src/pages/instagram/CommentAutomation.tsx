@@ -24,7 +24,7 @@ const CommentAutomation: React.FC = () => {
           <div className="rounded-2xl bg-gray-50 border border-gray-200 p-4 flex items-center gap-3">
              <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
-                <input type="text" placeholder="Search by rule name or keyword..." className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 focus:outline-none focus:border-[#833ab4]" />
+                <input aria-label="Search by rule name or keyword..." type="text" placeholder="Search by rule name or keyword..." className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 focus:outline-none focus:border-[#833ab4]" />
              </div>
           </div>
 

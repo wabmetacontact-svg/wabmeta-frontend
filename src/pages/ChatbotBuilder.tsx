@@ -104,7 +104,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ chatbot, onChange, onClos
           <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-1.5">
             Chatbot Name *
           </label>
-          <input
+          <input aria-label="e.g., Welcome Bot"
             type="text"
             value={chatbot.name || ''}
             onChange={(e) => onChange({ name: e.target.value })}
@@ -114,10 +114,10 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ chatbot, onChange, onClos
         </div>
 
         <div>
-          <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-1.5">
+          <label htmlFor="chatbotbuilder-description" className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-1.5">
             Description
           </label>
-          <textarea
+          <textarea id="chatbotbuilder-description"
             value={chatbot.description || ''}
             onChange={(e) => onChange({ description: e.target.value })}
             className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm bg-white text-gray-900 resize-none h-16 focus:ring-2 focus:ring-emerald-500 transition-all"
@@ -134,7 +134,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ chatbot, onChange, onClos
           </p>
 
           <div className="flex gap-2 mb-3">
-            <input
+            <input aria-label="e.g., hi, hello, start"
               type="text"
               value={newKeyword}
               onChange={(e) => setNewKeyword(e.target.value)}
@@ -226,7 +226,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ chatbot, onChange, onClos
           <p className="text-[10px] text-gray-400 font-semibold mb-2">
             Sent before the flow starts (optional)
           </p>
-          <textarea
+          <textarea aria-label="e.g., Welcome! 👋"
             value={chatbot.welcomeMessage || ''}
             onChange={(e) => onChange({ welcomeMessage: e.target.value })}
             className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm bg-white text-gray-900 resize-none h-20 focus:ring-2 focus:ring-emerald-500 transition-all"
@@ -241,7 +241,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ chatbot, onChange, onClos
           <p className="text-[10px] text-gray-400 font-semibold mb-2">
             Sent when the bot cannot understand the user
           </p>
-          <textarea
+          <textarea aria-label="e.g., Sorry, I didn"
             value={chatbot.fallbackMessage || ''}
             onChange={(e) => onChange({ fallbackMessage: e.target.value })}
             className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm bg-white text-gray-900 resize-none h-20 focus:ring-2 focus:ring-emerald-500 transition-all"
@@ -384,7 +384,7 @@ const ChatbotBuilder: React.FC = () => {
 
     setNodes((nds) => nds.concat(newNode));
     setIsDirty(true);
-  }, [reactFlowInstance, nodes]);
+  }, [reactFlowInstance, nodes, setNodes]);
 
   const getDefaultNodeData = (type: string) => {
     switch (type) {

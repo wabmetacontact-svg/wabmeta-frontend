@@ -166,7 +166,7 @@ const ChatbotList: React.FC = () => {
       {/* Search */}
       <div className="relative max-w-md">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-        <input
+        <input aria-label="Search chatbots..."
           type="text"
           placeholder="Search chatbots..."
           value={search}

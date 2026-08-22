@@ -175,12 +175,12 @@ const SystemSettings: React.FC = () => {
 
           {/* Message Limit */}
           <div className="p-4 bg-gray-50 rounded-xl border border-gray-200">
-            <label className="block text-xs text-gray-500 font-semibold uppercase tracking-wider mb-2">
+            <label htmlFor="systemsettings-global-message-limit-per-user-day" className="block text-xs text-gray-500 font-semibold uppercase tracking-wider mb-2">
               Global Message Limit (Per User/Day)
             </label>
             <div className="relative">
               <Hash className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
-              <input
+              <input id="systemsettings-global-message-limit-per-user-day"
                 type="number"
                 value={messageLimit}
                 onChange={(e) => setMessageLimit(Number(e.target.value))}
@@ -198,12 +198,12 @@ const SystemSettings: React.FC = () => {
 
           {/* Support Email */}
           <div className="p-4 bg-gray-50 rounded-xl border border-gray-200">
-            <label className="block text-xs text-gray-500 font-semibold uppercase tracking-wider mb-2">
+            <label htmlFor="systemsettings-support-email" className="block text-xs text-gray-500 font-semibold uppercase tracking-wider mb-2">
               Support Email
             </label>
             <div className="relative">
               <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
-              <input
+              <input id="systemsettings-support-email"
                 type="email"
                 value={supportEmail}
                 onChange={(e) => setSupportEmail(e.target.value)}

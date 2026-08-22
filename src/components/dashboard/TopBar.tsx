@@ -150,7 +150,7 @@ const TopBar: React.FC<TopBarProps> = ({ onMenuClick, sidebarCollapsed }) => {
           <div className="hidden md:flex items-center">
             <div className="relative group">
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-primary-600 transition-colors" />
-              <input
+              <input aria-label="Search contacts, campaigns, templates..."
                 type="text"
                 placeholder="Search contacts, campaigns, templates..."
                 className="w-72 lg:w-96 pl-10 pr-20 py-2.5 text-sm
@@ -409,7 +409,7 @@ const TopBar: React.FC<TopBarProps> = ({ onMenuClick, sidebarCollapsed }) => {
         <div className="md:hidden px-4 pb-3 animate-fadeIn">
           <div className="relative">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <input
+            <input aria-label="Search..."
               type="text"
               placeholder="Search..."
               className="w-full pl-10 pr-4 py-2.5 text-sm
