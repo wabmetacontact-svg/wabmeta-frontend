@@ -50,7 +50,8 @@ const MessageSearchBar: React.FC<Props> = ({
             onChange={(e) => onQueryChange(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === 'Enter') {
-                e.shiftKey ? onPrev() : onNext();
+                if (e.shiftKey) onPrev();
+                else onNext();
               } else if (e.key === 'Escape') {
                 onClose();
               }

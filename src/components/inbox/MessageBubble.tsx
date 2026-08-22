@@ -236,7 +236,9 @@ function parseTemplateContent(content: string, meta: any): {
         mediaUrl: p.mediaUrl || p.headerMediaUrl,
         mediaType: p.mediaType || p.headerType,
       };
-    } catch { }
+    } catch {
+      // Not template JSON; fall through to the plain-text rendering.
+    }
   }
 
   if (content.startsWith('Campaign:') || content.startsWith('Template:')) {
@@ -856,7 +858,9 @@ const MessageBubble: React.FC<Props> = ({
         const m = message.content?.match(/\[Location: ([\d.-]+), ([\d.-]+)\]/);
         if (m) loc = { latitude: parseFloat(m[1]), longitude: parseFloat(m[2]) };
       }
-    } catch { }
+    } catch {
+      // Unparseable location payload; handled by the guard below.
+    }
     if (!loc.latitude || !loc.longitude) {
       return (
         <div className={`flex items-center gap-2 px-3 py-2 ${isOutbound ? 'bg-white/10' : 'bg-gray-100'} rounded-lg`}>

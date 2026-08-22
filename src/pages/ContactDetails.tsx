@@ -32,11 +32,17 @@ const ContactDetails: React.FC = () => {
   // Fetch Contact Details
   useEffect(() => {
     if (!id) return;
+    // Navigating quickly between contacts can land the slower earlier response
+    // after the newer one, showing the wrong record. Ignore anything that comes
+    // back after this effect has been superseded.
+    let cancelled = false;
+
     (async () => {
       setLoading(true);
       setError(null);
       try {
         const res = await contactApi.getById(id);
+        if (cancelled) return;
         const data = res.data?.data;
         if (!data) {
           setError("Contact not found");
@@ -66,11 +72,16 @@ const ContactDetails: React.FC = () => {
           createdAt: data.createdAt || new Date().toISOString(),
         });
       } catch (err: any) {
+        if (cancelled) return;
         setError(err?.message || "Failed to fetch contact details");
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     })();
+
+    return () => {
+      cancelled = true;
+    };
   }, [id]);
 
   const handleDelete = async () => {

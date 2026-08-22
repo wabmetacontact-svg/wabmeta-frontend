@@ -120,19 +120,33 @@ const isValidJWT = (token: string): boolean => {
 };
 
 const getAccessToken = (): string | null => {
-  let token = localStorage.getItem(TOKEN_KEYS.ACCESS);
+  const token = localStorage.getItem(TOKEN_KEYS.ACCESS);
+  if (token && isValidJWT(token)) return token;
 
-  if (!token || !isValidJWT(token)) {
-    token = localStorage.getItem(TOKEN_KEYS.LEGACY_TOKEN) ||
-      localStorage.getItem(TOKEN_KEYS.LEGACY_WABMETA);
+  // One-time migration for sessions created before the token moved to a single
+  // key. Read the old copies, promote whichever is valid, then delete both so
+  // the same JWT stops living in three places.
+  const legacy =
+    localStorage.getItem(TOKEN_KEYS.LEGACY_TOKEN) ||
+    localStorage.getItem(TOKEN_KEYS.LEGACY_WABMETA);
+
+  localStorage.removeItem(TOKEN_KEYS.LEGACY_TOKEN);
+  localStorage.removeItem(TOKEN_KEYS.LEGACY_WABMETA);
+
+  if (legacy && isValidJWT(legacy)) {
+    localStorage.setItem(TOKEN_KEYS.ACCESS, legacy);
+    return legacy;
   }
 
-  if (import.meta.env.DEV && !token) {
-    console.debug('📂 Storage check: Access token is missing or invalid');
-  }
-
-  return token && isValidJWT(token) ? token : null;
+  return null;
 };
+
+/**
+ * The one place that knows where the access token lives. Anything outside this
+ * module must go through this rather than reading localStorage directly --
+ * getAccessToken() also migrates and clears the legacy keys.
+ */
+export const getStoredAccessToken = (): string | null => getAccessToken();
 
 const getRefreshToken = (): string | null => {
   const token = localStorage.getItem(TOKEN_KEYS.REFRESH);
@@ -149,9 +163,8 @@ const getAdminToken = (): string | null => {
 
 const setAuthTokens = (accessToken: string, refreshToken?: string) => {
   if (accessToken && isValidJWT(accessToken)) {
+    // Single key only. The legacy copies are migrated away in getAccessToken().
     localStorage.setItem(TOKEN_KEYS.ACCESS, accessToken);
-    localStorage.setItem(TOKEN_KEYS.LEGACY_TOKEN, accessToken);
-    localStorage.setItem(TOKEN_KEYS.LEGACY_WABMETA, accessToken);
   }
 
   if (refreshToken && typeof refreshToken === 'string') {
@@ -286,7 +299,9 @@ export const performTokenRefresh = async (): Promise<string> => {
         console.log(`✅ [Refresh] Token still valid (${Math.round(timeLeft/1000)}s left)`);
         return currentToken;
       }
-    } catch { }
+    } catch {
+      // Unreadable token payload: treat it as expired and refresh.
+    }
   }
 
   // Debounce check
@@ -508,6 +523,34 @@ api.interceptors.response.use(
       }
     }
 
+    // ─── 403 - Authenticated but not allowed ──────────────
+    // Without this a permission failure surfaced as a bare axios error, so the
+    // UI showed a generic "something went wrong" for what is a clear, explainable
+    // situation. Never retry or refresh on 403 -- the token is fine.
+    if (status === 403) {
+      const data = error.response?.data as ApiError | undefined;
+      return Promise.reject({
+        ...error,
+        isForbidden: true,
+        message:
+          data?.message ||
+          "You don't have permission to do that. Ask an admin or owner of this workspace.",
+      });
+    }
+
+    // ─── 429 - Rate limited ───────────────────────────────
+    if (status === 429) {
+      const retryAfter = Number(error.response?.headers?.['retry-after']) || 0;
+      return Promise.reject({
+        ...error,
+        isRateLimited: true,
+        retryAfter,
+        message: retryAfter
+          ? `Too many requests. Try again in ${retryAfter}s.`
+          : 'Too many requests. Give it a moment and try again.',
+      });
+    }
+
     return Promise.reject(error);
   }
 );
@@ -669,7 +712,6 @@ export const organizations = {
   removeMember: (orgId: string, memberId: string) =>
     api.delete<ApiResponse>(`/organizations/${orgId}/members/${memberId}`),
 
-  switch: (orgId: string) => api.post<ApiResponse>(`/organizations/${orgId}/switch`),
 };
 
 // ---------- CONTACTS ----------
@@ -677,7 +719,8 @@ export const contacts = {
   getAll: (params?: any) => api.get<ApiResponse>('/contacts', { params }),
   create: (data: any) => api.post<ApiResponse>('/contacts', data),
   getById: (id: string) => api.get<ApiResponse>(`/contacts/${id}`),
-  update: (id: string, data: any) => api.put<ApiResponse>(`/contacts/${id}`, data),
+  // Backend registers PATCH, not PUT.
+  update: (id: string, data: any) => api.patch<ApiResponse>(`/contacts/${id}`, data),
   delete: (id: string) => api.delete<ApiResponse>(`/contacts/${id}`),
   import: (data: any) => api.post<ApiResponse>('/contacts/import', data),
   export: (format: string = 'csv') =>
@@ -1091,24 +1134,6 @@ export const inbox = {
 };
 
 // ─── Voice message upload ────────────────────────────────────────────────────
-export const uploadVoiceMessage = async (
-  conversationId: string,
-  blob: Blob,
-  duration: number,
-  whatsappAccountId: string
-) => {
-  const form = new FormData();
-  form.append('file', blob, `voice-${Date.now()}.webm`);
-  form.append('conversationId', conversationId);
-  form.append('duration', String(duration));
-  form.append('whatsappAccountId', whatsappAccountId);
-  form.append('type', 'audio');
-
-  return api.post('/inbox/media/upload-voice', form, {
-    headers: { 'Content-Type': 'multipart/form-data' },
-  });
-};
-
 // ---------- CHATBOT ----------
 export const chatbots = {
   getAll: () => api.get<ApiResponse>('/chatbots'),
@@ -1249,20 +1274,6 @@ export const wallet = {
     organizationId: string,
     data: { activate: boolean; reason?: string }
   ) => api.patch<ApiResponse>(`/admin/wallets/${organizationId}/toggle`, data),
-};
-
-// ---------- SETTINGS ----------
-export const settings = {
-  getAll: () => api.get<ApiResponse>('/settings'),
-  update: (data: any) => api.put<ApiResponse>('/settings', data),
-  getWebhooks: () => api.get<ApiResponse>('/settings/webhooks'),
-  updateWebhooks: (data: any) => api.put<ApiResponse>('/settings/webhooks', data),
-  testWebhook: () => api.post<ApiResponse>('/settings/webhooks/test'),
-  getApiKeys: () => api.get<ApiResponse>('/settings/api-keys'),
-  generateApiKey: (data: { name: string }) =>
-    api.post<ApiResponse>('/settings/api-keys', data),
-  revokeApiKey: (id: string) =>
-    api.delete<ApiResponse>(`/settings/api-keys/${id}`),
 };
 
 // ---------- INSTAGRAM ----------

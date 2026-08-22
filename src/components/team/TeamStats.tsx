@@ -1,5 +1,6 @@
 import React from 'react';
 import { Users, UserCheck, Shield, Clock } from 'lucide-react';
+import Card from '../common/Card';
 import { isPending, type TeamMember } from '../../types/team';
 
 interface TeamStatsProps {
@@ -24,16 +25,13 @@ const TeamStats: React.FC<TeamStatsProps> = ({ members }) => {
       {stats.map((s) => {
         const Icon = s.icon;
         return (
-          <div
-            key={s.label}
-            className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm"
-          >
+          <Card key={s.label} padding="sm">
             <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${s.color}`}>
               <Icon className="w-5 h-5" />
             </div>
             <p className="text-2xl font-bold text-gray-900 tabular-nums">{s.value}</p>
             <p className="text-xs text-gray-500 font-medium mt-0.5">{s.label}</p>
-          </div>
+          </Card>
         );
       })}
     </div>

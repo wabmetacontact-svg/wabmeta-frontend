@@ -2,7 +2,7 @@
 import React, { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext, type User, type Organization } from './AuthContext';
-import api, { auth, setAuthToken, removeAuthToken, performTokenRefresh } from '../services/api';
+import api, { auth, setAuthToken, removeAuthToken, performTokenRefresh, getStoredAccessToken } from '../services/api';
 import toast from 'react-hot-toast';
 
 interface ForceLogoutPopupProps {
@@ -99,11 +99,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const forceLogoutTimer = useRef<NodeJS.Timeout | null>(null);
   const countdownTimer = useRef<NodeJS.Timeout | null>(null);
 
+  // Goes through the api module so the legacy-key migration happens in one
+  // place rather than each caller keeping its own fallback chain.
   const getAccessToken = useCallback((): string | null => {
-    const token =
-      localStorage.getItem(TOKEN_KEYS.ACCESS) ||
-      localStorage.getItem(TOKEN_KEYS.LEGACY_TOKEN) ||
-      localStorage.getItem(TOKEN_KEYS.LEGACY_WABMETA);
+    const token = getStoredAccessToken();
     return safeDecodeJWT(token) ? token : null;
   }, []);
 

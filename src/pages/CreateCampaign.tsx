@@ -339,7 +339,7 @@ const CreateCampaign: React.FC = () => {
         if (formData.audienceType === 'tags') return formData.selectedTags.length > 0;
         if (formData.audienceType === 'manual') return formData.selectedContacts.length > 0;
         return true;
-      case 3:
+      case 3: {
         if (!selectedTemplate) return true;
         const allVars = [
           ...(selectedTemplate.variables || []),
@@ -350,6 +350,7 @@ const CreateCampaign: React.FC = () => {
           const val = formData.variableMapping[v];
           return val && String(val).trim().length > 0;
         });
+      }
       case 4:
         if (formData.scheduleType === 'later') {
           if (!formData.scheduledDate || !formData.scheduledTime) return false;

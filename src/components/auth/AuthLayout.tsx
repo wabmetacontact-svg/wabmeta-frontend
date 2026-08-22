@@ -204,9 +204,9 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({
         <div className="lg:hidden flex justify-center mb-8">
           <Link
             to="/"
-            className="w-14 h-14 rounded-2xl bg-primary-500
+            className="w-14 h-14 rounded-2xl bg-white border border-gray-200
               flex items-center justify-center shadow-sm
-              hover:bg-primary-600 transition-colors"
+              hover:shadow-md transition-shadow"
           >
             <img src={logo} alt="WabMeta" className="w-9 h-9 object-contain" />
           </Link>

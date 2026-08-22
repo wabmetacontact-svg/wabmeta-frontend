@@ -183,7 +183,7 @@ const SendTemplateModal: React.FC<SendTemplateModalProps> = ({
                     // Priority 2: Template ka stored media (auto-resolve)
 
                     let resolvedMediaId: string | null = null;
-                    let resolvedMediaUrl: string | null = headerMediaUrl || null;
+                    const resolvedMediaUrl: string | null = headerMediaUrl || null;
 
                     // ✅ Auto-resolve: Template ka media fresh upload karo
                     if (selectedTemplate.id) {

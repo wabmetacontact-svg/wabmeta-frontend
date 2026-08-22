@@ -68,16 +68,22 @@ const CreateAutomation: React.FC = () => {
   const [actions, setActions] = useState<Action[]>([]);
 
   useEffect(() => {
-    loadData();
-    if (!isNew && id) loadAutomation();
+    // A slower earlier load must not overwrite the record the user is now on.
+    let cancelled = false;
+    loadData(() => cancelled);
+    if (!isNew && id) loadAutomation(() => cancelled);
+    return () => {
+      cancelled = true;
+    };
   }, [id]);
 
-  const loadData = async () => {
+  const loadData = async (isCancelled: () => boolean = () => false) => {
     try {
       const [templatesRes, groupsRes] = await Promise.all([
         templatesApi.getAll({}),
         contactsApi.getGroups(),
       ]);
+      if (isCancelled()) return;
       if (templatesRes.data.success) setTemplates(templatesRes.data.data || []);
       if (groupsRes.data.success) setGroups(groupsRes.data.data || []);
     } catch (err) {
@@ -85,9 +91,10 @@ const CreateAutomation: React.FC = () => {
     }
   };
 
-  const loadAutomation = async () => {
+  const loadAutomation = async (isCancelled: () => boolean = () => false) => {
     try {
       const res = await automationsApi.getById(id!);
+      if (isCancelled()) return;
       if (res.data.success) {
         const data = res.data.data;
         setFormData({

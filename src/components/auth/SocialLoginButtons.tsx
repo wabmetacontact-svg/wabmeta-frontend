@@ -28,6 +28,13 @@ declare global {
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
 
+/**
+ * Whether any social provider is actually available.
+ * Pages use this to hide the "or continue with" divider rather than leaving it
+ * floating above nothing.
+ */
+export const hasSocialLogin = Boolean(GOOGLE_CLIENT_ID) || import.meta.env.DEV;
+
 const SocialLoginButtons: React.FC<SocialLoginButtonsProps> = ({ 
   loading = false, 
   onSuccess,
@@ -191,12 +198,19 @@ const SocialLoginButtons: React.FC<SocialLoginButtonsProps> = ({
     };
   }, [handleGoogleCallback, mode]);
 
-  // ─── Not Configured State ───
+  // ─── Not Configured ───
+  // Show the setup hint to developers only. In production an unconfigured
+  // provider should simply not offer the button -- telling a customer to edit
+  // a .env file is a message meant for us, not them.
   if (!GOOGLE_CLIENT_ID) {
+    if (!import.meta.env.DEV) return null;
+
     return (
       <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-xl">
         <p className="text-xs text-yellow-700 text-center">
-          ⚠️ Google Sign-In not configured. Add <code className="font-mono bg-yellow-100 px-1 rounded">VITE_GOOGLE_CLIENT_ID</code> to your .env
+          Google Sign-In is not configured. Add{' '}
+          <code className="font-mono bg-yellow-100 px-1 rounded">VITE_GOOGLE_CLIENT_ID</code>{' '}
+          to your .env
         </p>
       </div>
     );

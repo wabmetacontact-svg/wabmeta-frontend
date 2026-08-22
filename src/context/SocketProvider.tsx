@@ -3,6 +3,7 @@ import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { SocketContext } from './SocketContext';
 import { useAuth } from './AuthContext';
+import { getStoredAccessToken } from '../services/api';
 
 const getSocketUrl = (): string => {
   const envUrl = import.meta.env.VITE_API_URL;
@@ -26,17 +27,13 @@ const getOrgId = (): string | null => {
       const parsed = JSON.parse(orgData);
       if (parsed?.id) return parsed.id;
     }
-  } catch { }
+  } catch {
+    // Malformed org JSON: fall back to the plain id key below.
+  }
   return localStorage.getItem('currentOrganizationId');
 };
 
-const getToken = (): string | null => {
-  return (
-    localStorage.getItem('accessToken') ||
-    localStorage.getItem('token') ||
-    localStorage.getItem('wabmeta_token')
-  );
-};
+const getToken = (): string | null => getStoredAccessToken();
 
 const getUserId = (): string | null => {
   try {
@@ -45,7 +42,9 @@ const getUserId = (): string | null => {
       const parsed = JSON.parse(userData);
       if (parsed?.id) return parsed.id;
     }
-  } catch { }
+  } catch {
+    // Malformed user JSON: treat as signed out.
+  }
   return null;
 };
 

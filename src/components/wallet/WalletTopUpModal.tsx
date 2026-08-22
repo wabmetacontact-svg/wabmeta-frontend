@@ -65,7 +65,9 @@ const WalletTopUpModal: React.FC<Props> = ({
         } else {
           localStorage.removeItem(PENDING_PAYMENT_KEY);
         }
-      } catch {}
+      } catch {
+        // Corrupt pending-payment entry; ignore it and start clean.
+      }
     }
   }, []);
 

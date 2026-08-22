@@ -292,7 +292,9 @@ const MediaGallery: React.FC<Props> = ({ messages, loading }) => {
                 let domain = '';
                 try {
                   domain = new URL(url).hostname.replace('www.', '');
-                } catch {}
+                } catch {
+                  // Not a parseable URL; render without a domain label.
+                }
                 return (
                   <a
                     key={msg.id}

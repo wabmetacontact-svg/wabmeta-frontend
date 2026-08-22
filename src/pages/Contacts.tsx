@@ -19,7 +19,7 @@ import SimpleBulkPasteModal from '../components/contacts/SimpleBulkPasteModal';
 import AddToGroupModal from '../components/contacts/AddToGroupModal';
 import CsvUploadModal from '../components/contacts/CsvUploadModal';
 import UpgradeModal from '../components/common/UpgradeModal';
-import api from '../services/api';
+import api, { getStoredAccessToken } from '../services/api';
 import { useApp } from '../context/AppContext';
 import { useContactFeatures } from '../hooks/useContactFeatures';
 import { formatPhoneForDisplay } from '../utils/csvContacts';
@@ -469,7 +469,7 @@ const Contacts: React.FC = () => {
 
   // ─── Initial fetch ────────────────────────────────────────
   useEffect(() => {
-    const token = localStorage.getItem('accessToken') || localStorage.getItem('token');
+    const token = getStoredAccessToken();
     if (!token) { navigate('/login'); return; }
     Promise.allSettled([fetchStats(), fetchContacts(true), fetchGroups()]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -573,10 +573,12 @@ const Contacts: React.FC = () => {
     const rawPhone = String(contactData.phone || '').trim();
     const clean = rawPhone.replace(/[\s\-\(\)]/g, '');
     if (!clean.startsWith('+')) throw new Error('Phone must start with country code');
+    // The backend validates firstName/lastName as `z.string().optional()`, which
+    // rejects an explicit null. Omit empty fields instead of nulling them.
     const payload = {
-      firstName: contactData.firstName || null,
-      lastName: contactData.lastName || null,
-      email: contactData.email || null,
+      firstName: contactData.firstName || undefined,
+      lastName: contactData.lastName || undefined,
+      email: contactData.email || undefined,
       tags: contactData.tags || [],
       phone: clean,
       customFields: {
@@ -586,7 +588,7 @@ const Contacts: React.FC = () => {
       },
     };
     if (editingContact) {
-      await api.put(`/contacts/${editingContact.id}`, payload);
+      await api.patch(`/contacts/${editingContact.id}`, payload);
     } else {
       await api.post('/contacts', payload);
     }

@@ -76,7 +76,9 @@ const loadQuickReplies = (): QuickReply[] => {
   try {
     const data = localStorage.getItem(QR_STORAGE_KEY);
     if (data) return JSON.parse(data);
-  } catch { }
+  } catch {
+    // Corrupt or unreadable storage: fall through to the defaults below.
+  }
   return [
     {
       id: 'qr-1',
@@ -114,7 +116,9 @@ const loadQuickReplies = (): QuickReply[] => {
 const saveQuickReplies = (qrs: QuickReply[]) => {
   try {
     localStorage.setItem(QR_STORAGE_KEY, JSON.stringify(qrs));
-  } catch { }
+  } catch {
+    // Storage can be full or blocked; quick replies are a convenience, not data loss.
+  }
 };
 
 const NOTES_KEY = (convId: string) => `wabmeta_notes_${convId}`;

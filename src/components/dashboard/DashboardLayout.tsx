@@ -3,6 +3,7 @@ import React, { Suspense, useState, useEffect } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import PageLoader from '../common/PageLoader';
+import ErrorBoundary from '../common/ErrorBoundary';
 import TopBar from './TopBar';
 import { useGlobalNotifications } from '../../hooks/useGlobalNotifications';
 
@@ -68,15 +69,19 @@ const DashboardLayout: React.FC = () => {
       >
         {isInbox ? (
           <div className="flex-1 min-h-0 w-full overflow-hidden">
-            <Suspense fallback={<PageLoader />}>
-              <Outlet />
-            </Suspense>
+            <ErrorBoundary variant="inline" resetKey={location.pathname}>
+              <Suspense fallback={<PageLoader />}>
+                <Outlet />
+              </Suspense>
+            </ErrorBoundary>
           </div>
         ) : (
           <div className="p-4 lg:p-6">
-            <Suspense fallback={<PageLoader />}>
-              <Outlet />
-            </Suspense>
+            <ErrorBoundary variant="inline" resetKey={location.pathname}>
+              <Suspense fallback={<PageLoader />}>
+                <Outlet />
+              </Suspense>
+            </ErrorBoundary>
           </div>
         )}
       </main>

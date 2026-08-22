@@ -1,7 +1,7 @@
 // src/App.tsx - FINAL FIXED VERSION
 
 import React, { Suspense, lazy, useEffect, useState } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation, useParams } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 
 // Context Providers
@@ -154,6 +154,18 @@ const PublicRoute: React.FC<PublicRouteProps> = ({ children, redirectTo = '/dash
 };
 
 
+// Navigate does not interpolate route params, so a legacy path that carries one
+// needs to read it and build the target itself.
+const LegacyInboxRedirect: React.FC = () => {
+  const { conversationId } = useParams<{ conversationId: string }>();
+  return (
+    <Navigate
+      to={conversationId ? `/dashboard/inbox/${conversationId}` : '/dashboard/inbox'}
+      replace
+    />
+  );
+};
+
 // ============================================
 // SCROLL TO TOP
 // ============================================
@@ -226,7 +238,7 @@ const PageTitleUpdater: React.FC = () => {
       { pattern: /^\/dashboard\/templates\/([^/]+)$/, title: 'Edit Template | WabMeta' },
       { pattern: /^\/dashboard\/campaigns\/([^/]+)$/, title: 'Campaign Details | WabMeta' },
       { pattern: /^\/dashboard\/chatbot\/([^/]+)$/, title: 'Edit Chatbot | WabMeta' },
-      { pattern: /^\/admin\/(.+)$/, title: 'Admin | WabMeta' },
+      { pattern: /^\/manage-wabmeta-admin\/(.+)$/, title: 'Admin | WabMeta' },
     ];
 
     let title = staticMap[pathname];
@@ -260,11 +272,7 @@ const AppRoutes: React.FC = () => {
         {/* ============================== */}
         {/* PUBLIC ROUTES */}
         {/* ============================== */}
-        <Route path="/" element={
-          <PublicRoute>
-            <Landing />
-          </PublicRoute>
-        } />
+        <Route path="/" element={<Landing />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/documentation" element={<Documentation />} />
         <Route path="/blog" element={<Blog />} />
@@ -388,11 +396,11 @@ const AppRoutes: React.FC = () => {
         {/* LEGACY REDIRECTS */}
         {/* ============================== */}
         <Route path="/inbox" element={<Navigate to="/dashboard/inbox" replace />} />
-        <Route path="/inbox/:conversationId" element={<Navigate to="/dashboard/inbox/:conversationId" replace />} />
+        <Route path="/inbox/:conversationId" element={<LegacyInboxRedirect />} />
         <Route path="/contacts" element={<Navigate to="/dashboard/contacts" replace />} />
         <Route path="/templates" element={<Navigate to="/dashboard/templates" replace />} />
         <Route path="/campaigns" element={<Navigate to="/dashboard/campaigns" replace />} />
-        <Route path="/chatbot" element={<Navigate to="/dashboard/chatbot" replace />} />
+        <Route path="/chatbot" element={<Navigate to="/dashboard/chatbots" replace />} />
         <Route path="/settings" element={<Navigate to="/dashboard/settings" replace />} />
 
         {/* ============================== */}

@@ -1,5 +1,9 @@
 // src/components/inbox/ChatInput.tsx - PREMIUM REDESIGN
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect, useCallback, lazy, Suspense } from 'react';
+
+// Loaded on first use -- emoji-picker-react is large and most sessions never
+// open the picker.
+const EmojiPickerPanel = lazy(() => import('./EmojiPickerPanel'));
 import {
   Send,
   Paperclip,
@@ -17,7 +21,6 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import AttachmentMenu from './AttachmentMenu';
-import EmojiPickerPanel from './EmojiPickerPanel';
 import VoiceRecorder from './VoiceRecorder';
 import ReplyPreview from './ReplyPreview';
 import type { Message } from './MessageBubble';
@@ -635,11 +638,15 @@ const ChatInput: React.FC<Props> = ({
               <Smile className="w-5 h-5" />
             </button>
 
-            <EmojiPickerPanel
-              isOpen={showEmoji}
-              onClose={() => setShowEmoji(false)}
-              onEmojiSelect={handleEmojiSelect}
-            />
+            {showEmoji && (
+              <Suspense fallback={null}>
+                <EmojiPickerPanel
+                  isOpen
+                  onClose={() => setShowEmoji(false)}
+                  onEmojiSelect={handleEmojiSelect}
+                />
+              </Suspense>
+            )}
           </div>
 
           {/* Send or Voice button */}

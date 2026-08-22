@@ -4,7 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Mail, Lock, User, Building2, ArrowRight, ArrowLeft, Check, AlertCircle, Eye, EyeOff, Sparkles } from 'lucide-react';
 import { auth } from '../services/api';
 import AuthLayout from '../components/auth/AuthLayout';
-import SocialLoginButtons from '../components/auth/SocialLoginButtons';
+import SocialLoginButtons, { hasSocialLogin } from '../components/auth/SocialLoginButtons';
 
 const STEPS = ['You', 'Organization', 'Security'] as const;
 
@@ -393,19 +393,21 @@ const Signup: React.FC = () => {
       <form onSubmit={handleSubmit} noValidate>
         {step === 1 && (
           <div className="space-y-4 animate-fade-in">
-            <div>
-              <SocialLoginButtons mode="signup" />
-              <div className="relative py-4 mt-4">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-200" />
-                </div>
-                <div className="relative flex justify-center">
-                  <span className="px-3 bg-white text-xs text-gray-400 uppercase tracking-wider font-semibold">
-                    or sign up with email
-                  </span>
+            {hasSocialLogin && (
+              <div>
+                <SocialLoginButtons mode="signup" />
+                <div className="relative py-4 mt-4">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-gray-200" />
+                  </div>
+                  <div className="relative flex justify-center">
+                    <span className="px-3 bg-white text-xs text-gray-400 uppercase tracking-wider font-semibold">
+                      or sign up with email
+                    </span>
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
 
             <div className="grid grid-cols-2 gap-3">
               <Field

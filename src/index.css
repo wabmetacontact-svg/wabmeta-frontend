@@ -67,6 +67,13 @@
 
   /* Keyframe Animations */
   --animate-fade-in: fadeIn 0.3s ease-out;
+  --animate-fadeIn: fadeIn 0.3s ease-out;
+  --animate-scale-in: scaleIn 0.2s ease-out;
+  --animate-shake: shake 0.4s ease-in-out;
+  --animate-blob: blob 7s ease-in-out infinite;
+  --animate-gradient-x: gradientX 6s ease infinite;
+  --animate-slide-in-left: slideInLeft 0.3s ease-out;
+  --animate-slide-in-right: slideInRight 0.3s ease-out;
   --animate-float: float 6s ease-in-out infinite;
   --animate-float-slow: float 8s ease-in-out infinite;
   --animate-float-delay: float 7s ease-in-out infinite 1s;
@@ -78,6 +85,7 @@
   --shadow-lg:   0 10px 15px -3px rgba(0,0,0,0.08), 0 4px 6px -4px rgba(0,0,0,0.05);
   --shadow-xl:   0 20px 25px -5px rgba(0,0,0,0.08), 0 8px 10px -6px rgba(0,0,0,0.04);
   --shadow-card: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-soft: 0 6px 20px -6px rgba(0,0,0,0.12), 0 2px 6px -2px rgba(0,0,0,0.06);
   --shadow-glow: 0 0 30px rgba(37,211,102,0.2);
 }
 
@@ -228,3 +236,61 @@ body {
   border-radius: 999px; 
 }
 .scrollbar-thin::-webkit-scrollbar-thumb:hover { background: #d1d5db; }
+/* ============================================
+   ENTRANCE UTILITIES
+   ============================================
+   The codebase uses tailwindcss-animate's syntax
+   (`animate-in fade-in slide-in-from-top-2`) in ~11 files, but that plugin is
+   not installed, so every one of those animations silently did nothing.
+   These few rules cover the combinations actually used. */
+
+@keyframes enterAnimation {
+  from {
+    opacity: var(--enter-opacity, 1);
+    transform: translate3d(var(--enter-x, 0), var(--enter-y, 0), 0)
+      scale(var(--enter-scale, 1));
+  }
+}
+
+@keyframes gradientX {
+  0%, 100% { background-position: 0% 50%; }
+  50%      { background-position: 100% 50%; }
+}
+
+.animate-in {
+  animation: enterAnimation 0.2s ease-out both;
+}
+
+.fade-in            { --enter-opacity: 0; }
+.zoom-in-95         { --enter-scale: 0.95; }
+.slide-in-from-top-2    { --enter-y: -0.5rem; }
+.slide-in-from-top-4    { --enter-y: -1rem; }
+.slide-in-from-bottom-4 { --enter-y: 1rem; }
+.slide-in-from-left-4   { --enter-x: -1rem; }
+.slide-in-from-right    { --enter-x: 1rem; }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-in { animation: none; }
+}
+
+/* ============================================
+   KEYBOARD FOCUS
+   ============================================
+   Roughly half the app's 600+ buttons never set a focus style, so keyboard and
+   screen-reader users had no idea where they were. This gives every interactive
+   element a visible focus ring by default. `:focus-visible` only matches
+   keyboard focus, so mouse clicks stay clean.
+
+   Anything that sets its own focus style still wins, because Tailwind's
+   focus:ring-* utilities apply a box-shadow rather than an outline. */
+
+:where(button, a, input, select, textarea, summary, [tabindex]:not([tabindex="-1"])):focus-visible {
+  outline: 2px solid var(--color-primary-500, #25D366);
+  outline-offset: 2px;
+  border-radius: 0.375rem;
+}
+
+/* Never remove the indicator without replacing it. */
+:where(button, a, input, select, textarea):focus-visible {
+  outline-style: solid;
+}

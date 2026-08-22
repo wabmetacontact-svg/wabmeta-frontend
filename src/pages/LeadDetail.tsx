@@ -29,13 +29,21 @@ const LeadDetail: React.FC = () => {
     const [showTaskForm, setShowTaskForm] = useState(false);
 
     useEffect(() => {
-        if (id) loadLead();
+        if (!id) return;
+        // Guard against a slower earlier request resolving after a newer one and
+        // rendering the previous lead.
+        let cancelled = false;
+        loadLead(() => cancelled);
+        return () => {
+            cancelled = true;
+        };
     }, [id]);
 
-    const loadLead = async () => {
+    const loadLead = async (isCancelled: () => boolean = () => false) => {
         setLoading(true);
         try {
             const res = await crmApi.getLeadById(id!);
+            if (isCancelled()) return;
             if (res.data.success) {
                 const data = res.data.data;
                 setLead(data);
@@ -44,10 +52,11 @@ const LeadDetail: React.FC = () => {
                 setActivities(data.activities || []);
             }
         } catch (err) {
+            if (isCancelled()) return;
             toast.error('Failed to load lead');
             navigate('/dashboard/crm/leads');
         } finally {
-            setLoading(false);
+            if (!isCancelled()) setLoading(false);
         }
     };
 

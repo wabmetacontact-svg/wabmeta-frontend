@@ -82,7 +82,7 @@ export const NoWhatsAppConnected: React.FC<NoWhatsAppConnectedProps> = ({
             </>
           ) : (
             <>
-              <MessageCircle className="w-4.5 h-4.5" />
+              <MessageCircle className="w-4 h-4" />
               <span>Connect WhatsApp Business</span>
               <ArrowRight className="w-4 h-4" />
             </>

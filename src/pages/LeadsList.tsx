@@ -13,6 +13,7 @@ import { crm as crmApi } from '../services/api';
 import type { Lead, Pipeline } from '../types/crm';
 import toast from 'react-hot-toast';
 import { CreateLeadModal } from '../components/crm';
+import ErrorState from '../components/common/ErrorState';
 
 // ─── Tab Types ────────────────────────────────────────────
 type TabType = 'pipeline' | 'interested';
@@ -152,6 +153,7 @@ const LeadsList: React.FC = () => {
   const [interestedTotal, setInterestedTotal] = useState(0);
 
   const [loading, setLoading]   = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [search, setSearch]     = useState('');
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [syncing, setSyncing]   = useState(false);
@@ -213,6 +215,7 @@ const LeadsList: React.FC = () => {
 
   const loadInterestedLeads = async () => {
     setLoading(true);
+    setLoadError(null);
     try {
       const res = await crmApi.getInterestedLeads({
         search: search || undefined,
@@ -241,7 +244,12 @@ const LeadsList: React.FC = () => {
           });
           setInterestedTotal(leads.length);
         }
-      } catch {
+      } catch (err: any) {
+        // Both the primary and fallback calls failed -- say so instead of
+        // rendering the "No Interested Leads Yet" empty state.
+        setLoadError(
+          err?.response?.data?.message || 'Failed to load interested leads'
+        );
         toast.error('Failed to load interested leads');
       }
     } finally {
@@ -256,7 +264,8 @@ const LeadsList: React.FC = () => {
       const res = await crmApi.syncFromContacts();
       if (res.data.success) {
         toast.success(res.data.message || 'Synced successfully');
-        activeTab === 'interested' ? loadInterestedLeads() : loadLeads();
+        if (activeTab === 'interested') loadInterestedLeads();
+        else loadLeads();
       }
     } catch {
       toast.error('Failed to sync contacts');
@@ -455,7 +464,9 @@ const LeadsList: React.FC = () => {
         /* ══ INTERESTED TAB ══════════════════════ */
         <div className="flex-1 overflow-auto p-6">
 
-          {interestedLeads.length === 0 ? (
+          {loadError ? (
+            <ErrorState message={loadError} onRetry={loadInterestedLeads} />
+          ) : interestedLeads.length === 0 ? (
             /* Empty State */
             <div className="flex flex-col items-center justify-center h-full text-center py-16">
               <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-4">
@@ -768,7 +779,8 @@ const LeadsList: React.FC = () => {
           onClose={() => setShowCreateModal(false)}
           onCreated={() => {
             setShowCreateModal(false);
-            activeTab === 'interested' ? loadInterestedLeads() : loadLeads();
+            if (activeTab === 'interested') loadInterestedLeads();
+            else loadLeads();
           }}
         />
       )}

@@ -201,7 +201,9 @@ export const getMessagePreview = (raw?: string, type?: string): string => {
       const name = p.templateName || p.name || 'Template';
       const body = p.body || p.bodyText || '';
       return `📋 ${body || name.replace(/_/g, ' ')}`;
-    } catch {}
+    } catch {
+      // Not JSON: fall through and render the raw text.
+    }
   }
 
   // Media types

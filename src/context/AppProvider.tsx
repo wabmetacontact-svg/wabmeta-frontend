@@ -4,14 +4,12 @@ import { AppContext } from './AppContext';
 import { useSocket } from './SocketContext';
 import { useAuth } from './AuthContext';
 import { inbox as inboxApi, contacts as contactsApi } from '../services/api';
+import { getStoredAccessToken } from '../services/api';
 
 // Safe token verification without thread stalling
 const isTokenCurrentlyValid = (): boolean => {
   try {
-    const token =
-      localStorage.getItem('accessToken') ||
-      localStorage.getItem('token') ||
-      localStorage.getItem('wabmeta_token');
+    const token = getStoredAccessToken();
 
     if (!token) return false;
 

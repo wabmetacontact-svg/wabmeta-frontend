@@ -14,6 +14,7 @@ import WalletCostModal from '../components/campaigns/WalletCostModal';
 import { type Campaign, type CampaignStatus, type CampaignStats } from '../types/campaign';
 
 import { useConfirm } from '../context/ConfirmContext';
+import Badge, { type BadgeTone } from '../components/common/Badge';
 const safeNum = (v: any): number => {
   const n = Number(v);
   return isNaN(n) ? 0 : n;
@@ -21,25 +22,23 @@ const safeNum = (v: any): number => {
 const safeStr = (v: any): string => safeNum(v).toLocaleString();
 
 const STATUS_CONFIG: Record<CampaignStatus, {
-  color: string; icon: React.ElementType; label: string;
+  tone: BadgeTone; icon: React.ElementType; label: string;
 }> = {
-  DRAFT: { color: 'bg-gray-100 text-gray-700 border-gray-200', icon: Clock, label: 'Draft' },
-  SCHEDULED: { color: 'bg-blue-50 text-blue-700 border-blue-200', icon: Calendar, label: 'Scheduled' },
-  RUNNING: { color: 'bg-emerald-50 text-emerald-700 border-emerald-200', icon: Play, label: 'Running' },
-  PAUSED: { color: 'bg-yellow-50 text-yellow-700 border-yellow-200', icon: Pause, label: 'Paused' },
-  COMPLETED: { color: 'bg-purple-50 text-purple-700 border-purple-200', icon: CheckCircle, label: 'Completed' },
-  FAILED: { color: 'bg-red-50 text-red-700 border-red-200', icon: XCircle, label: 'Failed' },
-  CANCELLED: { color: 'bg-gray-50 text-gray-600 border-gray-200', icon: XCircle, label: 'Cancelled' },
+  DRAFT:     { tone: 'neutral', icon: Clock,       label: 'Draft' },
+  SCHEDULED: { tone: 'info',    icon: Calendar,    label: 'Scheduled' },
+  RUNNING:   { tone: 'success', icon: Play,        label: 'Running' },
+  PAUSED:    { tone: 'warning', icon: Pause,       label: 'Paused' },
+  COMPLETED: { tone: 'accent',  icon: CheckCircle, label: 'Completed' },
+  FAILED:    { tone: 'danger',  icon: XCircle,     label: 'Failed' },
+  CANCELLED: { tone: 'neutral', icon: XCircle,     label: 'Cancelled' },
 };
 
 const StatusBadge: React.FC<{ status: CampaignStatus }> = ({ status }) => {
   const cfg = STATUS_CONFIG[status] || STATUS_CONFIG.DRAFT;
-  const Icon = cfg.icon;
   return (
-    <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold border ${cfg.color}`}>
-      <Icon className="w-3 h-3" />
+    <Badge tone={cfg.tone} icon={cfg.icon}>
       {cfg.label}
-    </span>
+    </Badge>
   );
 };
 

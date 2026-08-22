@@ -11,11 +11,13 @@ import type { Chatbot } from '../types/chatbot';
 import toast from 'react-hot-toast';
 
 import { useConfirm } from '../context/ConfirmContext';
+import ErrorState from '../components/common/ErrorState';
 const ChatbotList: React.FC = () => {
   const confirm = useConfirm();
   const navigate = useNavigate();
   const [chatbots, setChatbots] = useState<Chatbot[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
 
   useEffect(() => {
@@ -24,12 +26,16 @@ const ChatbotList: React.FC = () => {
 
   const loadChatbots = async () => {
     setLoading(true);
+    setLoadError(null);
     try {
       const res = await chatbotsApi.getAll();
       if (res.data.success) {
         setChatbots(res.data.data);
       }
-    } catch (err) {
+    } catch (err: any) {
+      // Remember the failure: without it the list falls through to the "no
+      // chatbots yet" empty state, which reads as data loss.
+      setLoadError(err?.response?.data?.message || 'Failed to load chatbots');
       toast.error('Failed to load chatbots');
     } finally {
       setLoading(false);
@@ -281,7 +287,13 @@ const ChatbotList: React.FC = () => {
           </div>
         ))}
 
-        {filteredChatbots.length === 0 && (
+        {loadError && (
+          <div className="col-span-full bg-white rounded-2xl border border-gray-200 shadow-sm">
+            <ErrorState message={loadError} onRetry={loadChatbots} />
+          </div>
+        )}
+
+        {!loadError && filteredChatbots.length === 0 && (
           <div className="col-span-full text-center py-12 bg-white rounded-2xl border border-gray-200 shadow-sm">
             <Bot className="w-16 h-16 mx-auto text-gray-400 mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">No chatbots yet</h3>

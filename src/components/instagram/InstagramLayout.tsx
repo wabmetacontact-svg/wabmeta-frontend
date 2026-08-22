@@ -1,31 +1,10 @@
 import React, { Suspense, useState } from "react";
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
+import ErrorBoundary from "../common/ErrorBoundary";
+import PageLoader from "../common/PageLoader";
 import Sidebar from "../dashboard/Sidebar";
 import TopBar from "../dashboard/TopBar";
 import { useGlobalNotifications } from "../../hooks/useGlobalNotifications";
-
-const RouteLoader: React.FC = () => {
-  const [show, setShow] = React.useState(false);
-  React.useEffect(() => {
-    const t = setTimeout(() => setShow(true), 250);
-    return () => clearTimeout(t);
-  }, []);
-  if (!show) return null;
-  return (
-    <div className="w-full py-20 flex items-center justify-center">
-      <div className="flex items-center gap-3">
-        <div
-          className="w-5 h-5 border-2 rounded-full animate-spin"
-          style={{
-            borderColor: "rgba(225,48,108,0.2)",
-            borderTopColor: "#e1306c",
-          }}
-        />
-        <span className="text-sm text-gray-400">Loading…</span>
-      </div>
-    </div>
-  );
-};
 
 const GlobalNotificationHandler: React.FC = () => {
   useGlobalNotifications();
@@ -33,11 +12,12 @@ const GlobalNotificationHandler: React.FC = () => {
 };
 
 const InstagramLayout: React.FC = () => {
+  const { pathname } = useLocation();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   return (
-    <div className="min-h-screen relative bg-[#050816]">
+    <div className="min-h-screen relative bg-gray-50">
       <GlobalNotificationHandler />
 
       {/* Instagram-tinted background */}
@@ -99,9 +79,11 @@ const InstagramLayout: React.FC = () => {
         `}
       >
         <div className="p-4 lg:p-6">
-          <Suspense fallback={<RouteLoader />}>
-            <Outlet />
-          </Suspense>
+          <ErrorBoundary variant="inline" resetKey={pathname}>
+            <Suspense fallback={<PageLoader />}>
+              <Outlet />
+            </Suspense>
+          </ErrorBoundary>
         </div>
       </main>
     </div>

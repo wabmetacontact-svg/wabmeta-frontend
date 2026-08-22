@@ -321,11 +321,17 @@ const CampaignDetails: React.FC = () => {
 
   // ─── Sync campaign status from socket ─────────────────────
   useEffect(() => {
-    if (isProcessing && campaign?.status !== 'RUNNING') {
-      setCampaign((p: any) => p ? { ...p, status: 'RUNNING' } : p);
+    // Compare against the value inside the updater so the effect does not need
+    // `campaign` as a dependency (which would re-run it on every stats tick).
+    if (isProcessing) {
+      setCampaign((p: any) =>
+        p && p.status !== 'RUNNING' ? { ...p, status: 'RUNNING' } : p
+      );
     }
-    if (completedStats && campaign?.status === 'RUNNING') {
-      setCampaign((p: any) => p ? { ...p, status: 'COMPLETED' } : p);
+    if (completedStats) {
+      setCampaign((p: any) =>
+        p && p.status === 'RUNNING' ? { ...p, status: 'COMPLETED' } : p
+      );
     }
   }, [isProcessing, completedStats]);
 
@@ -720,6 +726,7 @@ const CampaignDetails: React.FC = () => {
                 <th className="px-4 py-4 w-10">
                   <input
                     type="checkbox"
+                    aria-label="Select all recipients"
                     checked={
                       liveContacts.length > 0 &&
                       selectedContacts.length === liveContacts.length
@@ -764,6 +771,7 @@ const CampaignDetails: React.FC = () => {
                     <td className="px-4 py-4">
                       <input
                         type="checkbox"
+                        aria-label={`Select ${contact.fullName || contact.phone}`}
                         checked={selectedContacts.includes(contact.contactId)}
                         onChange={() =>
                           setSelectedContacts(prev =>

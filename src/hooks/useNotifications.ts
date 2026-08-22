@@ -76,8 +76,12 @@ export function playNotificationSound() {
       notificationAudio.volume = 0.5;
     }
     notificationAudio.currentTime = 0;
-    notificationAudio.play().catch(() => {});
-  } catch {}
+    notificationAudio.play().catch(() => {
+      // Browsers block autoplay until the user interacts; silence is fine.
+    });
+  } catch {
+    // Audio unavailable in this context; notifications still show.
+  }
 }
 
 // ─── Main Hook ────────────────────────────────────────────────────────────────

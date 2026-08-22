@@ -5,7 +5,7 @@ import { Mail, Lock, ArrowRight, AlertCircle, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import AuthLayout from '../components/auth/AuthLayout';
 import toast from 'react-hot-toast';
-import SocialLoginButtons from '../components/auth/SocialLoginButtons';
+import SocialLoginButtons, { hasSocialLogin } from '../components/auth/SocialLoginButtons';
 
 interface FormState {
   email: string;
@@ -262,18 +262,22 @@ const Login: React.FC = () => {
           )}
         </button>
 
-        <div className="relative py-1">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-200" />
-          </div>
-          <div className="relative flex justify-center">
-            <span className="px-3 bg-white text-xs text-gray-400 uppercase tracking-wider font-semibold">
-              or continue with
-            </span>
-          </div>
-        </div>
+        {hasSocialLogin && (
+          <>
+            <div className="relative py-1">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-200" />
+              </div>
+              <div className="relative flex justify-center">
+                <span className="px-3 bg-white text-xs text-gray-400 uppercase tracking-wider font-semibold">
+                  or continue with
+                </span>
+              </div>
+            </div>
 
-        <SocialLoginButtons loading={isLoading} mode="login" />
+            <SocialLoginButtons loading={isLoading} mode="login" />
+          </>
+        )}
 
         <p className="text-center text-sm text-gray-500 pt-1">
           New to WabMeta?{' '}

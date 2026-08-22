@@ -1,6 +1,8 @@
 import React, { useMemo, useState } from 'react';
 import { MoreVertical, Edit2, Trash2, Search, Clock } from 'lucide-react';
 import RoleBadge from './RoleBadge';
+import Card from '../common/Card';
+import Badge from '../common/Badge';
 import { isPending, memberName, type TeamMember, type TeamRole } from '../../types/team';
 import { useConfirm } from '../../context/ConfirmContext';
 
@@ -47,7 +49,7 @@ const TeamList: React.FC<TeamListProps> = ({
   };
 
   return (
-    <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
+    <Card padding="none" className="overflow-hidden">
       <div className="p-4 border-b border-gray-100">
         <div className="relative max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -122,10 +124,9 @@ const TeamList: React.FC<TeamListProps> = ({
 
                     <td className="px-4 py-3">
                       {pending ? (
-                        <span className="inline-flex items-center gap-1 text-xs font-medium text-amber-700 bg-amber-50 border border-amber-200 rounded-full px-2.5 py-0.5">
-                          <Clock className="w-3 h-3" />
+                        <Badge tone="warning" icon={Clock}>
                           Invite pending
-                        </span>
+                        </Badge>
                       ) : (
                         <span className="text-xs text-gray-500">
                           Joined {new Date(member.joinedAt as string).toLocaleDateString()}
@@ -189,7 +190,7 @@ const TeamList: React.FC<TeamListProps> = ({
           </table>
         </div>
       )}
-    </div>
+    </Card>
   );
 };
 

@@ -11,6 +11,7 @@ import type { Automation } from '../types/automation';
 import toast from 'react-hot-toast';
 
 import { useConfirm } from '../context/ConfirmContext';
+import ErrorState from '../components/common/ErrorState';
 const triggerIcons: Record<string, React.ReactNode> = {
   NEW_CONTACT: <Users className="w-4 h-4" />,
   KEYWORD: <MessageSquare className="w-4 h-4" />,
@@ -34,6 +35,7 @@ const AutomationPage: React.FC = () => {
   const navigate = useNavigate();
   const [automations, setAutomations] = useState<Automation[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
 
   useEffect(() => {
@@ -42,12 +44,16 @@ const AutomationPage: React.FC = () => {
 
   const loadAutomations = async () => {
     setLoading(true);
+    setLoadError(null);
     try {
       const res = await automationsApi.getAll();
       if (res.data.success) {
         setAutomations(res.data.data);
       }
-    } catch (err) {
+    } catch (err: any) {
+      // Without this the list falls through to "No automations yet", which
+      // looks like the user's automations were deleted.
+      setLoadError(err?.response?.data?.message || 'Failed to load automations');
       toast.error('Failed to load automations');
     } finally {
       setLoading(false);
@@ -237,7 +243,13 @@ const AutomationPage: React.FC = () => {
           </div>
         ))}
 
-        {filteredAutomations.length === 0 && (
+        {loadError && (
+          <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
+            <ErrorState message={loadError} onRetry={loadAutomations} />
+          </div>
+        )}
+
+        {!loadError && filteredAutomations.length === 0 && (
           <div className="text-center py-12 bg-white rounded-xl border border-gray-200 shadow-sm">
             <Zap className="w-16 h-16 mx-auto text-gray-400 mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">No automations yet</h3>

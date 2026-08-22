@@ -19,6 +19,9 @@ const VoiceRecorder: React.FC<Props> = ({ isRecording, onStart, onStop, onCancel
   const [isPlaying, setIsPlaying] = useState(false);
   const [sending, setSending] = useState(false);
 
+  // startRecording runs before stopRecording is defined and outlives it in a
+  // timer, so it goes through a ref that always holds the current version.
+  const stopRecordingRef = useRef<() => void>(() => {});
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const chunksRef = useRef<Blob[]>([]);
@@ -125,14 +128,13 @@ const VoiceRecorder: React.FC<Props> = ({ isRecording, onStart, onStop, onCancel
       mediaRecorder.start(100); // Capture data every 100ms
       setDuration(0);
     
+      // Count outside the state updater: React can invoke an updater more than
+      // once, and stopping the recorder from inside one would fire twice.
+      let elapsed = 0;
       intervalRef.current = setInterval(() => {
-        setDuration((d) => {
-          if (d >= 300) {
-            stopRecording();
-            return 300;
-          }
-          return d + 1;
-        });
+        elapsed += 1;
+        setDuration(elapsed);
+        if (elapsed >= 300) stopRecordingRef.current();
       }, 1000);
   
       onStart();
@@ -154,6 +156,11 @@ const VoiceRecorder: React.FC<Props> = ({ isRecording, onStart, onStop, onCancel
     }
     onStop();
   }, [onStop]);
+
+  // Keep the ref pointing at the current stopRecording for the max-duration timer.
+  useEffect(() => {
+    stopRecordingRef.current = stopRecording;
+  }, [stopRecording]);
 
   // ── Cancel recording ────────────────────────────────────────────────────
   const cancelRecording = useCallback(() => {

@@ -31,7 +31,7 @@ type Failure = { row: number; error: string };
 
 const normalizeInternationalPhone = (v: any) => {
   if (!v) return "";
-  let cleaned = String(v).trim().replace(/[\s\-\(\)]/g, "");
+  const cleaned = String(v).trim().replace(/[\s\-\(\)]/g, "");
   // Try to prepend + if it looks like a valid international number but misses +
   if (!cleaned.startsWith('+') && /^\d{10,15}$/.test(cleaned)) {
     // We can't safely assume the country code if it's not provided, but the backend 
