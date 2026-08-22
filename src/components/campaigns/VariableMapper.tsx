@@ -81,6 +81,8 @@ const VariableMapper: React.FC<VariableMapperProps> = ({
       }
     });
     setModeMap(initial);
+  // Initialises modeMap from the variables; depending on modeMap would loop.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [variables]);
 
   const updateValue = (variable: string, value: string) => {

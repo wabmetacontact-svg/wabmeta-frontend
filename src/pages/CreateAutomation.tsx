@@ -75,6 +75,9 @@ const CreateAutomation: React.FC = () => {
     return () => {
       cancelled = true;
     };
+    // Keyed on id with a cancellation guard; the loader is intentionally not a
+    // dependency so it runs once per record, not on every render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   const loadData = async (isCancelled: () => boolean = () => false) => {

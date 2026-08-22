@@ -236,6 +236,8 @@ const SubscriptionManagement: React.FC = () => {
 
   useEffect(() => {
     fetchData();
+  // Re-fetches when the filters change; fetchData reads only those values.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, statusFilter, planFilter, search, activeTab]);
 
   const fetchData = async () => {

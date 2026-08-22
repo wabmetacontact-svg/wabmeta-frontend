@@ -29,6 +29,8 @@ const CreateLeadModal: React.FC<Props> = ({ pipelineId, onClose, onCreated }) =>
 
     useEffect(() => {
         loadContacts();
+    // Searches on query change; loader reads only searchContact.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [searchContact]);
 
     const loadContacts = async () => {

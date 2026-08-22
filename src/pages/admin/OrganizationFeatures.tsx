@@ -149,6 +149,8 @@ export default function OrganizationFeatures() {
 
   useEffect(() => {
     fetchFeatures();
+    // Loads when the org id changes; fetchFeatures reads only that id.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [organizationId]);
 
   const fetchFeatures = async () => {

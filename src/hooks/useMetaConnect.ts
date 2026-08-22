@@ -21,7 +21,6 @@ interface UseMetaConnectOptions {
 
 export const useMetaConnect = ({
   organizationId,
-  organizationName,
   onSuccess,
   onError,
 }: UseMetaConnectOptions) => {
@@ -227,7 +226,7 @@ export const useMetaConnect = ({
       setLoading(false);
       setProgress('');
     }
-  }, [sdkReady, organizationId, organizationName, handleCodeCallback]);
+  }, [sdkReady, organizationId, handleCodeCallback]);
 
   return {
     connect,

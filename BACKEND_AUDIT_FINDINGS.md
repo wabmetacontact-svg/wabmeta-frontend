@@ -7,6 +7,28 @@ Legend: 🔴 act now · 🟠 should fix · 🟡 worth doing · ✅ checked, no a
 
 ---
 
+## ✅ Systemic fixes — all six applied (final round)
+
+The six items originally deferred as "needs a test / migration / decision" are now done:
+
+| # | Issue | Status | Proof |
+|---|---|---|---|
+| 1 | Campaign double-send across instances (P21) | **Fixed** | `campaigns.claim.ts` — atomic `FOR UPDATE SKIP LOCKED` batch claim. Test: two workers claim disjoint sets covering the pool, no id twice. |
+| 2 | No per-org AI cost cap (P23) | **Fixed** | `ai.ratelimit.ts` — per-org daily quota via the shared store; over the cap serves fallback without calling Gemini. |
+| 3 | Migration drift (P08) | **Fixed & proven** | Generated `capture_schema_drift` migration (474 lines of missing columns/tables). A fresh migrate-only DB now seeds successfully — the exact failure from the audit is gone. |
+| 4 | Double-refund race (P41) | **Fixed** | Migration adds a partial unique index on `(metaChargeId, metaService)` after a dedup step; the refund handler treats `P2002` as idempotent success. |
+| 5 | Org delete wipes the ledger (P40) | **Fixed & proven** | Organizations are now soft-deleted (`deletedAt`). Verified live: wallet + ledger survive, auth drops the org context (access blocked), and the org is hidden from the switcher. |
+| 6 | Single-instance schedulers (P27/28) | **Fixed** | Postgres advisory locks (`withLock.ts`) wrap all four cron jobs and campaign recovery. Verified live: of two "instances", exactly one takes the lock. |
+
+**Still open (one, by scope):** cross-instance **rate limiting + OTP** still use the in-memory Redis
+shim (P33). Making those durable needs a real Redis wired to `REDIS_URL` — an infrastructure/deploy
+decision (do they run Redis?). The AI cap (#2) already uses the same store abstraction, so wiring
+real Redis fixes all three at once. Documented; not changed without knowing the deploy has Redis.
+
+Test count: **0 → 5**, all passing. Backend build clean.
+
+---
+
 ## PHASE 00 — Repository & Architecture ✅
 
 | Area | Files | LOC |
@@ -728,6 +750,293 @@ worth an atomic count-and-insert if it ever matters.
 
 ---
 
+## PHASE 21 — Campaigns 🔴 **double-send across instances / on restart**
+
+State machine is sound: start/pause/resume/cancel all guard the current status
+(`already running`, `cannot resume (status: X)`, `cannot cancel completed`), and the send loop
+re-checks `status !== 'RUNNING'` every chunk, so a pause takes effect mid-flight.
+
+**The send has no cross-process claim.** Deduplication relies on an in-memory Set:
+
+```ts
+private processingCampaigns = new Set<string>();          // per Node process
+...
+if (this.processingCampaigns.has(campaignId)) return;      // re-entry guard
+this.processingCampaigns.add(campaignId);
+```
+
+Within one process this is safe (check and add are synchronous). Across processes it does nothing —
+each instance has its own Set. And the send loop claims no rows atomically:
+
+```ts
+const contacts = await prisma.campaignContact.findMany({ where: { campaignId, status: 'PENDING' }, take: 500 });
+// ... send each, mark SENT only AFTER the Meta call
+```
+
+Two triggers can each read the same PENDING rows and both send them. Two triggers actually happen:
+
+1. **Multiple instances** (the deploy is on Render against RDS; horizontal scaling is normal).
+2. **Restart during a send.** `campaigns.recovery.service.ts` runs on every boot, finds all
+   `status: 'RUNNING'` campaigns with pending contacts, and calls `processCampaignContacts` for each.
+   If another instance is still sending that campaign, both now send it.
+
+**Impact:** duplicate WhatsApp messages to real customers, and — after the wallet fix — double
+charges for them.
+
+**Fix (not applied — needs a test first, like the wallet fix):** claim a batch atomically before
+sending —
+
+```ts
+const claimed = await prisma.campaignContact.updateMany({
+  where: { campaignId, status: 'PENDING' },
+  data:  { status: 'QUEUED', claimedAt: new Date() },   // add a claim column
+});
+// then send only rows this worker moved to QUEUED
+```
+
+plus a DB-level campaign lock (advisory lock or a `processingBy`/`processingUntil` claim on the
+campaign row) so recovery and a live sender can't both own it. This is a send-loop change to
+message-critical code and must land with a concurrency test, so it is documented rather than rushed.
+
+---
+
+## PHASE 22 — Automation ✅
+
+- **Loop protection**: a per-contact, per-automation 24-hour dedup (`automationSequence` lookup with
+  `createdAt > now - 24h`) stops an automation re-firing for the same contact, so trigger chains
+  can't run away.
+- Delay steps are capped at 30s (`MAX_SAFE_DELAY`) so a malformed delay can't hang a worker.
+- Target-group membership is checked before firing.
+
+---
+
+## PHASE 23 — Chatbot / AI 🟠
+
+- Output is capped (`maxOutputTokens` 512 / 150), and API errors are handled without leaking stack
+  traces to the end user.
+
+🟠 **Fixed — the Gemini API key prefix was logged at startup** (`✅ Found (${key.substring(0,15)}…)`).
+Server logs are retained; a 15-char prefix of a real key is key material. Now logs presence only.
+
+🔴 **No per-organization cost cap on AI replies.** `chatbot.engine.ts` calls
+`aiService.generateResponse` in response to an **inbound WhatsApp message**, with no rate limit or
+usage cap per org. Since there is a single shared `GEMINI_API_KEY`, one organization's chatbot being
+spammed (or a malicious sender hammering a connected number) runs up unbounded Gemini calls that
+**exhaust the quota and bill for every tenant**, not just the abused one. Needs a per-org daily cap
+(Redis counter) before the AI call — documented, not implemented, because the right limit is a
+product/pricing decision.
+
+---
+
+## PHASE 24 — CRM checked
+
+- Pipelines, stages, leads, settings are all org-scoped (where organizationId on every read and the
+  default-pipeline bootstrap).
+- The mass-assignment hole (raw req.body spread into lead.update / settings upsert) was found and
+  fixed under Phase 10.
+- Lead auto-creation from chatbot-qualified contacts carries the contact organizationId, so
+  webhook-driven lead creation stays in the right tenant.
+
+---
+
+## PHASE 27 / 28 — Queue, Workers & Scheduler (act now) assumes a single instance
+
+There is no job queue. messageQueue.service.ts is a stub — its own header says
+"STUB (Bull queue removed) ... Campaigns use direct Meta API sending". All background work runs
+in-process: the campaign send loop, campaigns.recovery.service, and four node-cron jobs
+(scheduler.service.ts, initialised once per boot via initializeScheduler()).
+
+Nothing coordinates across processes. Grep for SETNX, redlock, pg_advisory — none exist. Every guard
+is an in-memory flag (processingCampaigns Set, state.automation boolean) or a read-then-act check
+(lastExecutedAt.toDateString() === today). Each is correct within one Node process and useless across
+two.
+
+On Render with more than one instance — or during a rolling restart when a new instance boots while
+the old is still draining — this produces duplicate work:
+
+- Campaign send: same PENDING rows sent twice (Phase 21)
+- Campaign recovery: boots and re-processes a campaign another instance is still sending
+- Scheduled automation (every 2 min): daily automation fires N times; the "ran today" check is read-then-act
+- Subscription expiry / warnings: expiry emails sent N times
+
+Not every job is equally harmful — the per-contact 24h automationSequence dedup limits duplicate
+automation messages, and expiry warnings are only annoying. But campaign sends and wallet debits are
+not idempotent, so this is a real duplicate-message / double-charge path.
+
+The fix is one mechanism applied in a few places, not five separate patches: a single-owner claim at
+the database. Either a Postgres advisory lock around each scheduled job
+(pg_advisory_xact_lock(hashtext('scheduler:automation'))) so only one instance runs it, or a
+processingBy / processingUntil claim column set with a conditional updateMany before the work. The
+campaign send loop needs the row-level version (claim a batch to QUEUED before sending). One systemic
+finding; each fix touches message/money-critical code and should land with a test.
+
+---
+
+## PHASE 29 — Notifications checked
+
+Web-push (VAPID) and Expo push are wired with keys from env; per-user notification rows are scoped by
+userId (verified in Phase 05). No issue found.
+
+---
+
+## PHASE 30 — Analytics / Dashboard checked
+
+Dashboard uses Prisma $queryRaw, but every one is the tagged-template form
+(WHERE "organizationId" = ${organizationId}), which parameterises the value — no SQL injection, and
+every query is org-scoped. Analytics service reads are org-scoped too.
+
+---
+
+## PHASE 31 — Instagram checked (fixed earlier)
+
+The unauthenticated-and-header-tenanted hole was found and fixed in the Phase 05 pass. Nothing further.
+
+---
+
+## PHASE 32 — Calling checked
+
+Routes are behind authenticate and gateMutations(ADMIN_ROLES) — calling config is admin-only, correct.
+
+---
+
+## PHASE 33 — Redis (act now) there is no Redis
+
+config/redis.ts is not Redis. Its header reads "IN-MEMORY REPLACEMENT (No Redis needed!)" — it is a
+Map-backed shim exposing a Redis-shaped API. ioredis is installed but imported nowhere; REDIS_URL is
+read into config and then never used to connect.
+
+Consequences, all per-process and lost on restart:
+
+- Rate limiting uses express-rate-limit's default in-memory store (no store: option set). Across N
+  instances an attacker gets N times the limit; a restart resets every counter. This directly weakens
+  the Phase 13 rate limits, which looked solid but only hold on a single instance.
+- OTP + email-verification state lives in a per-instance Map (with the shim as "Redis"). An OTP
+  generated on instance A cannot be verified on instance B, and a restart drops all pending OTPs.
+
+This is the same single-instance assumption as Phase 27/28, in the security layer. If the deploy is
+truly single-instance today it is only a resilience risk; the moment it scales, rate limiting and OTP
+break. Fix: point the existing ioredis at REDIS_URL and back both the rate limiter (rate-limit-redis,
+already a dependency) and the OTP store with it.
+
+---
+
+## PHASE 34 — Socket / Realtime (FIXED) anyone could listen to any org's messages
+
+The Socket.IO auth middleware let unauthenticated clients connect as a guest, and took the tenant from
+the client handshake:
+
+```
+} catch (e) {
+  console.warn('Invalid socket token - allowing as guest');
+  socket.organizationId = orgFromAuth;   // from handshake.auth
+}
+```
+
+Worse, an org:join handler let any client join any org's room by id:
+
+```
+socket.on('org:join', (orgId) => { socket.join(`org:${orgId}`); });
+```
+
+Org rooms receive message:new events — incoming WhatsApp messages. So anyone who knew (or guessed) a
+victim organizationId could subscribe to that org's live inbox with no token at all. join:conversation
+and campaign:join accepted arbitrary ids the same way.
+
+Fixed and verified live:
+- A valid JWT is now required; the connection is rejected otherwise (the client's Bearer prefix is
+  stripped before verify, so legitimate sockets still connect).
+- The tenant comes only from the verified token, never from the handshake.
+- The manual org:join / user:join handlers are removed; rooms are auto-joined from the token.
+- join:conversation and campaign:join now confirm the row belongs to the socket's org before joining.
+
+Verified against the running server: no token, a fake token, and an org-spoof handshake are all
+REJECTED (were all previously accepted as guest).
+
+---
+
+## PHASE 35 — Storage / R2 / Cloudinary checked
+
+Media stored to Cloudinary/R2; templates reference permanent Cloudinary URLs. Upload MIME/type
+guarded (Phase 18). No credential-in-URL or public-write misconfiguration found in the code paths
+reviewed.
+
+---
+
+## PHASE 36 — Email / OTP checked, exemplary
+
+OTP generation and verification are the strongest code in the repo:
+- crypto.randomBytes for the OTP; stored as a SHA-256 hash, compared with crypto.timingSafeEqual
+- 5-attempt cap (MAX_OTP_ATTEMPTS) and a 5-minute TTL
+- auth routes additionally rate-limited (10 / 15 min)
+
+Only nit: buf[i] % 10 has a negligible modulo bias; irrelevant for a 6-digit OTP with a 5-try cap.
+(The store lives in the in-memory shim — see Phase 33.)
+
+---
+
+## PHASE 38 — Performance (fixed one, one flagged)
+
+Of 125 unbounded findMany calls, most are phone: { in: [...] } lookups bounded by an input batch, so
+harmless. Two on growth tables are genuinely unbounded:
+
+FIXED getAllTags loaded every non-deleted contact row into memory just to count tags -- a full-table
+scan on a large org, run whenever the tag-filter UI opens. Replaced with a Postgres
+unnest("tags") + GROUP BY aggregation that counts in the database and returns only the distinct tags.
+Verified live against the test DB (correct counts, DELETED contacts excluded).
+
+FLAGGED export(organizationId) loads all contacts in one findMany for CSV. Expected to be large, but
+one unbounded query can OOM on a 100k-contact org. Should stream / paginate. Not changed (behaviour
+change to an export format).
+
+---
+
+## PHASE 40 — Data Integrity (act now) org delete wipes the financial ledger
+
+51 relations use onDelete: Cascade. One chain is dangerous: Organization delete is a hard delete
+(prisma.organization.delete, "cascades to all related data"), and Payment, WalletTransaction and
+Subscription all cascade from Organization. So deleting an organization permanently destroys every
+payment record, the entire wallet transaction ledger, and the subscription history.
+
+That is the wrong behaviour for financial data: refund disputes, chargeback evidence, and tax/
+accounting records all vanish with no trace. Deleting a customer should not delete the money trail.
+
+Fix (schema + policy, not a quick patch): either soft-delete organizations (a deletedAt flag, which
+the app already does for contacts), or change Payment/WalletTransaction to onDelete: Restrict / SetNull
+and retain the ledger under a tombstoned org. Both need a migration and a product decision on
+retention, so it is documented rather than changed.
+
+---
+
+## PHASE 41 — Business Logic (fixed one, flagged one)
+
+FIXED refund credit was non-atomic. The failed-message refund did
+balanceAfter = balanceBefore + refundPaise then wrote the absolute value -- the same lost-update
+pattern as the debit bug, so a concurrent debit could overwrite a refund. Now increments in the
+database and reads the result back.
+
+FLAGGED double-refund race + a lying comment. The refund idempotency is a findFirst("does a refund
+for this waMessageId exist?") then create, under READ COMMITTED, with no unique constraint. Meta
+retries webhook deliveries, so two deliveries of the same failed-message status can both find nothing
+and both create a refund -- a double credit. The code comment claimed this ran "under a serializable
+read"; it does not (isolationLevel: ReadCommitted). Corrected the comment.
+
+The real fix is a database uniqueness guard so the second insert fails:
+
+  -- 1. dedup any existing duplicates first (keep the earliest)
+  -- 2. then:
+  CREATE UNIQUE INDEX uniq_charge_service
+    ON "WalletTransaction" ("metaChargeId", "metaService")
+    WHERE "metaChargeId" IS NOT NULL;
+
+A debit and its refund don't collide (different metaService), and NULL metaChargeId rows are exempt.
+Not applied here: it needs a dedup pass on production data first and a migration, and the migrations
+are already drifted (Phase 08). Documented with the exact DDL.
+
+The wallet "smart display" (excess failures shown as SENT, refunds capped) was confirmed to be
+intentional product behaviour, per the owner. Not a bug.
+
+---
+
 ## Still to audit
 
 ---
@@ -922,6 +1231,84 @@ worth an atomic count-and-insert if it ever matters.
   conversation mutations route through it, so no cross-tenant inbox access.
 - The critical finding here — unauthenticated arbitrary file read via `/media-proxy` — is documented
   under Phase 20 above and is fixed and verified.
+
+---
+
+## PHASE 21 — Campaigns 🔴 **double-send across instances / on restart**
+
+State machine is sound: start/pause/resume/cancel all guard the current status
+(`already running`, `cannot resume (status: X)`, `cannot cancel completed`), and the send loop
+re-checks `status !== 'RUNNING'` every chunk, so a pause takes effect mid-flight.
+
+**The send has no cross-process claim.** Deduplication relies on an in-memory Set:
+
+```ts
+private processingCampaigns = new Set<string>();          // per Node process
+...
+if (this.processingCampaigns.has(campaignId)) return;      // re-entry guard
+this.processingCampaigns.add(campaignId);
+```
+
+Within one process this is safe (check and add are synchronous). Across processes it does nothing —
+each instance has its own Set. And the send loop claims no rows atomically:
+
+```ts
+const contacts = await prisma.campaignContact.findMany({ where: { campaignId, status: 'PENDING' }, take: 500 });
+// ... send each, mark SENT only AFTER the Meta call
+```
+
+Two triggers can each read the same PENDING rows and both send them. Two triggers actually happen:
+
+1. **Multiple instances** (the deploy is on Render against RDS; horizontal scaling is normal).
+2. **Restart during a send.** `campaigns.recovery.service.ts` runs on every boot, finds all
+   `status: 'RUNNING'` campaigns with pending contacts, and calls `processCampaignContacts` for each.
+   If another instance is still sending that campaign, both now send it.
+
+**Impact:** duplicate WhatsApp messages to real customers, and — after the wallet fix — double
+charges for them.
+
+**Fix (not applied — needs a test first, like the wallet fix):** claim a batch atomically before
+sending —
+
+```ts
+const claimed = await prisma.campaignContact.updateMany({
+  where: { campaignId, status: 'PENDING' },
+  data:  { status: 'QUEUED', claimedAt: new Date() },   // add a claim column
+});
+// then send only rows this worker moved to QUEUED
+```
+
+plus a DB-level campaign lock (advisory lock or a `processingBy`/`processingUntil` claim on the
+campaign row) so recovery and a live sender can't both own it. This is a send-loop change to
+message-critical code and must land with a concurrency test, so it is documented rather than rushed.
+
+---
+
+## PHASE 22 — Automation ✅
+
+- **Loop protection**: a per-contact, per-automation 24-hour dedup (`automationSequence` lookup with
+  `createdAt > now - 24h`) stops an automation re-firing for the same contact, so trigger chains
+  can't run away.
+- Delay steps are capped at 30s (`MAX_SAFE_DELAY`) so a malformed delay can't hang a worker.
+- Target-group membership is checked before firing.
+
+---
+
+## PHASE 23 — Chatbot / AI 🟠
+
+- Output is capped (`maxOutputTokens` 512 / 150), and API errors are handled without leaking stack
+  traces to the end user.
+
+🟠 **Fixed — the Gemini API key prefix was logged at startup** (`✅ Found (${key.substring(0,15)}…)`).
+Server logs are retained; a 15-char prefix of a real key is key material. Now logs presence only.
+
+🔴 **No per-organization cost cap on AI replies.** `chatbot.engine.ts` calls
+`aiService.generateResponse` in response to an **inbound WhatsApp message**, with no rate limit or
+usage cap per org. Since there is a single shared `GEMINI_API_KEY`, one organization's chatbot being
+spammed (or a malicious sender hammering a connected number) runs up unbounded Gemini calls that
+**exhaust the quota and bill for every tenant**, not just the abused one. Needs a per-org daily cap
+(Redis counter) before the AI call — documented, not implemented, because the right limit is a
+product/pricing decision.
 
 ---
 

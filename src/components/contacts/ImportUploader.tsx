@@ -71,6 +71,9 @@ const ImportUploader: React.FC<ImportUploaderProps> = ({
       const date = new Date().toLocaleDateString();
       setNewGroupName(`${name} - ${date}`);
     }
+    // Sets a default group name once when a file loads; the !newGroupName guard
+    // keeps it from overwriting the user's edit, so newGroupName isn't a dep.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [file]);
 
   // ============================================

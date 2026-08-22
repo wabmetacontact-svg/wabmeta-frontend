@@ -387,6 +387,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     return () => { isMounted = false; };
+    // Runs the initial auth check once on mount; the auth helpers are stable for
+    // the provider's lifetime and must not re-trigger it.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {

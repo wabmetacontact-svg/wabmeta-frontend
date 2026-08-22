@@ -438,7 +438,6 @@ const Contacts: React.FC = () => {
       setLoading(false);
       setLoadingMore(false);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchQuery, statusFilter, whatsappFilter, activeGroup?.id]);
 
   // ─── LOAD MORE (next page) ────────────────────────────────

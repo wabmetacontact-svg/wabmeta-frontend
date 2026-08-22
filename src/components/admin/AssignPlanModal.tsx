@@ -99,6 +99,8 @@ const AssignPlanModal: React.FC<AssignPlanModalProps> = ({
         } else {
             setOrganizations([]);
         }
+    // Searches when the query changes; the search fn reads only orgSearch.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [orgSearch]);
 
     const searchOrganizations = async () => {

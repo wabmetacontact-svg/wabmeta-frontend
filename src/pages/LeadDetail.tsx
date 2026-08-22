@@ -37,7 +37,10 @@ const LeadDetail: React.FC = () => {
         return () => {
             cancelled = true;
         };
-    }, [id]);
+      // Keyed on id with a cancellation guard; the loader is intentionally not a
+    // dependency so it runs once per record, not on every render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
 
     const loadLead = async (isCancelled: () => boolean = () => false) => {
         setLoading(true);

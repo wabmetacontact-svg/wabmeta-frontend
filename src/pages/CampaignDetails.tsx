@@ -274,13 +274,17 @@ const CampaignDetails: React.FC = () => {
       isInitialized.current = true;
     };
     init();
-  }, [id]); // Only id - not loadCampaign/loadStats
+    // Runs once per campaign; the load callbacks are stable per id and the
+    // initialised guard blocks re-runs. Depending on them would re-init on
+    // filter change.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
 
   // ✅ FIX Bug6: Filter/search change - skip initial render
   useEffect(() => {
     if (!isInitialized.current) return;
     loadContacts(1);
-  }, [filterStatus, searchCommitted]);
+  }, [loadContacts]);
 
   // ─── Smart stats refresh (during RUNNING) ─────────────────
   useEffect(() => {
@@ -307,6 +311,9 @@ const CampaignDetails: React.FC = () => {
       await loadContacts(pageMeta.page, true);
     }, 2_000);
     return () => clearTimeout(t);
+    // One-shot on completion; reads the current page at fire time. Adding the
+    // load callbacks or page would re-arm the timeout on unrelated changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [completedStats]);
 
   // ─── Polling fallback (no socket) ─────────────────────────
@@ -317,6 +324,9 @@ const CampaignDetails: React.FC = () => {
       await loadContacts(pageMeta.page, true);
     }, 8_000);
     return () => clearInterval(interval);
+    // Polls the current page each tick; keyed only on status/connection so the
+    // poll clock isn't reset by unrelated re-renders.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [campaign?.status, isConnected]);
 
   // ─── Sync campaign status from socket ─────────────────────
@@ -341,7 +351,7 @@ const CampaignDetails: React.FC = () => {
     toast.error(campaignError.message, { duration: 8000, icon: '⚠️' });
     loadCampaign();
     loadStats();
-  }, [campaignError]);
+  }, [campaignError, loadCampaign, loadStats]);
 
   // ─── Actions ───────────────────────────────────────────────
   const refresh = async () => {

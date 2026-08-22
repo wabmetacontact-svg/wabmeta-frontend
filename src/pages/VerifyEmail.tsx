@@ -65,6 +65,9 @@ const VerifyEmail: React.FC = () => {
     }, INTERVAL_MS);
 
     return () => clearInterval(interval);
+    // Keyed on the emailVerified field, not the whole user object, so the poll
+    // isn't restarted by unrelated user changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state, user?.emailVerified, refreshSession]);
 
   // Update state if user becomes verified via polling
