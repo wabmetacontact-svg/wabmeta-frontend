@@ -363,11 +363,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     let isMounted = true;
 
     const initAuth = async () => {
+      // isInitializing har haal mein false hona chahiye - iske true reh jaane
+      // par route guards LoadingScreen dikhate rehte hain aur login page
+      // kabhi render hi nahi hota. Isliye finally mein set karte hain, kisi
+      // ek exit path par bharosa nahi.
       try {
         const accessToken = getAccessToken();
         if (!accessToken) {
           if (isMounted) {
-            setState(prev => ({ ...prev, isLoading: false, isAuthenticated: false }));
+            setState(prev => ({
+              ...prev,
+              isLoading: false,
+              isAuthenticated: false,
+            }));
           }
           return;
         }
@@ -402,9 +410,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setState(prev => ({
             ...prev,
             isLoading: false,
-            isInitializing: false,
             isAuthenticated: false,
           }));
+        }
+      } finally {
+        // Har path se guzarne ke baad initial check khatam
+        if (isMounted) {
+          setState(prev =>
+            prev.isInitializing ? { ...prev, isInitializing: false } : prev
+          );
         }
       }
     };
