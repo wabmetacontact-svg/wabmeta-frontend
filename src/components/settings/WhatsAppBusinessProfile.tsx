@@ -1,12 +1,23 @@
-// src/components/settings/BusinessProfileModal.tsx
-// WhatsApp Business Profile editor - jo customers ko WhatsApp par dikhta hai
+// src/components/settings/WhatsAppBusinessProfile.tsx
+// WhatsApp Business Profile - what customers see on WhatsApp.
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  X, Loader2, Camera, Save, AlertCircle, Building2, BadgeCheck, Clock, XCircle,
+  Loader2, Camera, Save, AlertCircle, Building2, BadgeCheck, Clock, XCircle, Phone,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { businessProfile, handleApiError, type BusinessProfile } from '../../services/api';
+import api, {
+  businessProfile,
+  handleApiError,
+  type BusinessProfile,
+} from '../../services/api';
+
+interface ConnectedAccount {
+  id: string;
+  phoneNumber: string;
+  verifiedName?: string;
+  status: string;
+}
 
 // Meta ki fixed list - inke alawa koi value accept nahi hoti
 const VERTICALS: { value: string; label: string }[] = [
@@ -44,14 +55,12 @@ const nameStatusBadge = (status?: string | null) => {
   }
 };
 
-interface Props {
-  accountId: string;
-  phoneNumber: string;
-  onClose: () => void;
-}
-
-export default function BusinessProfileModal({ accountId, phoneNumber, onClose }: Props) {
+export default function WhatsAppBusinessProfile() {
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const [accounts, setAccounts] = useState<ConnectedAccount[]>([]);
+  const [accountId, setAccountId] = useState<string>('');
+  const [accountsLoading, setAccountsLoading] = useState(true);
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -84,7 +93,35 @@ export default function BusinessProfileModal({ accountId, phoneNumber, onClose }
     });
   };
 
+  // Connected accounts laao. Ek se zyada hon to user choose kar sake.
+  useEffect(() => {
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const res = await api.get('/meta/accounts');
+        const list: ConnectedAccount[] = (res.data?.data || []).filter(
+          (a: ConnectedAccount) => a.status === 'CONNECTED'
+        );
+        if (cancelled) return;
+
+        setAccounts(list);
+        if (list.length > 0) setAccountId(list[0].id);
+      } catch {
+        // account list fail ho to profile fetch waise bhi error dikha dega
+      } finally {
+        if (!cancelled) setAccountsLoading(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const fetchProfile = useCallback(async () => {
+    if (!accountId) return;
+
     try {
       setError(null);
       const res = await businessProfile.get(accountId);
@@ -98,8 +135,8 @@ export default function BusinessProfileModal({ accountId, phoneNumber, onClose }
   }, [accountId]);
 
   useEffect(() => {
-    fetchProfile();
-  }, [fetchProfile]);
+    if (accountId) fetchProfile();
+  }, [accountId, fetchProfile]);
 
   const handleSave = async () => {
     setSaving(true);
@@ -172,30 +209,79 @@ export default function BusinessProfileModal({ accountId, phoneNumber, onClose }
 
   const badge = nameStatusBadge(profile?.nameStatus);
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col">
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+  const selected = accounts.find((a) => a.id === accountId);
+
+  if (accountsLoading) {
+    return (
+      <div className="flex items-center justify-center py-16">
+        <Loader2 className="w-6 h-6 animate-spin text-emerald-600" />
+      </div>
+    );
+  }
+
+  if (accounts.length === 0) {
+    return (
+      <div className="space-y-6">
+        <Heading />
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-5 flex items-start gap-3">
+          <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
           <div>
-            <h2 className="text-lg font-semibold text-slate-900">Business Profile</h2>
-            <p className="text-xs text-slate-500 mt-0.5">{phoneNumber}</p>
+            <p className="text-amber-800 font-medium text-sm">
+              No connected WhatsApp number
+            </p>
+            <p className="text-amber-700 text-xs mt-1">
+              Connect a WhatsApp Business number first — your business profile
+              lives on that number.
+            </p>
           </div>
-          <button
-            onClick={onClose}
-            className="p-1.5 rounded-lg hover:bg-slate-100 transition-colors"
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <Heading />
+
+      {/* Account picker - sirf tab jab ek se zyada number ho */}
+      {accounts.length > 1 && (
+        <div>
+          <label className="block text-xs font-semibold text-slate-600 mb-1.5">
+            WhatsApp number
+          </label>
+          <select
+            value={accountId}
+            onChange={(e) => {
+              setAccountId(e.target.value);
+              setLoading(true);
+            }}
+            className="w-full sm:w-auto px-3 py-2.5 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
           >
-            <X className="w-5 h-5 text-slate-500" />
-          </button>
+            {accounts.map((a) => (
+              <option key={a.id} value={a.id}>
+                {a.phoneNumber}
+                {a.verifiedName ? ` — ${a.verifiedName}` : ''}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+
+      <div className="bg-white border border-slate-200 rounded-xl shadow-sm">
+        <div className="flex items-center gap-2 px-6 py-4 border-b border-slate-100">
+          <Phone className="w-4 h-4 text-slate-400" />
+          <p className="text-sm font-semibold text-slate-700">
+            {selected?.phoneNumber || ''}
+          </p>
         </div>
 
         {loading ? (
-          <div className="flex-1 flex flex-col items-center justify-center gap-3 py-16">
+          <div className="flex flex-col items-center justify-center gap-3 py-16">
             <Loader2 className="w-7 h-7 text-emerald-600 animate-spin" />
             <p className="text-sm text-slate-500">Loading profile...</p>
           </div>
         ) : error ? (
-          <div className="flex-1 flex flex-col items-center justify-center gap-3 py-16 px-6">
+          <div className="flex flex-col items-center justify-center gap-3 py-16 px-6">
             <AlertCircle className="w-8 h-8 text-red-500" />
             <p className="text-sm text-slate-600 text-center">{error}</p>
             <button
@@ -207,7 +293,7 @@ export default function BusinessProfileModal({ accountId, phoneNumber, onClose }
           </div>
         ) : (
           <>
-            <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
+            <div className="px-6 py-5 space-y-5">
               {/* Picture + display name */}
               <div className="flex items-center gap-4 p-4 bg-slate-50 rounded-xl">
                 <div className="relative">
@@ -373,13 +459,7 @@ export default function BusinessProfileModal({ accountId, phoneNumber, onClose }
             </div>
 
             {/* Footer */}
-            <div className="px-6 py-4 border-t border-slate-100 flex justify-end gap-2">
-              <button
-                onClick={onClose}
-                className="px-4 py-2 text-slate-600 rounded-lg text-sm font-medium hover:bg-slate-100"
-              >
-                Close
-              </button>
+            <div className="px-6 py-4 border-t border-slate-100 flex justify-end">
               <button
                 onClick={handleSave}
                 disabled={saving}
@@ -396,6 +476,20 @@ export default function BusinessProfileModal({ accountId, phoneNumber, onClose }
           </>
         )}
       </div>
+    </div>
+  );
+}
+
+function Heading() {
+  return (
+    <div>
+      <h2 className="text-xl font-semibold text-slate-900 flex items-center gap-2">
+        <Building2 className="w-6 h-6 text-slate-400" />
+        WhatsApp Business Profile
+      </h2>
+      <p className="mt-1 text-sm text-slate-500">
+        This is how your business appears to customers on WhatsApp
+      </p>
     </div>
   );
 }

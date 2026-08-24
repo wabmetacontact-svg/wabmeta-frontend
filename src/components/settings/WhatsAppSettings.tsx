@@ -9,10 +9,9 @@ import { useMetaConnect } from '../../hooks/useMetaConnect';
 import {
   Phone, CheckCircle, Trash2, Loader2, Star, Cloud, Plus,
   RefreshCw, AlertCircle, TrendingUp, Activity, Shield, Clock,
-  AlertTriangle, Building2,
+  AlertTriangle,
 } from 'lucide-react';
 import api, { whatsapp } from '../../services/api';
-import BusinessProfileModal from './BusinessProfileModal';
 import toast from 'react-hot-toast';
 
 interface WhatsAppAccount {
@@ -134,11 +133,6 @@ export default function WhatsAppSettings() {
   const [syncingAccountId, setSyncingAccountId] = useState<string | null>(null);
   const [lastSyncTime, setLastSyncTime] = useState<Date | null>(null);
   const [showSetupWarning, setShowSetupWarning] = useState(false); // ✅ Warning Modal state
-  const [profileModal, setProfileModal] = useState<{
-    accountId: string;
-    phoneNumber: string;
-  } | null>(null);
-
   const [disconnectModal, setDisconnectModal] = useState<{
     open: boolean;
     accountId: string;
@@ -534,18 +528,6 @@ export default function WhatsAppSettings() {
 
                   {/* Actions */}
                   <div className="p-4 flex items-center justify-end gap-2 border-t border-slate-100 bg-white">
-                    <button
-                      onClick={() =>
-                        setProfileModal({
-                          accountId: account.id,
-                          phoneNumber: account.phoneNumber,
-                        })
-                      }
-                      className="flex items-center gap-1.5 px-3 py-1.5 text-emerald-700 bg-emerald-50 rounded-lg hover:bg-emerald-100 text-sm font-medium transition-colors"
-                    >
-                      <Building2 className="w-3.5 h-3.5" />
-                      Business Profile
-                    </button>
                     {!account.isDefault && connectedAccounts.length > 1 && (
                       <button
                         onClick={() => handleSetDefault(account.id)}
@@ -700,14 +682,6 @@ export default function WhatsAppSettings() {
       )}
 
       {/* Disconnect Warning Modal */}
-      {profileModal && (
-        <BusinessProfileModal
-          accountId={profileModal.accountId}
-          phoneNumber={profileModal.phoneNumber}
-          onClose={() => setProfileModal(null)}
-        />
-      )}
-
       {disconnectModal?.open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
           <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 mx-4">

@@ -20,8 +20,8 @@ import { useAuth } from '../context/AuthContext';
 
 // Import settings components
 import WhatsAppSettings from '../components/settings/WhatsAppSettings';
-import GeneralSettings from '../components/settings/GeneralSettings';
 import BusinessProfile from '../components/settings/BusinessProfile';
+import WhatsAppBusinessProfile from '../components/settings/WhatsAppBusinessProfile';
 import NotificationSettings from '../components/settings/NotificationSettings';
 import SecuritySettings from '../components/settings/SecuritySettings';
 import ApiConfig from '../components/settings/ApiConfig';
@@ -58,13 +58,13 @@ const Settings: React.FC = () => {
       id: 'general',
       name: 'General',
       icon: SettingsIcon,
-      description: 'Organization settings',
+      description: 'Name, logo, website & timezone',
     },
     {
       id: 'business',
       name: 'Business Profile',
       icon: Building2,
-      description: 'Name, logo, website & timezone',
+      description: 'How customers see you on WhatsApp',
     },
     {
       id: 'notifications',
@@ -96,15 +96,22 @@ const Settings: React.FC = () => {
     switch (activeTab) {
       case 'whatsapp':
         return <WhatsAppSettings />;
+      // General = organization settings (name, logo, website, industry,
+      // timezone). Pehle yahan GeneralSettings tha jo ek dead static form
+      // tha - na state, na API call, na save handler. Asli form
+      // BusinessProfile component mein hai, wahi ab yahan render hota hai.
       case 'general':
-        return <GeneralSettings />;
-      case 'business':
         return (
           <BusinessProfile
             organization={organization}
             onUpdate={handleUpdateOrganization}
           />
         );
+
+      // Business Profile = WhatsApp par jo customers ko dikhta hai.
+      // Pehle ye WhatsApp tab ke andar ek modal mein chhupa hua tha.
+      case 'business':
+        return <WhatsAppBusinessProfile />;
       case 'notifications':
         return <NotificationSettings />;
       case 'security':
