@@ -155,6 +155,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     navigate('/login', { replace: true });
   }, [navigate, clearAuthData]);
 
+  // Force logout ka timer 5 second baad chalta hai aur us par koi guard nahi
+  // tha. Agar us beech user ne dobara login kar liya - jo bahut common hai,
+  // popup dekhte hi log wapas sign in karte hain - to purana timer naye
+  // session ke tokens wipe kar deta tha, aur SAHI password dene ke baad bhi
+  // user login page par wapas phenk diya jata tha.
+  const cancelForceLogout = useCallback(() => {
+    if (forceLogoutTimer.current) {
+      clearTimeout(forceLogoutTimer.current);
+      forceLogoutTimer.current = null;
+    }
+    if (countdownTimer.current) {
+      clearInterval(countdownTimer.current);
+      countdownTimer.current = null;
+    }
+    setForceLogoutState({ show: false, title: '', message: '', countdown: 5 });
+  }, []);
+
   const triggerForceLogout = useCallback(
     (title: string, message: string) => {
       console.log('🔒 Session expired:', message);
@@ -398,7 +415,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const response = await auth.login({ email, password });
       if (response.data?.success && response.data?.data) {
         const { user, tokens, organization } = response.data.data;
-        if (!organization) throw new Error('Organization not assigned');
+        // Backend login par org auto-create karta hai, to ye practically
+        // nahi hona chahiye. Agar phir bhi ho jaye to user ko technical
+        // string dikhane ka koi fayda nahi - use kya karna hai wo batao.
+        if (!organization) {
+          throw new Error(
+            'Your workspace is not ready yet. Please try again in a moment - if this keeps happening, contact support.'
+          );
+        }
+
+        // Naya session ban gaya - purana "Session Expired" countdown ab valid
+        // nahi hai, warna wo 5 second baad in hi tokens ko mita dega
+        cancelForceLogout();
 
         setAuthToken(tokens.accessToken, tokens.refreshToken);
         saveToStorage(user, organization || null);
@@ -419,7 +447,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setState(prev => ({ ...prev, isLoading: false, error: message }));
       return { success: false, error: message };
     }
-  }, [saveToStorage]);
+  }, [saveToStorage, cancelForceLogout]);
 
   const register = useCallback(async (data: any) => {
     setState(prev => ({ ...prev, isLoading: true, error: null }));
@@ -455,7 +483,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setState(prev => ({ ...prev, isLoading: false, error: message }));
       return { success: false, error: message };
     }
-  }, [saveToStorage]);
+  }, [saveToStorage, cancelForceLogout]);
 
   const googleLogin = useCallback(async (credential: string) => {
     setState(prev => ({ ...prev, isLoading: true, error: null }));
@@ -463,7 +491,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const response = await auth.googleLogin({ credential });
       if (response.data?.success && response.data?.data) {
         const { user, tokens, organization } = response.data.data;
-        if (!organization) throw new Error('Organization not assigned');
+        // Backend login par org auto-create karta hai, to ye practically
+        // nahi hona chahiye. Agar phir bhi ho jaye to user ko technical
+        // string dikhane ka koi fayda nahi - use kya karna hai wo batao.
+        if (!organization) {
+          throw new Error(
+            'Your workspace is not ready yet. Please try again in a moment - if this keeps happening, contact support.'
+          );
+        }
+
+        // Naya session ban gaya - purana "Session Expired" countdown ab valid
+        // nahi hai, warna wo 5 second baad in hi tokens ko mita dega
+        cancelForceLogout();
 
         setAuthToken(tokens.accessToken, tokens.refreshToken);
         saveToStorage(user, organization || null);
