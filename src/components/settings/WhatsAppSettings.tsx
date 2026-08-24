@@ -27,6 +27,12 @@ interface WhatsAppAccount {
   codeVerificationStatus: string | null;
   dailyMessageLimit: number;
   dailyMessagesUsed: number;
+  // Backend se aate hain (meta.service getMessagingUsage). Meta ki limit
+  // unique customers par hai jinse 24h rolling window mein conversation
+  // start ki - raw message count par nahi. null limit = unlimited tier.
+  messagingLimitPerDay?: number | null;
+  messagingUsed24h?: number;
+  messagingRemaining?: number | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -45,7 +51,9 @@ const getQualityConfig = (rating: string | null) => {
 };
 
 const getMessagingTierLabel = (tier: string | null) => {
-  if (!tier) return 'Not set';
+  // Tier abhi Meta se sync nahi hua. Backend background mein sync trigger
+  // karta hai, isliye refresh par aa jayega.
+  if (!tier) return 'Syncing...';
   const tierMap: Record<string, string> = {
     TIER_50: '50/day', TIER_250: '250/day', TIER_1K: '1,000/day',
     TIER_10K: '10,000/day', TIER_100K: '100,000/day', TIER_UNLIMITED: 'Unlimited',
@@ -450,7 +458,37 @@ export default function WhatsAppSettings() {
                       <p className="text-base font-bold text-slate-900">
                         {getMessagingTierLabel(account.messagingLimit)}
                       </p>
-                      <p className="text-xs text-slate-400 mt-0.5">Messages per day</p>
+                      {typeof account.messagingUsed24h === 'number' ? (
+                        <>
+                          <p className="text-xs text-slate-400 mt-0.5">
+                            {account.messagingLimitPerDay == null
+                              ? `${account.messagingUsed24h.toLocaleString()} used in last 24h`
+                              : `${account.messagingUsed24h.toLocaleString()} / ${account.messagingLimitPerDay.toLocaleString()} used in last 24h`}
+                          </p>
+                          {typeof account.messagingLimitPerDay === 'number' &&
+                            account.messagingLimitPerDay > 0 && (
+                              <div className="mt-2 h-1.5 w-full rounded-full bg-slate-100 overflow-hidden">
+                                <div
+                                  className={`h-full rounded-full transition-all ${
+                                    account.messagingUsed24h / account.messagingLimitPerDay >= 0.9
+                                      ? 'bg-red-500'
+                                      : account.messagingUsed24h / account.messagingLimitPerDay >= 0.7
+                                        ? 'bg-amber-500'
+                                        : 'bg-emerald-500'
+                                  }`}
+                                  style={{
+                                    width: `${Math.min(
+                                      100,
+                                      (account.messagingUsed24h / account.messagingLimitPerDay) * 100
+                                    )}%`,
+                                  }}
+                                />
+                              </div>
+                            )}
+                        </>
+                      ) : (
+                        <p className="text-xs text-slate-400 mt-0.5">Unique customers per day</p>
+                      )}
                     </div>
 
                     {/* Card 3: Verification */}
