@@ -1557,6 +1557,19 @@ export const isAuthenticated = (): boolean => {
 export const handleApiError = (error: any): string => {
   if (axios.isAxiosError(error)) {
     const apiError = error.response?.data as ApiError;
+
+    // Validation errors ka top-level message sirf 'Validation failed' hota
+    // hai, jisse user ko kuch pata nahi chalta. Asli baat field errors mein
+    // hoti hai (jaise 'Invalid URL' website par) - wahi dikhao.
+    const fieldErrors = (apiError as any)?.errors;
+    if (Array.isArray(fieldErrors) && fieldErrors.length > 0) {
+      const details = fieldErrors
+        .map((e: any) => e?.message)
+        .filter(Boolean)
+        .join('. ');
+      if (details) return details;
+    }
+
     return apiError?.message || error.message || 'An error occurred';
   }
 

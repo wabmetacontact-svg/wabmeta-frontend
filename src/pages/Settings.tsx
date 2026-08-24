@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { organizations } from '../services/api';
+import { organizations, handleApiError } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
 // Import settings components
@@ -42,7 +42,7 @@ const Settings: React.FC = () => {
       toast.success('Business profile updated');
       return { success: true };
     } catch (err: any) {
-      toast.error(err?.response?.data?.message || 'Could not save your changes.');
+      toast.error(handleApiError(err) || 'Could not save your changes.');
       return { success: false };
     }
   };
