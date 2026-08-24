@@ -1066,6 +1066,57 @@ export const whatsapp = {
 };
 
 // ---------- META ----------
+export interface BusinessProfile {
+  about?: string;
+  address?: string;
+  description?: string;
+  email?: string;
+  websites?: string[];
+  vertical?: string;
+  profile_picture_url?: string;
+  // Display name business-profile endpoint ka hissa nahi - backend usse
+  // phone number object se merge karke bhejta hai
+  displayName?: string | null;
+  nameStatus?: string | null;
+}
+
+export const businessProfile = {
+  get: (accountId: string) =>
+    api.get<ApiResponse<BusinessProfile>>(
+      `/meta/accounts/${accountId}/business-profile`
+    ),
+
+  update: (
+    accountId: string,
+    data: Partial<
+      Pick<
+        BusinessProfile,
+        'about' | 'address' | 'description' | 'email' | 'websites' | 'vertical'
+      >
+    >
+  ) =>
+    api.put<ApiResponse<BusinessProfile>>(
+      `/meta/accounts/${accountId}/business-profile`,
+      data
+    ),
+
+  uploadPicture: (accountId: string, file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return api.post<ApiResponse<BusinessProfile>>(
+      `/meta/accounts/${accountId}/business-profile/picture`,
+      formData,
+      { headers: { 'Content-Type': 'multipart/form-data' }, timeout: 120000 }
+    );
+  },
+
+  // Meta review se guzarta hai - turant apply nahi hota
+  requestDisplayNameChange: (accountId: string, displayName: string) =>
+    api.post<ApiResponse>(`/meta/accounts/${accountId}/display-name`, {
+      displayName,
+    }),
+};
+
 export const meta = {
   connect: (data: {
     code: string;

@@ -19,6 +19,31 @@ interface DayHours {
   enabled: boolean;
 }
 
+// Meta call_icons.restrict_to_user_countries ISO country codes leta hai.
+// Common markets - baaki chahiye to yahan add kar do.
+const COUNTRY_OPTIONS = [
+  { code: 'IN', label: 'India', flag: '🇮🇳' },
+  { code: 'GB', label: 'United Kingdom', flag: '🇬🇧' },
+  { code: 'US', label: 'United States', flag: '🇺🇸' },
+  { code: 'AE', label: 'UAE', flag: '🇦🇪' },
+  { code: 'SG', label: 'Singapore', flag: '🇸🇬' },
+  { code: 'AU', label: 'Australia', flag: '🇦🇺' },
+  { code: 'CA', label: 'Canada', flag: '🇨🇦' },
+  { code: 'BR', label: 'Brazil', flag: '🇧🇷' },
+];
+
+const TIMEZONE_OPTIONS = [
+  'Asia/Kolkata',
+  'Asia/Dubai',
+  'Asia/Singapore',
+  'Europe/London',
+  'Europe/Paris',
+  'America/New_York',
+  'America/Los_Angeles',
+  'Australia/Sydney',
+  'UTC',
+];
+
 const DEFAULT_HOURS: DayHours[] = DAYS.map((day) => ({
   day,
   openTime: '0900',
@@ -30,10 +55,14 @@ const CallingSettings: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [callingEnabled, setCallingEnabled] = useState(false);
-  const [inboundEnabled, setInboundEnabled] = useState(true);
+  // Meta ke paas "inbound calls" ka alag field nahi hai - call button
+  // chhupana hi customers ko call karne se rokne ka tarika hai
+  const [showCallButton, setShowCallButton] = useState(true);
   const [callbackEnabled, setCallbackEnabled] = useState(true);
-  const [restrictIndia, setRestrictIndia] = useState(true);
+  const [restrictCountries, setRestrictCountries] = useState<string[]>([]);
   const [callHoursEnabled, setCallHoursEnabled] = useState(false);
+  // Pehle 'Asia/Kolkata' hardcoded jaata tha - UK/US numbers ke liye galat tha
+  const [timezone, setTimezone] = useState('Asia/Kolkata');
   const [weeklyHours, setWeeklyHours] = useState<DayHours[]>(DEFAULT_HOURS);
 
   useEffect(() => { fetchSettings(); }, []);
@@ -45,9 +74,10 @@ const CallingSettings: React.FC = () => {
       if (response.data.success) {
         const d = response.data.data;
         if (d.callingEnabled !== undefined) setCallingEnabled(d.callingEnabled);
-        if (d.inboundCallsEnabled !== undefined) setInboundEnabled(d.inboundCallsEnabled);
+        if (d.showCallButton !== undefined) setShowCallButton(d.showCallButton);
         if (d.callbackEnabled !== undefined) setCallbackEnabled(d.callbackEnabled);
         if (d.callHoursEnabled !== undefined) setCallHoursEnabled(d.callHoursEnabled);
+        if (Array.isArray(d.restrictToCountries)) setRestrictCountries(d.restrictToCountries);
       }
     } catch (error) {
       console.error('Failed to fetch calling settings:', error);
@@ -61,11 +91,11 @@ const CallingSettings: React.FC = () => {
       setSaving(true);
       await api.put('/calling/settings', {
         callingEnabled,
-        inboundCallsEnabled: inboundEnabled,
+        showCallButton,
         callbackEnabled,
-        restrictToCountries: restrictIndia ? ['IN'] : [],
+        restrictToCountries: restrictCountries,
         callHoursEnabled,
-        timezone: 'Asia/Kolkata',
+        timezone,
         weeklyHours: callHoursEnabled
           ? weeklyHours.filter((h) => h.enabled).map((h) => ({
               day: h.day, openTime: h.openTime, closeTime: h.closeTime,
@@ -102,7 +132,7 @@ const CallingSettings: React.FC = () => {
 
   const toggleItems = [
     { label: 'Enable WhatsApp Calling', desc: 'Call customers directly via WhatsApp', icon: PhoneCall, value: callingEnabled, set: setCallingEnabled },
-    { label: 'Allow Inbound Calls', desc: 'Allow customers to call you', icon: Phone, value: inboundEnabled, set: setInboundEnabled },
+    { label: 'Show call button to customers', desc: 'Turn off to stop customers from calling you', icon: Phone, value: showCallButton, set: setShowCallButton },
     { label: 'Callback Requests', desc: 'Customers can request a callback for missed calls', icon: PhoneCall, value: callbackEnabled, set: setCallbackEnabled },
   ];
 
@@ -131,9 +161,14 @@ const CallingSettings: React.FC = () => {
           <div>
             <p className="text-amber-800 font-medium text-sm">Requirements</p>
             <ul className="text-amber-700 text-xs mt-1 space-y-1">
-              <li>• 2000+ business-initiated conversations/day (Tier 2)</li>
-              <li>• Cloud API phone number (not Business App)</li>
-              <li>• WhatsApp Calling enabled via Meta Business Suite</li>
+              <li>• Daily messaging limit of at least 2,000 unique recipients</li>
+              <li>• Cloud API phone number (not the WhatsApp Business app)</li>
+              <li>• Calling enabled on the number in WhatsApp Manager</li>
+              <li>
+                • <strong>Business-initiated calls</strong> are not available for numbers in
+                the US, Canada, Egypt, Vietnam or Nigeria. Customers from those
+                countries can still call you.
+              </li>
             </ul>
           </div>
         </div>
@@ -181,28 +216,43 @@ const CallingSettings: React.FC = () => {
             <p className="text-sm font-semibold text-slate-700">Country Restriction</p>
           </div>
         </div>
-        <div className="px-4 py-3 flex items-center justify-between">
-          <div>
-            <p className="text-sm font-medium text-slate-900">🇮🇳 Restrict to India Only</p>
-            <p className="text-xs text-slate-500">
-              Call button will only be shown to users in India
-            </p>
+        <div className="px-4 py-3">
+          <p className="text-xs text-slate-500 mb-3">
+            The call button will only be shown to users in the countries you
+            select. Leave empty to show it everywhere.
+          </p>
+
+          <div className="flex flex-wrap gap-2">
+            {COUNTRY_OPTIONS.map((c) => {
+              const active = restrictCountries.includes(c.code);
+              return (
+                <button
+                  key={c.code}
+                  onClick={() =>
+                    setRestrictCountries((prev) =>
+                      prev.includes(c.code)
+                        ? prev.filter((x) => x !== c.code)
+                        : [...prev, c.code]
+                    )
+                  }
+                  className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors ${
+                    active
+                      ? 'bg-emerald-50 border-emerald-300 text-emerald-700'
+                      : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+                  }`}
+                >
+                  {c.flag} {c.label}
+                </button>
+              );
+            })}
           </div>
-          <button onClick={() => setRestrictIndia(!restrictIndia)}>
-            {restrictIndia ? (
-              <ToggleRight className="w-10 h-6 text-green-500" />
-            ) : (
-              <ToggleLeft className="w-10 h-6 text-slate-300" />
-            )}
-          </button>
+
+          {restrictCountries.length === 0 && (
+            <p className="mt-3 text-xs text-blue-600 bg-blue-50 border border-blue-100 rounded-lg px-3 py-2">
+              🌍 No restriction — the call button is shown in all countries
+            </p>
+          )}
         </div>
-        {!restrictIndia && (
-          <div className="px-4 pb-3">
-            <p className="text-xs text-blue-600 bg-blue-50 border border-blue-100 rounded-lg px-3 py-2">
-              🌍 All countries can call — no restriction applied
-            </p>
-          </div>
-        )}
       </div>
 
       {/* Business Hours */}
@@ -211,9 +261,7 @@ const CallingSettings: React.FC = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Clock className="w-4 h-4 text-slate-500" />
-              <p className="text-sm font-semibold text-slate-700">
-                Business Hours (IST — Asia/Kolkata)
-              </p>
+              <p className="text-sm font-semibold text-slate-700">Business Hours</p>
             </div>
             <button onClick={() => setCallHoursEnabled(!callHoursEnabled)}>
               {callHoursEnabled ? (
@@ -231,7 +279,24 @@ const CallingSettings: React.FC = () => {
         </div>
 
         {callHoursEnabled && (
-          <div className="p-4 space-y-2">
+          <div className="p-4 space-y-3">
+            <div>
+              <label className="block text-xs font-semibold text-slate-600 mb-1.5">
+                Timezone
+              </label>
+              <select
+                value={timezone}
+                onChange={(e) => setTimezone(e.target.value)}
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              >
+                {TIMEZONE_OPTIONS.map((tz) => (
+                  <option key={tz} value={tz}>
+                    {tz}
+                  </option>
+                ))}
+              </select>
+            </div>
+
             {weeklyHours.map((h) => (
               <div
                 key={h.day}
