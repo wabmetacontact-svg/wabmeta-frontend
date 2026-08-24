@@ -107,11 +107,13 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requiredRole }) => {
-  const { isAuthenticated, isLoading, user } = useAuth();
+  const { isAuthenticated, isInitializing, user } = useAuth();
   const location = useLocation();
 
-  // ✅ Show loading while checking auth
-  if (isLoading) {
+  // Sirf pehle session check par loading screen. Pehle ye isLoading dekhta
+  // tha, jo login/register ke dauraan bhi true hota hai - us waqt guard poora
+  // page swap kar deta tha.
+  if (isInitializing) {
     return <LoadingScreen />;
   }
 
@@ -135,11 +137,14 @@ interface PublicRouteProps {
 }
 
 const PublicRoute: React.FC<PublicRouteProps> = ({ children, redirectTo = '/dashboard' }) => {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isInitializing } = useAuth();
   const location = useLocation();
 
-  // ✅ Show loading while checking auth
-  if (isLoading) {
+  // Yahi wo bug tha: login click karte hi isLoading true hota tha, ye guard
+  // Login page ko unmount karke LoadingScreen dikhata tha, aur fail hone par
+  // Login dobara mount hota tha - naye instance mein apiError null. Isliye
+  // "wrong email / wrong password" kabhi dikhta hi nahi tha.
+  if (isInitializing) {
     return <LoadingScreen />;
   }
 

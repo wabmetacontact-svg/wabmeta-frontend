@@ -33,6 +33,9 @@ interface WhatsAppAccount {
   messagingLimitPerDay?: number | null;
   messagingUsed24h?: number;
   messagingRemaining?: number | null;
+  // ASSIGNED = Meta ne tier de diya | PENDING = sync ho chuka par Meta ne
+  // abhi tier assign nahi kiya | SYNCING = sync abhi chala hi nahi
+  messagingTierStatus?: 'ASSIGNED' | 'PENDING' | 'SYNCING';
   createdAt: string;
   updatedAt: string;
 }
@@ -50,10 +53,16 @@ const getQualityConfig = (rating: string | null) => {
   }
 };
 
-const getMessagingTierLabel = (tier: string | null) => {
-  // Tier abhi Meta se sync nahi hua. Backend background mein sync trigger
-  // karta hai, isliye refresh par aa jayega.
-  if (!tier) return 'Syncing...';
+const getMessagingTierLabel = (
+  tier: string | null,
+  status?: 'ASSIGNED' | 'PENDING' | 'SYNCING'
+) => {
+  if (!tier) {
+    // Meta ne tier assign hi nahi kiya (naya / unverified number) - ise
+    // "Syncing..." dikhana jhooth hoga, wo kabhi aayega hi nahi.
+    if (status === 'PENDING') return 'Not available yet';
+    return 'Syncing...';
+  }
   const tierMap: Record<string, string> = {
     TIER_50: '50/day', TIER_250: '250/day', TIER_1K: '1,000/day',
     TIER_10K: '10,000/day', TIER_100K: '100,000/day', TIER_UNLIMITED: 'Unlimited',
@@ -456,9 +465,16 @@ export default function WhatsAppSettings() {
                         Tier Limit
                       </div>
                       <p className="text-base font-bold text-slate-900">
-                        {getMessagingTierLabel(account.messagingLimit)}
+                        {getMessagingTierLabel(
+                          account.messagingLimit,
+                          account.messagingTierStatus
+                        )}
                       </p>
-                      {typeof account.messagingUsed24h === 'number' ? (
+                      {account.messagingTierStatus === 'PENDING' ? (
+                        <p className="text-xs text-slate-400 mt-0.5">
+                          Meta assigns a limit after your first sends
+                        </p>
+                      ) : typeof account.messagingUsed24h === 'number' ? (
                         <>
                           <p className="text-xs text-slate-400 mt-0.5">
                             {account.messagingLimitPerDay == null

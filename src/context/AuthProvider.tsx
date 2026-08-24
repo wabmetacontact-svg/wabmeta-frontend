@@ -74,12 +74,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     organization: Organization | null;
     isAuthenticated: boolean;
     isLoading: boolean;
+    isInitializing: boolean;
     error: string | null;
   }>({
     user: null,
     organization: null,
     isAuthenticated: false,
     isLoading: true,
+    isInitializing: true,
     error: null,
   });
 
@@ -149,6 +151,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       organization: null,
       isAuthenticated: false,
       isLoading: false,
+      isInitializing: false,
       error: null,
     });
 
@@ -216,6 +219,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           organization: null,
           isAuthenticated: false,
           isLoading: false,
+          isInitializing: false,
           error: null,
         });
 
@@ -317,6 +321,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           organization: org,
           isAuthenticated: true,
           isLoading: false,
+          isInitializing: false,
           error: null,
         });
 
@@ -385,15 +390,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             organization: null,
             isAuthenticated: false,
             isLoading: false,
+            isInitializing: false,
             error: null,
           });
           navigate('/login', { replace: true });
         } else if (isMounted) {
-          setState(prev => ({ ...prev, isLoading: false }));
+          setState(prev => ({ ...prev, isLoading: false, isInitializing: false }));
         }
       } catch {
         if (isMounted) {
-          setState(prev => ({ ...prev, isLoading: false, isAuthenticated: false }));
+          setState(prev => ({
+            ...prev,
+            isLoading: false,
+            isInitializing: false,
+            isAuthenticated: false,
+          }));
         }
       }
     };
@@ -436,6 +447,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           organization: organization || null,
           isAuthenticated: true,
           isLoading: false,
+          isInitializing: false,
           error: null,
         });
 
@@ -470,6 +482,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             organization: organization || null,
             isAuthenticated: true,
             isLoading: false,
+            isInitializing: false,
             error: null,
           });
         } else {
@@ -512,6 +525,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           organization: organization || null,
           isAuthenticated: true,
           isLoading: false,
+          isInitializing: false,
           error: null,
         });
         return { success: true };

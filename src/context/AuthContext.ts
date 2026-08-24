@@ -29,6 +29,10 @@ export interface AuthContextType {
     organization: Organization | null;
     isAuthenticated: boolean;
     isLoading: boolean;
+    // Sirf pehla session check (app boot par). Login/register jaisi
+    // in-flight actions ise nahi chhedti - warna route guards login
+    // page ko unmount kar dete hain aur uska error state mit jata hai.
+    isInitializing: boolean;
     error: string | null;
     login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
     register: (data: any) => Promise<{ success: boolean; error?: string }>;

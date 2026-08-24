@@ -158,7 +158,13 @@ const Login: React.FC = () => {
         const from = (location.state as any)?.from || '/dashboard';
         navigate(from, { replace: true });
       } else {
-        setApiError(result.error || 'Login failed. Please try again.');
+        const message = result.error || 'Login failed. Please try again.';
+
+        // Inline box aur toast dono. Inline box hi kaafi hona chahiye, par
+        // agar wo kisi layout/CSS wajah se na dikhe to user ko bilkul kuch
+        // pata nahi chalta - toast us case mein guarantee deta hai.
+        setApiError(message);
+        toast.error(message);
       }
     } catch (err: any) {
       const status = err?.response?.status;
