@@ -3,9 +3,10 @@ import { useParams, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft, Save, Plus, Trash2, Loader2, MessageSquare, Users,
   Clock, Webhook, Tag, Send, Music, Video, Image, FileText,
-  Layout, UserPlus, Layers, Settings, ChevronRight, Play
+  Layout, UserPlus, Layers, Settings, ChevronRight, Play,
+  Upload, Paperclip
 } from 'lucide-react';
-import { automations as automationsApi, templates as templatesApi, contacts as contactsApi } from '../services/api';
+import { automations as automationsApi, templates as templatesApi, contacts as contactsApi, inbox as inboxApi } from '../services/api';
 import toast from 'react-hot-toast';
 import PageLoader from '../components/common/PageLoader';
 
@@ -29,6 +30,181 @@ const triggerOptions = [
   { value: 'WEBHOOK', label: 'Webhook Received', icon: Webhook, description: 'When webhook is called' },
   { value: 'INACTIVITY', label: 'Contact Inactivity', icon: Clock, description: 'After period of no messages' },
 ];
+
+// Media actions ka config. Backend (automation.engine actionSendMedia)
+// config.imageUrl / videoUrl / audioUrl / documentUrl padhta hai, aur
+// optional config.caption.
+//
+// Ye actions picker mein pehle se the par inka koi config UI nahi tha -
+// step add karne par khaali box dikhta tha aur automation chalne par backend
+// "No <type> URL provided" karke chup-chaap skip kar deta tha.
+const MEDIA_ACTIONS: Record<
+  string,
+  { field: string; label: string; accept: string; caption: boolean }
+> = {
+  send_image: {
+    field: 'imageUrl',
+    label: 'Image',
+    accept: 'image/jpeg,image/png,image/webp',
+    caption: true,
+  },
+  send_video: {
+    field: 'videoUrl',
+    label: 'Video',
+    accept: 'video/mp4,video/3gpp',
+    caption: true,
+  },
+  send_audio: {
+    field: 'audioUrl',
+    label: 'Audio',
+    accept: 'audio/mpeg,audio/ogg,audio/amr,audio/mp4',
+    caption: false, // WhatsApp audio par caption support nahi karta
+  },
+  send_document: {
+    field: 'documentUrl',
+    label: 'Document',
+    accept: '.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt',
+    caption: true,
+  },
+};
+
+const MediaActionConfig: React.FC<{
+  actionType: string;
+  config: any;
+  onChange: (next: any) => void;
+}> = ({ actionType, config, onChange }) => {
+  const spec = MEDIA_ACTIONS[actionType];
+  const [uploading, setUploading] = useState(false);
+  const fileRef = React.useRef<HTMLInputElement>(null);
+
+  if (!spec) return null;
+
+  const currentUrl = config[spec.field] || config.url || '';
+
+  const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // WhatsApp ki limits: documents 100MB, video 16MB, image 5MB, audio 16MB
+    const maxMb = actionType === 'send_document' ? 100 : actionType === 'send_image' ? 5 : 16;
+    if (file.size > maxMb * 1024 * 1024) {
+      toast.error(`${spec.label} must be under ${maxMb} MB`);
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const res = await inboxApi.uploadMedia(file);
+      const url = res.data?.data?.url;
+      if (!url) throw new Error('Upload did not return a URL');
+
+      onChange({
+        ...config,
+        [spec.field]: url,
+        filename: file.name,
+      });
+      toast.success(`${spec.label} uploaded`);
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || `Could not upload ${spec.label.toLowerCase()}`);
+    } finally {
+      setUploading(false);
+      if (fileRef.current) fileRef.current.value = '';
+    }
+  };
+
+  return (
+    <div className="space-y-3">
+      <div>
+        <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-1.5 ml-1">
+          {spec.label}
+        </label>
+
+        {currentUrl ? (
+          <div className="flex items-center gap-3 p-3 bg-emerald-50 border border-emerald-200 rounded-xl">
+            <Paperclip className="w-4 h-4 text-emerald-600 shrink-0" />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-gray-900 truncate">
+                {config.filename || spec.label + ' attached'}
+              </p>
+              <a
+                href={currentUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs text-emerald-700 hover:underline break-all"
+              >
+                {currentUrl}
+              </a>
+            </div>
+            <button
+              type="button"
+              onClick={() => onChange({ ...config, [spec.field]: '', filename: '' })}
+              className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg shrink-0"
+              title="Remove"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={() => fileRef.current?.click()}
+            disabled={uploading}
+            className="w-full flex items-center justify-center gap-2 px-4 py-6 bg-white border-2 border-dashed border-gray-200 rounded-xl text-sm text-gray-500 hover:border-emerald-400 hover:text-emerald-600 transition-colors disabled:opacity-60"
+          >
+            {uploading ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Uploading...
+              </>
+            ) : (
+              <>
+                <Upload className="w-4 h-4" />
+                Upload {spec.label.toLowerCase()}
+              </>
+            )}
+          </button>
+        )}
+
+        <input
+          ref={fileRef}
+          type="file"
+          accept={spec.accept}
+          onChange={handleFile}
+          className="hidden"
+        />
+      </div>
+
+      {/* Ya seedha URL - agar file kahin aur hosted ho */}
+      <div>
+        <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-1.5 ml-1">
+          Or paste a public URL
+        </label>
+        <input
+          type="url"
+          value={currentUrl}
+          onChange={(e) => onChange({ ...config, [spec.field]: e.target.value })}
+          placeholder="https://example.com/file"
+          className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-emerald-500 text-gray-900"
+        />
+      </div>
+
+      {spec.caption && (
+        <div>
+          <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-1.5 ml-1">
+            Caption (optional)
+          </label>
+          <input
+            type="text"
+            value={config.caption || ''}
+            onChange={(e) => onChange({ ...config, caption: e.target.value })}
+            placeholder="Add a caption..."
+            className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-emerald-500 text-gray-900"
+          />
+        </div>
+      )}
+    </div>
+  );
+};
 
 const actionOptions = [
   { value: 'send_text', label: 'Send Text Message', icon: MessageSquare },
@@ -586,6 +762,14 @@ const ActionItem: React.FC<ActionItemProps> = ({ action, index, templates, onUpd
                 ))}
               </select>
             </div>
+          )}
+
+          {MEDIA_ACTIONS[action.type] && (
+            <MediaActionConfig
+              actionType={action.type}
+              config={config}
+              onChange={(next) => onUpdate(action.id, next)}
+            />
           )}
 
           {(action.type === 'delay' || action.type === 'wait_for_response') && (
