@@ -494,7 +494,12 @@ const Campaigns: React.FC = () => {
             const delivered = safeNum(campaign.deliveredCount);
             const read = safeNum(campaign.readCount);
             const failed = safeNum(campaign.failedCount);
-            const successRate = total > 0 ? Math.min(100, Math.round(((total - failed) / total) * 100)) : 0;
+            // Backend (aur detail page) safal wahi maanta hai jo pahunch gaya:
+            // (delivered + read) / total. Yahan (total - failed) tha, isliye
+            // card aur detail page do alag numbers dikhate the.
+            const successRate = total > 0
+              ? Math.min(100, Math.round(((delivered + read) / total) * 100))
+              : 0;
             const isCompleted = campaign.status === 'COMPLETED';
 
             return (
