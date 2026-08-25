@@ -546,7 +546,12 @@ const CreateCampaign: React.FC = () => {
             : `💳 Insufficient balance. Need ₹${wall.required}, have ₹${wall.available}.`
         );
       } else if (isMountedRef.current) {
-        setApiError(raw || "Failed to trigger campaign processing queue");
+        // Campaign ban chuka hai - user ko batao ki wo gaya nahi, warna wo
+        // dobara poora flow chalata hai
+        setApiError(
+          (raw || "Could not start the campaign") +
+          " Your campaign is saved as a draft - you can start it from the Campaigns list without creating it again."
+        );
       }
     } finally {
       if (isMountedRef.current) setSending(false);

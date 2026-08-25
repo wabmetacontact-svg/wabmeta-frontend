@@ -950,7 +950,7 @@ const MessageBubble: React.FC<Props> = ({
       return (
         <div className="space-y-2 min-w-[240px]">
           {header?.type === 'text' && header?.text && <p className={`text-sm font-black ${isOutbound ? 'text-white/90' : 'text-gray-900'}`}>{header.text}</p>}
-          {bodyText && <p className="text-sm font-medium whitespace-pre-wrap break-words leading-relaxed">{bodyText}</p>}
+          {bodyText && <p className="text-sm font-medium whitespace-pre-wrap break-words leading-relaxed"><TextWithLinks text={bodyText} query={searchQuery} isOutbound={isOutbound} /></p>}
           {footer && <p className={`text-xs italic ${isOutbound ? 'text-white/50' : 'text-gray-400 font-semibold'}`}>{footer}</p>}
           {buttons.length > 0 && (
             <div className={`pt-2 border-t ${isOutbound ? 'border-white/10' : 'border-gray-200'} space-y-1`}>
@@ -968,7 +968,7 @@ const MessageBubble: React.FC<Props> = ({
       );
     }
 
-    return <p className="text-sm font-medium whitespace-pre-wrap break-words leading-relaxed">{message.content || '[Interactive message]'}</p>;
+    return <p className="text-sm font-medium whitespace-pre-wrap break-words leading-relaxed"><TextWithLinks text={message.content || '[Interactive message]'} query={searchQuery} isOutbound={isOutbound} /></p>;
   };
 
   const renderTemplateBubble = (parsed: ReturnType<typeof parseTemplateContent>) => {
