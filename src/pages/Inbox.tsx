@@ -7,7 +7,7 @@ import React, {
   useMemo,
 } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { MessageSquare, Loader2, AlertCircle, RefreshCw } from 'lucide-react';
+import { MessageSquare, Loader2, AlertCircle, RefreshCw, X, Send } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 // Components
@@ -31,7 +31,7 @@ import {
   type ConversationUpdate,
   type MessageStatusUpdate,
 } from '../hooks/useInboxSocket';
-import api, { inbox as inboxApi, whatsapp as whatsappApi } from '../services/api';
+import api, { inbox as inboxApi, whatsapp as whatsappApi, handleApiError } from '../services/api';
 import { useApp } from '../context/AppContext';
 
 // Utils
@@ -150,6 +150,11 @@ const Inbox: React.FC = () => {
   const tempToRealIdMap = useRef<Map<string, string>>(new Map());
 
   const [conversations, setConversations] = useState<Conversation[]>([]);
+
+  // Forward - kaunsa message, aur picker ki state
+  const [forwardMsg, setForwardMsg] = useState<Message | null>(null);
+  const [forwardSearch, setForwardSearch] = useState('');
+  const [forwardingTo, setForwardingTo] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
   const [loading, setLoading] = useState(true);
@@ -782,9 +787,60 @@ const Inbox: React.FC = () => {
   }, []);
 
   const handleForwardMessage = useCallback((msg: Message) => {
-    toast('Forward feature coming soon!', { icon: '🚧' });
-    console.log('Forward:', msg);
+    const type = (msg.type || 'text').toLowerCase();
+
+    // Location / interactive jaise types forward karna support nahi hai
+    if (!['text', 'image', 'video', 'audio', 'document'].includes(type)) {
+      toast.error('This message type cannot be forwarded');
+      return;
+    }
+
+    setForwardMsg(msg);
+    setForwardSearch('');
   }, []);
+
+  const doForward = useCallback(
+    async (target: Conversation) => {
+      if (!forwardMsg) return;
+
+      const type = (forwardMsg.type || 'text').toLowerCase();
+      setForwardingTo(target.id);
+
+      try {
+        if (type === 'text') {
+          if (!whatsappAccountId) throw new Error('No WhatsApp account connected');
+
+          await whatsappApi.sendText({
+            whatsappAccountId,
+            to: target.contact.phone,
+            message: forwardMsg.content || '',
+            conversationId: target.id,
+          } as any);
+        } else {
+          // Media forward - wahi mediaUrl dobara bhejo, naya upload nahi
+          if (!forwardMsg.mediaUrl) {
+            throw new Error('This media is no longer available to forward');
+          }
+
+          await api.post(`/inbox/conversations/${target.id}/messages/media`, {
+            mediaType: type,
+            mediaUrl: forwardMsg.mediaUrl,
+            caption: forwardMsg.content || undefined,
+          });
+        }
+
+        toast.success(
+          `Forwarded to ${target.contact?.name || target.contact?.phone || 'chat'}`
+        );
+        setForwardMsg(null);
+      } catch (err: any) {
+        toast.error(handleApiError(err) || 'Could not forward message');
+      } finally {
+        setForwardingTo(null);
+      }
+    },
+    [forwardMsg, whatsappAccountId]
+  );
 
   const handleStarMessage = useCallback(
     async (msg: Message) => {
@@ -1370,6 +1426,77 @@ const Inbox: React.FC = () => {
         minimumPlan="MONTHLY"
         message="You have reached your free demo limit of chatting with 10 contacts. Please upgrade your plan to continue."
       />
+
+      {/* Forward - chat picker */}
+      {forwardMsg && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[80vh] flex flex-col">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
+              <h3 className="text-base font-semibold text-slate-900">Forward to</h3>
+              <button
+                onClick={() => setForwardMsg(null)}
+                className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-500"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="px-5 pt-4">
+              <input
+                value={forwardSearch}
+                onChange={(e) => setForwardSearch(e.target.value)}
+                placeholder="Search chats"
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              />
+            </div>
+
+            <div className="flex-1 overflow-y-auto px-2 py-3">
+              {conversations
+                .filter((c) => {
+                  // Isi chat mein forward karne ka matlab nahi
+                  if (c.id === selectedConversation?.id) return false;
+                  const q = forwardSearch.trim().toLowerCase();
+                  if (!q) return true;
+                  const n = (c.contact?.name || '').toLowerCase();
+                  const p = (c.contact?.phone || '').toLowerCase();
+                  return n.includes(q) || p.includes(q);
+                })
+                .map((c) => {
+                  const label = c.contact?.name || c.contact?.phone || 'Unknown';
+                  const busy = forwardingTo === c.id;
+
+                  return (
+                    <button
+                      key={c.id}
+                      onClick={() => doForward(c)}
+                      disabled={!!forwardingTo}
+                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-50 disabled:opacity-60 text-left"
+                    >
+                      <div className="w-9 h-9 rounded-full bg-emerald-600 text-white flex items-center justify-center text-sm font-bold shrink-0">
+                        {label.charAt(0).toUpperCase()}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-slate-900 truncate">{label}</p>
+                        {!!c.contact?.phone && (
+                          <p className="text-xs text-slate-500 truncate">{c.contact.phone}</p>
+                        )}
+                      </div>
+                      {busy ? (
+                        <Loader2 className="w-4 h-4 animate-spin text-emerald-600 shrink-0" />
+                      ) : (
+                        <Send className="w-4 h-4 text-emerald-600 shrink-0" />
+                      )}
+                    </button>
+                  );
+                })}
+
+              {conversations.filter((c) => c.id !== selectedConversation?.id).length === 0 && (
+                <p className="text-center text-sm text-slate-500 py-8">No other chats</p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -325,10 +325,30 @@ function HighlightedText({ text, query }: { text: string; query?: string }) {
   );
 }
 
+
+const LINK_TLDS =
+  'com|net|org|io|co|in|uk|us|ai|app|dev|me|info|biz|xyz|online|site|shop|store|tech|live|link|page|club|fun|pro|cloud';
+
+const LINK_REGEX = new RegExp(
+  '([\\w.+-]+@[\\w-]+\\.[\\w.]{2,}|(?:https?://|www\\.)[^\\s<]+|\\b[\\w-]+(?:\\.[\\w-]+)*\\.(?:' +
+    LINK_TLDS +
+    ')\\b(?:/[^\\s<]*)?|\\+?\\d[\\d\\s-]{7,}\\d)',
+  'gi'
+);
+
+const linkHref = (raw: string): string => {
+  if (/^https?:\/\//i.test(raw)) return raw;
+  if (raw.includes('@')) return 'mailto:' + raw;
+  if (/[a-z]/i.test(raw) && raw.includes('.')) return 'https://' + raw;
+  return 'tel:' + raw.replace(/[\s-]/g, '');
+};
+
 function TextWithLinks({ text, query, isOutbound }: { text: string; query?: string; isOutbound?: boolean }) {
   if (!text) return null;
-  const urlRegex = /(https?:\/\/[^\s]+)/g;
-  const parts = text.split(urlRegex);
+  // Pehle sirf https?:// match hota tha, isliye "wabmeta.com" jaisa bare
+  // domain plain text reh jata tha. Email ko URL se pehle match karna zaroori
+  // hai warna "sam@site.com" ka domain hissa alag link ban jata.
+  const parts = text.split(LINK_REGEX);
   if (parts.length === 1) return <HighlightedText text={text} query={query} />;
   const linkClass = isOutbound
     ? "text-sky-300 hover:text-sky-100 underline break-all font-semibold transition-colors"
@@ -338,7 +358,7 @@ function TextWithLinks({ text, query, isOutbound }: { text: string; query?: stri
       {parts.map((part, i) => {
         if (/^https?:\/\/[^\s]+$/.test(part)) {
           return (
-            <a key={i} href={part} target="_blank" rel="noopener noreferrer" className={linkClass}>
+            <a key={i} href={linkHref(part)} target="_blank" rel="noopener noreferrer" className={linkClass}>
               {part}
             </a>
           );
