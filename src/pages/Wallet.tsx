@@ -335,8 +335,11 @@ const ActiveWalletView: React.FC<ActiveWalletViewProps> = ({
             </span>
           </div>
 
+          {/* Label "Available Balance" hai to value bhi available honi chahiye.
+              Pehle yahan poora balance dikhta tha jabki neeche availableBalance
+              jaata hai - do alag numbers ek hi naam ke saath. */}
           <div className="text-4xl font-bold mb-1">
-            ₹{walletData.balance.toLocaleString("en-IN", {
+            ₹{walletData.availableBalance.toLocaleString("en-IN", {
               minimumFractionDigits: 2,
               maximumFractionDigits: 2,
             })}
@@ -348,7 +351,11 @@ const ActiveWalletView: React.FC<ActiveWalletViewProps> = ({
               {walletData.reservedBalance.toLocaleString("en-IN", {
                 minimumFractionDigits: 2,
               })}{" "}
-              reserved
+              reserved &middot; ₹
+              {walletData.balance.toLocaleString("en-IN", {
+                minimumFractionDigits: 2,
+              })}{" "}
+              total
             </p>
           )}
 

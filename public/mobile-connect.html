@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Connect WhatsApp · WabMeta</title>
+<!--
+  Mobile Embedded Signup bridge.
+
+  Meta ka Embedded Signup sirf Facebook ke JavaScript SDK se chalta hai
+  ("Embedded Signup relies on the JavaScript SDK") - React Native me wo
+  SDK chal nahi sakta. Isliye mobile app is chhote page ko apne in-app
+  browser me kholti hai. Ye page wahi FB.login flow chalata hai jo web
+  dashboard chalata hai, aur khatam hote hi code ko custom scheme par
+  deep-link kar deta hai, jisse browser apne aap band ho jata hai.
+
+  Yahan WabMeta ka login bilkul nahi chahiye - page sirf Facebook se code
+  leta hai. Account jodne wali authenticated API call app khud karti hai.
+
+  Query params (sab app bhejti hai):
+    app_id     - Facebook App ID
+    config_id  - Embedded Signup configuration ID
+    redirect   - app ka deep link, jaise wabmeta://meta-callback
+    state      - CSRF guard, jaisa aaya waisa hi wapas jata hai
+    version    - Graph API version (optional)
+-->
+<style>
+  :root { color-scheme: light; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 28px;
+    background: #F5F7FA;
+    color: #12191C;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .box { width: 100%; max-width: 380px; text-align: center; }
+  .mark {
+    width: 60px; height: 60px;
+    border-radius: 16px;
+    background: #0A6B5C;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 20px;
+    font-size: 30px;
+  }
+  h1 { font-size: 19px; margin: 0 0 8px; letter-spacing: -0.01em; }
+  p { font-size: 14.5px; line-height: 1.55; color: #5A6B70; margin: 0 0 20px; }
+  .spinner {
+    width: 26px; height: 26px;
+    margin: 0 auto 20px;
+    border: 3px solid #DCE5E5;
+    border-top-color: #0A6B5C;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce) { .spinner { animation-duration: 2s; } }
+  button {
+    width: 100%;
+    padding: 14px 18px;
+    font-size: 15px;
+    font-weight: 600;
+    font-family: inherit;
+    color: #fff;
+    background: #0A6B5C;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+  }
+  button:disabled { opacity: 0.55; }
+  .err {
+    background: #FAE7E4;
+    border: 1px solid #E6BDB7;
+    color: #8E2A23;
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-size: 13.5px;
+    line-height: 1.5;
+    text-align: left;
+    margin-bottom: 18px;
+    word-break: break-word;
+  }
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+  <div class="box">
+    <div class="mark">💬</div>
+
+    <div id="err" class="err hidden"></div>
+
+    <div id="loading">
+      <div class="spinner"></div>
+      <h1>Opening Meta setup…</h1>
+      <p>Hold on while we load the WhatsApp Business signup.</p>
+    </div>
+
+    <div id="ready" class="hidden">
+      <h1>Connect WhatsApp Business</h1>
+      <p>You'll sign in to Facebook and choose the number you want to connect.</p>
+      <button id="startBtn" type="button">Continue</button>
+    </div>
+
+    <div id="done" class="hidden">
+      <div class="spinner"></div>
+      <h1>Almost there…</h1>
+      <p>Returning to the WabMeta app.</p>
+    </div>
+  </div>
+
+<script>
+(function () {
+  var qs = new URLSearchParams(location.search);
+  var appId    = qs.get("app_id");
+  var configId = qs.get("config_id");
+  var redirect = qs.get("redirect");
+  var state    = qs.get("state") || "";
+  var version  = qs.get("version") || "v22.0";
+
+  var elLoading = document.getElementById("loading");
+  var elReady   = document.getElementById("ready");
+  var elDone    = document.getElementById("done");
+  var elErr     = document.getElementById("err");
+  var startBtn  = document.getElementById("startBtn");
+
+  // Embedded Signup postMessage se WABA aur phone number id bhejta hai.
+  // Ye code ke saath app ko de dete hain - warna server ko dobara
+  // Graph API se dhoondhna padta hai.
+  var session = {};
+
+  function show(el) {
+    [elLoading, elReady, elDone].forEach(function (n) {
+      n.classList.add("hidden");
+    });
+    el.classList.remove("hidden");
+  }
+
+  function fail(message) {
+    elErr.textContent = message;
+    elErr.classList.remove("hidden");
+    show(elReady);
+    startBtn.disabled = false;
+    startBtn.textContent = "Try again";
+  }
+
+  function backToApp(params) {
+    if (!redirect) {
+      fail("This page was opened without a return link. Please start again from the app.");
+      return;
+    }
+    if (state) params.set("state", state);
+    show(elDone);
+    location.replace(redirect + "?" + params.toString());
+  }
+
+  if (!appId || !configId || !redirect) {
+    show(elReady);
+    startBtn.classList.add("hidden");
+    fail("Setup link is incomplete. Please start again from the WabMeta app.");
+    return;
+  }
+
+  window.addEventListener("message", function (event) {
+    if (
+      event.origin.indexOf("facebook.com") === -1 &&
+      event.origin.indexOf("fb.com") === -1
+    ) return;
+
+    try {
+      var data = typeof event.data === "string" ? JSON.parse(event.data) : event.data;
+      if (!data || data.type !== "WA_EMBEDDED_SIGNUP") return;
+
+      if (data.event === "FINISH") {
+        session.waba_id = (data.data || {}).waba_id;
+        session.phone_number_id = (data.data || {}).phone_number_id;
+      } else if (data.event === "CANCEL") {
+        var p = new URLSearchParams();
+        p.set("error", "cancelled");
+        backToApp(p);
+      } else if (data.event === "ERROR") {
+        fail((data.data && data.data.error_message) || "Meta reported an error during setup.");
+      }
+    } catch (e) {
+      /* Facebook non-JSON messages bhi bhejta hai - unhe chhod do */
+    }
+  });
+
+  window.fbAsyncInit = function () {
+    window.FB.init({ appId: appId, cookie: true, xfbml: false, version: version });
+    show(elReady);
+  };
+
+  var s = document.createElement("script");
+  s.src = "https://connect.facebook.net/en_US/sdk.js";
+  s.async = true;
+  s.defer = true;
+  s.crossOrigin = "anonymous";
+  s.onerror = function () {
+    show(elReady);
+    startBtn.classList.add("hidden");
+    fail("Could not reach Facebook. Check your connection and try again.");
+  };
+  document.head.appendChild(s);
+
+  // SDK kabhi kabhi chup-chaap atak jata hai
+  setTimeout(function () {
+    if (!window.FB) {
+      show(elReady);
+      startBtn.classList.add("hidden");
+      fail("Facebook setup did not load. Please try again.");
+    }
+  }, 12000);
+
+  startBtn.addEventListener("click", function () {
+    elErr.classList.add("hidden");
+    startBtn.disabled = true;
+    startBtn.textContent = "Opening…";
+
+    window.FB.login(
+      function (response) {
+        var code = response && response.authResponse && response.authResponse.code;
+
+        if (!code) {
+          startBtn.disabled = false;
+          startBtn.textContent = "Continue";
+          if (response && (response.status === "not_authorized" || response.status === "unknown")) {
+            var p = new URLSearchParams();
+            p.set("error", "cancelled");
+            backToApp(p);
+          } else {
+            fail("Facebook did not return an authorization code. Please try again.");
+          }
+          return;
+        }
+
+        // Session info thodi der baad aati hai - use ek chhota mauka do,
+        // par uske bina bhi aage badh jao (server khud lookup kar lega).
+        setTimeout(function () {
+          var p = new URLSearchParams();
+          p.set("code", code);
+          if (session.waba_id) p.set("waba_id", session.waba_id);
+          if (session.phone_number_id) p.set("phone_number_id", session.phone_number_id);
+          backToApp(p);
+        }, session.waba_id ? 0 : 1200);
+      },
+      {
+        config_id: configId,
+        response_type: "code",
+        override_default_response_type: true,
+        extras: {
+          featureType: "whatsapp_business_app_onboarding",
+          sessionInfoVersion: "3",
+          version: "v3"
+        }
+      }
+    );
+  });
+})();
+</script>
+</body>
+</html>
