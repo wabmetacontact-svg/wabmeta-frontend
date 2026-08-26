@@ -408,6 +408,7 @@ const Templates: React.FC = () => {
                 <option value="APPROVED">Approved</option>
                 <option value="PENDING">Pending</option>
                 <option value="REJECTED">Rejected</option>
+                <option value="PAUSED">Paused</option>
               </select>
             </div>
             <div>

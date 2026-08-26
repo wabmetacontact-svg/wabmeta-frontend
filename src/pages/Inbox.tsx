@@ -57,6 +57,9 @@ interface Conversation {
   lastMessageStatus?: string;
   lastCustomerMessageAt?: string | null;
   unreadCount: number;
+  // Backend ise bhejta hai aur Unread filter isi par chalta hai,
+  // par interface me tha hi nahi.
+  isRead?: boolean;
   isArchived?: boolean;
   isPinned?: boolean;
   isMuted?: boolean;
@@ -1025,26 +1028,41 @@ const Inbox: React.FC = () => {
           }
         }
 
+        // Refetch ka faisla state updater ke BAAHAR. Pehle wo updater ke
+        // andar tha - React updater ko dobara chala sakta hai, aur us se
+        // do-do refetch chal jate the.
+        let needsRefetch = false;
+
         setConversations((prev) => {
           const idx = prev.findIndex((c) => c.id === convId);
           const updated = [...prev];
 
           if (idx !== -1) {
+            const nextUnread =
+              (isCurrentConv || direction === 'OUTBOUND')
+                ? 0
+                : (updated[idx].unreadCount || 0) + 1;
+
             updated[idx] = {
               ...updated[idx],
               lastMessagePreview: (newMsg.content || 'New message').substring(0, 60),
               lastMessageAt: newMsg.createdAt || new Date().toISOString(),
               lastMessageType: newMsg.type,
               lastMessageDirection: direction,
-              unreadCount: (isCurrentConv || direction === 'OUTBOUND') ? 0 : (updated[idx].unreadCount || 0) + 1,
+              unreadCount: nextUnread,
+              isRead: nextUnread === 0,
               ...(direction === 'INBOUND' ? { lastCustomerMessageAt: newMsg.createdAt || new Date().toISOString() } : {})
             };
           } else {
-            fetchConversations(true);
+            // List me hai hi nahi - naya inbound ho to Unread/All dono me
+            // aana chahiye, isliye server se dobara mangao.
+            needsRefetch = true;
           }
 
           return sortConversations(updated);
         });
+
+        if (needsRefetch) fetchConversations(true);
       },
       [fetchConversations]
     ),
@@ -1055,18 +1073,30 @@ const Inbox: React.FC = () => {
       setConversations((prev) => {
         const idx = prev.findIndex((c) => c.id === updatedConv.id);
         const currentFilter = filterRef.current;
+        const isCurrentlyOpen = selectedConvRef.current?.id === updatedConv.id;
+
+        // "Unread" ab archived jaisa hi ek asli filter hai. Pehle sirf
+        // archived handle hota tha, isliye Unread tab me padhi hui chats
+        // padi rehti thi aur nayi read chats bhi ghus jati thi - dheere
+        // dheere wo "All" jaisa dikhne lagta tha.
+        //
+        // Khuli hui chat apwaad hai: use list se hatana jarring lagta hai,
+        // isliye wo apni jagah rehti hai.
+        const belongsInUnread = (c: any) =>
+          c?.isRead === false || (c?.unreadCount ?? 0) > 0;
 
         if (idx === -1) {
           if ((updatedConv as any).contact?.id) {
             if (currentFilter === 'archived' && !updatedConv.isArchived) return prev;
             if (currentFilter !== 'archived' && updatedConv.isArchived) return prev;
+            // Read chat ko Unread tab me mat daalo
+            if (currentFilter === 'unread' && !belongsInUnread(updatedConv)) return prev;
             return sortConversations([updatedConv as any, ...prev]);
           }
           return prev;
         }
 
         const updated = [...prev];
-        const isCurrentlyOpen = selectedConvRef.current?.id === updatedConv.id;
 
         if (currentFilter === 'archived' && !updatedConv.isArchived) {
           return sortConversations(updated.filter(c => c.id !== updatedConv.id));
@@ -1075,11 +1105,18 @@ const Inbox: React.FC = () => {
           return sortConversations(updated.filter(c => c.id !== updatedConv.id));
         }
 
-        updated[idx] = {
+        const merged = {
           ...updated[idx],
           ...updatedConv,
           ...(isCurrentlyOpen ? { unreadCount: 0, isRead: true } : {})
         };
+
+        // Padh li gayi to Unread tab se hata do
+        if (currentFilter === 'unread' && !isCurrentlyOpen && !belongsInUnread(merged)) {
+          return sortConversations(updated.filter(c => c.id !== updatedConv.id));
+        }
+
+        updated[idx] = merged;
         return sortConversations(updated);
       });
 
