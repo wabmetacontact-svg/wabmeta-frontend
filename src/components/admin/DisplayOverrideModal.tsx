@@ -40,11 +40,11 @@ export interface OverrideTarget {
   /** Meta ki asli values */
   qualityRating?: string | null;
   messagingLimit?: string | null;
-  healthCanSend?: string | null;
+  codeVerificationStatus?: string | null;
   /** Abhi jo override laga hai */
   qualityRatingOverride?: string | null;
   messagingLimitOverride?: string | null;
-  healthCanSendOverride?: string | null;
+  codeVerificationOverride?: string | null;
   overrideSetBy?: string | null;
   overrideSetAt?: string | null;
 }
@@ -58,24 +58,24 @@ interface Props {
 export default function DisplayOverrideModal({ account, onClose, onSaved }: Props) {
   const [quality, setQuality] = useState<string>('');
   const [tier, setTier] = useState<string>('');
-  const [status, setStatus] = useState<string>('');
+  const [verification, setVerification] = useState<string>('');
   const [saving, setSaving] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [meta, setMeta] = useState<{
     quality?: string | null;
     tier?: string | null;
-    status?: string | null;
+    verification?: string | null;
   }>({});
 
   useEffect(() => {
     if (!account) return;
     setQuality(account.qualityRatingOverride || '');
     setTier(account.messagingLimitOverride || '');
-    setStatus(account.healthCanSendOverride || '');
+    setVerification(account.codeVerificationOverride || '');
     setMeta({
       quality: account.qualityRating,
       tier: account.messagingLimit,
-      status: account.healthCanSend,
+      verification: account.codeVerificationStatus,
     });
   }, [account]);
 
@@ -84,7 +84,7 @@ export default function DisplayOverrideModal({ account, onClose, onSaved }: Prop
   const hasOverride = !!(
     account.qualityRatingOverride ||
     account.messagingLimitOverride ||
-    account.healthCanSendOverride
+    account.codeVerificationOverride
   );
 
   const handleRefresh = async () => {
@@ -96,7 +96,7 @@ export default function DisplayOverrideModal({ account, onClose, onSaved }: Prop
         setMeta({
           quality: fresh.qualityRating,
           tier: fresh.messagingLimit,
-          status: fresh.healthCanSend,
+          verification: fresh.codeVerificationStatus,
         });
       }
       toast.success('Pulled the latest values from Meta');
@@ -113,7 +113,7 @@ export default function DisplayOverrideModal({ account, onClose, onSaved }: Prop
       await admin.setWhatsAppDisplayOverrides(account.id, {
         qualityRating: clear ? null : quality || null,
         messagingLimit: clear ? null : tier || null,
-        connectionStatus: clear ? null : status || null,
+        verificationStatus: clear ? null : verification || null,
       });
       toast.success(clear ? 'Override removed' : 'Display values updated');
       onSaved();
@@ -193,15 +193,12 @@ export default function DisplayOverrideModal({ account, onClose, onSaved }: Prop
                 </span>
               </div>
               <div className="col-span-2">
-                <p className="text-slate-500 text-xs mb-1">Can send right now</p>
+                <p className="text-slate-500 text-xs mb-1">Verification</p>
                 <span className="font-medium text-slate-900">
-                  {meta.status === 'BLOCKED'
-                    ? 'No - Meta has blocked this number'
-                    : meta.status === 'LIMITED'
-                      ? 'Yes, with a reduced limit'
-                      : meta.status === 'AVAILABLE'
-                        ? 'Yes'
-                        : 'Unknown'}
+                  {meta.verification
+                    ? meta.verification.replace(/_/g, ' ').toLowerCase()
+                        .replace(/^./, (c) => c.toUpperCase())
+                    : 'Unknown'}
                 </span>
               </div>
             </div>
@@ -229,16 +226,18 @@ export default function DisplayOverrideModal({ account, onClose, onSaved }: Prop
 
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1.5">
-                Show connection status as
+                Show verification as
               </label>
               <select
-                value={status}
-                onChange={(e) => setStatus(e.target.value)}
+                value={verification}
+                onChange={(e) => setVerification(e.target.value)}
                 className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
               >
                 <option value="">Use the value from Meta</option>
-                <option value="AVAILABLE">Connected</option>
-                <option value="BLOCKED">Cannot send</option>
+                <option value="VERIFIED">Verified</option>
+                <option value="NOT_VERIFIED">Not Verified</option>
+                <option value="PENDING">Pending</option>
+                <option value="EXPIRED">Expired</option>
               </select>
             </div>
 

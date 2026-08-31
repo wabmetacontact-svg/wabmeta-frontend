@@ -1504,7 +1504,7 @@ export const admin = {
     data: {
       qualityRating?: string | null;
       messagingLimit?: string | null;
-      connectionStatus?: string | null;
+      verificationStatus?: string | null;
     }
   ) =>
     api.put<ApiResponse>(`/admin/whatsapp-connections/${accountId}/display`, data),
