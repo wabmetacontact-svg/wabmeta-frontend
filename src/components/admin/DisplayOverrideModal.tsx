@@ -45,6 +45,8 @@ export interface OverrideTarget {
   qualityRatingOverride?: string | null;
   messagingLimitOverride?: string | null;
   codeVerificationOverride?: string | null;
+  healthCanSendOverride?: string | null;
+  healthCanSend?: string | null;
   overrideSetBy?: string | null;
   overrideSetAt?: string | null;
 }
@@ -59,12 +61,14 @@ export default function DisplayOverrideModal({ account, onClose, onSaved }: Prop
   const [quality, setQuality] = useState<string>('');
   const [tier, setTier] = useState<string>('');
   const [verification, setVerification] = useState<string>('');
+  const [connection, setConnection] = useState<string>('');
   const [saving, setSaving] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [meta, setMeta] = useState<{
     quality?: string | null;
     tier?: string | null;
     verification?: string | null;
+    canSend?: string | null;
   }>({});
 
   useEffect(() => {
@@ -72,10 +76,12 @@ export default function DisplayOverrideModal({ account, onClose, onSaved }: Prop
     setQuality(account.qualityRatingOverride || '');
     setTier(account.messagingLimitOverride || '');
     setVerification(account.codeVerificationOverride || '');
+    setConnection(account.healthCanSendOverride || '');
     setMeta({
       quality: account.qualityRating,
       tier: account.messagingLimit,
       verification: account.codeVerificationStatus,
+      canSend: account.healthCanSend,
     });
   }, [account]);
 
@@ -84,7 +90,8 @@ export default function DisplayOverrideModal({ account, onClose, onSaved }: Prop
   const hasOverride = !!(
     account.qualityRatingOverride ||
     account.messagingLimitOverride ||
-    account.codeVerificationOverride
+    account.codeVerificationOverride ||
+    account.healthCanSendOverride
   );
 
   const handleRefresh = async () => {
@@ -97,6 +104,7 @@ export default function DisplayOverrideModal({ account, onClose, onSaved }: Prop
           quality: fresh.qualityRating,
           tier: fresh.messagingLimit,
           verification: fresh.codeVerificationStatus,
+          canSend: fresh.healthCanSend,
         });
       }
       toast.success('Pulled the latest values from Meta');
@@ -114,6 +122,7 @@ export default function DisplayOverrideModal({ account, onClose, onSaved }: Prop
         qualityRating: clear ? null : quality || null,
         messagingLimit: clear ? null : tier || null,
         verificationStatus: clear ? null : verification || null,
+        connectionStatus: clear ? null : connection || null,
       });
       toast.success(clear ? 'Override removed' : 'Display values updated');
       onSaved();
@@ -192,7 +201,19 @@ export default function DisplayOverrideModal({ account, onClose, onSaved }: Prop
                   {meta.tier ? TIER_LABEL[meta.tier] || meta.tier : 'Not assigned'}
                 </span>
               </div>
-              <div className="col-span-2">
+              <div>
+                <p className="text-slate-500 text-xs mb-1">Can send right now</p>
+                <span className="font-medium text-slate-900">
+                  {meta.canSend === 'BLOCKED'
+                    ? 'No - Meta has blocked it'
+                    : meta.canSend === 'LIMITED'
+                      ? 'Yes, reduced limit'
+                      : meta.canSend === 'AVAILABLE'
+                        ? 'Yes'
+                        : 'Unknown'}
+                </span>
+              </div>
+              <div>
                 <p className="text-slate-500 text-xs mb-1">Verification</p>
                 <span className="font-medium text-slate-900">
                   {meta.verification
@@ -221,6 +242,22 @@ export default function DisplayOverrideModal({ account, onClose, onSaved }: Prop
                     {q}
                   </option>
                 ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                Show connection status as
+              </label>
+              <select
+                value={connection}
+                onChange={(e) => setConnection(e.target.value)}
+                className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              >
+                <option value="">Use the value from Meta</option>
+                <option value="CONNECTED">Connected</option>
+                <option value="BLOCKED">Blocked</option>
+                <option value="BAN">Banned</option>
               </select>
             </div>
 

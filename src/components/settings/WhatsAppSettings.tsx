@@ -409,21 +409,36 @@ export default function WhatsAppSettings() {
           {hasConnectedAccount && (() => {
             // "Connected" ka matlab pehle sirf itna tha ki humne account jod
             // rakha hai - Meta ne number par rok laga di ho tab bhi yahi hara
-            // badge dikhta tha. Ab Meta ke health_status se aata hai.
+            // badge dikhta tha.
             //
-            // Do hi haalat dikhate hain: chal raha hai, ya nahi chal raha.
-            // Beech ka "Limited" user ko confuse karta tha - us haalat me
-            // messages jaate hain, bas limit kam hoti hai.
-            const blocked = connectedAccounts.some(
-              (a: any) => a.healthCanSend === 'BLOCKED'
-            );
+            // Ab teen haalat: Connected, Banned, Blocked. Admin ise set kar
+            // sakta hai; na ho to Meta ke health_status se aata hai.
+            const state = connectedAccounts.reduce((worst: string, a: any) => {
+              const s =
+                a.connectionState ||
+                (a.healthCanSend === 'BLOCKED' ? 'BLOCKED' : 'CONNECTED');
+              if (s === 'BAN') return 'BAN';
+              if (s === 'BLOCKED' && worst !== 'BAN') return 'BLOCKED';
+              return worst;
+            }, 'CONNECTED');
 
-            return blocked ? (
-              <span className="px-3 py-1 bg-red-100 text-red-700 text-xs font-semibold rounded-full flex items-center gap-1.5">
-                <AlertCircle className="w-3.5 h-3.5" />
-                Cannot send
-              </span>
-            ) : (
+            if (state === 'BAN') {
+              return (
+                <span className="px-3 py-1 bg-red-100 text-red-700 text-xs font-semibold rounded-full flex items-center gap-1.5">
+                  <AlertCircle className="w-3.5 h-3.5" />
+                  Banned
+                </span>
+              );
+            }
+            if (state === 'BLOCKED') {
+              return (
+                <span className="px-3 py-1 bg-orange-100 text-orange-700 text-xs font-semibold rounded-full flex items-center gap-1.5">
+                  <AlertCircle className="w-3.5 h-3.5" />
+                  Blocked
+                </span>
+              );
+            }
+            return (
               <span className="px-3 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded-full flex items-center gap-1.5">
                 <CheckCircle className="w-3.5 h-3.5" />
                 Connected
