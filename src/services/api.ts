@@ -1493,6 +1493,18 @@ export const admin = {
   disconnectWhatsApp: (accountId: string) =>
     api.post<ApiResponse>(`/admin/whatsapp-connections/${accountId}/disconnect`),
 
+  // Meta se taaza quality rating / tier / health kheencho
+  refreshWhatsAppAccount: (accountId: string) =>
+    api.post<ApiResponse>(`/admin/whatsapp-connections/${accountId}/refresh`),
+
+  // Display overrides - user ko kya dikhe. Meta par kuch nahi badalta,
+  // aur sending par bhi koi asar nahi.
+  setWhatsAppDisplayOverrides: (
+    accountId: string,
+    data: { qualityRating?: string | null; messagingLimit?: string | null }
+  ) =>
+    api.put<ApiResponse>(`/admin/whatsapp-connections/${accountId}/display`, data),
+
   getWalletRequests: (params?: {
     status?: string;
     page?: number;

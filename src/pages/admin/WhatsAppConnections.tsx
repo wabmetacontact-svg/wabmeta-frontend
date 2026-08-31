@@ -8,10 +8,12 @@ import {
   Search,
   Wifi,
   WifiOff,
+  SlidersHorizontal,
 } from 'lucide-react';
 import { admin } from '../../services/api';
 import toast from 'react-hot-toast';
 import WhatsAppConnectionBadge from '../../components/admin/WhatsAppConnectionBadge';
+import DisplayOverrideModal from '../../components/admin/DisplayOverrideModal';
 
 // ============================================
 // TYPES
@@ -23,10 +25,21 @@ interface Connection {
   displayName: string;
   verifiedName: string;
   qualityRating: string;
+  messagingLimit?: string | null;
   status: string;
   isActive: boolean;
   createdAt: string;
   connectionType?: string;
+
+  // Admin ke display overrides - Meta par kuch nahi badalta, sirf ye tay
+  // karta hai ki customer ko WabMeta me kya dikhe.
+  qualityRatingOverride?: string | null;
+  messagingLimitOverride?: string | null;
+  overrideSetBy?: string | null;
+  overrideSetAt?: string | null;
+  displayQualityRating?: string | null;
+  displayMessagingLimit?: string | null;
+  hasOverride?: boolean;
   organization: {
     id: string;
     name: string;
@@ -213,6 +226,8 @@ export default function WhatsAppConnections() {
       setLoading(false);
     }
   };
+
+  const [overrideTarget, setOverrideTarget] = useState<Connection | null>(null);
 
   const handleDisconnectClick = (connection: Connection) => {
     setConfirmModal({ isOpen: true, connection });
@@ -452,9 +467,25 @@ export default function WhatsAppConnections() {
                       )}
                     </td>
 
-                    {/* Quality */}
+                    {/* Quality + tier - jo customer ko dikh raha hai */}
                     <td className="px-6 py-4">
-                      <QualityBadge rating={conn.qualityRating} />
+                      <QualityBadge
+                        rating={conn.displayQualityRating || conn.qualityRating}
+                      />
+                      {(conn.displayMessagingLimit || conn.messagingLimit) && (
+                        <p className="text-xs text-gray-500 mt-1">
+                          {(conn.displayMessagingLimit || conn.messagingLimit)!.replace('TIER_', '')}
+                        </p>
+                      )}
+                      {conn.hasOverride && (
+                        <span
+                          className="inline-block mt-1 px-1.5 py-0.5 rounded text-[10px] font-semibold
+                            bg-amber-100 text-amber-700"
+                          title="An admin is overriding what the customer sees"
+                        >
+                          OVERRIDE
+                        </span>
+                      )}
                     </td>
 
                     {/* Type */}
@@ -479,6 +510,14 @@ export default function WhatsAppConnections() {
 
                     {/* Actions */}
                     <td className="px-6 py-4 text-right">
+                      <button
+                        onClick={() => setOverrideTarget(conn)}
+                        className="p-2 text-gray-400 hover:text-emerald-500
+                          hover:bg-emerald-500/10 rounded-lg transition-all"
+                        title="Change what the customer sees"
+                      >
+                        <SlidersHorizontal className="w-4 h-4" />
+                      </button>
                       {conn.isActive ? (
                         <button
                           onClick={() => handleDisconnectClick(conn)}
@@ -499,7 +538,13 @@ export default function WhatsAppConnections() {
           </div>
         )}
 
-        {/* Footer info */}
+        <DisplayOverrideModal
+        account={overrideTarget}
+        onClose={() => setOverrideTarget(null)}
+        onSaved={fetchConnections}
+      />
+
+      {/* Footer info */}
         {!loading && filteredConnections.length > 0 && (
           <div
             className="px-6 py-3 border-t border-gray-200 bg-gray-50
