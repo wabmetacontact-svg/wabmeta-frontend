@@ -63,11 +63,26 @@ const getMessagingTierLabel = (
     if (status === 'PENDING') return 'Not available yet';
     return 'Syncing...';
   }
+  // Meta ne 1K ko 2K se badal diya tha aur naye tiers bhi jodte rehta hai.
+  // Missing entry par yahan raw "TIER_2K" dikh jata tha.
   const tierMap: Record<string, string> = {
-    TIER_50: '50/day', TIER_250: '250/day', TIER_1K: '1,000/day',
-    TIER_10K: '10,000/day', TIER_100K: '100,000/day', TIER_UNLIMITED: 'Unlimited',
+    TIER_50: '50/day',
+    TIER_250: '250/day',
+    TIER_1K: '1,000/day',
+    TIER_2K: '2,000/day',
+    TIER_5K: '5,000/day',
+    TIER_10K: '10,000/day',
+    TIER_20K: '20,000/day',
+    TIER_50K: '50,000/day',
+    TIER_100K: '100,000/day',
+    TIER_UNLIMITED: 'Unlimited',
   };
-  return tierMap[tier] || tier;
+  if (tierMap[tier]) return tierMap[tier];
+
+  // Anjaan tier bhi padhne layak dikhe - "TIER_250K" ko "250K/day" bana do
+  const m = /^TIER_(\d+)(K|M)?$/i.exec(tier);
+  if (m) return `${m[1]}${m[2] ? m[2].toUpperCase() : ''}/day`;
+  return tier;
 };
 
 // ============================================
@@ -391,12 +406,41 @@ export default function WhatsAppSettings() {
               <p className="text-sm text-slate-500">Official WhatsApp Business API powered by Meta</p>
             </div>
           </div>
-          {hasConnectedAccount && (
-            <span className="px-3 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded-full flex items-center gap-1.5">
-              <CheckCircle className="w-3.5 h-3.5" />
-              Connected
-            </span>
-          )}
+          {hasConnectedAccount && (() => {
+            // "Connected" ka matlab sirf itna tha ki humne account jod rakha
+            // hai. Agar Meta ne number par rok laga di ho (payment method,
+            // banned WABA, OTP pending) to bhi yahi hara badge dikhta tha.
+            // Ab Meta ka health_status dikhta hai.
+            const blocked = connectedAccounts.some(
+              (a: any) => a.healthCanSend === 'BLOCKED'
+            );
+            const limited =
+              !blocked &&
+              connectedAccounts.some((a: any) => a.healthCanSend === 'LIMITED');
+
+            if (blocked) {
+              return (
+                <span className="px-3 py-1 bg-red-100 text-red-700 text-xs font-semibold rounded-full flex items-center gap-1.5">
+                  <AlertCircle className="w-3.5 h-3.5" />
+                  Cannot send
+                </span>
+              );
+            }
+            if (limited) {
+              return (
+                <span className="px-3 py-1 bg-amber-100 text-amber-700 text-xs font-semibold rounded-full flex items-center gap-1.5">
+                  <AlertCircle className="w-3.5 h-3.5" />
+                  Limited
+                </span>
+              );
+            }
+            return (
+              <span className="px-3 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded-full flex items-center gap-1.5">
+                <CheckCircle className="w-3.5 h-3.5" />
+                Connected
+              </span>
+            );
+          })()}
         </div>
 
         {/* Connected Accounts */}
