@@ -1501,7 +1501,11 @@ export const admin = {
   // aur sending par bhi koi asar nahi.
   setWhatsAppDisplayOverrides: (
     accountId: string,
-    data: { qualityRating?: string | null; messagingLimit?: string | null }
+    data: {
+      qualityRating?: string | null;
+      messagingLimit?: string | null;
+      connectionStatus?: string | null;
+    }
   ) =>
     api.put<ApiResponse>(`/admin/whatsapp-connections/${accountId}/display`, data),
 

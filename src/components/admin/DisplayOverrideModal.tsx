@@ -40,9 +40,11 @@ export interface OverrideTarget {
   /** Meta ki asli values */
   qualityRating?: string | null;
   messagingLimit?: string | null;
+  healthCanSend?: string | null;
   /** Abhi jo override laga hai */
   qualityRatingOverride?: string | null;
   messagingLimitOverride?: string | null;
+  healthCanSendOverride?: string | null;
   overrideSetBy?: string | null;
   overrideSetAt?: string | null;
 }
@@ -56,20 +58,34 @@ interface Props {
 export default function DisplayOverrideModal({ account, onClose, onSaved }: Props) {
   const [quality, setQuality] = useState<string>('');
   const [tier, setTier] = useState<string>('');
+  const [status, setStatus] = useState<string>('');
   const [saving, setSaving] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  const [meta, setMeta] = useState<{ quality?: string | null; tier?: string | null }>({});
+  const [meta, setMeta] = useState<{
+    quality?: string | null;
+    tier?: string | null;
+    status?: string | null;
+  }>({});
 
   useEffect(() => {
     if (!account) return;
     setQuality(account.qualityRatingOverride || '');
     setTier(account.messagingLimitOverride || '');
-    setMeta({ quality: account.qualityRating, tier: account.messagingLimit });
+    setStatus(account.healthCanSendOverride || '');
+    setMeta({
+      quality: account.qualityRating,
+      tier: account.messagingLimit,
+      status: account.healthCanSend,
+    });
   }, [account]);
 
   if (!account) return null;
 
-  const hasOverride = !!(account.qualityRatingOverride || account.messagingLimitOverride);
+  const hasOverride = !!(
+    account.qualityRatingOverride ||
+    account.messagingLimitOverride ||
+    account.healthCanSendOverride
+  );
 
   const handleRefresh = async () => {
     setRefreshing(true);
@@ -77,7 +93,11 @@ export default function DisplayOverrideModal({ account, onClose, onSaved }: Prop
       const { data } = await admin.refreshWhatsAppAccount(account.id);
       const fresh = data?.data?.account;
       if (fresh) {
-        setMeta({ quality: fresh.qualityRating, tier: fresh.messagingLimit });
+        setMeta({
+          quality: fresh.qualityRating,
+          tier: fresh.messagingLimit,
+          status: fresh.healthCanSend,
+        });
       }
       toast.success('Pulled the latest values from Meta');
     } catch (e: any) {
@@ -93,6 +113,7 @@ export default function DisplayOverrideModal({ account, onClose, onSaved }: Prop
       await admin.setWhatsAppDisplayOverrides(account.id, {
         qualityRating: clear ? null : quality || null,
         messagingLimit: clear ? null : tier || null,
+        connectionStatus: clear ? null : status || null,
       });
       toast.success(clear ? 'Override removed' : 'Display values updated');
       onSaved();
@@ -171,6 +192,18 @@ export default function DisplayOverrideModal({ account, onClose, onSaved }: Prop
                   {meta.tier ? TIER_LABEL[meta.tier] || meta.tier : 'Not assigned'}
                 </span>
               </div>
+              <div className="col-span-2">
+                <p className="text-slate-500 text-xs mb-1">Can send right now</p>
+                <span className="font-medium text-slate-900">
+                  {meta.status === 'BLOCKED'
+                    ? 'No - Meta has blocked this number'
+                    : meta.status === 'LIMITED'
+                      ? 'Yes, with a reduced limit'
+                      : meta.status === 'AVAILABLE'
+                        ? 'Yes'
+                        : 'Unknown'}
+                </span>
+              </div>
             </div>
           </div>
 
@@ -191,6 +224,21 @@ export default function DisplayOverrideModal({ account, onClose, onSaved }: Prop
                     {q}
                   </option>
                 ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                Show connection status as
+              </label>
+              <select
+                value={status}
+                onChange={(e) => setStatus(e.target.value)}
+                className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              >
+                <option value="">Use the value from Meta</option>
+                <option value="AVAILABLE">Connected</option>
+                <option value="BLOCKED">Cannot send</option>
               </select>
             </div>
 
