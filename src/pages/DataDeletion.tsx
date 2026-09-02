@@ -32,11 +32,12 @@ const sections: Section[] = [
   { id: "overview", number: "1", title: "Overview & Policy", icon: FileText },
   { id: "in-app-deletion", number: "2", title: "Option 1: In-App Deletion", icon: Smartphone },
   { id: "email-request", number: "3", title: "Option 2: Email Request", icon: Mail },
-  { id: "what-gets-deleted", number: "4", title: "What Gets Deleted", icon: Database },
-  { id: "before-you-delete", number: "5", title: "Before You Delete", icon: AlertTriangle },
-  { id: "data-retention", number: "6", title: "What We Keep (Exceptions)", icon: Clock },
-  { id: "meta-compliance", number: "7", title: "Meta Platform Compliance", icon: Globe },
-  { id: "contact", number: "8", title: "Questions & Support", icon: HelpCircle },
+  { id: "partial-deletion", number: "4", title: "Delete Only Some Data", icon: Trash2 },
+  { id: "what-gets-deleted", number: "5", title: "What Gets Deleted", icon: Database },
+  { id: "before-you-delete", number: "6", title: "Before You Delete", icon: AlertTriangle },
+  { id: "data-retention", number: "7", title: "What We Keep (Exceptions)", icon: Clock },
+  { id: "meta-compliance", number: "8", title: "Meta Platform Compliance", icon: Globe },
+  { id: "contact", number: "9", title: "Questions & Support", icon: HelpCircle },
 ];
 
 const DataDeletion: React.FC = () => {
@@ -241,8 +242,42 @@ const DataDeletion: React.FC = () => {
               </InfoBox>
             </Section>
 
-            {/* 4. What Gets Deleted */}
-            <Section id="what-gets-deleted" number="4" title="What Data Gets Deleted" icon={Database}>
+            {/* 4. Delete Only Some Data */}
+            <Section id="partial-deletion" number="4" title="Deleting Only Some of Your Data" icon={Trash2}>
+              <p className="mb-4">
+                You do not have to close your account to remove data. Everything below can be deleted from inside the WabMeta app or web dashboard while your account stays active, and each deletion is permanent.
+              </p>
+
+              <div className="space-y-3">
+                <InfoBox icon="👥" title="Contacts" color="green">
+                  Open <strong>Contacts</strong>, then delete a single contact from its detail screen, select several and delete them together, or remove every contact at once. This includes any contacts you imported from your phone's address book.
+                </InfoBox>
+                <InfoBox icon="💬" title="Conversations and messages" color="blue">
+                  Open <strong>Inbox</strong> and delete an individual conversation, or clear all conversations. Message content and any attached media are removed with them.
+                </InfoBox>
+                <InfoBox icon="📣" title="Campaigns, templates and automations" color="blue">
+                  Campaigns, message templates, chatbot flows and automation workflows can each be deleted individually from their own screens.
+                </InfoBox>
+                <InfoBox icon="🗂️" title="CRM leads and notifications" color="blue">
+                  Individual leads can be deleted from the CRM, and notifications can be cleared from the notifications screen.
+                </InfoBox>
+              </div>
+
+              <p className="mt-4">
+                Prefer us to do it for you? Email{" "}
+                <a href="mailto:privacy@wabmeta.com?subject=Partial%20Data%20Deletion%20Request" className="text-green-700 font-semibold hover:underline">
+                  privacy@wabmeta.com
+                </a>{" "}
+                from your registered address, telling us which categories you want removed. We complete these requests within 30 calendar days.
+              </p>
+
+              <AlertBox type="info">
+                Deleting data this way leaves your account, organisation, plan and wallet balance untouched. To remove everything including the account itself, use one of the two options above.
+              </AlertBox>
+            </Section>
+
+            {/* 5. What Gets Deleted */}
+            <Section id="what-gets-deleted" number="5" title="What Data Gets Deleted" icon={Database}>
               <p className="mb-4">
                 When your deletion request is processed, all of the following data categories are permanently purged from our active databases and file storage:
               </p>
@@ -262,7 +297,7 @@ const DataDeletion: React.FC = () => {
             </Section>
 
             {/* 5. Before You Delete */}
-            <Section id="before-you-delete" number="5" title="Before You Delete" icon={AlertTriangle}>
+            <Section id="before-you-delete" number="6" title="Before You Delete" icon={AlertTriangle}>
               <p className="mb-3">
                 Please review these important considerations before confirming your account deletion:
               </p>
@@ -283,7 +318,7 @@ const DataDeletion: React.FC = () => {
             </Section>
 
             {/* 6. What We Keep (Exceptions) */}
-            <Section id="data-retention" number="6" title="What We Keep (Legal Exceptions)" icon={Clock}>
+            <Section id="data-retention" number="7" title="What We Keep (Legal Exceptions)" icon={Clock}>
               <p>
                 Where strictly required by statutory, tax, or accounting laws, we retain a minimal record of past financial invoices and transaction amounts:
               </p>
@@ -301,7 +336,7 @@ const DataDeletion: React.FC = () => {
             </Section>
 
             {/* 7. Meta Platform Compliance */}
-            <Section id="meta-compliance" number="7" title="Meta Platform Data Deletion Compliance" icon={Globe}>
+            <Section id="meta-compliance" number="8" title="Meta Platform Data Deletion Compliance" icon={Globe}>
               <p className="mb-3">
                 In compliance with Meta Platform Terms and Facebook Login Data Deletion requirements, users who authenticated or connected services via Meta/Facebook can request data removal directly:
               </p>
@@ -316,7 +351,7 @@ const DataDeletion: React.FC = () => {
             </Section>
 
             {/* 8. Questions & Support */}
-            <Section id="contact" number="8" title="Questions & Support" icon={HelpCircle}>
+            <Section id="contact" number="9" title="Questions & Support" icon={HelpCircle}>
               <p className="mb-4">
                 If you have questions about our data deletion practices, need assistance exporting your records, or want to verify data erasure status, please reach out to us:
               </p>
