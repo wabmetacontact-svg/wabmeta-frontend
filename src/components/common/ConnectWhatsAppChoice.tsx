@@ -31,17 +31,17 @@ export const ConnectWhatsAppChoice: React.FC<ConnectWhatsAppChoiceProps> = ({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4
-                    bg-slate-900/50 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-center justify-center
+                    p-6 sm:p-10 bg-slate-900/50 backdrop-blur-sm">
       <div
         className="bg-white rounded-2xl shadow-2xl w-full max-w-lg
-                   max-h-[90vh] overflow-y-auto"
+                   max-h-full overflow-y-auto"
         role="dialog"
         aria-modal="true"
         aria-labelledby="connect-choice-title"
       >
         {/* Header */}
-        <div className="flex items-start justify-between gap-4 p-6 pb-4">
+        <div className="flex items-start justify-between gap-4 px-5 pt-5 pb-3">
           <div>
             <h2
               id="connect-choice-title"
@@ -64,7 +64,7 @@ export const ConnectWhatsAppChoice: React.FC<ConnectWhatsAppChoiceProps> = ({
         </div>
 
         {/* Options */}
-        <div className="px-6 pb-2 space-y-3">
+        <div className="px-5 space-y-2.5">
           {/* Coexistence */}
           <button
             onClick={() => onChoose('existing')}
@@ -94,7 +94,7 @@ export const ConnectWhatsAppChoice: React.FC<ConnectWhatsAppChoiceProps> = ({
                   same number, and your chats stay where they are.
                 </p>
 
-                <div className="mt-3 pt-3 border-t border-slate-100 space-y-2">
+                <div className="mt-2.5 pt-2.5 border-t border-slate-100 space-y-1.5">
                   <Caveat icon={Gauge}>
                     Sending capped at <strong>20 messages/second</strong> — large
                     campaigns run slower
@@ -146,7 +146,7 @@ export const ConnectWhatsAppChoice: React.FC<ConnectWhatsAppChoiceProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="p-6 pt-4">
+        <div className="px-5 pt-3 pb-5">
           <p className="text-xs text-slate-400 text-center">
             Not sure? Open WhatsApp on the phone that holds this number — if it
             signs in, choose the first option.
