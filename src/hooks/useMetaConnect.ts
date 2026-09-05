@@ -19,6 +19,19 @@ interface UseMetaConnectOptions {
   onError?: (error: string) => void;
 }
 
+/**
+ * Which Embedded Signup flow to open.
+ *
+ * 'existing' → Coexistence. The number already runs the WhatsApp Business app
+ *   and keeps running it; the app and the Cloud API share the number. Meta
+ *   calls this business app onboarding and it needs the featureType extra.
+ *
+ * 'new' → Standard onboarding for a number that has no WhatsApp on it. Passing
+ *   featureType here would push the business into the coexistence flow and it
+ *   has nothing to connect, so the extra is left out.
+ */
+export type ConnectMode = 'new' | 'existing';
+
 export const useMetaConnect = ({
   organizationId,
   onSuccess,
@@ -137,7 +150,7 @@ export const useMetaConnect = ({
     }
   }, [organizationId, onSuccess, onError]);
 
-  const connect = useCallback(async () => {
+  const connect = useCallback(async (mode: ConnectMode = 'new') => {
     if (!sdkReady || !window.FB) {
       toast.error('Facebook SDK not loaded. Please refresh and try again.');
       return;
@@ -214,9 +227,14 @@ export const useMetaConnect = ({
           response_type: 'code',
           override_default_response_type: true,
           extras: {
-            featureType: 'whatsapp_business_app_onboarding',
             sessionInfoVersion: '3',
             version: 'v3',
+            // Only the coexistence flow takes this. It used to be hardcoded, so
+            // a business bringing a fresh number was sent down the "connect your
+            // existing WhatsApp Business app" path with nothing to connect.
+            ...(mode === 'existing'
+              ? { featureType: 'whatsapp_business_app_onboarding' }
+              : {}),
           },
         }
       );

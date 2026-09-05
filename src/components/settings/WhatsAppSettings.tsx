@@ -5,7 +5,8 @@
 // ✅ FIX: Added retry logic on fetchAccounts after connect (backend DB commit delay)
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { useMetaConnect } from '../../hooks/useMetaConnect';
+import { useMetaConnect, type ConnectMode } from '../../hooks/useMetaConnect';
+import { ConnectWhatsAppChoice } from '../common/ConnectWhatsAppChoice';
 import {
   Phone, CheckCircle, Trash2, Loader2, Star, Cloud, Plus,
   RefreshCw, AlertCircle, TrendingUp, Activity, Shield, Clock,
@@ -148,6 +149,7 @@ export default function WhatsAppSettings() {
   const [syncingAccountId, setSyncingAccountId] = useState<string | null>(null);
   const [lastSyncTime, setLastSyncTime] = useState<Date | null>(null);
   const [showSetupWarning, setShowSetupWarning] = useState(false); // ✅ Warning Modal state
+  const [showConnectChoice, setShowConnectChoice] = useState(false);
   const [disconnectModal, setDisconnectModal] = useState<{
     open: boolean;
     accountId: string;
@@ -321,7 +323,15 @@ export default function WhatsAppSettings() {
       toast.error('Please disconnect the current account before connecting a new one.');
       return;
     }
-    connect();
+    // Meta opens a different Embedded Signup flow depending on whether the
+    // number already runs the WhatsApp Business app, and it cannot work that
+    // out for us - the business has to tell us which case it is.
+    setShowConnectChoice(true);
+  };
+
+  const startConnect = (mode: ConnectMode) => {
+    setShowConnectChoice(false);
+    connect(mode);
   };
 
   const handleDisconnect = (accountId: string, phoneNumber: string) => {
@@ -663,6 +673,12 @@ export default function WhatsAppSettings() {
         </div>
       )}
       {/* Warning Modal */}
+      <ConnectWhatsAppChoice
+        open={showConnectChoice}
+        onCancel={() => setShowConnectChoice(false)}
+        onChoose={startConnect}
+      />
+
       {showSetupWarning && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
           <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-6">

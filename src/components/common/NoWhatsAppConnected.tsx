@@ -1,7 +1,8 @@
 // src/components/common/NoWhatsAppConnected.tsx
-import React from 'react';
+import React, { useState } from 'react';
 import { MessageCircle, Smartphone, ArrowRight, CheckCircle2, Loader2 } from 'lucide-react';
-import { useMetaConnect } from '../../hooks/useMetaConnect';
+import { useMetaConnect, type ConnectMode } from '../../hooks/useMetaConnect';
+import { ConnectWhatsAppChoice } from './ConnectWhatsAppChoice';
 import toast from 'react-hot-toast';
 
 interface NoWhatsAppConnectedProps {
@@ -27,6 +28,13 @@ export const NoWhatsAppConnected: React.FC<NoWhatsAppConnectedProps> = ({
       toast.error(err || 'Failed to connect WhatsApp Business');
     },
   });
+
+  const [showChoice, setShowChoice] = useState(false);
+
+  const startConnect = (mode: ConnectMode) => {
+    setShowChoice(false);
+    connect(mode);
+  };
 
   const features = [
     'Send template messages to customers at scale',
@@ -71,7 +79,7 @@ export const NoWhatsAppConnected: React.FC<NoWhatsAppConnectedProps> = ({
 
         {/* Dynamic Action Trigger */}
         <button
-          onClick={connect}
+          onClick={() => setShowChoice(true)}
           disabled={loading || sdkLoading}
           className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl transition-all shadow-md active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
         >
@@ -102,6 +110,12 @@ export const NoWhatsAppConnected: React.FC<NoWhatsAppConnectedProps> = ({
           is required to establish integration
         </p>
       </div>
+
+      <ConnectWhatsAppChoice
+        open={showChoice}
+        onCancel={() => setShowChoice(false)}
+        onChoose={startConnect}
+      />
     </div>
   );
 };

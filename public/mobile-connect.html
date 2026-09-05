@@ -121,6 +121,10 @@
   var redirect = qs.get("redirect");
   var state    = qs.get("state") || "";
   var version  = qs.get("version") || "v22.0";
+  // "existing" = number already runs the WhatsApp Business app (coexistence).
+  // Anything else = fresh number, standard onboarding. Passing featureType on a
+  // fresh number sends the business into the coexistence flow with nothing to connect.
+  var mode     = qs.get("mode") || "new";
 
   var elLoading = document.getElementById("loading");
   var elReady   = document.getElementById("ready");
@@ -252,11 +256,11 @@
         config_id: configId,
         response_type: "code",
         override_default_response_type: true,
-        extras: {
-          featureType: "whatsapp_business_app_onboarding",
-          sessionInfoVersion: "3",
-          version: "v3"
-        }
+        extras: (function () {
+          var e = { sessionInfoVersion: "3", version: "v3" };
+          if (mode === "existing") e.featureType = "whatsapp_business_app_onboarding";
+          return e;
+        })()
       }
     );
   });
