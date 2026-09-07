@@ -1,10 +1,10 @@
 // src/pages/ChatbotList.tsx
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   Bot, Plus, Search, MoreVertical, Play, Pause, Copy, Trash2,
-  Loader2, Settings, Zap
+  Loader2, Zap
 } from 'lucide-react';
 import { chatbots as chatbotsApi } from '../services/api';
 import type { Chatbot } from '../types/chatbot';
@@ -19,6 +19,34 @@ const ChatbotList: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
+
+  // Which card's kebab menu is open. Only one at a time, and it opens on a
+  // click -- it used to be `hidden group-hover:block`, so it sprang open
+  // whenever the pointer crossed the card and covered the footer link.
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const menuRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!openMenuId) return;
+
+    const onPointerDown = (e: MouseEvent | TouchEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setOpenMenuId(null);
+      }
+    };
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOpenMenuId(null);
+    };
+
+    document.addEventListener('mousedown', onPointerDown);
+    document.addEventListener('touchstart', onPointerDown);
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', onPointerDown);
+      document.removeEventListener('touchstart', onPointerDown);
+      document.removeEventListener('keydown', onKeyDown);
+    };
+  }, [openMenuId]);
 
   useEffect(() => {
     loadChatbots();
@@ -185,9 +213,9 @@ const ChatbotList: React.FC = () => {
         ) : filteredChatbots.map((chatbot) => (
           <div
             key={chatbot.id}
-            className="relative overflow-hidden rounded-2xl border border-gray-200 p-5 bg-white transition-all duration-200 group hover:-translate-y-0.5 hover:shadow-md"
+            className="relative rounded-2xl border border-gray-200 p-5 bg-white transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
           >
-            <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse 80% 60% at 0% 0%, rgba(16, 185, 129, 0.03) 0%, transparent 60%)' }} />
+            <div className="absolute inset-0 rounded-2xl pointer-events-none" style={{ background: 'radial-gradient(ellipse 80% 60% at 0% 0%, rgba(16, 185, 129, 0.03) 0%, transparent 60%)' }} />
             <div className="flex items-start justify-between mb-4 relative z-10">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center flex-shrink-0 shadow-sm">
@@ -201,40 +229,55 @@ const ChatbotList: React.FC = () => {
                 </div>
               </div>
 
-              <div className="relative group">
-                <button className="p-1 hover:bg-gray-100 rounded transition-colors">
-                  <MoreVertical className="w-5 h-5 text-gray-400" />
+              <div className="relative" ref={openMenuId === chatbot.id ? menuRef : undefined}>
+                <button
+                  type="button"
+                  aria-haspopup="menu"
+                  aria-expanded={openMenuId === chatbot.id}
+                  aria-label={`More actions for ${chatbot.name}`}
+                  onClick={() => setOpenMenuId(openMenuId === chatbot.id ? null : chatbot.id)}
+                  className={`p-1.5 rounded-lg transition-colors ${
+                    openMenuId === chatbot.id ? 'bg-gray-100 text-gray-600' : 'text-gray-400 hover:bg-gray-100 hover:text-gray-600'
+                  }`}
+                >
+                  <MoreVertical className="w-5 h-5" />
                 </button>
-                <div className="absolute right-0 mt-1 w-40 bg-white rounded-xl shadow-lg border border-gray-200 py-1 hidden group-hover:block z-20">
-                  <button
-                    onClick={() => navigate(`/dashboard/chatbots/${chatbot.id}`)}
-                    className="flex items-center gap-2 w-full px-3 py-2 text-sm hover:bg-gray-50 text-gray-700"
+
+                {openMenuId === chatbot.id && (
+                  <div
+                    role="menu"
+                    className="absolute right-0 mt-1 w-44 bg-white rounded-xl shadow-lg border border-gray-200 py-1 z-30"
                   >
-                    <Settings className="w-4 h-4" />
-                    Edit Flow
-                  </button>
-                  <button
-                    onClick={() => handleToggleStatus(chatbot)}
-                    className="flex items-center gap-2 w-full px-3 py-2 text-sm hover:bg-gray-50 text-gray-700"
-                  >
-                    {chatbot.status === 'ACTIVE' ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
-                    {chatbot.status === 'ACTIVE' ? 'Pause' : 'Activate'}
-                  </button>
-                  <button
-                    onClick={() => handleDuplicate(chatbot)}
-                    className="flex items-center gap-2 w-full px-3 py-2 text-sm hover:bg-gray-50 text-gray-700"
-                  >
-                    <Copy className="w-4 h-4" />
-                    Duplicate
-                  </button>
-                  <button
-                    onClick={() => handleDelete(chatbot)}
-                    className="flex items-center gap-2 w-full px-3 py-2 text-sm text-red-600 hover:bg-red-50"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                    Delete
-                  </button>
-                </div>
+                    {/* "Edit Flow" is deliberately not here -- the card footer
+                        already has it, and two of the same action side by side
+                        is what made the open menu look broken. */}
+                    <button
+                      role="menuitem"
+                      onClick={() => { setOpenMenuId(null); handleToggleStatus(chatbot); }}
+                      className="flex items-center gap-2 w-full px-3 py-2 text-sm hover:bg-gray-50 text-gray-700"
+                    >
+                      {chatbot.status === 'ACTIVE' ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+                      {chatbot.status === 'ACTIVE' ? 'Pause' : 'Activate'}
+                    </button>
+                    <button
+                      role="menuitem"
+                      onClick={() => { setOpenMenuId(null); handleDuplicate(chatbot); }}
+                      className="flex items-center gap-2 w-full px-3 py-2 text-sm hover:bg-gray-50 text-gray-700"
+                    >
+                      <Copy className="w-4 h-4" />
+                      Duplicate
+                    </button>
+                    <div className="my-1 border-t border-gray-100" />
+                    <button
+                      role="menuitem"
+                      onClick={() => { setOpenMenuId(null); handleDelete(chatbot); }}
+                      className="flex items-center gap-2 w-full px-3 py-2 text-sm text-red-600 hover:bg-red-50"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                      Delete
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
 
