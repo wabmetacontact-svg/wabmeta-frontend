@@ -60,6 +60,10 @@ const ImportContacts: React.FC = () => {
   const navigate = useNavigate();
 
   const [step, setStep] = useState<Step>("upload");
+  // WhatsApp bina opt-in ke messaging allow nahi karta, aur aisi list hi
+  // block/report laati hai jo number ban karwati hai. Import se pehle business
+  // se saaf confirm karwate hain.
+  const [optInConfirmed, setOptInConfirmed] = useState(false);
   const [importResult, setImportResult] = useState<ImportResult | null>(null);
 
   const [parsedData, setParsedData] = useState<any[]>([]);
@@ -261,6 +265,7 @@ const ImportContacts: React.FC = () => {
           contacts,
           skipDuplicates: true,
           tags: ["Imported"],
+          optInConfirmed,
         }),
       });
 
@@ -588,13 +593,38 @@ const ImportContacts: React.FC = () => {
               </table>
             </div>
 
+            {/* Opt-in confirmation.
+                Messaging people who never agreed is what gets a number blocked
+                and reported, and that is what ends in WhatsApp restricting it.
+                Import stays disabled until the business says these people
+                agreed. */}
+            <label className="flex items-start gap-3 mt-6 p-4 rounded-xl border border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors">
+              <input
+                type="checkbox"
+                checked={optInConfirmed}
+                onChange={(e) => setOptInConfirmed(e.target.checked)}
+                className="mt-0.5 w-4 h-4 rounded border-gray-300 text-green-600 focus:ring-green-500 flex-shrink-0"
+              />
+              <span className="text-sm text-gray-700 leading-relaxed">
+                These people gave my business permission to message them on WhatsApp.
+                <span className="block text-xs text-gray-500 mt-1">
+                  Messaging contacts who never opted in gets them blocking and
+                  reporting you, which is what causes WhatsApp to restrict your
+                  number.
+                </span>
+              </span>
+            </label>
+
             <div className="flex justify-end gap-3 mt-6">
               <button onClick={handleBack} className="px-5 py-2.5 text-gray-600 rounded-xl hover:bg-gray-100 transition-colors">
                 Back
               </button>
-              <button 
-                onClick={handleStartImport} 
-                className="px-5 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-xl font-medium transition-colors shadow-sm"
+              <button
+                onClick={handleStartImport}
+                disabled={!optInConfirmed}
+                title={optInConfirmed ? undefined : 'Confirm these contacts opted in first'}
+                className="px-5 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-xl font-medium transition-colors shadow-sm
+                           disabled:bg-gray-300 disabled:cursor-not-allowed disabled:hover:bg-gray-300"
               >
                 Import {Math.min(stats.valid, importStats?.remainingSlots || 0)} Contacts
               </button>
