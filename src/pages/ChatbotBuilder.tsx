@@ -20,7 +20,7 @@ import {
   Save, Play, ArrowLeft, Loader2, Settings,
   Plus, X, ToggleLeft, ToggleRight, Pause, Info
 } from 'lucide-react';
-import { chatbots as chatbotsApi } from '../services/api';
+import { chatbots as chatbotsApi, telegram as telegramApi } from '../services/api';
 import toast from 'react-hot-toast';
 
 import PageLoader from '../components/common/PageLoader';
@@ -51,6 +51,18 @@ interface SettingsPanelProps {
 
 const SettingsPanel: React.FC<SettingsPanelProps> = ({ chatbot, onChange, onClose }) => {
   const [newKeyword, setNewKeyword] = useState('');
+  const [tgBots, setTgBots] = useState<{ id: string; username?: string; firstName?: string }[]>([]);
+  const channel = chatbot.channel || 'WHATSAPP';
+
+  // Load Telegram bots only when this flow targets Telegram.
+  useEffect(() => {
+    if (channel !== 'TELEGRAM') return;
+    let alive = true;
+    telegramApi.getBots()
+      .then((res) => { if (alive) setTgBots(Array.isArray(res.data?.data) ? res.data.data : []); })
+      .catch(() => {});
+    return () => { alive = false; };
+  }, [channel]);
 
   const addKeyword = () => {
     const kw = newKeyword.trim().toLowerCase();
@@ -123,6 +135,51 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ chatbot, onChange, onClos
             className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm bg-white text-gray-900 resize-none h-16 focus:ring-2 focus:ring-emerald-500 transition-all"
             placeholder="Optional description..."
           />
+        </div>
+
+        <div>
+          <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-1.5">
+            📡 Channel
+          </label>
+          <p className="text-[10px] text-gray-400 font-semibold mb-2">
+            Which channel this flow runs on
+          </p>
+          <div className="grid grid-cols-2 gap-2">
+            {[
+              { key: 'WHATSAPP', label: 'WhatsApp', color: '#25D366' },
+              { key: 'TELEGRAM', label: 'Telegram', color: '#229ED9' },
+            ].map((c) => (
+              <button
+                key={c.key}
+                onClick={() => onChange({ channel: c.key })}
+                className={`px-3 py-2 rounded-xl text-xs font-bold border-2 transition-all ${channel === c.key ? 'text-white' : 'bg-white text-gray-500 border-gray-200 hover:bg-gray-50'}`}
+                style={channel === c.key ? { backgroundColor: c.color, borderColor: c.color } : undefined}
+              >
+                {c.label}
+              </button>
+            ))}
+          </div>
+
+          {channel === 'TELEGRAM' && (
+            <div className="mt-3">
+              <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">
+                Telegram bot
+              </label>
+              <select
+                value={chatbot.telegramBotId || ''}
+                onChange={(e) => onChange({ telegramBotId: e.target.value || null })}
+                className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm bg-white text-gray-900 focus:ring-2 focus:ring-emerald-500 transition-all"
+              >
+                <option value="">Any connected bot</option>
+                {tgBots.map((b) => (
+                  <option key={b.id} value={b.id}>@{b.username || b.firstName || b.id}</option>
+                ))}
+              </select>
+              {tgBots.length === 0 && (
+                <p className="text-[10px] text-amber-600 font-semibold mt-1">No Telegram bots connected yet — connect one under Channels → Telegram → Bots.</p>
+              )}
+            </div>
+          )}
         </div>
 
         <div>
@@ -531,6 +588,8 @@ const ChatbotBuilder: React.FC = () => {
         isDefault: chatbot.isDefault || false,
         welcomeMessage: chatbot.welcomeMessage || '',
         fallbackMessage: chatbot.fallbackMessage || '',
+        channel: chatbot.channel || 'WHATSAPP',
+        telegramBotId: chatbot.telegramBotId || null,
         flowData,
       };
 
@@ -574,6 +633,8 @@ const ChatbotBuilder: React.FC = () => {
         isDefault: chatbot.isDefault || false,
         welcomeMessage: chatbot.welcomeMessage || '',
         fallbackMessage: chatbot.fallbackMessage || '',
+        channel: chatbot.channel || 'WHATSAPP',
+        telegramBotId: chatbot.telegramBotId || null,
         flowData,
       });
     } catch {

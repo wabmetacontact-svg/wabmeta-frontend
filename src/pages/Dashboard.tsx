@@ -19,14 +19,13 @@ import {
   Inbox,
   Phone,
   Instagram,
-  Target,
 } from 'lucide-react';
 import { dashboard } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useSocket } from '../context/SocketContext';
 import toast from 'react-hot-toast';
 import { Link, useNavigate } from 'react-router-dom';
-import { FaWhatsapp } from "react-icons/fa";
+import { FaWhatsapp, FaTelegram } from "react-icons/fa";
 import SocialFollowCard from '../components/dashboard/SocialFollowCard';
 
 const getGreeting = () => {
@@ -184,6 +183,10 @@ const Dashboard: React.FC = () => {
   const conversationsActive = stats?.conversations?.active ?? 0;
   const templatesApproved = stats?.templates?.approved ?? 0;
   const whatsappConnected = stats?.whatsapp?.connected ?? 0;
+
+  // Per-channel analytics for the quick-metric cards.
+  const igCh = stats?.channels?.instagram ?? { connected: 0, conversations: 0, sent: 0, received: 0 };
+  const tgCh = stats?.channels?.telegram ?? { connected: 0, conversations: 0, sent: 0, received: 0 };
 
   const chartData = useMemo(() => {
     return widgets?.messagesOverview?.map((item: any) => ({
@@ -356,25 +359,24 @@ const Dashboard: React.FC = () => {
                   </div>
                   <div className="relative">
                     <p className="text-[10px] font-mono text-pink-700 uppercase tracking-widest mb-1 font-semibold">Instagram</p>
-                    <h3 className="text-3xl font-bold text-gray-900">0</h3>
-                    <p className="text-xs text-gray-500 font-normal mt-2">Automated interactions</p>
+                    <h3 className="text-3xl font-bold text-gray-900">{formatNum((igCh.sent || 0) + (igCh.received || 0))}</h3>
+                    <p className="text-xs text-gray-500 font-normal mt-2">Messages exchanged</p>
                     <div className="mt-4 flex items-center gap-2">
-                      <span className="text-[10px] bg-pink-100 text-pink-800 px-2 py-0.5 rounded-full font-semibold">Coming soon</span>
+                      <span className="text-[10px] bg-pink-100 text-pink-800 px-2 py-0.5 rounded-full font-semibold">{formatNum(igCh.conversations || 0)} chats</span>
                     </div>
                   </div>
                 </div>
 
-                <div className="relative overflow-hidden rounded-2xl bg-indigo-50/40 border border-indigo-100 p-6 group shadow-sm">
-                  <div className="absolute top-0 right-0 p-4 opacity-[0.05] text-indigo-600 group-hover:scale-110 transition-transform">
-                    <Target size={80} />
+                <div className="relative overflow-hidden rounded-2xl bg-sky-50/40 border border-sky-100 p-6 group shadow-sm">
+                  <div className="absolute top-0 right-0 p-4 opacity-[0.05] text-sky-600 group-hover:scale-110 transition-transform">
+                    <FaTelegram size={80} />
                   </div>
                   <div className="relative">
-                    <p className="text-[10px] font-mono text-indigo-700 uppercase tracking-widest mb-1 font-semibold">Efficiency</p>
-                    <h3 className="text-3xl font-bold text-gray-900">84%</h3>
-                    <p className="text-xs text-gray-500 font-normal mt-2">AI Response Accuracy</p>
+                    <p className="text-[10px] font-mono text-sky-700 uppercase tracking-widest mb-1 font-semibold">Telegram</p>
+                    <h3 className="text-3xl font-bold text-gray-900">{formatNum((tgCh.sent || 0) + (tgCh.received || 0))}</h3>
+                    <p className="text-xs text-gray-500 font-normal mt-2">Messages exchanged</p>
                     <div className="mt-4 flex items-center gap-2">
-                      <Zap size={12} className="text-indigo-600" />
-                      <span className="text-[10px] text-indigo-700 font-semibold">Saving hours/week</span>
+                      <span className="text-[10px] bg-sky-100 text-sky-800 px-2 py-0.5 rounded-full font-semibold">{formatNum(tgCh.conversations || 0)} chats</span>
                     </div>
                   </div>
                 </div>

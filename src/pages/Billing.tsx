@@ -671,6 +671,38 @@ const Billing: React.FC = () => {
                 <td className="p-5 text-sm text-center text-gray-600 bg-blue-50/20">Unlimited</td>
               </tr>
               <tr>
+                <td className="p-5 text-sm font-bold text-gray-700">Automation</td>
+                <td className="p-5 text-center text-sm text-gray-600">Trial only</td>
+                <td className="p-5 text-center text-red-600">❌</td>
+                <td className="p-5 text-center text-green-700 font-bold">✅</td>
+                <td className="p-5 text-center text-green-700 font-bold bg-green-50/50">✅</td>
+                <td className="p-5 text-center text-green-700 font-bold bg-blue-50/20">✅</td>
+              </tr>
+              <tr>
+                <td className="p-5 text-sm font-bold text-gray-700">Chatbot Flow Builder</td>
+                <td className="p-5 text-center text-sm text-gray-600">Trial only</td>
+                <td className="p-5 text-center text-red-600">❌</td>
+                <td className="p-5 text-center text-green-700 font-bold">✅</td>
+                <td className="p-5 text-center text-green-700 font-bold bg-green-50/50">✅</td>
+                <td className="p-5 text-center text-green-700 font-bold bg-blue-50/20">✅</td>
+              </tr>
+              <tr>
+                <td className="p-5 text-sm font-bold text-gray-700">Team Members</td>
+                <td className="p-5 text-center text-sm text-gray-600">1</td>
+                <td className="p-5 text-center text-sm text-gray-600">3</td>
+                <td className="p-5 text-center text-sm text-gray-600">5</td>
+                <td className="p-5 text-center text-sm font-bold text-green-700 bg-green-50/50">10</td>
+                <td className="p-5 text-center text-sm font-bold text-blue-700 bg-blue-50/20">Unlimited</td>
+              </tr>
+              <tr>
+                <td className="p-5 text-sm font-bold text-gray-700">WhatsApp Accounts</td>
+                <td className="p-5 text-center text-sm text-gray-600">1</td>
+                <td className="p-5 text-center text-sm text-gray-600">1</td>
+                <td className="p-5 text-center text-sm text-gray-600">1</td>
+                <td className="p-5 text-center text-sm font-bold text-green-700 bg-green-50/50">2</td>
+                <td className="p-5 text-center text-sm font-bold text-blue-700 bg-blue-50/20">2</td>
+              </tr>
+              <tr>
                 <td className="p-5 text-sm font-bold text-gray-700">Bulk Paste</td>
                 <td className="p-5 text-center text-red-600">❌</td>
                 <td className="p-5 text-center text-red-600">❌</td>

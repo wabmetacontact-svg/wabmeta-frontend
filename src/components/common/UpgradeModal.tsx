@@ -26,11 +26,11 @@ export default function UpgradeModal({ isOpen, onClose, feature, minimumPlan, me
             price: '₹899',
             period: '/month',
             features: [
-                'Bulk CSV Import (Unlimited)',
-                'Automated Message Queue',
-                '2,500 Contacts Limit',
-                '5,000 Messages/month',
-                '1 WhatsApp Account'
+                'Unlimited messages & campaigns',
+                'Unlimited contacts & templates',
+                'WhatsApp + Instagram + Telegram',
+                '3 team members · 1 WhatsApp account',
+                'Automation & chatbots not included'
             ],
             highlight: minimumPlan === 'MONTHLY'
         },
@@ -40,12 +40,12 @@ export default function UpgradeModal({ isOpen, onClose, feature, minimumPlan, me
             price: '₹2,500',
             period: '/3 months',
             features: [
-                'Unlimited CSV Imports',
-                'Smart Bulk Paste Enabled',
-                '10,000 Contacts Limit',
-                '25,000 Messages/month',
-                '2 WhatsApp Accounts',
-                'Priority Support'
+                'Everything in Monthly',
+                '✨ Automation unlocked',
+                '✨ Chatbot flow builder',
+                '5 team members',
+                'Standard support',
+                '₹833/month effective'
             ],
             highlight: minimumPlan === 'QUARTERLY' || !minimumPlan,
             popular: true
@@ -53,15 +53,15 @@ export default function UpgradeModal({ isOpen, onClose, feature, minimumPlan, me
         {
             id: 'ANNUAL',
             name: 'Annual',
-            price: '₹8,000',
+            price: '₹8,999',
             period: '/year',
             features: [
-                'Enterprise Scale Limits',
-                'Unlimited Contacts',
-                'Unlimited Messages',
-                '5 WhatsApp Accounts',
-                'Dedicated Support',
-                'API Access'
+                'Everything in Quarterly',
+                'Unlimited team members',
+                '2 WhatsApp accounts',
+                'Highest API limits',
+                'Priority support',
+                '₹750/month effective'
             ],
             highlight: minimumPlan === 'ANNUAL'
         }
