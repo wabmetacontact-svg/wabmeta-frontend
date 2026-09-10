@@ -1,29 +1,28 @@
+// src/pages/instagram/DMAutomation.tsx
+// Auto-reply to Instagram DMs by keyword, first message, or story reply.
+
 import React, { useCallback, useEffect, useState } from "react";
 import toast from "react-hot-toast";
+import {
+  MessageCircle, Plus, Zap, Search, Trash2, ArrowUpRight,
+  Hash, Heart, BookOpen, Play, Power, MessageSquare
+} from "lucide-react";
+
 import { instagram } from "../../services/api";
+import { useConfirm } from "../../context/ConfirmContext";
 import PageLoader from "../../components/common/PageLoader";
 import CreateDmRuleModal from "../../components/instagram/CreateDmRuleModal";
 import {
-  MessageCircle,
-  Plus,
-  Zap,
-  Search,
-  Edit3,
-  Trash2,
-  ArrowUpRight,
-  Hash,
-  Heart,
-  BookOpen,
-  Play,
-} from "lucide-react";
+  ChannelHeader, StatCard,
+  INSTAGRAM_THEME as TH, primaryBtnStyle
+} from "../../components/channel/channelUi";
 
-// Mirrors IgDmAutomation in the backend Prisma schema.
-type IgTriggerType =
-  | "KEYWORD"
-  | "DM_RECEIVED"
-  | "STORY_REPLY"
-  | "COMMENT_TO_DM"
-  | "ICE_BREAKER";
+// GlassCard hardcodes p-6, which Tailwind won't let `p-0` override, so the
+// edge-to-edge list uses the same card styling directly.
+const cardShell =
+  "relative rounded-2xl bg-white shadow-[0_1px_3px_0_rgba(0,0,0,0.05),0_1px_2px_0_rgba(0,0,0,0.03)] border border-gray-200 overflow-hidden";
+
+type IgTriggerType = "KEYWORD" | "DM_RECEIVED" | "STORY_REPLY" | "COMMENT_TO_DM" | "ICE_BREAKER";
 
 interface AutomationRule {
   id: string;
@@ -37,10 +36,7 @@ interface AutomationRule {
   createdAt: string;
 }
 
-const triggerConfig: Record<
-  IgTriggerType,
-  { label: string; icon: React.ElementType; color: string }
-> = {
+const triggerConfig: Record<IgTriggerType, { label: string; icon: React.ElementType; color: string }> = {
   KEYWORD: { label: "Keyword Trigger", icon: Hash, color: "#e1306c" },
   STORY_REPLY: { label: "Story Reply", icon: BookOpen, color: "#833ab4" },
   DM_RECEIVED: { label: "DM Received", icon: MessageCircle, color: "#fcb045" },
@@ -48,26 +44,8 @@ const triggerConfig: Record<
   ICE_BREAKER: { label: "Ice Breaker", icon: Heart, color: "#fd1d1d" },
 };
 
-const GlassCard: React.FC<{
-  children: React.ReactNode;
-  className?: string;
-}> = ({ children, className = "" }) => (
-  <div
-    className={`relative rounded-2xl bg-gray-50 backdrop-blur-2xl
-      border border-gray-200 p-6 ${className}`}
-  >
-    <div
-      className="absolute inset-0 rounded-2xl pointer-events-none"
-      style={{
-        background:
-          "linear-gradient(135deg, rgba(255,255,255,0.04) 0%, transparent 50%)",
-      }}
-    />
-    <div className="relative">{children}</div>
-  </div>
-);
-
 const DMAutomation: React.FC = () => {
+  const confirm = useConfirm();
   const [rules, setRules] = useState<AutomationRule[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -80,192 +58,148 @@ const DMAutomation: React.FC = () => {
       const res = await instagram.getAutomations();
       setRules(Array.isArray(res.data?.data) ? res.data.data : []);
     } catch (err: any) {
-      setError(
-        err?.response?.data?.message || "Could not load your automation rules."
-      );
+      setError(err?.response?.data?.message || "Could not load your automation rules.");
     } finally {
       setLoading(false);
     }
   }, []);
 
-  useEffect(() => {
-    load();
-  }, [load]);
+  useEffect(() => { load(); }, [load]);
 
-  const filteredRules = rules.filter((r) =>
-    r.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const q = searchQuery.trim().toLowerCase();
+  const filteredRules = !q
+    ? rules
+    : rules.filter((r) =>
+        r.name.toLowerCase().includes(q) ||
+        (r.responseText || "").toLowerCase().includes(q) ||
+        r.keywords.some((k) => k.toLowerCase().includes(q))
+      );
 
   const toggleRule = async (id: string) => {
     const rule = rules.find((r) => r.id === id);
     if (!rule) return;
     const next = !rule.isActive;
 
-    // Optimistic, rolled back if the request fails.
-    setRules((prev) =>
-      prev.map((r) => (r.id === id ? { ...r, isActive: next } : r))
-    );
+    setRules((prev) => prev.map((r) => (r.id === id ? { ...r, isActive: next } : r)));
     try {
       await instagram.toggleAutomation(id, next);
-    } catch (err: any) {
-      setRules((prev) =>
-        prev.map((r) => (r.id === id ? { ...r, isActive: !next } : r))
-      );
-      toast.error(
-        err?.response?.data?.message || "Could not change that rule's status."
-      );
+      toast.success(`Automation ${next ? "activated" : "paused"}`);
+    } catch {
+      setRules((prev) => prev.map((r) => (r.id === id ? { ...r, isActive: !next } : r)));
+      toast.error("Could not change status.");
     }
   };
 
-  const igGradient =
-    "linear-gradient(135deg, #833ab4 0%, #fd1d1d 50%, #fcb045 100%)";
+  const deleteRule = async (rule: AutomationRule) => {
+    const ok = await confirm({
+      title: "Delete this DM rule?",
+      message: `"${rule.name}" will stop auto-replying to Instagram DMs.`,
+      confirmLabel: "Delete",
+      tone: "danger",
+    });
+    if (!ok) return;
+
+    const prev = rules;
+    setRules((r) => r.filter((x) => x.id !== rule.id));
+    try {
+      await instagram.deleteAutomation(rule.id);
+      toast.success("Rule deleted");
+    } catch (err: any) {
+      setRules(prev);
+      toast.error(err?.response?.data?.message || "Could not delete rule.");
+    }
+  };
 
   if (loading) return <PageLoader />;
+
+  const activeCount = rules.filter((r) => r.isActive).length;
+  const totalReplies = rules.reduce((a, r) => a + (r.repliesCount || 0), 0);
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-10">
 
+      <ChannelHeader
+        theme={TH}
+        icon={MessageCircle}
+        title="Direct Message Automation"
+        subtitle="Auto-reply to Instagram DMs instantly based on keywords, first messages, or story replies."
+        action={
+          <button
+            onClick={() => setShowCreate(true)}
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-white text-xs font-bold shadow-md hover:-translate-y-0.5 transition-all"
+            style={primaryBtnStyle(TH)}
+          >
+            <Plus className="w-4 h-4" /> Create DM Rule
+          </button>
+        }
+      />
+
       {error && (
-        <div className="flex items-start gap-3 p-4 bg-red-50 border border-red-200 rounded-2xl">
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-red-800">{error}</p>
-            <button
-              type="button"
-              onClick={load}
-              className="mt-2 text-sm font-semibold text-red-700 hover:text-red-800 underline"
-            >
-              Try again
-            </button>
+        <div className="p-4 bg-red-50 border border-red-200 rounded-2xl flex items-start gap-3">
+          <div className="flex-1">
+            <p className="text-sm font-bold text-red-800">{error}</p>
+            <button onClick={load} className="mt-2 text-xs font-bold text-red-700 underline">Try again</button>
           </div>
         </div>
       )}
 
-      {/* ── Header ── */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2 mb-2">
-            <MessageCircle className="w-4 h-4 text-[#e1306c]" />
-            <span className="text-xs font-mono uppercase tracking-wider text-gray-500">
-              DM Automation
-            </span>
-          </div>
-          <h1 className="text-2xl lg:text-3xl font-bold text-gray-900">
-            DM Automation Rules
-          </h1>
-          <p className="text-sm text-gray-500 mt-1">
-            Auto-reply to Instagram DMs based on triggers and keywords
-          </p>
-        </div>
-
-        <button
-          onClick={() => setShowCreate(true)}
-          className="flex items-center gap-2 px-5 py-2.5 rounded-xl
-            text-gray-900 text-sm font-semibold
-            hover:-translate-y-0.5 transition-all duration-300"
-          style={{
-            background: igGradient,
-            boxShadow: "0 8px 24px rgba(131,58,180,0.35)",
-          }}
-        >
-          <Plus className="w-4 h-4" />
-          Create Rule
-        </button>
-      </div>
-
-      {/* ── Stats ── */}
+      {/* Stats — all derived from the loaded rules */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {[
-          {
-            label: "Total Rules",
-            value: rules.length,
-            color: "#e1306c",
-            icon: Zap,
-          },
-          {
-            label: "Active",
-            value: rules.filter((r) => r.isActive).length,
-            color: "#10b981",
-            icon: Play,
-          },
-          {
-            label: "Total Replies",
-            value: rules.reduce((a, r) => a + r.repliesCount, 0),
-            color: "#833ab4",
-            icon: MessageCircle,
-          },
-          {
-            label: "Response Rate",
-            value: "—",
-            color: "#fcb045",
-            icon: ArrowUpRight,
-          },
-        ].map((stat) => (
-          <GlassCard key={stat.label} className="p-4">
-            <div className="flex items-center gap-3">
-              <div
-                className="w-9 h-9 rounded-xl flex items-center justify-center"
-                style={{
-                  background: `${stat.color}20`,
-                  border: `1px solid ${stat.color}40`,
-                }}
-              >
-                <stat.icon className="w-4 h-4" style={{ color: stat.color }} />
-              </div>
-              <div>
-                <p className="text-xs text-gray-500">{stat.label}</p>
-                <p className="text-xl font-bold text-gray-900">{stat.value}</p>
-              </div>
-            </div>
-          </GlassCard>
-        ))}
+        <StatCard theme={TH} icon={Zap} label="Total Rules" value={rules.length} hint="Active & paused" />
+        <StatCard theme={TH} icon={Play} label="Active" value={activeCount} hint="Currently monitoring" />
+        <StatCard theme={TH} icon={MessageSquare} label="Total Replies" value={totalReplies} hint="Automated DMs sent" />
+        <StatCard
+          theme={TH}
+          icon={ArrowUpRight}
+          label="Avg per Rule"
+          value={rules.length > 0 ? Math.round(totalReplies / rules.length) : 0}
+          hint="Replies per rule"
+        />
       </div>
 
-      {/* ── Rules List ── */}
-      <GlassCard className="p-0 overflow-hidden">
-        {/* Search bar */}
-        <div className="p-4 border-b border-gray-200 flex items-center gap-3">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
-            <input aria-label="Search rules..."
+      {/* Rules list + search */}
+      <div className={cardShell}>
+        <div className="p-4 border-b border-gray-100 flex items-center gap-3 bg-gray-50/50">
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input
               type="text"
-              placeholder="Search rules..."
+              placeholder="Search by rule name, keyword or response..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-4 py-2.5 text-sm
-                bg-gray-50 border border-gray-200 rounded-xl
-                text-gray-900 placeholder:text-gray-500
-                focus:outline-none focus:border-[#e1306c]/50
-                transition-all duration-300"
+              className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-xs outline-none focus:border-pink-300 transition-all"
             />
           </div>
+          {rules.length > 0 && (
+            <span className="text-[10px] font-mono text-gray-400 uppercase font-semibold hidden sm:block">
+              Showing {filteredRules.length} of {rules.length}
+            </span>
+          )}
         </div>
 
-        {/* Rules */}
-        <div className="divide-y divide-gray-200">
+        <div className="divide-y divide-gray-100">
           {filteredRules.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-center">
-              <div
-                className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4"
-                style={{
-                  background: "rgba(225,48,108,0.1)",
-                  border: "1px solid rgba(225,48,108,0.2)",
-                }}
-              >
-                <MessageCircle className="w-7 h-7 text-[#e1306c]" />
+              <div className="w-16 h-16 rounded-3xl flex items-center justify-center mb-4 bg-pink-50 border border-pink-100 shadow-sm">
+                <MessageCircle className="w-7 h-7 text-pink-500" />
               </div>
-              <p className="text-sm font-medium text-gray-900 mb-1">
-                No rules yet
+              <p className="text-sm font-bold text-gray-900 mb-1">
+                {rules.length === 0 ? "No DM rules yet" : "No rules match your search"}
               </p>
               <p className="text-xs text-gray-500 mb-4">
-                Create your first DM automation rule
+                {rules.length === 0
+                  ? "Create your first automation to reply instantly."
+                  : "Try a different name or keyword."}
               </p>
-              <button
-                onClick={() => setShowCreate(true)}
-                className="px-4 py-2 rounded-xl text-gray-900 text-xs font-semibold"
-                style={{ background: igGradient }}
-              >
-                Create First Rule
-              </button>
+              {rules.length === 0 && (
+                <button
+                  onClick={() => setShowCreate(true)}
+                  className="px-5 py-2.5 rounded-full text-white text-xs font-bold shadow-md hover:-translate-y-0.5 transition-all"
+                  style={primaryBtnStyle(TH)}
+                >
+                  Create first rule
+                </button>
+              )}
             </div>
           ) : (
             filteredRules.map((rule) => {
@@ -274,97 +208,67 @@ const DMAutomation: React.FC = () => {
               return (
                 <div
                   key={rule.id}
-                  className="flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors"
+                  className={`flex items-start sm:items-center gap-4 p-5 hover:bg-gray-50/50 transition-colors ${rule.isActive ? "" : "opacity-60 bg-gray-50/30"}`}
                 >
-                  {/* Trigger icon */}
                   <div
-                    className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-                    style={{
-                      background: `${tc.color}15`,
-                      border: `1px solid ${tc.color}30`,
-                    }}
+                    className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
+                    style={{ background: `${tc.color}15`, border: `1px solid ${tc.color}30` }}
                   >
-                    <tc.icon className="w-4 h-4" style={{ color: tc.color }} />
+                    <tc.icon className="w-5 h-5" style={{ color: tc.color }} />
                   </div>
 
-                  {/* Info */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <p className="text-sm font-semibold text-gray-900 truncate">
-                        {rule.name}
-                      </p>
+                  <div className="flex-1 min-w-0 space-y-2">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="text-sm font-bold text-gray-900 truncate">{rule.name}</p>
                       <span
-                        className="px-2 py-0.5 rounded-full text-[9px] font-bold"
-                        style={{
-                          background: `${tc.color}15`,
-                          color: tc.color,
-                          border: `1px solid ${tc.color}30`,
-                        }}
+                        className="px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider"
+                        style={{ background: `${tc.color}15`, color: tc.color }}
                       >
                         {tc.label}
                       </span>
+                      {rule.repliesCount > 0 && (
+                        <span className="text-[10px] text-gray-500 font-semibold bg-gray-100 px-2 py-0.5 rounded-md">
+                          Fired {rule.repliesCount}×
+                        </span>
+                      )}
                     </div>
 
-                    {/* Keywords */}
                     {rule.keywords && rule.keywords.length > 0 && (
-                      <div className="flex flex-wrap gap-1 mb-1">
+                      <div className="flex flex-wrap gap-1.5 pt-0.5">
                         {rule.keywords.map((kw) => (
-                          <span
-                            key={kw}
-                            className="px-1.5 py-0.5 rounded text-[9px] font-mono
-                              bg-gray-50 border border-gray-200 text-gray-500"
-                          >
+                          <span key={kw} className="px-2 py-0.5 rounded-lg text-[10px] font-mono font-bold bg-white border border-gray-200 text-gray-600 shadow-sm">
                             #{kw}
                           </span>
                         ))}
                       </div>
                     )}
 
-                    <p className="text-xs text-gray-500 truncate">
-                      {rule.responseText}
-                    </p>
+                    {rule.responseText && (
+                      <p className="text-xs text-gray-700 bg-gray-50/80 border border-gray-100 rounded-xl p-3 line-clamp-2 break-words">
+                        <span className="font-bold text-pink-500 mr-1">Reply:</span> {rule.responseText}
+                      </p>
+                    )}
                   </div>
 
-                  {/* Stats */}
-                  <div className="hidden md:flex items-center gap-1 text-xs text-gray-500 font-mono">
-                    <MessageCircle className="w-3 h-3" />
-                    <span>{rule.repliesCount}</span>
-                  </div>
-
-                  {/* Toggle */}
-                  <button
-                    onClick={() => toggleRule(rule.id)}
-                    className={`relative w-10 h-5 rounded-full transition-all duration-300 flex-shrink-0
-                      ${rule.isActive ? "" : "bg-gray-50"}`}
-                    style={
-                      rule.isActive
-                        ? {
-                            background:
-                              "linear-gradient(135deg, #833ab4, #fd1d1d)",
-                          }
-                        : {}
-                    }
-                  >
-                    <div
-                      className={`absolute top-0.5 w-4 h-4 bg-white rounded-full
-                        shadow-sm transition-all duration-300
-                        ${rule.isActive ? "left-5" : "left-0.5"}`}
-                    />
-                  </button>
-
-                  {/* Actions */}
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
                     <button
-                      className="p-1.5 rounded-lg text-gray-500 hover:text-gray-900
-                        hover:bg-gray-50 transition-all duration-300"
+                      onClick={() => toggleRule(rule.id)}
+                      title={rule.isActive ? "Active — click to pause" : "Paused — click to activate"}
+                      aria-label={rule.isActive ? "Pause rule" : "Activate rule"}
+                      className={`p-2 rounded-xl border transition-all ${
+                        rule.isActive
+                          ? "bg-emerald-50 text-emerald-600 border-emerald-200 hover:bg-emerald-100"
+                          : "bg-gray-100 text-gray-400 border-gray-200 hover:bg-gray-200"
+                      }`}
                     >
-                      <Edit3 className="w-3.5 h-3.5" />
+                      <Power className="w-4 h-4" />
                     </button>
                     <button
-                      className="p-1.5 rounded-lg text-gray-500 hover:text-red-400
-                        hover:bg-red-500/10 transition-all duration-300"
+                      onClick={() => deleteRule(rule)}
+                      aria-label="Delete rule"
+                      className="p-2 rounded-xl bg-red-50 text-red-500 border border-red-100 hover:bg-red-100 transition-all"
                     >
-                      <Trash2 className="w-3.5 h-3.5" />
+                      <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
                 </div>
@@ -372,13 +276,9 @@ const DMAutomation: React.FC = () => {
             })
           )}
         </div>
-      </GlassCard>
+      </div>
 
-      <CreateDmRuleModal
-        isOpen={showCreate}
-        onClose={() => setShowCreate(false)}
-        onCreated={load}
-      />
+      <CreateDmRuleModal isOpen={showCreate} onClose={() => setShowCreate(false)} onCreated={load} />
     </div>
   );
 };

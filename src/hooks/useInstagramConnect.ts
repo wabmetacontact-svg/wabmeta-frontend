@@ -33,17 +33,22 @@ export const useInstagramConnect = () => {
 
   const handleBackendConnection = async (token: string, fbUserId: string) => {
     try {
-      const orgId = localStorage.getItem('selected_organization_id');
-      const res = await api.post('/instagram/connect', { 
-        accessToken: token, 
-        fbUserId 
-      }, {
-        headers: { 'X-Organization-Id': orgId }
+      // The organization comes from the JWT server-side; sending a header here
+      // was both ignored and read from a key that is never written.
+      const res = await api.post('/instagram/connect', {
+        accessToken: token,
+        fbUserId,
       });
 
       if (res.data.success) {
-        toast.success("Instagram connected successfully!");
-        window.location.reload(); // Refresh to show connected state
+        // Report what actually happened, including a failed webhook subscription.
+        const msg: string = res.data.message || 'Instagram connected';
+        if (msg.toLowerCase().includes('webhook subscription failed')) {
+          toast.error(msg, { duration: 9000 });
+        } else {
+          toast.success(msg);
+        }
+        window.location.reload();
       }
     } catch (error: any) {
       console.error(error);
