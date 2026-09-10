@@ -85,6 +85,14 @@ const DMAutomation       = lazy(() => import('./pages/instagram/DMAutomation'));
 const CommentAutomation  = lazy(() => import('./pages/instagram/CommentAutomation'));
 const StoryAutomation    = lazy(() => import('./pages/instagram/StoryAutomation'));
 const InstagramSettings  = lazy(() => import('./pages/instagram/InstagramSettings'));
+const InstagramContent   = lazy(() => import('./pages/instagram/InstagramContent'));
+
+// ── Telegram Pages (lazy) ───────────────────────────────
+const TelegramDashboard  = lazy(() => import('./pages/telegram/TelegramDashboard'));
+const TelegramBots       = lazy(() => import('./pages/telegram/TelegramBots'));
+const TelegramAutomation = lazy(() => import('./pages/telegram/TelegramAutomation'));
+const TelegramBroadcast  = lazy(() => import('./pages/telegram/TelegramBroadcast'));
+const TelegramSettings   = lazy(() => import('./pages/telegram/TelegramSettings'));
 
 // Admin
 const AdminLogin = lazy(() => import('./pages/admin/AdminLogin'));
@@ -365,6 +373,13 @@ const AppRoutes: React.FC = () => {
           <Route path="/dashboard/settings/team" element={<Team />} />
           <Route path="/dashboard/settings/billing" element={<Billing />} />
 
+          {/* Telegram (unified-inbox channel) */}
+          <Route path="/dashboard/telegram" element={<TelegramDashboard />} />
+          <Route path="/dashboard/telegram/bots" element={<TelegramBots />} />
+          <Route path="/dashboard/telegram/automation" element={<TelegramAutomation />} />
+          <Route path="/dashboard/telegram/broadcast" element={<TelegramBroadcast />} />
+          <Route path="/dashboard/telegram/settings" element={<TelegramSettings />} />
+
           {/* ✅ NEW: Wallet */}
           <Route path="/dashboard/wallet" element={<Wallet />} />
 
@@ -390,6 +405,7 @@ const AppRoutes: React.FC = () => {
         >
           <Route path="/instagram" element={<Navigate to="/instagram/dashboard" replace />} />
           <Route path="/instagram/dashboard"    element={<InstagramDashboard />} />
+          <Route path="/instagram/content"      element={<InstagramContent />} />
           <Route path="/instagram/dm-automation"  element={<DMAutomation />} />
           <Route path="/instagram/dm-automation/create" element={<DMAutomation />} />
           <Route path="/instagram/comments"     element={<CommentAutomation />} />

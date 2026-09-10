@@ -1172,6 +1172,12 @@ export const inbox = {
     });
   },
   stats: () => api.get<ApiResponse>('/inbox/stats'),
+  // Global search across all message content, optionally scoped to one channel.
+  searchMessages: (q: string, channel?: 'WHATSAPP' | 'INSTAGRAM' | 'TELEGRAM', limit = 30) =>
+    api.get<ApiResponse>('/inbox/search', { params: { q, limit, ...(channel ? { channel } : {}) } }),
+  // AI-drafted reply suggestion for the current conversation (agent reviews/edits).
+  suggestReply: (conversationId: string, instruction?: string) =>
+    api.post<ApiResponse>(`/inbox/conversations/${conversationId}/suggest-reply`, instruction ? { instruction } : {}),
   resolveTemplateMedia: (templateId: string) =>
     api.post('/inbox/template/resolve-media', { templateId }),
   getLabels: () => api.get<ApiResponse>('/inbox/labels'),
@@ -1179,6 +1185,7 @@ export const inbox = {
   deleteCustomLabel: (label: string) => api.delete<ApiResponse>(`/inbox/labels/${label}`),
   addLabels: (id: string, labels: string[]) => api.post<ApiResponse>(`/inbox/conversations/${id}/labels`, { labels }),
   removeLabel: (id: string, label: string) => api.delete<ApiResponse>(`/inbox/conversations/${id}/labels/${label}`),
+  setAutomationPaused: (id: string, paused: boolean) => api.patch<ApiResponse>(`/inbox/conversations/${id}/automation`, { paused }),
   deleteAllConversations: () => api.delete<ApiResponse>('/inbox/delete-all'),
   bulkUpdate: (data: { conversationIds: string[];[key: string]: any }) => api.post<ApiResponse>('/inbox/bulk', data),
   bulkDeleteConversations: (conversationIds: string[]) => api.post<ApiResponse>('/inbox/bulk-delete', { conversationIds }),
@@ -1220,6 +1227,8 @@ export const crm = {
 
   getContactNotes: (contactId: string) => api.get<ApiResponse>(`/crm/contacts/${contactId}/notes`),
   addContactNote: (contactId: string, content: string) => api.post<ApiResponse>(`/crm/contacts/${contactId}/notes`, { content }),
+  updateContactNote: (contactId: string, noteId: string, content: string) => api.put<ApiResponse>(`/crm/contacts/${contactId}/notes/${noteId}`, { content }),
+  deleteContactNote: (contactId: string, noteId: string) => api.delete<ApiResponse>(`/crm/contacts/${contactId}/notes/${noteId}`),
 };
 
 // ---------- AUTOMATIONS ----------
@@ -1333,10 +1342,12 @@ export const wallet = {
 // models (IgCommentRule / IgStoryRule) but no routes yet.
 export const instagram = {
   getAccounts: () => api.get<ApiResponse>('/instagram/accounts'),
+  disconnectAccount: (id: string) => api.delete<ApiResponse>(`/instagram/accounts/${id}`),
 
   connect: (data: any) => api.post<ApiResponse>('/instagram/connect', data),
 
   getAutomations: () => api.get<ApiResponse>('/instagram/automations'),
+  deleteAutomation: (id: string) => api.delete<ApiResponse>(`/instagram/automations/${id}`),
 
   createAutomation: (data: {
     name: string;
@@ -1350,6 +1361,106 @@ export const instagram = {
     api.patch<ApiResponse>(`/instagram/automations/${id}/toggle`, { isActive }),
 
   getAnalytics: () => api.get<ApiResponse>('/instagram/analytics'),
+
+  // Unified-inbox analytics (conversations/messages/automations + 7-day series).
+  getInboxStats: (days?: 7 | 14 | 30) =>
+    api.get<ApiResponse>('/instagram/inbox-stats', { params: days ? { days } : {} }),
+
+  // Connected account's posts + active stories.
+  getContent: () => api.get<ApiResponse>('/instagram/content'),
+
+  // Comment automation rules (optionally targeting specific posts).
+  getCommentRules: () => api.get<ApiResponse>('/instagram/comment-rules'),
+  createCommentRule: (data: {
+    name?: string;
+    keywords?: string[];
+    postIds?: string[];
+    action?: 'reply' | 'reply_and_dm' | 'dm';
+    commentReply?: string;
+    dmMessage?: string;
+  }) => api.post<ApiResponse>('/instagram/comment-rules', data),
+  toggleCommentRule: (id: string, isActive: boolean) =>
+    api.patch<ApiResponse>(`/instagram/comment-rules/${id}/toggle`, { isActive }),
+  deleteCommentRule: (id: string) => api.delete<ApiResponse>(`/instagram/comment-rules/${id}`),
+
+  // Story automation rules (auto-reply to story mentions / replies).
+  getStoryRules: () => api.get<ApiResponse>('/instagram/story-rules'),
+  createStoryRule: (data: { triggerType: 'mention' | 'reply'; dmMessage: string; name?: string }) =>
+    api.post<ApiResponse>('/instagram/story-rules', data),
+  toggleStoryRule: (id: string, isActive: boolean) =>
+    api.patch<ApiResponse>(`/instagram/story-rules/${id}/toggle`, { isActive }),
+  deleteStoryRule: (id: string) => api.delete<ApiResponse>(`/instagram/story-rules/${id}`),
+
+  // Agent reply into an Instagram conversation (used by the unified inbox).
+  send: (conversationId: string, text: string) =>
+    api.post<ApiResponse>('/instagram/send', { conversationId, text }),
+
+  // Send a media attachment (mediaUrl must be a publicly reachable URL).
+  sendMedia: (conversationId: string, mediaUrl: string, mediaType?: string) =>
+    api.post<ApiResponse>('/instagram/send-media', { conversationId, mediaUrl, mediaType }),
+};
+
+// ---------- TELEGRAM ----------
+// Backend: wabmeta-backend/src/modules/telegram/telegram.routes.ts
+export const telegram = {
+  getBots: () => api.get<ApiResponse>('/telegram/bots'),
+
+  // Connect (or reconnect) a bot from its BotFather token.
+  connect: (token: string) => api.post<ApiResponse>('/telegram/connect', { token }),
+
+  disconnect: (id: string) => api.delete<ApiResponse>(`/telegram/bots/${id}`),
+
+  // Live webhook health for one bot (Telegram's own getWebhookInfo).
+  getWebhookHealth: (botId: string) => api.get<ApiResponse>(`/telegram/bots/${botId}/webhook`),
+
+  // Bot command menu (the "/" list users see in Telegram).
+  getCommands: (botId: string) => api.get<ApiResponse>(`/telegram/bots/${botId}/commands`),
+  setCommands: (botId: string, commands: { command: string; description: string }[]) =>
+    api.put<ApiResponse>(`/telegram/bots/${botId}/commands`, { commands }),
+
+  // Send an agent reply into a Telegram conversation (used by the unified inbox).
+  send: (conversationId: string, text: string) =>
+    api.post<ApiResponse>('/telegram/send', { conversationId, text }),
+
+  // Send a media file (multipart: file + conversationId + optional caption).
+  sendMedia: (form: FormData) =>
+    api.post<ApiResponse>('/telegram/send-media', form, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    }),
+
+  // Headline metrics + 7-day message series + top rules.
+  getAnalytics: (days?: 7 | 14 | 30) =>
+    api.get<ApiResponse>('/telegram/analytics', { params: days ? { days } : {} }),
+
+  // Broadcast to bot subscribers.
+  getBroadcasts: () => api.get<ApiResponse>('/telegram/broadcasts'),
+  getBroadcastAudience: (tag?: string) =>
+    api.get<ApiResponse>('/telegram/broadcasts/audience', { params: tag ? { tag } : {} }),
+  createBroadcast: (data: {
+    message: string;
+    buttons?: { text: string; type: 'callback' | 'url'; value: string }[];
+    tag?: string;
+    mediaUrl?: string;
+    mediaType?: string;
+  }) => api.post<ApiResponse>('/telegram/broadcasts', data),
+
+  // Command / keyword auto-reply rules.
+  getAutomations: () => api.get<ApiResponse>('/telegram/automations'),
+  createAutomation: (data: {
+    name: string;
+    triggerType: 'COMMAND' | 'KEYWORD' | 'FALLBACK';
+    pattern?: string;
+    matchType?: 'exact' | 'contains' | 'starts_with';
+    responseText: string;
+    buttons?: { text: string; type: 'callback' | 'url'; value: string }[];
+    botId?: string | null;
+  }) => api.post<ApiResponse>('/telegram/automations', data),
+  updateAutomation: (id: string, data: any) =>
+    api.patch<ApiResponse>(`/telegram/automations/${id}`, data),
+  toggleAutomation: (id: string, isActive: boolean) =>
+    api.patch<ApiResponse>(`/telegram/automations/${id}/toggle`, { isActive }),
+  deleteAutomation: (id: string) =>
+    api.delete<ApiResponse>(`/telegram/automations/${id}`),
 };
 
 // ---------- DASHBOARD ----------

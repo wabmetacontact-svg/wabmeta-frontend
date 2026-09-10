@@ -1,21 +1,15 @@
 import React, { useState, useRef, useMemo } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard, Users, Send, FileText, Inbox,
   Bot, BarChart3, Settings, HelpCircle,
   ChevronLeft, ChevronRight, LogOut, Zap,
-  CreditCard, Wallet, Sparkles, Lock,
-  MessageSquare, Instagram, MessageCircle,
-  Image, BookOpen, TrendingUp, Megaphone,
-  ChevronDown,
+  CreditCard, Wallet, Sparkles, Lock, Instagram,
 } from 'lucide-react';
-import { FaWhatsapp } from 'react-icons/fa';
 import logo from '../../assets/logo.png';
 import { useApp } from '../../context/AppContext';
 import { usePlanAccess } from '../../hooks/usePlanAccess';
 import { useAuth } from '../../context/AuthContext';
-
-type Channel = 'whatsapp' | 'instagram';
 
 interface NavItem {
   name: string;
@@ -55,6 +49,7 @@ const prefetchRouteChunk = (href: string) => {
     '/dashboard/chatbots': () => import('../../pages/ChatbotList'),
     '/dashboard/automations': () => import('../../pages/Automation'),
     '/dashboard/crm': () => import('../../pages/CRM'),
+    '/dashboard/telegram': () => import('../../pages/telegram/TelegramDashboard'),
   };
   map[href]?.();
 };
@@ -66,7 +61,9 @@ const getDisplayName = (u: { firstName?: string; lastName?: string; email?: stri
   return u.firstName || u.email?.split('@')[0] || 'User';
 };
 
-const getWhatsAppNav = (unreadCount: number, totalContacts: number): NavGroup[] => [
+// One unified sidebar for every channel. Instagram and Telegram live under
+// "Channels"; Instagram expands to its sub-pages when it is the active section.
+const getNav = (unreadCount: number, totalContacts: number): NavGroup[] => [
   {
     title: 'Main',
     items: [
@@ -114,6 +111,40 @@ const getWhatsAppNav = (unreadCount: number, totalContacts: number): NavGroup[] 
     ],
   },
   {
+    title: 'Channels',
+    items: [
+      {
+        name: 'Instagram',
+        href: '/instagram',
+        icon: Instagram,
+        badge: 'Beta',
+        badgeColor: 'bg-pink-500',
+        subItems: [
+          { name: 'Dashboard', href: '/instagram/dashboard' },
+          { name: 'Posts & Stories', href: '/instagram/content' },
+          { name: 'DM Automation', href: '/instagram/dm-automation' },
+          { name: 'Comment Automation', href: '/instagram/comments' },
+          { name: 'Story Automation', href: '/instagram/stories' },
+          { name: 'Settings', href: '/instagram/settings' },
+        ],
+      },
+      {
+        name: 'Telegram',
+        href: '/dashboard/telegram',
+        icon: Send,
+        badge: 'Beta',
+        badgeColor: 'bg-sky-500',
+        subItems: [
+          { name: 'Dashboard', href: '/dashboard/telegram' },
+          { name: 'Bots', href: '/dashboard/telegram/bots' },
+          { name: 'Auto-replies', href: '/dashboard/telegram/automation' },
+          { name: 'Broadcast', href: '/dashboard/telegram/broadcast' },
+          { name: 'Settings', href: '/dashboard/telegram/settings' },
+        ],
+      },
+    ],
+  },
+  {
     title: 'Analytics',
     items: [
       { name: 'Reports', href: '/dashboard/reports', icon: BarChart3, featureKey: 'reports' },
@@ -129,146 +160,7 @@ const getWhatsAppNav = (unreadCount: number, totalContacts: number): NavGroup[] 
   },
 ];
 
-const getInstagramNav = (): NavGroup[] => [
-  {
-    title: 'Overview',
-    items: [
-      { name: 'Dashboard', href: '/instagram/dashboard', icon: LayoutDashboard },
-    ],
-  },
-  {
-    title: 'Engagement',
-    items: [
-      { name: 'DM Automation', href: '/instagram/dm-automation', icon: MessageCircle },
-      { name: 'Comment Automation', href: '/instagram/comments', icon: MessageSquare },
-      { name: 'Story Automation', href: '/instagram/stories', icon: BookOpen },
-    ],
-  },
-  {
-    title: 'Content',
-    items: [
-      { name: 'Post Management', href: '/instagram/posts', icon: Image, comingSoon: true },
-      { name: 'Campaigns', href: '/instagram/campaigns', icon: Megaphone, comingSoon: true },
-    ],
-  },
-  {
-    title: 'Growth',
-    items: [
-      { name: 'Lead Generation', href: '/instagram/leads', icon: Users, comingSoon: true },
-      { name: 'Analytics', href: '/instagram/analytics', icon: TrendingUp, comingSoon: true },
-    ],
-  },
-  {
-    title: 'Settings',
-    items: [
-      { name: 'IG Settings', href: '/instagram/settings', icon: Settings },
-    ],
-  },
-];
-
-const CHANNELS = [
-  {
-    id: 'whatsapp' as Channel,
-    label: 'WhatsApp',
-    icon: FaWhatsapp,
-    color: '#1b8b4b',
-    bg: '#f0fdf4',
-    border: '#bbf7d0',
-  },
-  {
-    id: 'instagram' as Channel,
-    label: 'Instagram',
-    icon: Instagram,
-    color: '#e1306c',
-    bg: '#fff0f5',
-    border: '#fecdd3',
-    badge: 'Beta',
-  },
-];
-
-const ChannelSwitcher: React.FC<{ active: Channel; onSwitch: (ch: Channel) => void; collapsed: boolean }> = ({ active, onSwitch, collapsed }) => {
-  const [open, setOpen] = useState(false);
-  const navigate = useNavigate();
-  const current = CHANNELS.find(c => c.id === active)!;
-
-  const handleSwitch = (ch: typeof CHANNELS[0]) => {
-    onSwitch(ch.id);
-    setOpen(false);
-    navigate(ch.id === 'instagram' ? '/instagram/dashboard' : '/dashboard');
-  };
-
-  if (collapsed) {
-    return (
-      <div className="flex flex-col items-center gap-1.5 px-2 mt-3">
-        {CHANNELS.map(ch => {
-          const isActive = ch.id === active;
-          return (
-            <button
-              key={ch.id}
-              onClick={() => handleSwitch(ch)}
-              title={ch.label}
-              className="w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-200"
-              style={{
-                background: isActive ? ch.bg : 'transparent',
-                border: `1px solid ${isActive ? ch.border : '#e5e7eb'}`,
-              }}
-            >
-              <ch.icon className="w-4 h-4" style={{ color: isActive ? ch.color : '#9ca3af' }} />
-            </button>
-          );
-        })}
-      </div>
-    );
-  }
-
-  return (
-    <div className="relative mx-3 mt-4">
-      <button
-        onClick={() => setOpen(!open)}
-        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-gray-50 border border-gray-200 hover:bg-gray-100 hover:border-gray-300 transition-all duration-200"
-      >
-        <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: current.bg, border: `1px solid ${current.border}` }}>
-          <current.icon className="w-4 h-4" style={{ color: current.color }} />
-        </div>
-        <div className="flex-1 text-left min-w-0">
-          <p className="text-sm font-semibold text-gray-800 truncate">{current.label}</p>
-          <p className="text-xs text-gray-400">Active channel</p>
-        </div>
-        <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
-      </button>
-
-      {open && (
-        <div className="absolute top-full left-0 right-0 mt-1.5 rounded-xl overflow-hidden bg-white border border-gray-200 shadow-lg z-50">
-          {CHANNELS.map(ch => {
-            const isActive = ch.id === active;
-            return (
-              <button
-                key={ch.id}
-                onClick={() => handleSwitch(ch)}
-                className={`w-full flex items-center gap-3 px-3 py-2.5 transition-colors ${isActive ? 'bg-gray-50' : 'hover:bg-gray-50'}`}
-              >
-                <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: ch.bg, border: `1px solid ${ch.border}` }}>
-                  <ch.icon className="w-4 h-4" style={{ color: ch.color }} />
-                </div>
-                <div className="flex-1 text-left">
-                  <div className="flex items-center gap-2">
-                    <p className="text-sm font-semibold text-gray-800">{ch.label}</p>
-                    {ch.badge && (
-                      <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-pink-50 text-pink-600 border border-pink-200">{ch.badge}</span>
-                    )}
-                  </div>
-                </div>
-                {isActive && (
-                  <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: ch.color }} />
-                )}
-              </button>
-            );
-          })}
-        </div>
-      )}
-    </div>
-  );
-};
+const ACTIVE_THEME = { bg: '#f0fdf4', border: '#bbf7d0', text: '#1b8b4b', bar: '#1b8b4b' };
 
 const Sidebar: React.FC<SidebarProps> = ({ collapsed, setCollapsed, isMobile = false }) => {
   const location = useLocation();
@@ -277,35 +169,23 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, setCollapsed, isMobile = f
 
   const { unreadCount, totalContacts } = useApp();
   const { hasAccess } = usePlanAccess();
-
-  // ✅ FIX 1: Fetch profile dynamically from AuthContext. No more LocalStorage desync!
   const { user, logout } = useAuth();
-
-  // ✅ FIX 2: Derive activeChannel values on-the-fly to bypass redundant state transitions
-  const activeChannel = useMemo<Channel>(() => {
-    return location.pathname.startsWith('/instagram') ? 'instagram' : 'whatsapp';
-  }, [location.pathname]);
 
   const displayName = useMemo(() => getDisplayName(user), [user]);
   const initial = useMemo(() => (displayName.charAt(0) || 'G').toUpperCase(), [displayName]);
   const email = user?.email || '';
 
-  const navigation = useMemo(() => {
-    return activeChannel === 'instagram'
-      ? getInstagramNav()
-      : getWhatsAppNav(unreadCount, totalContacts);
-  }, [activeChannel, unreadCount, totalContacts]);
+  const navigation = useMemo(
+    () => getNav(unreadCount, totalContacts),
+    [unreadCount, totalContacts]
+  );
 
   const isActive = (href: string) => {
-    if (href === '/dashboard' || href === '/instagram/dashboard') {
-      return location.pathname === href;
-    }
+    // Exact for the two section homes; prefix-match everywhere else so a section
+    // stays highlighted (and its sub-items expand) across its child pages.
+    if (href === '/dashboard') return location.pathname === '/dashboard';
     return location.pathname.startsWith(href);
   };
-
-  const activeColorTheme = activeChannel === 'instagram'
-    ? { bg: '#fff0f5', border: '#fecdd3', text: '#e1306c', bar: '#e1306c' }
-    : { bg: '#f0fdf4', border: '#bbf7d0', text: '#1b8b4b', bar: '#1b8b4b' };
 
   return (
     <aside className={`relative z-40 h-screen bg-white border-r border-gray-200 flex flex-col transition-all duration-300 ${collapsed && !isMobile ? 'w-20' : 'w-64'}`}>
@@ -339,13 +219,6 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, setCollapsed, isMobile = f
         </button>
       )}
 
-      {/* Channel Switcher */}
-      <ChannelSwitcher
-        active={activeChannel}
-        onSwitch={() => { }}
-        collapsed={collapsed && !isMobile}
-      />
-
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-4">
         {navigation.map((group) => (
@@ -368,7 +241,6 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, setCollapsed, isMobile = f
                     className="relative"
                     onMouseEnter={() => {
                       setHoveredItem(item.name);
-                      // ✅ FIX 3: Hover carpet-bombing mitigation layer
                       if (!isLocked && !isSoon) {
                         hoverTimer.current = setTimeout(() => {
                           prefetchRouteChunk(item.href);
@@ -393,20 +265,20 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, setCollapsed, isMobile = f
                         ${itemActive ? 'text-gray-900 font-semibold' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'}
                       `}
                       style={itemActive ? {
-                        background: activeColorTheme.bg,
-                        border: `1px solid ${activeColorTheme.border}`,
+                        background: ACTIVE_THEME.bg,
+                        border: `1px solid ${ACTIVE_THEME.border}`,
                       } : {}}
                     >
                       {itemActive && (
                         <div
                           className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 rounded-r-full"
-                          style={{ background: activeColorTheme.bar }}
+                          style={{ background: ACTIVE_THEME.bar }}
                         />
                       )}
 
                       <item.icon
                         className="w-4 h-4 flex-shrink-0"
-                        style={itemActive ? { color: activeColorTheme.text } : {}}
+                        style={itemActive ? { color: ACTIVE_THEME.text } : {}}
                       />
 
                       {(!collapsed || isMobile) && (
@@ -438,7 +310,7 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, setCollapsed, isMobile = f
                               key={sub.name}
                               to={sub.href}
                               className={`block px-3 py-1.5 text-xs rounded-lg transition-colors ${subActive ? 'font-semibold' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'}`}
-                              style={subActive ? { color: activeColorTheme.text } : {}}
+                              style={subActive ? { color: ACTIVE_THEME.text } : {}}
                             >
                               {sub.name}
                             </Link>
