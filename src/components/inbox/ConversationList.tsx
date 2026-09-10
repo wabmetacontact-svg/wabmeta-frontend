@@ -13,8 +13,19 @@ import {
   Pin,
   MessageSquarePlus,
 } from 'lucide-react';
+import { FaWhatsapp, FaInstagram, FaTelegram } from 'react-icons/fa';
+import { Layers } from 'lucide-react';
 import ConversationItem from './ConversationItem';
 import type { ContactLike } from '../../utils/inboxHelpers';
+
+type ChannelFilter = 'ALL' | 'WHATSAPP' | 'INSTAGRAM' | 'TELEGRAM';
+
+const CHANNEL_TABS: { key: ChannelFilter; label: string; Icon: React.ComponentType<{ className?: string }>; activeColor: string }[] = [
+  { key: 'ALL', label: 'All', Icon: Layers, activeColor: '#111827' },
+  { key: 'WHATSAPP', label: 'WhatsApp', Icon: FaWhatsapp, activeColor: '#25D366' },
+  { key: 'INSTAGRAM', label: 'Instagram', Icon: FaInstagram, activeColor: '#e1306c' },
+  { key: 'TELEGRAM', label: 'Telegram', Icon: FaTelegram, activeColor: '#229ED9' },
+];
 
 interface Conversation {
   id: string;
@@ -42,9 +53,12 @@ interface Props {
   loading?: boolean;
   refreshing?: boolean;
   filter: FilterTab;
+  channelFilter: ChannelFilter;
+  onChannelChange: (channel: ChannelFilter) => void;
   searchQuery: string;
   onFilterChange: (filter: FilterTab) => void;
   onSearchChange: (query: string) => void;
+  onGlobalSearch?: () => void;
   onRefresh: () => void;
   onSelectConversation: (conv: Conversation) => void;
   onPinConversation: (conv: Conversation, e: React.MouseEvent) => void;
@@ -68,9 +82,12 @@ const ConversationList: React.FC<Props> = ({
   loading,
   refreshing,
   filter,
+  channelFilter,
+  onChannelChange,
   searchQuery,
   onFilterChange,
   onSearchChange,
+  onGlobalSearch,
   onRefresh,
   onSelectConversation,
   onPinConversation,
@@ -165,6 +182,15 @@ const ConversationList: React.FC<Props> = ({
             </div>
 
             <div className="flex items-center gap-1">
+              {onGlobalSearch && (
+                <button
+                  onClick={onGlobalSearch}
+                  className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-emerald-600 transition-all"
+                  title="Search all messages (Ctrl/⌘+K)"
+                >
+                  <Search className="w-4 h-4" />
+                </button>
+              )}
               {onNewChat && (
                 <button
                   onClick={onNewChat}
@@ -183,6 +209,27 @@ const ConversationList: React.FC<Props> = ({
                 <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
               </button>
             </div>
+          </div>
+        )}
+
+        {/* Channel filter (unified inbox) */}
+        {!isSelectionMode && (
+          <div className="flex gap-1 mb-3 overflow-x-auto inbox-scroll">
+            {CHANNEL_TABS.map(({ key, label, Icon, activeColor }) => {
+              const active = channelFilter === key;
+              return (
+                <button
+                  key={key}
+                  onClick={() => onChannelChange(key)}
+                  title={label}
+                  className={`flex-shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-bold border transition-all ${active ? 'text-white shadow-sm' : 'bg-gray-50 border-gray-200 text-gray-500 hover:bg-gray-100 hover:text-gray-800'}`}
+                  style={active ? { backgroundColor: activeColor, borderColor: activeColor } : undefined}
+                >
+                  <Icon className="w-3.5 h-3.5" />
+                  {label}
+                </button>
+              );
+            })}
           </div>
         )}
 

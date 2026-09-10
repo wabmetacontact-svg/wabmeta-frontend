@@ -18,6 +18,7 @@ import ChatInput from '../components/inbox/ChatInput';
 import WindowStatus from '../components/inbox/WindowStatus';
 import ContactInfoPanel from '../components/inbox/ContactInfoPanel';
 import MessageSearchBar from '../components/inbox/MessageSearchBar';
+import GlobalSearch from '../components/inbox/GlobalSearch';
 import TypingIndicator from '../components/inbox/TypingIndicator';
 import SendTemplateModal from '../components/inbox/SendTemplateModal';
 import UpgradeModal from '../components/common/UpgradeModal';
@@ -31,7 +32,7 @@ import {
   type ConversationUpdate,
   type MessageStatusUpdate,
 } from '../hooks/useInboxSocket';
-import api, { inbox as inboxApi, whatsapp as whatsappApi, handleApiError } from '../services/api';
+import api, { inbox as inboxApi, whatsapp as whatsappApi, telegram as telegramApi, instagram as instagramApi, organizations as orgApi, crm as crmApi, handleApiError } from '../services/api';
 import { useApp } from '../context/AppContext';
 
 // Utils
@@ -67,7 +68,9 @@ interface Conversation {
   windowExpiresAt?: string | null;
   labels?: string[];
   isTyping?: boolean;
-  assignedTo?: { id: string; name: string } | null;
+  assignedTo?: string | { id: string; name: string } | null;
+  automationPaused?: boolean;
+  channel?: 'WHATSAPP' | 'INSTAGRAM' | 'TELEGRAM';
   createdAt?: string;
 }
 
@@ -124,21 +127,14 @@ const saveQuickReplies = (qrs: QuickReply[]) => {
   }
 };
 
-const NOTES_KEY = (convId: string) => `wabmeta_notes_${convId}`;
-
-const loadNotes = (convId: string): Note[] => {
-  try {
-    const data = localStorage.getItem(NOTES_KEY(convId));
-    if (data) return JSON.parse(data);
-  } catch { }
-  return [];
-};
-
-const saveNotes = (convId: string, notes: Note[]) => {
-  try {
-    localStorage.setItem(NOTES_KEY(convId), JSON.stringify(notes));
-  } catch { }
-};
+// Map a backend ContactNote ({ content, ... }) to the UI's Note ({ text, ... }).
+const mapContactNote = (n: any): Note => ({
+  id: n.id,
+  text: n.content ?? n.text ?? '',
+  createdAt: n.createdAt,
+  updatedAt: n.updatedAt,
+  author: n.author,
+});
 
 const Inbox: React.FC = () => {
   const confirm = useConfirm();
@@ -166,6 +162,9 @@ const Inbox: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [filter, setFilter] = useState<FilterTab>('all');
+  const [channelFilter, setChannelFilter] = useState<'ALL' | 'WHATSAPP' | 'INSTAGRAM' | 'TELEGRAM'>('ALL');
+  const [members, setMembers] = useState<{ id: string; name: string }[]>([]);
+  const [showGlobalSearch, setShowGlobalSearch] = useState(false);
   const [whatsappAccountId, setWhatsappAccountId] = useState<string | null>(null);
   const [labels, setLabels] = useState<{ label: string, count: number, color?: string }[]>([]);
 
@@ -188,10 +187,15 @@ const Inbox: React.FC = () => {
   const [isContactTyping, setIsContactTyping] = useState(false);
 
   const filterRef = useRef<FilterTab>(filter);
+  const channelFilterRef = useRef(channelFilter);
 
   useEffect(() => {
     filterRef.current = filter;
   }, [filter]);
+
+  useEffect(() => {
+    channelFilterRef.current = channelFilter;
+  }, [channelFilter]);
 
   useEffect(() => {
     selectedConvRef.current = selectedConversation;
@@ -203,15 +207,22 @@ const Inbox: React.FC = () => {
 
   // Depend on the id itself rather than the object: only the id is used, and a
   // new object identity for the same conversation shouldn't re-run these.
-  const selectedConvId = selectedConversation?.id;
+  const selectedContactId = selectedConversation?.contact?.id;
 
+  // Notes live on the contact (cross-channel, shared across the team) and are
+  // fetched from the backend whenever a conversation opens.
   useEffect(() => {
-    if (selectedConvId) setNotes(loadNotes(selectedConvId));
-  }, [selectedConvId]);
-
-  useEffect(() => {
-    if (selectedConvId) saveNotes(selectedConvId, notes);
-  }, [notes, selectedConvId]);
+    if (!selectedContactId) { setNotes([]); return; }
+    let alive = true;
+    (async () => {
+      try {
+        const res = await crmApi.getContactNotes(selectedContactId);
+        const raw = Array.isArray(res.data?.data) ? res.data.data : [];
+        if (alive) setNotes(raw.map(mapContactNote));
+      } catch { if (alive) setNotes([]); }
+    })();
+    return () => { alive = false; };
+  }, [selectedContactId]);
 
   useEffect(() => {
     const fetchAccount = async () => {
@@ -263,6 +274,7 @@ const Inbox: React.FC = () => {
 
         const params: any = { limit: 200 };
         if (searchQuery?.trim()) params.search = searchQuery.trim();
+        if (channelFilter !== 'ALL') params.channel = channelFilter;
 
         if (filter === 'unread') {
           params.isRead = false;
@@ -299,7 +311,7 @@ const Inbox: React.FC = () => {
         setRefreshing(false);
       }
     },
-    [searchQuery, filter]
+    [searchQuery, filter, channelFilter]
   );
 
   const fetchMessages = useCallback(
@@ -418,15 +430,26 @@ const Inbox: React.FC = () => {
       setMessages((prev) => [...prev, tempMessage]);
 
       try {
-        if (!whatsappAccountId) throw new Error('No WhatsApp account connected');
+        // Route the reply by channel: Telegram uses its own send endpoint
+        // (keyed by conversation id), WhatsApp uses the WA account + phone.
+        const channel = (conv as any).channel || 'WHATSAPP';
 
-        const response = await whatsappApi.sendText({
-          whatsappAccountId,
-          to: conv.contact.phone,
-          message: text,
-          tempId,
-          ...(options?.replyToId && { replyToWamId: options.replyToId }),
-        } as any);
+        let response;
+        if (channel === 'TELEGRAM') {
+          response = await telegramApi.send(conv.id, text);
+        } else if (channel === 'INSTAGRAM') {
+          response = await instagramApi.send(conv.id, text);
+        } else {
+          if (!whatsappAccountId) throw new Error('No WhatsApp account connected');
+
+          response = await whatsappApi.sendText({
+            whatsappAccountId,
+            to: conv.contact.phone,
+            message: text,
+            tempId,
+            ...(options?.replyToId && { replyToWamId: options.replyToId }),
+          } as any);
+        }
 
         if (response.data.success) {
           const realMsg = response.data.data as any;
@@ -517,6 +540,63 @@ const Inbox: React.FC = () => {
 
       sentMessageIds.current.add(tempId);
       setMessages((prev) => [...prev, tempMsg]);
+
+      // Telegram sends media in one multipart step; WhatsApp uploads then sends.
+      if (((conv as any).channel || 'WHATSAPP') === 'TELEGRAM') {
+        try {
+          const sendToast = toast.loading('Sending...');
+          const form = new FormData();
+          form.append('file', file);
+          form.append('conversationId', conv.id);
+          const res = await telegramApi.sendMedia(form);
+          toast.dismiss(sendToast);
+          const realMsg = res.data?.data as any;
+          const realId = realMsg?.id;
+          if (realId) sentMessageIds.current.add(realId);
+          setMessages((prev) =>
+            prev.map((m) =>
+              m.id === tempId
+                ? { ...(realMsg || m), id: realId || m.id, status: 'SENT', mediaUrl: realMsg?.mediaUrl || m.mediaUrl }
+                : m
+            )
+          );
+          toast.success('Sent!');
+        } catch (e: any) {
+          toast.dismiss();
+          toast.error(e.response?.data?.message || e.message || 'Failed to send media');
+          setMessages((prev) => prev.map((m) => (m.id === tempId ? { ...m, status: 'FAILED' } : m)));
+        }
+        return;
+      }
+
+      // Instagram: upload to the shared media store for a public URL, then send it.
+      if (((conv as any).channel) === 'INSTAGRAM') {
+        try {
+          const uploadToast = toast.loading('Uploading...');
+          const form = new FormData();
+          form.append('file', file);
+          const uploadRes = await api.post('/inbox/media/upload', form, { headers: { 'Content-Type': 'multipart/form-data' } });
+          toast.dismiss(uploadToast);
+          const uploaded = uploadRes.data?.data;
+          if (!uploaded?.url) throw new Error('Upload failed');
+
+          const sendToast = toast.loading('Sending...');
+          const res = await instagramApi.sendMedia(conv.id, uploaded.url, uploaded.mediaType || file.type);
+          toast.dismiss(sendToast);
+          const realMsg = res.data?.data as any;
+          const realId = realMsg?.id;
+          if (realId) sentMessageIds.current.add(realId);
+          setMessages((prev) =>
+            prev.map((m) => (m.id === tempId ? { ...(realMsg || m), id: realId || m.id, status: 'SENT', mediaUrl: realMsg?.mediaUrl || uploaded.url } : m))
+          );
+          toast.success('Sent!');
+        } catch (e: any) {
+          toast.dismiss();
+          toast.error(e.response?.data?.message || e.message || 'Failed to send media');
+          setMessages((prev) => prev.map((m) => (m.id === tempId ? { ...m, status: 'FAILED' } : m)));
+        }
+        return;
+      }
 
       try {
         const uploadToast = toast.loading('Uploading...');
@@ -672,6 +752,75 @@ const Inbox: React.FC = () => {
     },
     [fetchConversations, navigate]
   );
+
+  // Team members (for the conversation assignee picker). Fetched once.
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      try {
+        const cur = await orgApi.getCurrent();
+        const orgId = cur.data?.data?.id || cur.data?.data?.organization?.id;
+        if (!orgId) return;
+        const res = await orgApi.getById(orgId);
+        const raw = res.data?.data?.members || [];
+        const list = raw
+          .map((m: any) => {
+            const u = m.user || m;
+            // The API flattens members: `userId` is the real user id, `id` is the membership id.
+            const id = m.userId || u.userId || u.id;
+            const name = [u.firstName, u.lastName].filter(Boolean).join(' ').trim() || u.email || 'Member';
+            return { id, name };
+          })
+          .filter((m: any) => m.id);
+        if (alive) setMembers(list);
+      } catch { /* assignee picker just stays empty */ }
+    })();
+    return () => { alive = false; };
+  }, []);
+
+  // Cmd/Ctrl+K opens global search from anywhere in the inbox.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && (e.key === 'k' || e.key === 'K')) {
+        e.preventDefault();
+        setShowGlobalSearch(true);
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
+
+  const handleAssign = useCallback(async (userId: string | null) => {
+    const conv = selectedConvRef.current;
+    if (!conv) return;
+    setSelectedConversation((c) => (c ? { ...c, assignedTo: userId } as any : c));
+    try {
+      await api.post(`/inbox/conversations/${conv.id}/assign`, { userId });
+      const who = userId ? members.find((m) => m.id === userId)?.name : null;
+      toast.success(who ? `Assigned to ${who}` : 'Unassigned');
+    } catch {
+      setSelectedConversation((c) => (c ? { ...c, assignedTo: (conv as any).assignedTo } as any : c));
+      toast.error('Could not assign this conversation');
+    }
+  }, [members]);
+
+  const handleToggleAutomation = useCallback(async () => {
+    const conv = selectedConvRef.current;
+    if (!conv) return;
+    const next = !(conv as any).automationPaused;
+    // Optimistic: update the selected conversation and its list row.
+    setSelectedConversation((c) => (c ? { ...c, automationPaused: next } as any : c));
+    setConversations((prev) => prev.map((c) => (c.id === conv.id ? ({ ...c, automationPaused: next } as any) : c)));
+    try {
+      await inboxApi.setAutomationPaused(conv.id, next);
+      toast.success(next ? "You've taken over — bot paused" : 'Bot automation resumed');
+    } catch {
+      // Roll back on failure.
+      setSelectedConversation((c) => (c ? { ...c, automationPaused: !next } as any : c));
+      setConversations((prev) => prev.map((c) => (c.id === conv.id ? ({ ...c, automationPaused: !next } as any) : c)));
+      toast.error('Could not update automation');
+    }
+  }, []);
 
   const handleClearChat = useCallback(async (_conv: Conversation) => {
     if (await confirm({
@@ -942,29 +1091,45 @@ const Inbox: React.FC = () => {
   }, [searchResults.length, currentSearchIndex]);
 
   const handleAddNote = useCallback(async (text: string) => {
-    const newNote: Note = {
-      id: `note-${Date.now()}`,
-      text,
-      createdAt: new Date().toISOString(),
-      author: 'You',
-    };
-    setNotes((prev) => [newNote, ...prev]);
-    toast.success('Note added');
+    const contactId = selectedConvRef.current?.contact?.id;
+    if (!contactId) return;
+    try {
+      const res = await crmApi.addContactNote(contactId, text);
+      const saved = res.data?.data ? mapContactNote(res.data.data) : null;
+      if (saved) setNotes((prev) => [saved, ...prev]);
+      toast.success('Note added');
+    } catch {
+      toast.error('Could not add note');
+    }
   }, []);
 
   const handleUpdateNote = useCallback(async (id: string, text: string) => {
-    setNotes((prev) =>
-      prev.map((n) =>
-        n.id === id ? { ...n, text, updatedAt: new Date().toISOString() } : n
-      )
-    );
-    toast.success('Note updated');
-  }, []);
+    const contactId = selectedConvRef.current?.contact?.id;
+    if (!contactId) return;
+    const prev = notes;
+    setNotes((ns) => ns.map((n) => (n.id === id ? { ...n, text, updatedAt: new Date().toISOString() } : n)));
+    try {
+      await crmApi.updateContactNote(contactId, id, text);
+      toast.success('Note updated');
+    } catch {
+      setNotes(prev);
+      toast.error('Could not update note');
+    }
+  }, [notes]);
 
   const handleDeleteNote = useCallback(async (id: string) => {
-    setNotes((prev) => prev.filter((n) => n.id !== id));
-    toast.success('Note deleted');
-  }, []);
+    const contactId = selectedConvRef.current?.contact?.id;
+    if (!contactId) return;
+    const prev = notes;
+    setNotes((ns) => ns.filter((n) => n.id !== id));
+    try {
+      await crmApi.deleteContactNote(contactId, id);
+      toast.success('Note deleted');
+    } catch {
+      setNotes(prev);
+      toast.error('Could not delete note');
+    }
+  }, [notes]);
 
   const handleAddQuickReply = useCallback(async (qr: Omit<QuickReply, 'id'>) => {
     const newQR: QuickReply = { ...qr, id: `qr-${Date.now()}` };
@@ -1087,6 +1252,10 @@ const Inbox: React.FC = () => {
 
         if (idx === -1) {
           if ((updatedConv as any).contact?.id) {
+            // Respect the active channel tab — don't inject a conversation
+            // from a channel the user has filtered out of view.
+            const activeChannel = channelFilterRef.current;
+            if (activeChannel !== 'ALL' && ((updatedConv as any).channel || 'WHATSAPP') !== activeChannel) return prev;
             if (currentFilter === 'archived' && !updatedConv.isArchived) return prev;
             if (currentFilter !== 'archived' && updatedConv.isArchived) return prev;
             // Read chat ko Unread tab me mat daalo
@@ -1274,9 +1443,12 @@ const Inbox: React.FC = () => {
           loading={loading}
           refreshing={refreshing}
           filter={filter}
+          channelFilter={channelFilter}
+          onChannelChange={setChannelFilter}
           searchQuery={searchQuery}
           onFilterChange={setFilter}
           onSearchChange={setSearchQuery}
+          onGlobalSearch={() => setShowGlobalSearch(true)}
           onRefresh={() => {
             setRefreshing(true);
             fetchConversations();
@@ -1317,6 +1489,7 @@ const Inbox: React.FC = () => {
                 handleArchiveConversation(selectedConversation, event);
               }}
               onClearChat={() => handleClearChat(selectedConversation)}
+              onToggleAutomation={handleToggleAutomation}
             />
 
             <MessageSearchBar
@@ -1381,6 +1554,12 @@ const Inbox: React.FC = () => {
               onCancelReply={() => setReplyTo(null)}
               contactName={getContactName(selectedConversation.contact)}
               quickReplies={quickReplies}
+              onSuggestReply={async () => {
+                const conv = selectedConvRef.current;
+                if (!conv) return '';
+                const res = await inboxApi.suggestReply(conv.id);
+                return res.data?.data?.suggestion || '';
+              }}
             />
           </>
         ) : (
@@ -1416,8 +1595,18 @@ const Inbox: React.FC = () => {
                 navigate(`/dashboard/contacts/${selectedConversation.contact.id}`);
               }
             }}
+            members={members}
+            onAssign={handleAssign}
           />
         </div>
+      )}
+
+      {/* Global search (Cmd/Ctrl+K) */}
+      {showGlobalSearch && (
+        <GlobalSearch
+          onClose={() => setShowGlobalSearch(false)}
+          onOpenConversation={(id) => navigate(`/dashboard/inbox/${id}`)}
+        />
       )}
 
       {/* Modals */}

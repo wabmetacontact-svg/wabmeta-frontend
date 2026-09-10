@@ -29,7 +29,7 @@ import {
   Forward,
   Smile,
 } from 'lucide-react';
-import api from '../../services/api';
+import api, { getStoredAccessToken } from '../../services/api';
 import toast from 'react-hot-toast';
 import { formatMessageTime, getAvatarColor } from '../../utils/inboxHelpers';
 
@@ -280,6 +280,14 @@ function getMediaSrc(msg: Message): string | null {
   const url = msg.mediaUrl;
   if (!url) return null;
   if (url.startsWith('data:')) return url;
+
+  // Telegram/Instagram media is streamed through our backend proxy; authenticate
+  // the <img>/<video> request with the current access token in the query string.
+  if (url.includes('/telegram/media/') || url.includes('/instagram/media/')) {
+    const path = url.startsWith('http') ? url : `${API_BASE}${url}`;
+    const token = getStoredAccessToken();
+    return token ? `${path}${path.includes('?') ? '&' : '?'}token=${token}` : path;
+  }
 
   const mimeType = msg.mediaMimeType?.toLowerCase() || '';
   const isDocument = mimeType === 'application/pdf' ||
@@ -1298,6 +1306,32 @@ const MessageBubble: React.FC<Props> = ({
             </div>
           ) : (
             renderContent()
+          )}
+
+          {/* Telegram inline keyboard sent with this message */}
+          {!isEditing && Array.isArray(message.metadata?.buttons) && message.metadata.buttons.length > 0 && (
+            <div className="mt-2 flex flex-col gap-1">
+              {message.metadata.buttons.map((b: any, i: number) =>
+                b?.type === 'url' && b?.value ? (
+                  <a
+                    key={i}
+                    href={b.value}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block text-center text-xs font-semibold py-1.5 px-2 rounded-lg bg-white/95 text-sky-700 border border-sky-200 hover:bg-white transition-colors"
+                  >
+                    🔗 {b.text || b.value}
+                  </a>
+                ) : (
+                  <div
+                    key={i}
+                    className="text-center text-xs font-semibold py-1.5 px-2 rounded-lg bg-white/95 text-sky-700 border border-sky-200"
+                  >
+                    {b.text || b.value}
+                  </div>
+                )
+              )}
+            </div>
           )}
 
           {!isEditing && (

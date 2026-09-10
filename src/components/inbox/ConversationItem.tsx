@@ -17,7 +17,7 @@ import {
   CheckSquare,
   Square
 } from 'lucide-react';
-import { FaWhatsapp } from "react-icons/fa";
+import { FaWhatsapp, FaTelegram } from "react-icons/fa";
 import {
   getContactName,
   getContactInitial,
@@ -45,7 +45,9 @@ interface Conversation {
   isWindowOpen?: boolean;
   labels?: string[];
   isTyping?: boolean;
-  channelType?: 'WHATSAPP' | 'INSTAGRAM';
+  channelType?: 'WHATSAPP' | 'INSTAGRAM' | 'TELEGRAM';
+  // Backend sends the unified channel on the conversation itself.
+  channel?: 'WHATSAPP' | 'INSTAGRAM' | 'TELEGRAM';
 }
 
 interface Props {
@@ -134,16 +136,23 @@ const ConversationItem: React.FC<Props> = ({
     return null;
   };
 
-  const ChannelBadge = ({ type }: { type?: 'WHATSAPP' | 'INSTAGRAM' }) => {
+  const ChannelBadge = ({ type }: { type?: 'WHATSAPP' | 'INSTAGRAM' | 'TELEGRAM' }) => {
     if (type === 'INSTAGRAM') {
       return (
-        <div className="absolute -top-0.5 -left-0.5 w-[18px] h-[18px] rounded-full bg-gradient-to-tr from-[#f09433] via-[#dc2743] to-[#bc1888] flex items-center justify-center ring-2 ring-[#0a0e27] shadow-lg z-10">
+        <div className="absolute -top-0.5 -left-0.5 w-[18px] h-[18px] rounded-full bg-gradient-to-tr from-[#f09433] via-[#dc2743] to-[#bc1888] flex items-center justify-center ring-2 ring-white shadow-lg z-10">
           <Instagram size={10} className="text-white" />
         </div>
       );
     }
+    if (type === 'TELEGRAM') {
+      return (
+        <div className="absolute -top-0.5 -left-0.5 w-[18px] h-[18px] rounded-full bg-[#229ED9] flex items-center justify-center ring-2 ring-white shadow-lg z-10">
+          <FaTelegram size={10} className="text-white" />
+        </div>
+      );
+    }
     return (
-      <div className="absolute -top-0.5 -left-0.5 w-[18px] h-[18px] rounded-full bg-[#25D366] flex items-center justify-center ring-2 ring-[#0a0e27] shadow-lg z-10">
+      <div className="absolute -top-0.5 -left-0.5 w-[18px] h-[18px] rounded-full bg-[#25D366] flex items-center justify-center ring-2 ring-white shadow-lg z-10">
         <FaWhatsapp size={10} className="text-white" />
       </div>
     );
@@ -209,7 +218,7 @@ const ConversationItem: React.FC<Props> = ({
             )}
           </div>
 
-          <ChannelBadge type={conv.channelType || 'WHATSAPP'} />
+          <ChannelBadge type={conv.channel || conv.channelType || 'WHATSAPP'} />
 
           {/* Pin badge */}
           {conv.isPinned && (

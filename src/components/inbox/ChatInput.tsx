@@ -18,6 +18,7 @@ import {
   Code,
   X,
   Zap,
+  Wand2,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import AttachmentMenu from './AttachmentMenu';
@@ -45,6 +46,7 @@ interface Props {
   onCancelReply?: () => void;
   contactName?: string;
   quickReplies?: QuickReply[];
+  onSuggestReply?: () => Promise<string>;
 }
 
 const ChatInput: React.FC<Props> = ({
@@ -61,9 +63,11 @@ const ChatInput: React.FC<Props> = ({
   onCancelReply,
   contactName,
   quickReplies = [],
+  onSuggestReply,
 }) => {
   const [message, setMessage] = useState('');
   const [uploading, setUploading] = useState(false);
+  const [aiDrafting, setAiDrafting] = useState(false);
   const [showEmoji, setShowEmoji] = useState(false);
   const [showAttachments, setShowAttachments] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
@@ -303,6 +307,25 @@ const ChatInput: React.FC<Props> = ({
       return;
     }
     await onSendVoice(blob, duration);
+  };
+
+  // ── AI draft ───────────────────────────────────────────────────────────
+  const handleAiDraft = async () => {
+    if (!onSuggestReply || aiDrafting) return;
+    setAiDrafting(true);
+    try {
+      const draft = await onSuggestReply();
+      if (draft && draft.trim()) {
+        setMessage(draft.trim());
+        setTimeout(() => textareaRef.current?.focus(), 0);
+      } else {
+        toast('No draft could be generated.', { icon: '🤔' });
+      }
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || 'Could not draft a reply.');
+    } finally {
+      setAiDrafting(false);
+    }
   };
 
   // ── Quick reply select ─────────────────────────────────────────────────
@@ -580,6 +603,24 @@ const ChatInput: React.FC<Props> = ({
           >
             <Sparkles className="w-5 h-5" />
           </button>
+
+          {/* AI draft */}
+          {onSuggestReply && (
+            <button
+              type="button"
+              onClick={handleAiDraft}
+              disabled={aiDrafting || disabled}
+              className="
+                p-2.5 rounded-xl
+                transition-all hover:scale-105 active:scale-95
+                hover:bg-violet-50 text-violet-500 hover:text-violet-700 border border-transparent
+                disabled:opacity-50 disabled:cursor-not-allowed
+              "
+              title="Draft a reply with AI"
+            >
+              {aiDrafting ? <Loader2 className="w-5 h-5 animate-spin" /> : <Wand2 className="w-5 h-5" />}
+            </button>
+          )}
 
           {/* Text input */}
           <div className="flex-1 relative bg-white">

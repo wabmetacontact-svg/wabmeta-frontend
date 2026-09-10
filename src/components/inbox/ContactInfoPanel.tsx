@@ -42,8 +42,11 @@ interface ConversationData {
   windowExpiresAt?: string | null;
   createdAt?: string;
   lastMessageAt?: string;
-  assignedTo?: { id: string; name: string } | null;
+  // Backend stores the assignee as a userId string; older code expected an object.
+  assignedTo?: string | { id: string; name: string } | null;
 }
+
+export interface OrgMember { id: string; name: string }
 
 interface Props {
   conversation: ConversationData;
@@ -61,6 +64,8 @@ interface Props {
   onArchive?: () => void;
   onDelete?: () => void;
   onViewProfile?: () => void;
+  members?: OrgMember[];
+  onAssign?: (userId: string | null) => void;
 }
 
 type Section = 'info' | 'media' | 'notes' | 'labels' | 'settings';
@@ -81,6 +86,8 @@ const ContactInfoPanel: React.FC<Props> = ({
   onArchive,
   onDelete,
   onViewProfile,
+  members = [],
+  onAssign,
 }) => {
   const [expandedSections, setExpandedSections] = useState<Set<Section>>(
     new Set(['info', 'labels'])
@@ -89,6 +96,12 @@ const ContactInfoPanel: React.FC<Props> = ({
   const name = getContactName(conversation.contact);
   const initial = getContactInitial(conversation.contact);
   const avatarColor = getAvatarColor(name);
+
+  // assignedTo may arrive as a userId string (backend) or a legacy {id,name} object.
+  const assignedUserId =
+    typeof conversation.assignedTo === 'string'
+      ? conversation.assignedTo
+      : conversation.assignedTo?.id || '';
 
   const toggleSection = (section: Section) => {
     setExpandedSections((prev) => {
@@ -285,12 +298,33 @@ const ContactInfoPanel: React.FC<Props> = ({
           )}
 
           {/* Assigned To */}
-          {conversation.assignedTo && (
-            <InfoRow
-              icon={User}
-              label="Assigned To"
-              value={conversation.assignedTo.name}
-            />
+          {onAssign ? (
+            <div className="flex items-center gap-3 py-2">
+              <div className="w-8 h-8 rounded-lg bg-gray-50 border border-gray-200 flex items-center justify-center flex-shrink-0">
+                <User className="w-4 h-4 text-gray-400" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide">Assigned To</p>
+                <select
+                  value={assignedUserId || ''}
+                  onChange={(e) => onAssign(e.target.value || null)}
+                  className="mt-0.5 w-full bg-white border border-gray-200 rounded-lg px-2 py-1.5 text-sm text-gray-900 outline-none focus:border-emerald-500/50"
+                >
+                  <option value="">Unassigned</option>
+                  {members.map((m) => (
+                    <option key={m.id} value={m.id}>{m.name}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          ) : (
+            assignedUserId && (
+              <InfoRow
+                icon={User}
+                label="Assigned To"
+                value={members.find((m) => m.id === assignedUserId)?.name || 'Assigned'}
+              />
+            )
           )}
 
           {onViewProfile && (

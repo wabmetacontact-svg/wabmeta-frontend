@@ -14,6 +14,7 @@ import {
   Volume2,
   Tag,
   Download,
+  Bot,
 } from 'lucide-react';
 import {
   getContactName,
@@ -31,6 +32,8 @@ interface Conversation {
   isArchived?: boolean;
   isTyping?: boolean;
   lastSeenAt?: string;
+  automationPaused?: boolean;
+  channel?: 'WHATSAPP' | 'INSTAGRAM' | 'TELEGRAM';
 }
 
 interface Props {
@@ -47,6 +50,7 @@ interface Props {
   onDelete?: () => void;
   onClearChat?: () => void;
   onExportChat?: () => void;
+  onToggleAutomation?: () => void;
 }
 
 const ChatHeader: React.FC<Props> = ({
@@ -63,6 +67,7 @@ const ChatHeader: React.FC<Props> = ({
   onDelete,
   onClearChat,
   onExportChat,
+  onToggleAutomation,
 }) => {
   const [showMenu, setShowMenu] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -243,6 +248,23 @@ const ChatHeader: React.FC<Props> = ({
           >
             <Search className="w-[18px] h-[18px]" />
           </button>
+
+          {/* Automation (human handoff) toggle */}
+          {onToggleAutomation && (
+            <button
+              onClick={onToggleAutomation}
+              title={conversation.automationPaused ? 'Automation paused — you are handling this chat. Click to let the bot reply again.' : 'Bot automation active. Click to take over (pause the bot).'}
+              className={`
+                p-2 rounded-lg transition-all hover:scale-110
+                ${conversation.automationPaused
+                  ? 'bg-amber-50 text-amber-600'
+                  : 'bg-emerald-50 text-emerald-600'
+                }
+              `}
+            >
+              <Bot className="w-[18px] h-[18px]" />
+            </button>
+          )}
 
           {/* Info Panel Toggle */}
           <button
