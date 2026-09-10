@@ -6,10 +6,30 @@ import {
     ArrowLeft, Trash2, Phone, Mail,
     MessageSquare, CheckSquare, Activity, Plus, Loader2, Send
 } from 'lucide-react';
+import { FaWhatsapp, FaTelegram, FaInstagram } from 'react-icons/fa';
 import { crm as crmApi } from '../services/api';
 import type { Lead, LeadNote, LeadTask, LeadActivity } from '../types/crm';
 import toast from 'react-hot-toast';
 import PageLoader from '../components/common/PageLoader';
+
+/**
+ * A lead's channel is derived from its free-text `source` (there is no channel
+ * column). The conversation button opens whichever conversation the lead is
+ * actually linked to, so it is labelled with that same channel rather than
+ * offering three buttons that would all do the same thing.
+ */
+const CHANNEL_UI: Record<string, { label: string; Icon: React.ComponentType<{ className?: string }>; cls: string }> = {
+    instagram: { label: 'Instagram DM', Icon: FaInstagram, cls: 'bg-gradient-to-r from-pink-500 to-purple-600 hover:opacity-90' },
+    telegram: { label: 'Telegram chat', Icon: FaTelegram, cls: 'bg-sky-500 hover:bg-sky-600' },
+    whatsapp: { label: 'WhatsApp chat', Icon: FaWhatsapp, cls: 'bg-emerald-600 hover:bg-emerald-700' },
+};
+
+const channelOf = (lead: { source?: string; chatbotQualified?: boolean }) => {
+    const src = (lead.source || '').toLowerCase();
+    if (src.includes('instagram')) return 'instagram';
+    if (src.includes('telegram')) return 'telegram';
+    return 'whatsapp';
+};
 
 import { useConfirm } from '../context/ConfirmContext';
 const LeadDetail: React.FC = () => {
@@ -176,8 +196,28 @@ const LeadDetail: React.FC = () => {
                     </div>
 
                     <div className="flex items-center gap-2">
+                        {(() => {
+                            const ch = CHANNEL_UI[channelOf(lead)];
+                            return lead.conversationId ? (
+                                <button
+                                    onClick={() => navigate(`/dashboard/inbox/${lead.conversationId}`)}
+                                    className={`inline-flex items-center gap-2 px-4 py-2 text-white rounded-full text-xs font-bold shadow-md transition-all ${ch.cls}`}
+                                >
+                                    <ch.Icon className="w-4 h-4" /> Open {ch.label}
+                                </button>
+                            ) : (
+                                <button
+                                    onClick={() => navigate('/dashboard/inbox')}
+                                    title="This lead has no linked conversation yet"
+                                    className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 rounded-full text-xs font-bold shadow-sm transition-all"
+                                >
+                                    <ch.Icon className="w-4 h-4" /> Find in inbox
+                                </button>
+                            );
+                        })()}
                         <button
                             onClick={handleDelete}
+                            aria-label="Delete lead"
                             className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                         >
                             <Trash2 className="w-5 h-5" />
