@@ -18,7 +18,10 @@ export type AutomationTrigger =
   | 'WEBHOOK' 
   | 'SCHEDULE' 
   | 'INACTIVITY'
-  | 'UNKNOWN_MESSAGE'; // ✅ NEW
+  | 'UNKNOWN_MESSAGE' // ✅ NEW
+  | 'LEAD_STAGE_CHANGED'
+  | 'NO_REPLY'
+  | 'TASK_DUE';
 
 export interface AutomationAction {
   id: string;

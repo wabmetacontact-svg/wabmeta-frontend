@@ -4,10 +4,11 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
     ArrowLeft, Trash2, Phone, Mail,
-    MessageSquare, CheckSquare, Activity, Plus, Loader2, Send
+    MessageSquare, CheckSquare, Activity, Plus, Loader2, Send,
+    CreditCard, RefreshCw, Copy
 } from 'lucide-react';
 import { FaWhatsapp, FaTelegram, FaInstagram } from 'react-icons/fa';
-import { crm as crmApi } from '../services/api';
+import { crm as crmApi, payments as paymentsApi } from '../services/api';
 import type { Lead, LeadNote, LeadTask, LeadActivity } from '../types/crm';
 import toast from 'react-hot-toast';
 import PageLoader from '../components/common/PageLoader';
@@ -39,7 +40,7 @@ const LeadDetail: React.FC = () => {
 
     const [lead, setLead] = useState<Lead | null>(null);
     const [loading, setLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState<'notes' | 'tasks' | 'activity'>('notes');
+    const [activeTab, setActiveTab] = useState<'notes' | 'tasks' | 'activity' | 'payments'>('notes');
     const [notes, setNotes] = useState<LeadNote[]>([]);
     const [tasks, setTasks] = useState<LeadTask[]>([]);
     const [activities, setActivities] = useState<LeadActivity[]>([]);
@@ -47,6 +48,11 @@ const LeadDetail: React.FC = () => {
     const [addingNote, setAddingNote] = useState(false);
     const [newTask, setNewTask] = useState({ title: '', dueDate: '' });
     const [showTaskForm, setShowTaskForm] = useState(false);
+
+    // Payment links (client ke apne Razorpay se)
+    const [leadPayments, setLeadPayments] = useState<any[]>([]);
+    const [payForm, setPayForm] = useState({ amount: '', description: '' });
+    const [payBusy, setPayBusy] = useState(false);
 
     useEffect(() => {
         if (!id) return;
@@ -74,12 +80,66 @@ const LeadDetail: React.FC = () => {
                 setTasks(data.tasks || []);
                 setActivities(data.activities || []);
             }
+            // Payments alag se - Razorpay juda na ho to bhi lead khulna chahiye
+            loadPayments();
         } catch (err) {
             if (isCancelled()) return;
             toast.error('Failed to load lead');
             navigate('/dashboard/crm/leads');
         } finally {
             if (!isCancelled()) setLoading(false);
+        }
+    };
+
+    const loadPayments = async () => {
+        if (!id) return;
+        try {
+            const res = await paymentsApi.listForLead(id);
+            if (res.data.success) setLeadPayments(res.data.data || []);
+        } catch {
+            // Razorpay juda nahi / permission nahi - tab section khaali rahega
+        }
+    };
+
+    const handleCreatePaymentLink = async () => {
+        const amount = Number(payForm.amount);
+        if (!Number.isFinite(amount) || amount < 1) {
+            toast.error('Enter an amount in rupees');
+            return;
+        }
+        setPayBusy(true);
+        try {
+            const res = await paymentsApi.createLink({
+                amount,
+                description: payForm.description.trim() || undefined,
+                leadId: id!,
+            });
+            toast.success(res.data.data?.sent ? 'Payment link sent on WhatsApp' : 'Payment link created (not sent - 24h window closed?)');
+            setPayForm({ amount: '', description: '' });
+            loadPayments();
+        } catch (err: any) {
+            toast.error(err?.response?.data?.message || 'Could not create the payment link');
+        } finally {
+            setPayBusy(false);
+        }
+    };
+
+    const handleRefreshPayment = async (paymentId: string) => {
+        try {
+            await paymentsApi.refresh(paymentId);
+            await loadPayments();
+            await loadLead();
+        } catch (err: any) {
+            toast.error(err?.response?.data?.message || 'Could not check the status');
+        }
+    };
+
+    const handleResendPayment = async (paymentId: string) => {
+        try {
+            const res = await paymentsApi.resend(paymentId);
+            toast.success(res.data.data?.sent ? 'Link sent again' : 'Could not send (24h window closed?)');
+        } catch (err: any) {
+            toast.error(err?.response?.data?.message || 'Could not send the link');
         }
     };
 
@@ -298,6 +358,16 @@ const LeadDetail: React.FC = () => {
                         <Activity className="w-4 h-4" />
                         Activity ({activities.length})
                     </button>
+                    <button
+                        onClick={() => setActiveTab('payments')}
+                        className={`flex items-center gap-2 px-6 py-3 font-semibold text-sm transition-all ${activeTab === 'payments'
+                                ? 'border-b-2 border-green-500 text-green-600 bg-white'
+                                : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100/50'
+                            }`}
+                    >
+                        <CreditCard className="w-4 h-4" />
+                        Payments ({leadPayments.length})
+                    </button>
                 </div>
 
                 {/* Tab Content */}
@@ -441,6 +511,105 @@ const LeadDetail: React.FC = () => {
                             ))}
                             {activities.length === 0 && (
                                 <p className="text-center text-gray-500 py-8">No activity yet</p>
+                            )}
+                        </div>
+                    )}
+
+                    {/* Payments Tab */}
+                    {activeTab === 'payments' && (
+                        <div className="space-y-4">
+                            {/* Naya payment link */}
+                            <div className="p-4 bg-gray-50 border border-gray-200 rounded-xl">
+                                <div className="flex flex-col sm:flex-row gap-2">
+                                    <input
+                                        aria-label="Payment amount in rupees"
+                                        type="number"
+                                        min={1}
+                                        value={payForm.amount}
+                                        onChange={(e) => setPayForm({ ...payForm, amount: e.target.value })}
+                                        placeholder="Amount ₹"
+                                        className="w-full sm:w-40 px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-green-500"
+                                    />
+                                    <input
+                                        aria-label="Payment description"
+                                        type="text"
+                                        value={payForm.description}
+                                        onChange={(e) => setPayForm({ ...payForm, description: e.target.value })}
+                                        placeholder="What is this payment for?"
+                                        className="flex-1 px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-green-500"
+                                    />
+                                    <button
+                                        onClick={handleCreatePaymentLink}
+                                        disabled={payBusy}
+                                        className="flex items-center justify-center gap-2 px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-semibold disabled:opacity-50"
+                                    >
+                                        {payBusy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                                        Send payment link
+                                    </button>
+                                </div>
+                                <p className="text-xs text-gray-500 mt-2">
+                                    Sent from your own Razorpay account on WhatsApp. When it is paid, this lead moves to Won.
+                                </p>
+                            </div>
+
+                            {/* Bheje gaye links */}
+                            {leadPayments.map((p) => {
+                                const tone =
+                                    p.status === 'PAID' ? 'bg-green-100 text-green-700'
+                                        : p.status === 'PENDING' ? 'bg-amber-100 text-amber-700'
+                                            : p.status === 'FAILED' ? 'bg-red-100 text-red-700'
+                                                : 'bg-gray-100 text-gray-600';
+                                return (
+                                    <div key={p.id} className="flex items-start justify-between gap-3 p-4 border border-gray-200 rounded-xl">
+                                        <div className="min-w-0">
+                                            <p className="font-semibold text-gray-900">
+                                                ₹{new Intl.NumberFormat('en-IN').format(Number(p.amountPaise) / 100)}
+                                                <span className={`ml-2 px-2 py-0.5 rounded-full text-xs font-bold ${tone}`}>{p.status}</span>
+                                            </p>
+                                            {p.description && <p className="text-sm text-gray-600 mt-0.5">{p.description}</p>}
+                                            <p className="text-xs text-gray-400 mt-1 font-mono break-all">{p.shortUrl}</p>
+                                            <p className="text-xs text-gray-400 mt-0.5">
+                                                {new Date(p.createdAt).toLocaleString()} · via {p.createdVia.replace('_', ' ')}
+                                            </p>
+                                        </div>
+                                        <div className="flex items-center gap-1 shrink-0">
+                                            <button
+                                                onClick={() => navigator.clipboard.writeText(p.shortUrl).then(
+                                                    () => toast.success('Link copied'),
+                                                    () => toast.error('Could not copy')
+                                                )}
+                                                title="Copy link"
+                                                className="p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg"
+                                            >
+                                                <Copy className="w-4 h-4" />
+                                            </button>
+                                            {p.status === 'PENDING' && (
+                                                <>
+                                                    <button
+                                                        onClick={() => handleRefreshPayment(p.id)}
+                                                        title="Check status with Razorpay"
+                                                        className="p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg"
+                                                    >
+                                                        <RefreshCw className="w-4 h-4" />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleResendPayment(p.id)}
+                                                        title="Send again on WhatsApp"
+                                                        className="p-2 text-gray-400 hover:text-green-700 hover:bg-green-50 rounded-lg"
+                                                    >
+                                                        <Send className="w-4 h-4" />
+                                                    </button>
+                                                </>
+                                            )}
+                                        </div>
+                                    </div>
+                                );
+                            })}
+
+                            {leadPayments.length === 0 && (
+                                <p className="text-center text-gray-500 py-8">
+                                    No payment links yet. Connect Razorpay in Settings → Payments to send one.
+                                </p>
                             )}
                         </div>
                     )}

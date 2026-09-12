@@ -33,8 +33,17 @@ interface Conversation {
   isTyping?: boolean;
   lastSeenAt?: string;
   automationPaused?: boolean;
+  // AI agent ne chat team ko kyun saunpi (backend Conversation.aiHandoffReason)
+  aiHandoffReason?: string | null;
   channel?: 'WHATSAPP' | 'INSTAGRAM' | 'TELEGRAM';
 }
+
+const AI_HANDOFF_LABEL: Record<string, string> = {
+  customer_request: 'asked for a person',
+  complaint: 'complaint',
+  unknown_answer: "AI didn't know",
+  high_value: 'big deal',
+};
 
 interface Props {
   conversation: Conversation;
@@ -248,6 +257,15 @@ const ChatHeader: React.FC<Props> = ({
           >
             <Search className="w-[18px] h-[18px]" />
           </button>
+
+          {conversation.automationPaused && conversation.aiHandoffReason && (
+            <span
+              title="The AI agent handed this chat to your team. Turn the bot back on when you are done."
+              className="hidden md:inline-flex items-center px-2 py-1 rounded-lg text-[11px] font-semibold bg-amber-50 text-amber-700 whitespace-nowrap"
+            >
+              AI handed over: {AI_HANDOFF_LABEL[conversation.aiHandoffReason] || conversation.aiHandoffReason}
+            </span>
+          )}
 
           {/* Automation (human handoff) toggle */}
           {onToggleAutomation && (

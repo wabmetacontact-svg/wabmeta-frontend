@@ -26,8 +26,9 @@ import NotificationSettings from '../components/settings/NotificationSettings';
 import SecuritySettings from '../components/settings/SecuritySettings';
 import ApiConfig from '../components/settings/ApiConfig';
 import CallingSettings from '../components/settings/CallingSettings';
+import PaymentsSettings from '../components/settings/PaymentsSettings';
 
-type SettingsTab = 'whatsapp' | 'general' | 'business' | 'notifications' | 'security' | 'api' | 'calling';
+type SettingsTab = 'whatsapp' | 'general' | 'business' | 'payments' | 'notifications' | 'security' | 'api' | 'calling';
 
 const Settings: React.FC = () => {
   const [activeTab, setActiveTab] = useState<SettingsTab>('whatsapp');
@@ -65,6 +66,12 @@ const Settings: React.FC = () => {
       name: 'Business Profile',
       icon: Building2,
       description: 'How customers see you on WhatsApp',
+    },
+    {
+      id: 'payments',
+      name: 'Payments',
+      icon: CreditCard,
+      description: 'Your Razorpay account for customer payments',
     },
     {
       id: 'notifications',
@@ -112,6 +119,9 @@ const Settings: React.FC = () => {
       // Pehle ye WhatsApp tab ke andar ek modal mein chhupa hua tha.
       case 'business':
         return <WhatsAppBusinessProfile />;
+      // Client ka apna Razorpay - customer ka paisa seedha unke account me
+      case 'payments':
+        return <PaymentsSettings />;
       case 'notifications':
         return <NotificationSettings />;
       case 'security':

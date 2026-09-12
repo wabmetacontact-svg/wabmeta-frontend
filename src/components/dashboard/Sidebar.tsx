@@ -48,6 +48,7 @@ const prefetchRouteChunk = (href: string) => {
     '/dashboard/reports': () => import('../../pages/Reports'),
     '/dashboard/chatbots': () => import('../../pages/ChatbotList'),
     '/dashboard/automations': () => import('../../pages/Automation'),
+    '/dashboard/ai-agent': () => import('../../pages/AiAgent'),
     '/dashboard/crm': () => import('../../pages/CRM'),
     '/dashboard/telegram': () => import('../../pages/telegram/TelegramDashboard'),
   };
@@ -108,6 +109,8 @@ const getNav = (unreadCount: number, totalContacts: number): NavGroup[] => [
       { name: 'Templates', href: '/dashboard/templates', icon: FileText },
       { name: 'Chatbots', href: '/dashboard/chatbots', icon: Bot, featureKey: 'chatbot' },
       { name: 'Automations', href: '/dashboard/automations', icon: Zap, featureKey: 'automation' },
+      // Backend AI agent routes par featureLock('chatbot') hai - wahi lock yahan
+      { name: 'AI Agent', href: '/dashboard/ai-agent', icon: Sparkles, featureKey: 'chatbot' },
     ],
   },
   {

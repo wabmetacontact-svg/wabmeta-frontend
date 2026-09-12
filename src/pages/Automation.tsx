@@ -4,7 +4,8 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   Zap, Plus, Search, Play, Pause, Trash2,
-  Clock, MessageSquare, Users, Webhook, Loader2
+  Clock, MessageSquare, Users, Webhook, Loader2,
+  TrendingUp, Hourglass, CalendarCheck
 } from 'lucide-react';
 import { automations as automationsApi } from '../services/api';
 import type { Automation } from '../types/automation';
@@ -12,6 +13,7 @@ import toast from 'react-hot-toast';
 
 import { useConfirm } from '../context/ConfirmContext';
 import ErrorState from '../components/common/ErrorState';
+import QuietHoursCard from '../components/automation/QuietHoursCard';
 const triggerIcons: Record<string, React.ReactNode> = {
   NEW_CONTACT: <Users className="w-4 h-4" />,
   KEYWORD: <MessageSquare className="w-4 h-4" />,
@@ -19,6 +21,9 @@ const triggerIcons: Record<string, React.ReactNode> = {
   WEBHOOK: <Webhook className="w-4 h-4" />,
   INACTIVITY: <Clock className="w-4 h-4" />,
   UNKNOWN_MESSAGE: <Users className="w-4 h-4" />,
+  LEAD_STAGE_CHANGED: <TrendingUp className="w-4 h-4" />,
+  NO_REPLY: <Hourglass className="w-4 h-4" />,
+  TASK_DUE: <CalendarCheck className="w-4 h-4" />,
 };
 
 const triggerLabels: Record<string, string> = {
@@ -28,6 +33,9 @@ const triggerLabels: Record<string, string> = {
   WEBHOOK: 'Webhook',
   INACTIVITY: 'Inactivity',
   UNKNOWN_MESSAGE: 'Unknown Message',
+  LEAD_STAGE_CHANGED: 'Lead Stage Changed',
+  NO_REPLY: 'Customer Went Silent',
+  TASK_DUE: 'CRM Task Due',
 };
 
 const AutomationPage: React.FC = () => {
@@ -164,6 +172,8 @@ const AutomationPage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      <QuietHoursCard />
 
       {/* Search */}
       <div className="relative max-w-md">

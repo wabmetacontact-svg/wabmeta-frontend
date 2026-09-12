@@ -4,9 +4,9 @@ import {
   ArrowLeft, Save, Plus, Trash2, Loader2, MessageSquare, Users,
   Clock, Webhook, Tag, Send, Music, Video, Image, FileText,
   Layout, UserPlus, Layers, Settings, ChevronRight, Play,
-  Upload, Paperclip
+  Upload, Paperclip, TrendingUp, Hourglass, CalendarCheck, Reply
 } from 'lucide-react';
-import { automations as automationsApi, templates as templatesApi, contacts as contactsApi, inbox as inboxApi } from '../services/api';
+import { automations as automationsApi, templates as templatesApi, contacts as contactsApi, inbox as inboxApi, crm as crmApi } from '../services/api';
 import toast from 'react-hot-toast';
 import PageLoader from '../components/common/PageLoader';
 
@@ -29,6 +29,9 @@ const triggerOptions = [
   { value: 'SCHEDULE', label: 'Scheduled Time', icon: Clock, description: 'At a specific time' },
   { value: 'WEBHOOK', label: 'Webhook Received', icon: Webhook, description: 'When webhook is called' },
   { value: 'INACTIVITY', label: 'Contact Inactivity', icon: Clock, description: 'After period of no messages' },
+  { value: 'LEAD_STAGE_CHANGED', label: 'Lead Stage Changed', icon: TrendingUp, description: 'When a lead moves to a pipeline stage' },
+  { value: 'NO_REPLY', label: 'Customer Went Silent', icon: Hourglass, description: 'They chatted, you replied, no answer since' },
+  { value: 'TASK_DUE', label: 'CRM Task Due', icon: CalendarCheck, description: 'When a lead task reaches its due date' },
 ];
 
 // Media actions ka config. Backend (automation.engine actionSendMedia)
@@ -206,6 +209,222 @@ const MediaActionConfig: React.FC<{
   );
 };
 
+const fieldLabelCls = 'block text-xs font-bold text-gray-500 uppercase tracking-widest mb-1.5 ml-1';
+const fieldInputCls =
+  'w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-emerald-500 text-gray-900';
+
+// Ye steps sirf WhatsApp ki 24 ghante wali window me ja sakte hain (backend
+// automation.timing FREE_FORM_ACTIONS). Window band ho to backend
+// config.fallbackTemplateId wala template bhejta hai, warna step skip karta hai.
+const FREE_FORM_ACTIONS = new Set([
+  'send_text', 'send_message', 'send_buttons',
+  'send_image', 'send_video', 'send_audio', 'send_document',
+]);
+
+const FallbackTemplatePicker: React.FC<{
+  templates: any[];
+  config: any;
+  onChange: (next: any) => void;
+}> = ({ templates, config, onChange }) => {
+  // Backend status uppercase bhejta hai ("APPROVED"), web ka type lowercase
+  const approved = templates.filter((t) => String(t.status).toUpperCase() === 'APPROVED');
+
+  return (
+    <div className="p-3 bg-amber-50/60 border border-amber-200 rounded-xl">
+      <label className="block text-xs font-bold text-amber-800 uppercase tracking-widest mb-1.5 ml-1">
+        If the 24-hour window is closed
+      </label>
+      <select
+        aria-label="Fallback template"
+        value={config.fallbackTemplateId || ''}
+        onChange={(e) => onChange({ ...config, fallbackTemplateId: e.target.value || undefined })}
+        className={fieldInputCls}
+      >
+        <option value="">Skip this step</option>
+        {approved.map((t) => (
+          <option key={t.id} value={t.id}>Send template: {t.name}</option>
+        ))}
+      </select>
+      <p className="text-xs text-amber-700 mt-1.5 ml-1">
+        WhatsApp allows free text only within 24 hours of the customer's last message. A follow-up
+        that goes out later needs an approved template.
+      </p>
+    </div>
+  );
+};
+
+const WaitForReplyConfig: React.FC<{
+  config: any;
+  onChange: (next: any) => void;
+}> = ({ config, onChange }) => {
+  // Raw text alag rakho - har keystroke par split karne se comma type hi nahi hota
+  const [keywordsText, setKeywordsText] = useState((config.keywords || []).join(', '));
+
+  return (
+    <div className="space-y-4">
+      <div>
+        <label className={fieldLabelCls}>Only count replies containing (optional)</label>
+        <input
+          aria-label="Reply keywords"
+          type="text"
+          value={keywordsText}
+          onChange={(e) => {
+            setKeywordsText(e.target.value);
+            const keywords = e.target.value.split(',').map((k) => k.trim()).filter(Boolean);
+            onChange({ ...config, keywords });
+          }}
+          placeholder="e.g. yes, price, interested - empty means any reply"
+          className={fieldInputCls}
+        />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label className={fieldLabelCls}>When they reply</label>
+          <select
+            aria-label="When they reply"
+            value={config.onReply === 'stop' ? 'stop' : 'continue'}
+            onChange={(e) => onChange({ ...config, onReply: e.target.value })}
+            className={fieldInputCls}
+          >
+            <option value="continue">Continue to the next step</option>
+            <option value="stop">Stop this automation</option>
+          </select>
+        </div>
+        <div>
+          <label className={fieldLabelCls}>If there is no reply</label>
+          <select
+            aria-label="If there is no reply"
+            value={config.onTimeout || ''}
+            onChange={(e) => onChange({ ...config, onTimeout: e.target.value || undefined })}
+            className={fieldInputCls}
+          >
+            <option value="">Keep waiting</option>
+            <option value="continue">Continue to the next step</option>
+            <option value="stop">Stop this automation</option>
+          </select>
+        </div>
+      </div>
+
+      {config.onTimeout && (
+        <div className="flex items-center gap-4">
+          <div className="flex-1">
+            <label className={fieldLabelCls}>No reply within</label>
+            <input
+              aria-label="No reply within"
+              type="number"
+              min={1}
+              value={config.timeoutValue ?? 24}
+              onChange={(e) => onChange({ ...config, timeoutValue: Math.max(1, parseInt(e.target.value) || 1) })}
+              className={fieldInputCls}
+            />
+          </div>
+          <div className="flex-1">
+            <label className={fieldLabelCls}>Unit</label>
+            <select
+              aria-label="Timeout unit"
+              value={config.timeoutUnit || 'hours'}
+              onChange={(e) => onChange({ ...config, timeoutUnit: e.target.value })}
+              className={fieldInputCls}
+            >
+              <option value="minutes">Minutes</option>
+              <option value="hours">Hours</option>
+              <option value="days">Days</option>
+            </select>
+          </div>
+        </div>
+      )}
+
+      <p className="text-xs text-gray-500 ml-1">
+        Follow-up recipe: choose <strong>Stop</strong> when they reply and <strong>Continue</strong> when
+        there is no reply, then add the follow-up message as the next step.
+      </p>
+    </div>
+  );
+};
+
+const LeadStageTriggerConfig: React.FC<{
+  pipelines: any[];
+  config: any;
+  onChange: (next: any) => void;
+}> = ({ pipelines, config, onChange }) => {
+  const scoped = config.pipelineId
+    ? pipelines.filter((p) => p.id === config.pipelineId)
+    : pipelines;
+  const stageOptions = scoped.flatMap((p) =>
+    (p.stages || []).map((s: any) => ({
+      id: s.id,
+      label: scoped.length > 1 ? `${p.name} › ${s.name}` : s.name,
+    }))
+  );
+  const selectCls =
+    'w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-gray-900 outline-none focus:ring-2 focus:ring-emerald-500';
+
+  return (
+    <div className="p-4 bg-gray-50 rounded-xl border border-gray-200 space-y-3 animate-in fade-in slide-in-from-top-2 duration-300">
+      <div>
+        <label htmlFor="stage-trigger-pipeline" className="block text-sm font-bold text-gray-700 mb-2">Pipeline</label>
+        <select
+          id="stage-trigger-pipeline"
+          value={config.pipelineId || ''}
+          onChange={(e) =>
+            onChange({ ...config, pipelineId: e.target.value || undefined, toStageId: undefined, fromStageId: undefined })
+          }
+          className={selectCls}
+        >
+          <option value="">Any pipeline</option>
+          {pipelines.map((p) => (
+            <option key={p.id} value={p.id}>{p.name}</option>
+          ))}
+        </select>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div>
+          <label htmlFor="stage-trigger-to" className="block text-sm font-bold text-gray-700 mb-2">Moved to</label>
+          <select
+            id="stage-trigger-to"
+            value={config.toStageId || ''}
+            onChange={(e) => onChange({ ...config, toStageId: e.target.value || undefined })}
+            className={selectCls}
+          >
+            <option value="">Any stage</option>
+            {stageOptions.map((s) => (
+              <option key={s.id} value={s.id}>{s.label}</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label htmlFor="stage-trigger-from" className="block text-sm font-bold text-gray-700 mb-2">Moved from (optional)</label>
+          <select
+            id="stage-trigger-from"
+            value={config.fromStageId || ''}
+            onChange={(e) => onChange({ ...config, fromStageId: e.target.value || undefined })}
+            className={selectCls}
+          >
+            <option value="">Any stage</option>
+            {stageOptions.map((s) => (
+              <option key={s.id} value={s.id}>{s.label}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+      <p className="text-xs text-gray-500">
+        Runs when a lead that has a contact changes stage, from the CRM board or a chatbot. Example: moved
+        to "Proposal" → send the quote → wait 3 days → follow up.
+      </p>
+    </div>
+  );
+};
+
+// Naye step ke defaults. Delay ki unit hamesha save karo - pehle select
+// "Minutes" dikhata tha par unit save nahi hoti thi aur backend use seconds
+// maan leta tha.
+const DEFAULT_ACTION_CONFIG: Record<string, any> = {
+  send_buttons: { buttons: [] },
+  delay: { value: 1, unit: 'hours' },
+  wait_for_response: { onReply: 'stop', onTimeout: 'continue', timeoutValue: 24, timeoutUnit: 'hours' },
+};
+
 const actionOptions = [
   { value: 'send_text', label: 'Send Text Message', icon: MessageSquare },
   { value: 'send_template', label: 'Send Template', icon: Send },
@@ -215,6 +434,7 @@ const actionOptions = [
   { value: 'send_document', label: 'Send Document', icon: FileText },
   { value: 'send_buttons', label: 'Send Buttons (CTA)', icon: Layout },
   { value: 'delay', label: 'Wait/Delay', icon: Clock },
+  { value: 'wait_for_response', label: 'Wait for Reply', icon: Reply },
   { value: 'add_tag', label: 'Add Tag', icon: Tag },
   { value: 'add_to_group', label: 'Add to Group', icon: Layers },
   { value: 'create_lead', label: 'Create CRM Lead', icon: Users },
@@ -230,6 +450,7 @@ const CreateAutomation: React.FC = () => {
   const [saving, setSaving] = useState(false);
   const [templates, setTemplates] = useState<any[]>([]);
   const [groups, setGroups] = useState<ContactGroup[]>([]);
+  const [pipelines, setPipelines] = useState<any[]>([]);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -257,6 +478,13 @@ const CreateAutomation: React.FC = () => {
   }, [id]);
 
   const loadData = async (isCancelled: () => boolean = () => false) => {
+    // Alag se: pipelines fail hon to templates/groups na atkein
+    crmApi.getPipelines()
+      .then((res) => {
+        if (!isCancelled() && res.data.success) setPipelines(res.data.data || []);
+      })
+      .catch(() => {});
+
     try {
       const [templatesRes, groupsRes] = await Promise.all([
         templatesApi.getAll({}),
@@ -285,7 +513,15 @@ const CreateAutomation: React.FC = () => {
           targetGroupIds: data.targetGroupIds || [],
           excludeExisting: data.excludeExisting ?? true,
         });
-        setActions(data.actions || []);
+        // Bina unit wale purane delay steps: builder unhe "Minutes" dikhata tha
+        // (par backend seconds chalata tha). Jo dikha wahi save ho.
+        setActions(
+          (data.actions || []).map((a: Action) =>
+            a.type === 'delay' && !a.config?.unit
+              ? { ...a, config: { ...a.config, unit: 'minutes' } }
+              : a
+          )
+        );
       }
     } catch (err) {
       toast.error('Failed to load automation');
@@ -299,7 +535,7 @@ const CreateAutomation: React.FC = () => {
     const newAction: Action = {
       id: `action-${Date.now()}`,
       type,
-      config: type === 'send_buttons' ? { buttons: [] } : {},
+      config: { ...(DEFAULT_ACTION_CONFIG[type] || {}) },
     };
     setActions([...actions, newAction]);
   };
@@ -354,6 +590,9 @@ const CreateAutomation: React.FC = () => {
   if (loading) {
     return <PageLoader />;
   }
+
+  // Backend default: reply aate hi pending follow-ups band (stopOnReply !== false)
+  const stopOnReply = formData.triggerConfig?.stopOnReply !== false;
 
   return (
     <div className="space-y-6 transition-colors">
@@ -428,6 +667,32 @@ const CreateAutomation: React.FC = () => {
                     formData.isActive ? 'translate-x-6' : 'translate-x-1'
                   }`} />
                 </button>
+              </div>
+
+              <div className="p-3 bg-gray-50 border border-gray-100 rounded-xl">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-sm font-semibold text-gray-700">Stop follow-ups when the customer replies</span>
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={stopOnReply}
+                    aria-label="Stop follow-ups when the customer replies"
+                    onClick={() => setFormData({
+                      ...formData,
+                      triggerConfig: { ...formData.triggerConfig, stopOnReply: !stopOnReply },
+                    })}
+                    className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors outline-none ${
+                      stopOnReply ? 'bg-green-500' : 'bg-gray-200'
+                    }`}
+                  >
+                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                      stopOnReply ? 'translate-x-6' : 'translate-x-1'
+                    }`} />
+                  </button>
+                </div>
+                <p className="text-xs text-gray-500 mt-1">
+                  Steps waiting on a Wait/Delay are cancelled as soon as the customer messages you.
+                </p>
               </div>
             </div>
           </div>
@@ -619,6 +884,55 @@ const CreateAutomation: React.FC = () => {
                 </div>
               )}
 
+              {formData.trigger === 'LEAD_STAGE_CHANGED' && (
+                <LeadStageTriggerConfig
+                  pipelines={pipelines}
+                  config={formData.triggerConfig}
+                  onChange={(next) => setFormData({ ...formData, triggerConfig: next })}
+                />
+              )}
+
+              {formData.trigger === 'NO_REPLY' && (
+                <div className="p-4 bg-gray-50 rounded-xl border border-gray-200 space-y-3 animate-in fade-in slide-in-from-top-2 duration-300">
+                  <label className="block text-sm font-bold text-gray-700">
+                    Customer hasn't answered your last message for:
+                  </label>
+                  <div className="flex items-center gap-3">
+                    <input aria-label="Silent for hours"
+                      type="number"
+                      min="1"
+                      max="720"
+                      value={formData.triggerConfig.hours || 24}
+                      onChange={(e) => setFormData({
+                        ...formData,
+                        triggerConfig: { ...formData.triggerConfig, hours: parseInt(e.target.value) || 24 },
+                      })}
+                      className="w-32 px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-gray-900 outline-none focus:ring-2 focus:ring-emerald-500"
+                    />
+                    <span className="text-sm font-medium text-gray-600">hours</span>
+                  </div>
+                  <p className="text-xs text-gray-500">
+                    Only for customers who have chatted with you, never for people who have never replied
+                    (like campaign recipients). Runs once per silence and is checked every 10 minutes.
+                  </p>
+                  {(formData.triggerConfig.hours || 24) >= 24 && (
+                    <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg p-2">
+                      After 24 hours WhatsApp's reply window is closed. Set a fallback template on your
+                      message steps, or they will be skipped.
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {formData.trigger === 'TASK_DUE' && (
+                <div className="p-4 bg-blue-50 rounded-xl border border-blue-200 animate-in fade-in slide-in-from-top-2 duration-300">
+                  <p className="text-sm text-blue-800">
+                    <strong>ℹ️ How it works:</strong> When a CRM task reaches its due date, these steps run for
+                    the lead's contact. The assigned agent also gets a notification, with or without this automation.
+                  </p>
+                </div>
+              )}
+
               {/* ✅ NEW: UNKNOWN_MESSAGE trigger info */}
               {formData.trigger === 'UNKNOWN_MESSAGE' && (
                 <div className="p-4 bg-blue-50 rounded-xl border border-blue-200 animate-in fade-in slide-in-from-top-2 duration-300">
@@ -772,31 +1086,50 @@ const ActionItem: React.FC<ActionItemProps> = ({ action, index, templates, onUpd
             />
           )}
 
-          {(action.type === 'delay' || action.type === 'wait_for_response') && (
-            <div className="flex items-center gap-4">
-              <div className="flex-1">
-                <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-1.5 ml-1">Value</label>
-                <input aria-label="Value"
-                  type="number"
-                  value={config.value || 0}
-                  onChange={(e) => onUpdate(action.id, { ...config, value: parseInt(e.target.value) })}
-                  className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-emerald-500 text-gray-900"
-                />
+          {action.type === 'delay' && (
+            <div className="space-y-2">
+              <div className="flex items-center gap-4">
+                <div className="flex-1">
+                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-1.5 ml-1">Value</label>
+                  <input aria-label="Value"
+                    type="number"
+                    min={1}
+                    value={config.value || 0}
+                    onChange={(e) => onUpdate(action.id, { ...config, value: parseInt(e.target.value) })}
+                    className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-emerald-500 text-gray-900"
+                  />
+                </div>
+                <div className="flex-1">
+                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-1.5 ml-1">Unit</label>
+                  <select aria-label="Unit"
+                    value={config.unit || 'minutes'}
+                    onChange={(e) => onUpdate(action.id, { ...config, unit: e.target.value })}
+                    className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-emerald-500 text-gray-900"
+                  >
+                    <option value="seconds">Seconds</option>
+                    <option value="minutes">Minutes</option>
+                    <option value="hours">Hours</option>
+                    <option value="days">Days</option>
+                  </select>
+                </div>
               </div>
-              <div className="flex-1">
-                <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-1.5 ml-1">Unit</label>
-                <select aria-label="Unit"
-                  value={config.unit || 'minutes'}
-                  onChange={(e) => onUpdate(action.id, { ...config, unit: e.target.value })}
-                  className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-emerald-500 text-gray-900"
-                >
-                  <option value="seconds">Seconds</option>
-                  <option value="minutes">Minutes</option>
-                  <option value="hours">Hours</option>
-                  <option value="days">Days</option>
-                </select>
-              </div>
+              <p className="text-xs text-gray-500 ml-1">
+                Long waits run in the background and survive restarts. If the customer replies before then,
+                the remaining steps are cancelled (see General Settings).
+              </p>
             </div>
+          )}
+
+          {action.type === 'wait_for_response' && (
+            <WaitForReplyConfig config={config} onChange={(next) => onUpdate(action.id, next)} />
+          )}
+
+          {FREE_FORM_ACTIONS.has(action.type) && (
+            <FallbackTemplatePicker
+              templates={templates}
+              config={config}
+              onChange={(next) => onUpdate(action.id, next)}
+            />
           )}
 
           {action.type === 'add_tag' && (

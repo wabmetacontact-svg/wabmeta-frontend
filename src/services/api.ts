@@ -1212,6 +1212,10 @@ export const crm = {
   getPipelines: () => api.get<ApiResponse>('/crm/pipelines'),
   createPipeline: (data: any) => api.post<ApiResponse>('/crm/pipelines', data),
 
+  // Org-level CRM + follow-up settings (quiet hours live here)
+  getSettings: () => api.get<ApiResponse>('/crm/settings'),
+  updateSettings: (data: any) => api.put<ApiResponse>('/crm/settings', data),
+
   getLeads: (params?: any) => api.get<ApiResponse>('/crm/leads', { params }),
   getInterestedLeads: (params?: any) => api.get<ApiResponse>('/crm/leads/interested', { params }),
   getLeadById: (id: string) => api.get<ApiResponse>(`/crm/leads/${id}`),
@@ -1229,6 +1233,34 @@ export const crm = {
   addContactNote: (contactId: string, content: string) => api.post<ApiResponse>(`/crm/contacts/${contactId}/notes`, { content }),
   updateContactNote: (contactId: string, noteId: string, content: string) => api.put<ApiResponse>(`/crm/contacts/${contactId}/notes/${noteId}`, { content }),
   deleteContactNote: (contactId: string, noteId: string) => api.delete<ApiResponse>(`/crm/contacts/${contactId}/notes/${noteId}`),
+};
+
+// ---------- CLIENT PAYMENTS (client's own Razorpay) ----------
+export const payments = {
+  getGateway: () => api.get<ApiResponse>('/payments/gateway'),
+  connectGateway: (data: { keyId: string; keySecret: string; webhookSecret?: string | null }) =>
+    api.put<ApiResponse>('/payments/gateway', data),
+  disconnectGateway: () => api.delete<ApiResponse>('/payments/gateway'),
+
+  list: (limit?: number) => api.get<ApiResponse>('/payments', { params: { limit } }),
+  listForLead: (leadId: string) => api.get<ApiResponse>(`/payments/leads/${leadId}`),
+  createLink: (data: { amount: number; description?: string; leadId?: string; contactId?: string; sendOnWhatsApp?: boolean }) =>
+    api.post<ApiResponse>('/payments/links', data),
+  refresh: (id: string) => api.post<ApiResponse>(`/payments/${id}/refresh`),
+  resend: (id: string) => api.post<ApiResponse>(`/payments/${id}/resend`),
+};
+
+// ---------- AI SALES AGENT ----------
+export const aiAgent = {
+  getSettings: () => api.get<ApiResponse>('/ai-agent/settings'),
+  updateSettings: (data: any) => api.put<ApiResponse>('/ai-agent/settings', data),
+  listKnowledge: () => api.get<ApiResponse>('/ai-agent/knowledge'),
+  createKnowledge: (data: any) => api.post<ApiResponse>('/ai-agent/knowledge', data),
+  updateKnowledge: (id: string, data: any) => api.put<ApiResponse>(`/ai-agent/knowledge/${id}`, data),
+  deleteKnowledge: (id: string) => api.delete<ApiResponse>(`/ai-agent/knowledge/${id}`),
+  // Dry run: no WhatsApp message, nothing saved
+  test: (messages: Array<{ role: 'user' | 'assistant'; text: string }>) =>
+    api.post<ApiResponse>('/ai-agent/test', { messages }),
 };
 
 // ---------- AUTOMATIONS ----------

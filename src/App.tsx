@@ -58,6 +58,7 @@ const ChatbotList = lazy(() => import('./pages/ChatbotList'));
 const ChatbotBuilder = lazy(() => import('./pages/ChatbotBuilder'));
 const AutomationPage = lazy(() => import('./pages/Automation'));
 const CreateAutomation = lazy(() => import('./pages/CreateAutomation'));
+const AiAgent = lazy(() => import('./pages/AiAgent'));
 const CRM = lazy(() => import('./pages/CRM'));
 const LeadsList = lazy(() => import('./pages/LeadsList'));
 const LeadDetail = lazy(() => import('./pages/LeadDetail'));
@@ -221,6 +222,7 @@ const PageTitleUpdater: React.FC = () => {
       '/dashboard/chatbot': 'Chatbot | WabMeta',
       '/dashboard/chatbot/create': 'Create Chatbot | WabMeta',
       '/dashboard/automation': 'Automation | WabMeta',
+      '/dashboard/ai-agent': 'AI Sales Agent | WabMeta',
       '/dashboard/reports': 'Reports | WabMeta',
       '/dashboard/notifications': 'Notifications | WabMeta',
       '/dashboard/settings': 'Settings | WabMeta',
@@ -363,6 +365,9 @@ const AppRoutes: React.FC = () => {
           <Route path="/dashboard/automations" element={<AutomationPage />} />
           <Route path="/dashboard/automation" element={<Navigate to="/dashboard/automations" replace />} />
           <Route path="/dashboard/automations/:id" element={<CreateAutomation />} />
+
+          {/* AI Sales Agent */}
+          <Route path="/dashboard/ai-agent" element={<AiAgent />} />
 
           {/* Reports */}
           <Route path="/dashboard/reports" element={<Reports />} />
