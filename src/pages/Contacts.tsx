@@ -283,6 +283,10 @@ const Contacts: React.FC = () => {
 
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  // Backend ka default bhi WHATSAPP hai: Telegram/Instagram chats par bane
+  // contacts ka phone synthetic hota hai ("tg:<id>"), wo yahan list nahi hone
+  // chahiye. Dekhne ke liye dropdown se channel chuno.
+  const [channelFilter, setChannelFilter] = useState('WHATSAPP');
   const [whatsappFilter, setWhatsappFilter] = useState('all');
 
   // ✅ SELECT ALL STATE
@@ -351,14 +355,14 @@ const Contacts: React.FC = () => {
   const fetchStats = useCallback(async () => {
     setLoadingStats(true);
     try {
-      const res = await api.get('/contacts/stats');
+      const res = await api.get('/contacts/stats', { params: { channel: channelFilter } });
       const data = res.data?.data || null;
       setStatsApi(data);
       if (data) setTotalContacts(data.total || 0);
     } catch { /* silent */ } finally {
       setLoadingStats(false);
     }
-  }, [setTotalContacts]);
+  }, [setTotalContacts, channelFilter]);
 
   const fetchGroups = useCallback(async () => {
     setLoadingGroups(true);
@@ -400,6 +404,7 @@ const Contacts: React.FC = () => {
       if (statusFilter !== 'all') params.status = statusFilter.toUpperCase();
       if (whatsappFilter !== 'all') params.whatsappProfileFetched = whatsappFilter === 'verified';
       if (activeGroup?.id) params.groupId = activeGroup.id;
+      params.channel = channelFilter;
 
       const res = await api.get('/contacts', { params });
       const contactsData = Array.isArray(res.data?.data) ? res.data.data : [];
@@ -438,7 +443,7 @@ const Contacts: React.FC = () => {
       setLoading(false);
       setLoadingMore(false);
     }
-  }, [searchQuery, statusFilter, whatsappFilter, activeGroup?.id]);
+  }, [searchQuery, statusFilter, whatsappFilter, channelFilter, activeGroup?.id]);
 
   // ─── LOAD MORE (next page) ────────────────────────────────
   const loadMore = useCallback(async () => {
@@ -482,7 +487,7 @@ const Contacts: React.FC = () => {
     }
     fetchContacts(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchQuery, statusFilter, whatsappFilter, activeGroup?.id]);
+  }, [searchQuery, statusFilter, whatsappFilter, channelFilter, activeGroup?.id]);
 
   const fetchAll = useCallback(async () => {
     await Promise.allSettled([fetchStats(), fetchContacts(true), fetchGroups()]);
@@ -513,6 +518,7 @@ const Contacts: React.FC = () => {
       if (searchQuery) params.search = searchQuery;
       if (statusFilter !== 'all') params.status = statusFilter.toUpperCase();
       if (activeGroup?.id) params.groupId = activeGroup.id;
+      params.channel = channelFilter;
 
       const res = await api.get('/contacts', { params });
       const allContacts = Array.isArray(res.data?.data) ? res.data.data : [];
@@ -708,7 +714,10 @@ const Contacts: React.FC = () => {
 
   const handleExport = async () => {
     try {
-      const res = await api.get('/contacts/export', { responseType: 'blob' });
+      const res = await api.get('/contacts/export', {
+        responseType: 'blob',
+        params: { channel: channelFilter },
+      });
       const blob = new Blob([res.data], { type: 'text/csv' });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -882,6 +891,13 @@ const Contacts: React.FC = () => {
                 <option value="all">All WhatsApp</option>
                 <option value="verified">Verified</option>
                 <option value="pending">Pending</option>
+              </select>
+              <select aria-label="Filter by channel" value={channelFilter} onChange={e => setChannelFilter(e.target.value)}
+                className="px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-700 focus:outline-none focus:border-green-500">
+                <option value="WHATSAPP">WhatsApp</option>
+                <option value="TELEGRAM">Telegram</option>
+                <option value="INSTAGRAM">Instagram</option>
+                <option value="ALL">All channels</option>
               </select>
             </div>
           </div>

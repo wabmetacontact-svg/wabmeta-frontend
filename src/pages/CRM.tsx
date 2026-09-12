@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { FaWhatsapp, FaTelegram, FaInstagram } from 'react-icons/fa';
 import { crm as crmApi } from '../services/api';
+import SocialLeadsCard from '../components/crm/SocialLeadsCard';
 import type { CRMStats, Pipeline, Lead } from '../types/crm';
 import toast from 'react-hot-toast';
 
@@ -207,6 +208,9 @@ const CRM: React.FC = () => {
           );
         })}
       </div>
+
+      {/* Controls whether the Telegram / Instagram tiles above get fed at all */}
+      <SocialLeadsCard />
 
       {/* Pipelines + recent leads */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
