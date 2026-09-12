@@ -110,7 +110,14 @@ const getNav = (unreadCount: number, totalContacts: number): NavGroup[] => [
       { name: 'Chatbots', href: '/dashboard/chatbots', icon: Bot, featureKey: 'chatbot' },
       { name: 'Automations', href: '/dashboard/automations', icon: Zap, featureKey: 'automation' },
       // Backend AI agent routes par featureLock('chatbot') hai - wahi lock yahan
-      { name: 'AI Agent', href: '/dashboard/ai-agent', icon: Sparkles, featureKey: 'chatbot' },
+      {
+        name: 'AI Agent',
+        href: '/dashboard/ai-agent',
+        icon: Sparkles,
+        featureKey: 'chatbot',
+        badge: 'New',
+        badgeColor: 'bg-violet-500',
+      },
     ],
   },
   {
