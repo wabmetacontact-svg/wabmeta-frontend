@@ -1509,6 +1509,7 @@ const Inbox: React.FC = () => {
             <WindowStatus
               windowExpiresAt={selectedConversation.windowExpiresAt || null}
               isWindowOpen={selectedConversation.isWindowOpen || false}
+              channel={selectedConversation.channel || 'WHATSAPP'}
             />
 
             <ChatWindow
@@ -1550,6 +1551,7 @@ const Inbox: React.FC = () => {
               onOpenTemplateModal={() => setShowTemplateModal(true)}
               isWindowOpen={selectedConversation.isWindowOpen || false}
               windowExpiresAt={selectedConversation.windowExpiresAt}
+              channel={selectedConversation.channel || 'WHATSAPP'}
               replyTo={replyTo}
               onCancelReply={() => setReplyTo(null)}
               contactName={getContactName(selectedConversation.contact)}

@@ -41,6 +41,7 @@ interface Props {
   disabled?: boolean;
   isWindowOpen: boolean;
   windowExpiresAt?: string | Date | null;
+  channel?: 'WHATSAPP' | 'INSTAGRAM' | 'TELEGRAM';
   placeholder?: string;
   replyTo?: Message | null;
   onCancelReply?: () => void;
@@ -58,6 +59,7 @@ const ChatInput: React.FC<Props> = ({
   disabled = false,
   isWindowOpen,
   windowExpiresAt,
+  channel = 'WHATSAPP',
   placeholder = 'Type a message...',
   replyTo,
   onCancelReply,
@@ -82,6 +84,10 @@ const ChatInput: React.FC<Props> = ({
 
   // ── Window status ────────────────────────────────────────────────────────
   const checkWindowOpen = () => {
+    // Only WhatsApp has a 24h session. On Telegram and Instagram the composer
+    // must stay open: those conversations carry no windowExpiresAt, and the
+    // template fallback below is a WhatsApp-only concept anyway.
+    if (channel !== 'WHATSAPP') return true;
     if (!isWindowOpen) return false;
     if (!windowExpiresAt) return false;
     return new Date(windowExpiresAt) > new Date();

@@ -40,6 +40,7 @@ interface ConversationData {
   labels?: string[];
   isWindowOpen?: boolean;
   windowExpiresAt?: string | null;
+  channel?: 'WHATSAPP' | 'INSTAGRAM' | 'TELEGRAM';
   createdAt?: string;
   lastMessageAt?: string;
   // Backend stores the assignee as a userId string; older code expected an object.
@@ -119,6 +120,10 @@ const ContactInfoPanel: React.FC<Props> = ({
 
   // ── Window status info ──────────────────────────────────────────────────
   const getWindowStatus = () => {
+    // WhatsApp-only concept. Telegram and Instagram carry no windowExpiresAt,
+    // so the checks below would label a perfectly live chat "No active session".
+    if ((conversation.channel || 'WHATSAPP') !== 'WHATSAPP') return null;
+
     if (!conversation.windowExpiresAt) {
       return {
         color: 'text-gray-400',
@@ -151,7 +156,7 @@ const ContactInfoPanel: React.FC<Props> = ({
   };
 
   const windowStatus = getWindowStatus();
-  const WindowIcon = windowStatus.icon;
+  const WindowIcon = windowStatus?.icon;
 
   // ── Message stats ───────────────────────────────────────────────────────
   const stats = {
@@ -216,17 +221,19 @@ const ContactInfoPanel: React.FC<Props> = ({
           <h2 className="text-lg font-bold text-gray-900 tracking-tight">{name}</h2>
           <p className="text-xs text-gray-500 mt-1">{conversation.contact.phone}</p>
 
-          {/* Window status badge */}
-          <div className={`
-            inline-flex items-center gap-1.5 mt-3 px-3 py-1
-            ${windowStatus.bg} ${windowStatus.border} border
-            rounded-full
-          `}>
-            <WindowIcon className={`w-3 h-3 ${windowStatus.color}`} />
-            <span className={`text-[10px] font-medium ${windowStatus.color}`}>
-              {windowStatus.label}
-            </span>
-          </div>
+          {/* Window status badge - WhatsApp only */}
+          {windowStatus && WindowIcon && (
+            <div className={`
+              inline-flex items-center gap-1.5 mt-3 px-3 py-1
+              ${windowStatus.bg} ${windowStatus.border} border
+              rounded-full
+            `}>
+              <WindowIcon className={`w-3 h-3 ${windowStatus.color}`} />
+              <span className={`text-[10px] font-medium ${windowStatus.color}`}>
+                {windowStatus.label}
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Quick stats */}

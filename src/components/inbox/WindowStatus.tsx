@@ -6,11 +6,13 @@ import { Clock, AlertTriangle } from 'lucide-react';
 interface WindowStatusProps {
     windowExpiresAt: string | Date | null;
     isWindowOpen: boolean;
+    channel?: 'WHATSAPP' | 'INSTAGRAM' | 'TELEGRAM';
 }
 
 const WindowStatus: React.FC<WindowStatusProps> = ({
     windowExpiresAt,
     isWindowOpen,
+    channel = 'WHATSAPP',
 }) => {
     const getTimeRemaining = () => {
         if (!windowExpiresAt) return null;
@@ -29,6 +31,12 @@ const WindowStatus: React.FC<WindowStatusProps> = ({
         }
         return `${minutes}m`;
     };
+
+    // The 24h rule is a WhatsApp Business Platform rule. Telegram and Instagram
+    // have no such window, and the backend leaves windowExpiresAt null on them
+    // (isWindowOpen: true) - which the check below would read as "closed".
+    // Show no banner at all there.
+    if (channel !== 'WHATSAPP') return null;
 
     const timeRemaining = getTimeRemaining();
     // Force closed if no time remaining, even if isWindowOpen is true
