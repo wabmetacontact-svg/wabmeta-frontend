@@ -137,15 +137,24 @@ const WalletManagement: React.FC = () => {
 
   const handleReview = async (
     requestId: string,
-    action: 'approve' | 'reject'
+    action: 'approve' | 'reject',
+    currentStatus: string = 'pending'
   ) => {
+    // Pehle ka faisla palat rahe hain - ek baar confirm karwa lo, kyunki
+    // approve karte hi us organization ka wallet chalu ho jata hai.
+    if (currentStatus === 'rejected' && action === 'approve') {
+      const ok = window.confirm(
+        'This request was rejected earlier. Approve it now and activate the wallet for this organization?'
+      );
+      if (!ok) return;
+    }
+
     try {
       setReviewing(requestId);
-      await admin.reviewWalletRequest(requestId, {
-        action,
-        note: `Admin ${action}d`,
-      });
-      toast.success(`Request ${action}d successfully`);
+      // Note nahi bhejte - backend status ke hisaab se sahi note likhta hai
+      // ("Approved after an earlier rejection" wagairah).
+      const res = await admin.reviewWalletRequest(requestId, { action });
+      toast.success(res?.data?.message || `Request ${action}d successfully`);
       fetchRequests();
     } catch (err: any) {
       toast.error(err.response?.data?.message || `Failed to ${action} request`);
@@ -419,6 +428,32 @@ const WalletManagement: React.FC = () => {
                               Reject
                             </button>
                           </div>
+                        )}
+                        {/* Rejected request baad me bhi approve ho sakta hai */}
+                        {req.status === 'rejected' && (
+                          <div className="flex items-center justify-end gap-2">
+                            <button
+                              onClick={() => handleReview(req.id, 'approve', 'rejected')}
+                              disabled={reviewing === req.id}
+                              className="px-3 py-1.5 bg-green-600/10 hover:bg-green-600/20
+                                text-green-700 border border-green-600/30 rounded-lg
+                                text-xs font-semibold transition-colors
+                                disabled:opacity-50 flex items-center gap-1"
+                            >
+                              {reviewing === req.id ? (
+                                <Loader2 className="w-3 h-3 animate-spin" />
+                              ) : (
+                                <CheckCircle className="w-3 h-3" />
+                              )}
+                              Approve now
+                            </button>
+                          </div>
+                        )}
+                        {/* Approved wallet band karna Active Wallets ka kaam hai (reason ke saath) */}
+                        {req.status === 'approved' && (
+                          <span className="text-xs text-gray-400">
+                            Manage in Active Wallets
+                          </span>
                         )}
                       </td>
                     </tr>
