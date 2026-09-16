@@ -1,6 +1,6 @@
 // src/pages/admin/OrganizationFeatures.tsx
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft,
@@ -11,16 +11,19 @@ import {
   Shield,
   Building2,
   Lock,
-  Inbox,
-  Megaphone,
-  Bot,
-  Zap,
+  LockOpen,
   AlertTriangle,
-  Link2Off,
 } from 'lucide-react';
 import { admin } from '../../services/api';
 import toast from 'react-hot-toast';
 import PageLoader from '../../components/common/PageLoader';
+import {
+  FEATURES,
+  FEATURE_GROUPS,
+  emptyLockState,
+  type FeatureDefinition,
+  type FeatureGroup,
+} from '../../constants/features';
 
 // ============================================
 // TOGGLE SWITCH
@@ -60,10 +63,10 @@ const ToggleSwitch: React.FC<{
     <button
       onClick={() => !disabled && onChange(!checked)}
       disabled={disabled}
-      className={`relative inline-flex items-center rounded-full
+      className={`relative inline-flex items-center rounded-full shrink-0
         transition-colors disabled:opacity-40 disabled:cursor-not-allowed
         ${sz.track}
-        ${checked ? colorMap[color] : 'bg-white/[0.1]'}`}
+        ${checked ? colorMap[color] : 'bg-gray-300'}`}
     >
       <span
         className={`inline-block transform rounded-full bg-white shadow-md
@@ -75,54 +78,83 @@ const ToggleSwitch: React.FC<{
 };
 
 // ============================================
-// LOCK CARD
+// FEATURE ROW
 // ============================================
 
-const LockCard: React.FC<{
-  icon: React.ElementType;
-  label: string;
-  checked: boolean;
-  disabled: boolean;
-  onChange: (val: boolean) => void;
-}> = ({ icon: Icon, label, checked, disabled, onChange }) => (
-  <div
-    className={`p-4 rounded-xl border flex items-center justify-between
-      transition-all
-      ${
-        checked
-          ? 'bg-red-500/10 border-red-500/30'
-          : 'bg-gray-50 border-gray-200 hover:border-gray-300'
-      }`}
-  >
-    <div className="flex items-center gap-3">
-      <div
-        className={`p-2 rounded-lg ${
-          checked ? 'bg-red-500/20' : 'bg-gray-50'
-        }`}
-      >
-        <Icon
-          className={`w-4 h-4 ${
-            checked ? 'text-red-400' : 'text-gray-400'
-          }`}
+/**
+ * Toggle ON = feature khula hai. State locks me ulta store hota hai
+ * (true = locked) kyunki backend ka field hi `<feature>Locked` hai.
+ */
+const FeatureRow: React.FC<{
+  feature: FeatureDefinition;
+  locked: boolean;
+  planLocked: boolean;
+  onChange: (locked: boolean) => void;
+}> = ({ feature, locked, planLocked, onChange }) => {
+  const Icon = feature.icon;
+  const enabled = !locked;
+
+  return (
+    <div
+      className={`p-4 rounded-xl border flex items-center justify-between gap-4
+        transition-all
+        ${locked ? 'bg-red-50 border-red-200' : 'bg-white border-gray-200 hover:border-gray-300'}`}
+    >
+      <div className="flex items-center gap-3 min-w-0">
+        <div
+          className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0
+            ${locked ? 'bg-red-100' : 'bg-gray-100'}`}
+        >
+          <Icon className={`w-4 h-4 ${locked ? 'text-red-500' : 'text-gray-500'}`} />
+        </div>
+
+        <div className="min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <p className="font-semibold text-gray-900 text-sm">{feature.label}</p>
+
+            {feature.lockedByDefault && (
+              <span
+                className="text-[10px] font-medium px-1.5 py-0.5 rounded
+                  bg-gray-100 text-gray-500 border border-gray-200"
+                title="Naye accounts par ye feature by default locked hota hai"
+              >
+                Locked by default
+              </span>
+            )}
+
+            {planLocked && (
+              <span
+                className="text-[10px] font-medium px-1.5 py-0.5 rounded
+                  bg-amber-50 text-amber-700 border border-amber-200"
+                title="Is plan me ye feature shamil nahi - yahan unlock karne par bhi band rahega"
+              >
+                Blocked by plan
+              </span>
+            )}
+          </div>
+          <p className="text-xs text-gray-500 mt-0.5 truncate">
+            {feature.description}
+          </p>
+        </div>
+      </div>
+
+      <div className="flex items-center gap-3 shrink-0">
+        <span
+          className={`text-xs font-semibold w-16 text-right
+            ${locked ? 'text-red-500' : 'text-green-600'}`}
+        >
+          {locked ? 'Locked' : 'Enabled'}
+        </span>
+        <ToggleSwitch
+          checked={enabled}
+          onChange={(val) => onChange(!val)}
+          color="green"
+          size="md"
         />
       </div>
-      <span
-        className={`text-sm font-medium ${
-          checked ? 'text-red-300' : 'text-gray-300'
-        }`}
-      >
-        {label}
-      </span>
     </div>
-    <ToggleSwitch
-      checked={checked}
-      onChange={onChange}
-      disabled={disabled}
-      color="red"
-      size="sm"
-    />
-  </div>
-);
+  );
+};
 
 // ============================================
 // MAIN COMPONENT
@@ -136,16 +168,19 @@ export default function OrganizationFeatures() {
   const [saving, setSaving] = useState(false);
   const [orgName, setOrgName] = useState('');
   const [currentPlan, setCurrentPlan] = useState('');
-  const [features, setFeatures] = useState({
+
+  // Admin Override aur uske do child features (contacts import wale).
+  const [extras, setExtras] = useState({
     simpleBulkPaste: false,
     csvUpload: false,
     adminOverride: false,
-    inboxLocked: false,
-    campaignsLocked: false,
-    chatbotLocked: false,
-    automationLocked: false,
-    connectionLocked: false,
   });
+
+  // Har module ka lock: { inboxLocked: false, telegramLocked: true, ... }
+  const [locks, setLocks] = useState<Record<string, boolean>>(emptyLockState);
+
+  // Wo features jo plan ki wajah se band hain - admin ka unlock kaafi nahi.
+  const [planLocked, setPlanLocked] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     fetchFeatures();
@@ -156,9 +191,29 @@ export default function OrganizationFeatures() {
   const fetchFeatures = async () => {
     try {
       const { data } = await admin.getOrganizationFeatures(organizationId!);
-      setOrgName(data.data.organizationName);
-      setCurrentPlan(data.data.currentPlan);
-      setFeatures(data.data.features);
+      const payload = data.data;
+      const features = payload.features || {};
+
+      setOrgName(payload.organizationName);
+      setCurrentPlan(payload.currentPlan);
+      setExtras({
+        simpleBulkPaste: !!features.simpleBulkPaste,
+        csvUpload: !!features.csvUpload,
+        adminOverride: !!features.adminOverride,
+      });
+
+      // Sirf wahi keys lo jo registry me hain - purana backend naye
+      // features nahi bhejega, unka default (unlocked) reh jayega.
+      setLocks(
+        FEATURES.reduce(
+          (acc, f) => {
+            acc[f.wireKey] = features[f.wireKey] === true;
+            return acc;
+          },
+          {} as Record<string, boolean>
+        )
+      );
+      setPlanLocked(payload.planLocked || {});
     } catch (error) {
       toast.error('Failed to fetch features');
       navigate(-1);
@@ -171,14 +226,10 @@ export default function OrganizationFeatures() {
     setSaving(true);
     try {
       await admin.updateOrganizationFeatures(organizationId!, {
-        simpleBulkPaste: features.simpleBulkPaste,
-        csvUpload: features.csvUpload,
-        enableOverride: features.adminOverride,
-        inboxLocked: features.inboxLocked,
-        campaignsLocked: features.campaignsLocked,
-        chatbotLocked: features.chatbotLocked,
-        automationLocked: features.automationLocked,
-        connectionLocked: features.connectionLocked,
+        simpleBulkPaste: extras.simpleBulkPaste,
+        csvUpload: extras.csvUpload,
+        enableOverride: extras.adminOverride,
+        ...locks,
       });
       toast.success('Features updated successfully');
     } catch (error: any) {
@@ -187,6 +238,27 @@ export default function OrganizationFeatures() {
       setSaving(false);
     }
   };
+
+  const setAll = (locked: boolean) => {
+    setLocks(
+      FEATURES.reduce(
+        (acc, f) => {
+          acc[f.wireKey] = locked;
+          return acc;
+        },
+        {} as Record<string, boolean>
+      )
+    );
+  };
+
+  const grouped = useMemo(() => {
+    return FEATURE_GROUPS.map((group) => ({
+      group,
+      items: FEATURES.filter((f) => f.group === group),
+    })).filter((g) => g.items.length > 0);
+  }, []);
+
+  const lockedCount = FEATURES.filter((f) => locks[f.wireKey]).length;
 
   if (loading) {
     return <PageLoader />;
@@ -211,7 +283,7 @@ export default function OrganizationFeatures() {
             className="w-14 h-14 bg-gradient-to-br from-blue-500 to-blue-700
               rounded-2xl flex items-center justify-center shrink-0"
           >
-            <Building2 className="w-7 h-7 text-gray-900" />
+            <Building2 className="w-7 h-7 text-white" />
           </div>
           <div className="min-w-0">
             <h1 className="text-xl font-bold text-gray-900 truncate">{orgName}</h1>
@@ -219,7 +291,7 @@ export default function OrganizationFeatures() {
               <span className="text-xs text-gray-500">Current Plan:</span>
               <span
                 className="inline-flex items-center px-2 py-0.5 rounded-md text-xs
-                  font-medium bg-purple-500/10 text-purple-400 border border-purple-500/20"
+                  font-medium bg-purple-500/10 text-purple-500 border border-purple-500/20"
               >
                 {currentPlan}
               </span>
@@ -232,7 +304,7 @@ export default function OrganizationFeatures() {
       <div className="bg-white rounded-2xl border border-gray-200 p-6">
         <div className="flex items-center gap-3 mb-6 pb-5 border-b border-gray-200">
           <div className="p-2 bg-primary-500/10 rounded-lg">
-            <Shield className="w-5 h-5 text-primary-400" />
+            <Shield className="w-5 h-5 text-primary-500" />
           </div>
           <div>
             <h2 className="text-lg font-semibold text-gray-900">
@@ -248,7 +320,7 @@ export default function OrganizationFeatures() {
           {/* ────────── ADMIN OVERRIDE ────────── */}
           <div
             className={`p-5 rounded-xl border-2 transition-all ${
-              features.adminOverride
+              extras.adminOverride
                 ? 'border-yellow-500/40 bg-yellow-500/5'
                 : 'border-gray-200 bg-gray-50'
             }`}
@@ -257,16 +329,14 @@ export default function OrganizationFeatures() {
               <div className="flex items-center gap-4 min-w-0">
                 <div
                   className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${
-                    features.adminOverride
+                    extras.adminOverride
                       ? 'bg-yellow-500/20 border border-yellow-500/30'
-                      : 'bg-gray-50'
+                      : 'bg-gray-100'
                   }`}
                 >
                   <Shield
                     className={`w-5 h-5 ${
-                      features.adminOverride
-                        ? 'text-yellow-400'
-                        : 'text-gray-400'
+                      extras.adminOverride ? 'text-yellow-500' : 'text-gray-400'
                     }`}
                   />
                 </div>
@@ -275,15 +345,15 @@ export default function OrganizationFeatures() {
                     Admin Override
                   </p>
                   <p className="text-xs text-gray-500 mt-0.5">
-                    When enabled, plan restrictions are ignored and you control
-                    access manually
+                    Plan ki paid add-on limits ignore karke ye do features
+                    manually de sakte ho. Module locks iske bina bhi chalte hain.
                   </p>
                 </div>
               </div>
               <ToggleSwitch
-                checked={features.adminOverride}
+                checked={extras.adminOverride}
                 onChange={(val) =>
-                  setFeatures((prev) => ({
+                  setExtras((prev) => ({
                     ...prev,
                     adminOverride: val,
                     // Reset child features when disabling override
@@ -296,10 +366,10 @@ export default function OrganizationFeatures() {
             </div>
           </div>
 
-          {/* ────────── DEPENDENT FEATURES ────────── */}
+          {/* ────────── OVERRIDE-DEPENDENT FEATURES ────────── */}
           <div
             className={`space-y-3 transition-opacity ${
-              features.adminOverride
+              extras.adminOverride
                 ? 'opacity-100'
                 : 'opacity-40 pointer-events-none'
             }`}
@@ -312,7 +382,7 @@ export default function OrganizationFeatures() {
               <div className="flex items-center justify-between gap-4">
                 <div className="flex items-center gap-3 min-w-0">
                   <div className="w-10 h-10 bg-blue-500/10 rounded-lg flex items-center justify-center shrink-0">
-                    <Upload className="w-4 h-4 text-blue-400" />
+                    <Upload className="w-4 h-4 text-blue-500" />
                   </div>
                   <div className="min-w-0">
                     <p className="font-semibold text-gray-900 text-sm">
@@ -325,14 +395,11 @@ export default function OrganizationFeatures() {
                   </div>
                 </div>
                 <ToggleSwitch
-                  checked={features.simpleBulkPaste}
+                  checked={extras.simpleBulkPaste}
                   onChange={(val) =>
-                    setFeatures((prev) => ({
-                      ...prev,
-                      simpleBulkPaste: val,
-                    }))
+                    setExtras((prev) => ({ ...prev, simpleBulkPaste: val }))
                   }
-                  disabled={!features.adminOverride}
+                  disabled={!extras.adminOverride}
                   color="blue"
                 />
               </div>
@@ -346,7 +413,7 @@ export default function OrganizationFeatures() {
               <div className="flex items-center justify-between gap-4">
                 <div className="flex items-center gap-3 min-w-0">
                   <div className="w-10 h-10 bg-purple-500/10 rounded-lg flex items-center justify-center shrink-0">
-                    <FileSpreadsheet className="w-4 h-4 text-purple-400" />
+                    <FileSpreadsheet className="w-4 h-4 text-purple-500" />
                   </div>
                   <div className="min-w-0">
                     <p className="font-semibold text-gray-900 text-sm">
@@ -358,144 +425,97 @@ export default function OrganizationFeatures() {
                   </div>
                 </div>
                 <ToggleSwitch
-                  checked={features.csvUpload}
+                  checked={extras.csvUpload}
                   onChange={(val) =>
-                    setFeatures((prev) => ({ ...prev, csvUpload: val }))
+                    setExtras((prev) => ({ ...prev, csvUpload: val }))
                   }
-                  disabled={!features.adminOverride}
+                  disabled={!extras.adminOverride}
                   color="purple"
                 />
               </div>
             </div>
-
-            {/* ────────── LOCK MODULES SECTION ────────── */}
-            <div className="pt-4 pb-2 border-t border-gray-200 mt-2">
-              <div className="flex items-center gap-2 mb-1">
-                <Lock className="w-4 h-4 text-red-400" />
-                <h3 className="text-gray-900 font-semibold text-sm">
-                  Disable / Lock Modules
-                </h3>
-              </div>
-              <p className="text-xs text-gray-500">
-                Select modules to forcibly lock for this organization
-              </p>
-            </div>
-
-            {/* Lock Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <LockCard
-                icon={Inbox}
-                label="Lock Inbox"
-                checked={features.inboxLocked}
-                disabled={!features.adminOverride}
-                onChange={(val) =>
-                  setFeatures((prev) => ({ ...prev, inboxLocked: val }))
-                }
-              />
-              <LockCard
-                icon={Megaphone}
-                label="Lock Campaigns"
-                checked={features.campaignsLocked}
-                disabled={!features.adminOverride}
-                onChange={(val) =>
-                  setFeatures((prev) => ({ ...prev, campaignsLocked: val }))
-                }
-              />
-              <LockCard
-                icon={Bot}
-                label="Lock Chatbot"
-                checked={features.chatbotLocked}
-                disabled={!features.adminOverride}
-                onChange={(val) =>
-                  setFeatures((prev) => ({ ...prev, chatbotLocked: val }))
-                }
-              />
-              <LockCard
-                icon={Zap}
-                label="Lock Automation"
-                checked={features.automationLocked}
-                disabled={!features.adminOverride}
-                onChange={(val) =>
-                  setFeatures((prev) => ({ ...prev, automationLocked: val }))
-                }
-              />
-            </div>
           </div>
 
-          {/* ────────── CONNECTION LOCK (INDEPENDENT) ────────── */}
-          <div className="pt-6 mt-2 border-t border-gray-200">
-            <div className="flex items-center gap-2 mb-1">
-              <Link2Off className="w-4 h-4 text-orange-400" />
-              <h3 className="text-gray-900 font-semibold text-sm">
-                Connection Lock
-              </h3>
-              <span className="ml-1 text-[10px] font-medium px-1.5 py-0.5 rounded
-                bg-orange-500/10 text-orange-300 border border-orange-500/20">
-                Independent
-              </span>
-            </div>
-            <p className="text-xs text-gray-500 mb-3">
-              Prevent this organization from connecting or disconnecting
-              WhatsApp / Meta / Instagram accounts
-            </p>
-
+          {!extras.adminOverride && (
             <div
-              className={`p-4 rounded-xl border-2 flex items-center justify-between transition-all
-                ${
-                  features.connectionLocked
-                    ? 'border-orange-500/40 bg-orange-500/5'
-                    : 'border-gray-200 bg-gray-50'
-                }`}
-            >
-              <div className="flex items-center gap-3 min-w-0">
-                <div
-                  className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${
-                    features.connectionLocked
-                      ? 'bg-orange-500/20 border border-orange-500/30'
-                      : 'bg-gray-50'
-                  }`}
-                >
-                  <Link2Off
-                    className={`w-5 h-5 ${
-                      features.connectionLocked ? 'text-orange-400' : 'text-gray-400'
-                    }`}
-                  />
-                </div>
-                <div className="min-w-0">
-                  <p className="font-bold text-gray-900 text-sm">
-                    Lock Account Connection / Disconnection
-                  </p>
-                  <p className="text-xs text-gray-500 mt-0.5">
-                    {features.connectionLocked
-                      ? '🔒 Locked — user cannot connect or disconnect any account'
-                      : 'Allow user to connect/disconnect WhatsApp, Meta, Instagram'}
-                  </p>
-                </div>
-              </div>
-              <ToggleSwitch
-                checked={features.connectionLocked}
-                onChange={(val) =>
-                  setFeatures((prev) => ({ ...prev, connectionLocked: val }))
-                }
-                color="red"
-                size="md"
-              />
-            </div>
-          </div>
-
-          {/* Warning message when override is off */}
-          {!features.adminOverride && (
-            <div
-              className="mt-4 p-4 bg-yellow-500/10 border border-yellow-500/20
+              className="p-4 bg-yellow-500/10 border border-yellow-500/20
                 rounded-xl flex items-center gap-3"
             >
-              <AlertTriangle className="w-5 h-5 text-yellow-400 shrink-0" />
-              <p className="text-sm text-yellow-300">
-                Enable <strong>"Admin Override"</strong> above to manually
-                control feature access for this organization
+              <AlertTriangle className="w-5 h-5 text-yellow-500 shrink-0" />
+              <p className="text-sm text-yellow-700">
+                Bulk paste aur CSV import ke liye <strong>"Admin Override"</strong>{' '}
+                on karo. Neeche ke module locks isse alag hain.
               </p>
             </div>
           )}
+
+          {/* ────────── MODULE ACCESS ────────── */}
+          <div className="pt-6 mt-2 border-t border-gray-200">
+            <div className="flex items-start justify-between gap-4 flex-wrap mb-4">
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <Lock className="w-4 h-4 text-gray-500" />
+                  <h3 className="text-gray-900 font-semibold text-sm">
+                    Module Access
+                  </h3>
+                  <span
+                    className={`text-[10px] font-medium px-1.5 py-0.5 rounded border
+                      ${
+                        lockedCount > 0
+                          ? 'bg-red-50 text-red-600 border-red-200'
+                          : 'bg-green-50 text-green-700 border-green-200'
+                      }`}
+                  >
+                    {lockedCount > 0
+                      ? `${lockedCount} locked`
+                      : 'All unlocked'}
+                  </span>
+                </div>
+                <p className="text-xs text-gray-500">
+                  Toggle on = user ko feature milega. Ye locks server par bhi
+                  lagte hain, sirf menu chhupane wali baat nahi.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setAll(false)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs
+                    font-medium border border-gray-200 text-gray-600
+                    hover:bg-gray-50 transition-colors"
+                >
+                  <LockOpen className="w-3.5 h-3.5" />
+                  Unlock all
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setAll(true)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs
+                    font-medium border border-red-200 text-red-600
+                    hover:bg-red-50 transition-colors"
+                >
+                  <Lock className="w-3.5 h-3.5" />
+                  Lock all
+                </button>
+              </div>
+            </div>
+
+            <div className="space-y-5">
+              {grouped.map(({ group, items }) => (
+                <FeatureGroupSection
+                  key={group}
+                  group={group}
+                  items={items}
+                  locks={locks}
+                  planLocked={planLocked}
+                  onChange={(wireKey, locked) =>
+                    setLocks((prev) => ({ ...prev, [wireKey]: locked }))
+                  }
+                />
+              ))}
+            </div>
+          </div>
         </div>
 
         {/* Save Button */}
@@ -504,7 +524,7 @@ export default function OrganizationFeatures() {
             onClick={handleSave}
             disabled={saving}
             className="flex items-center gap-2 px-6 py-2.5 bg-primary-600
-              hover:bg-primary-700 text-gray-900 rounded-xl font-medium
+              hover:bg-primary-700 text-white rounded-xl font-medium
               transition-colors disabled:opacity-50 text-sm"
           >
             {saving ? (
@@ -524,3 +544,32 @@ export default function OrganizationFeatures() {
     </div>
   );
 }
+
+// ============================================
+// GROUP SECTION
+// ============================================
+
+const FeatureGroupSection: React.FC<{
+  group: FeatureGroup;
+  items: FeatureDefinition[];
+  locks: Record<string, boolean>;
+  planLocked: Record<string, boolean>;
+  onChange: (wireKey: string, locked: boolean) => void;
+}> = ({ group, items, locks, planLocked, onChange }) => (
+  <div>
+    <p className="px-1 mb-2 text-[10px] font-semibold uppercase tracking-widest text-gray-400">
+      {group}
+    </p>
+    <div className="space-y-2">
+      {items.map((feature) => (
+        <FeatureRow
+          key={feature.key}
+          feature={feature}
+          locked={!!locks[feature.wireKey]}
+          planLocked={!!planLocked[feature.wireKey]}
+          onChange={(locked) => onChange(feature.wireKey, locked)}
+        />
+      ))}
+    </div>
+  </div>
+);

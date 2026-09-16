@@ -29,6 +29,7 @@ import {
   IndianRupee,
   ShieldCheck,
   ShieldOff,
+  SlidersHorizontal,
   Activity,
   Eye,
 } from 'lucide-react';
@@ -48,6 +49,9 @@ interface UserBasic {
   status: string;
   createdAt: string;
   lastLoginAt?: string | null;
+  // admin.getUserById dono bhejta hai: owned orgs aur memberships se bani list
+  ownedOrganizations?: { id: string; name: string }[];
+  organizations?: { id: string; name: string }[];
 }
 
 interface Contact {
@@ -1822,6 +1826,10 @@ const UserDetail: React.FC = () => {
   const [user, setUser] = useState<UserBasic | null>(null);
   const [userLoading, setUserLoading] = useState(true);
 
+  // Owned org pehle - wahi user ka apna account hai. Warna pehli membership.
+  const featureOrgId =
+    user?.ownedOrganizations?.[0]?.id || user?.organizations?.[0]?.id || null;
+
   // User basic info fetch karo
   useEffect(() => {
     if (!userId) return;
@@ -1898,6 +1906,24 @@ const UserDetail: React.FC = () => {
               </div>
             </div>
           </div>
+
+          {/* Is user ke org ka Feature Access Control - pehle ye page sirf
+              URL type karke hi khulta tha. */}
+          {featureOrgId && (
+            <button
+              onClick={() =>
+                navigate(
+                  `/manage-wabmeta-admin/organizations/${featureOrgId}/features`
+                )
+              }
+              className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl
+                text-sm font-medium border border-gray-200 text-gray-700
+                hover:bg-gray-50 transition-colors shrink-0"
+            >
+              <SlidersHorizontal className="w-4 h-4" />
+              Feature Access
+            </button>
+          )}
         </div>
       ) : (
         <div className="bg-red-500/10 border border-red-500/20 rounded-2xl p-4 text-center text-red-300">
