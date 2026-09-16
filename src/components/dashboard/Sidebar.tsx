@@ -81,6 +81,7 @@ const getNav = (unreadCount: number, totalContacts: number): NavGroup[] => [
         name: 'Contacts',
         href: '/dashboard/contacts',
         icon: Users,
+        featureKey: 'contacts',
         badge: totalContacts > 0
           ? totalContacts > 1000 ? `${(totalContacts / 1000).toFixed(1)}k` : totalContacts
           : undefined,
@@ -95,6 +96,7 @@ const getNav = (unreadCount: number, totalContacts: number): NavGroup[] => [
         name: 'CRM',
         href: '/dashboard/crm',
         icon: Users,
+        featureKey: 'crm',
         subItems: [
           { name: 'Overview', href: '/dashboard/crm' },
           { name: 'Leads', href: '/dashboard/crm/leads' },
@@ -106,15 +108,15 @@ const getNav = (unreadCount: number, totalContacts: number): NavGroup[] => [
     title: 'Messaging',
     items: [
       { name: 'Campaigns', href: '/dashboard/campaigns', icon: Send, featureKey: 'campaigns' },
-      { name: 'Templates', href: '/dashboard/templates', icon: FileText },
+      { name: 'Templates', href: '/dashboard/templates', icon: FileText, featureKey: 'templates' },
       { name: 'Chatbots', href: '/dashboard/chatbots', icon: Bot, featureKey: 'chatbot' },
       { name: 'Automations', href: '/dashboard/automations', icon: Zap, featureKey: 'automation' },
-      // Backend AI agent routes par featureLock('chatbot') hai - wahi lock yahan
+      // Backend AI agent routes par ab featureLock('aiAgent') hai
       {
         name: 'AI Agent',
         href: '/dashboard/ai-agent',
         icon: Sparkles,
-        featureKey: 'chatbot',
+        featureKey: 'aiAgent',
         badge: 'New',
         badgeColor: 'bg-violet-500',
       },
@@ -127,6 +129,7 @@ const getNav = (unreadCount: number, totalContacts: number): NavGroup[] => [
         name: 'Instagram',
         href: '/instagram',
         icon: Instagram,
+        featureKey: 'instagram',
         badge: 'Beta',
         badgeColor: 'bg-pink-500',
         subItems: [
@@ -142,6 +145,7 @@ const getNav = (unreadCount: number, totalContacts: number): NavGroup[] => [
         name: 'Telegram',
         href: '/dashboard/telegram',
         icon: Send,
+        featureKey: 'telegram',
         badge: 'Beta',
         badgeColor: 'bg-sky-500',
         subItems: [

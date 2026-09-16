@@ -18,10 +18,22 @@ export interface Organization {
     name: string;
     slug: string;
     planType: string;
+    // Effective locks - backend plan limit + admin lock dono mila kar bhejta
+    // hai. Naam wabmeta-backend ke FEATURE_REGISTRY se aate hain; yahan ka
+    // mirror src/constants/features.ts me hai.
     featureInboxLocked?: boolean;
+    featureContactsLocked?: boolean;
+    featureCrmLocked?: boolean;
     featureCampaignsLocked?: boolean;
+    featureTemplatesLocked?: boolean;
     featureChatbotLocked?: boolean;
     featureAutomationLocked?: boolean;
+    featureAiAgentLocked?: boolean;
+    featureTelegramLocked?: boolean;
+    featureInstagramLocked?: boolean;
+    featureReportsLocked?: boolean;
+    featureWalletLocked?: boolean;
+    featureConnectionLocked?: boolean;
 }
 
 export interface AuthContextType {
