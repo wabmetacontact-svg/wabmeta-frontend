@@ -42,6 +42,8 @@ interface Plan {
   maxChatbots: number;
   maxAutomations: number;
   features: string[];
+  /** Har feature ke liye plan ka saaf haan/na. Purane plans par null. */
+  includedFeatures?: Record<string, boolean> | null;
   isActive: boolean;
   popular?: boolean;
 }
@@ -979,6 +981,18 @@ const getPlanCardFeatures = (plan: Plan): { text: string; active: boolean }[] =>
   ];
 };
 
+// WhatsApp ka apna flag nahi hai - uska inbox hi `inbox` hai, jo har plan
+// me khula rehta hai.
+const CARD_CHANNELS: { key: string; label: string }[] = [
+  { key: 'inbox', label: 'WhatsApp' },
+  { key: 'instagram', label: 'Instagram' },
+  { key: 'telegram', label: 'Telegram' },
+];
+
+/** "Everything in Starter, plus:" jaisi bullet heading hai, feature nahi. */
+const isSectionLabel = (text: string): boolean =>
+  /^everything in .+?,?\s*plus:?$/i.test(text.trim());
+
 interface PricingCardProps {
   plan: Plan;
   billingCycle: 'monthly' | 'yearly';
@@ -1060,10 +1074,38 @@ const PricingCard: React.FC<PricingCardProps> = ({
         )}
       </div>
 
+      {/* Channels - plan ke asli flags se, hardcode nahi */}
+      <div className="flex flex-wrap gap-1.5 justify-center mt-5 mb-1">
+        {CARD_CHANNELS.map((c) => {
+          const flags = plan.includedFeatures;
+          // Purane plans par ye data hai hi nahi - unke liye sab khula maano,
+          // kyunki unme sach me sab khula tha.
+          const on = !flags || typeof flags !== 'object' ? true : flags[c.key] !== false;
+          return (
+            <span
+              key={c.key}
+              className={`text-[11px] font-semibold px-2 py-1 rounded-md border ${on
+                ? 'bg-green-50 text-green-700 border-green-200'
+                : 'bg-gray-100 text-gray-400 border-gray-200'
+                }`}
+            >
+              {c.label}
+            </span>
+          );
+        })}
+      </div>
+
       {/* Features List */}
-      <div className="px-2">
-        <ul className="space-y-4 mb-10 min-h-[200px]">
-          {features.map((feature, i) => (
+      <div className="px-2 mt-5">
+        <ul className="space-y-3 mb-10 min-h-[200px]">
+          {features.map((feature, i) =>
+            isSectionLabel(feature.text) ? (
+              <li key={i} className="pt-3 first:pt-0">
+                <div className="border-t border-dashed border-gray-200 pt-3 text-[11px] font-bold uppercase tracking-wider text-gray-500">
+                  {feature.text.replace(/,?\s*plus:?$/i, '')}
+                </div>
+              </li>
+            ) : (
             <li key={i} className="flex items-center text-sm">
               {feature.active ? (
                 <div className="w-5 h-5 rounded-full bg-green-50 border border-green-200 flex items-center justify-center mr-3 flex-shrink-0">
@@ -1078,7 +1120,8 @@ const PricingCard: React.FC<PricingCardProps> = ({
                 {feature.text}
               </span>
             </li>
-          ))}
+            )
+          )}
         </ul>
       </div>
 
