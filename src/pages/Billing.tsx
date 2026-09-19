@@ -630,6 +630,7 @@ const Billing: React.FC = () => {
               isCurrentPlan={subscription?.planId === plan.id}
               onSelect={() => handleSubscribe(plan.slug)}
               disabled={isChangingPlan || !razorpayReady}
+              isFreePlan={(plan.monthlyPrice ?? 0) === 0 && (plan.yearlyPrice ?? 0) === 0}
             />
           ))}
         </div>
@@ -986,6 +987,12 @@ interface PricingCardProps {
   isCurrentPlan: boolean;
   onSelect: () => void;
   disabled: boolean;
+  /**
+   * Free Demo cannot be bought - there is nothing to charge, Razorpay
+   * refuses a zero-rupee order and the checkout catalogue has no key for it.
+   * Its button says so instead of starting a checkout that can only fail.
+   */
+  isFreePlan?: boolean;
 }
 
 const PricingCard: React.FC<PricingCardProps> = ({
@@ -994,6 +1001,7 @@ const PricingCard: React.FC<PricingCardProps> = ({
   isCurrentPlan,
   onSelect,
   disabled,
+  isFreePlan,
 }) => {
   const monthly = plan.monthlyPrice ?? 0;
   const yearly = plan.yearlyPrice ?? 0;
@@ -1112,8 +1120,8 @@ const PricingCard: React.FC<PricingCardProps> = ({
       {/* Select Button */}
       <button
         onClick={onSelect}
-        disabled={disabled || isCurrentPlan}
-        className={`w-full py-3 px-4 rounded-lg font-semibold transition-all ${isCurrentPlan
+        disabled={disabled || isCurrentPlan || isFreePlan}
+        className={`w-full py-3 px-4 rounded-lg font-semibold transition-all ${isCurrentPlan || isFreePlan
           ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
           : disabled
             ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
@@ -1127,6 +1135,8 @@ const PricingCard: React.FC<PricingCardProps> = ({
             <Check className="w-4 h-4 mr-2" />
             Current Plan
           </span>
+        ) : isFreePlan ? (
+          'Trial plan'
         ) : disabled ? (
           <span className="flex items-center justify-center">
             <Loader2 className="w-4 h-4 mr-2 animate-spin" />

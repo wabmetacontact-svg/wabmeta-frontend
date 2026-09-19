@@ -82,30 +82,40 @@ const ToggleSwitch: React.FC<{
 // ============================================
 
 /**
- * Toggle ON = feature khula hai. State locks me ulta store hota hai
- * (true = locked) kyunki backend ka field hi `<feature>Locked` hai.
+ * Toggle ON = the organisation gets the feature.
+ *
+ * Three things decide that, and they are not the same thing:
+ *   - locks[wireKey]  - the admin's own lock. Always wins.
+ *   - planLocked      - the plan does not include it.
+ *   - overrides[key]  - this organisation gets it anyway, plan or not.
+ *
+ * The toggle used to write only the admin lock, so switching a plan-blocked
+ * feature to "Enabled" changed a column the server never consulted: the row
+ * said Enabled and the customer still saw a padlock. Turning on a
+ * plan-blocked feature now writes the override that actually grants it.
  */
 const FeatureRow: React.FC<{
   feature: FeatureDefinition;
   locked: boolean;
   planLocked: boolean;
-  onChange: (locked: boolean) => void;
-}> = ({ feature, locked, planLocked, onChange }) => {
+  overridden: boolean;
+  onChange: (enabled: boolean) => void;
+}> = ({ feature, locked, planLocked, overridden, onChange }) => {
   const Icon = feature.icon;
-  const enabled = !locked;
+  const enabled = !locked && (!planLocked || overridden);
 
   return (
     <div
       className={`p-4 rounded-xl border flex items-center justify-between gap-4
         transition-all
-        ${locked ? 'bg-red-50 border-red-200' : 'bg-white border-gray-200 hover:border-gray-300'}`}
+        ${!enabled ? 'bg-red-50 border-red-200' : 'bg-white border-gray-200 hover:border-gray-300'}`}
     >
       <div className="flex items-center gap-3 min-w-0">
         <div
           className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0
-            ${locked ? 'bg-red-100' : 'bg-gray-100'}`}
+            ${!enabled ? 'bg-red-100' : 'bg-gray-100'}`}
         >
-          <Icon className={`w-4 h-4 ${locked ? 'text-red-500' : 'text-gray-500'}`} />
+          <Icon className={`w-4 h-4 ${!enabled ? 'text-red-500' : 'text-gray-500'}`} />
         </div>
 
         <div className="min-w-0">
@@ -116,19 +126,29 @@ const FeatureRow: React.FC<{
               <span
                 className="text-[10px] font-medium px-1.5 py-0.5 rounded
                   bg-gray-100 text-gray-500 border border-gray-200"
-                title="Naye accounts par ye feature by default locked hota hai"
+                title="New accounts start with this feature locked"
               >
                 Locked by default
               </span>
             )}
 
-            {planLocked && (
+            {planLocked && !overridden && (
               <span
                 className="text-[10px] font-medium px-1.5 py-0.5 rounded
                   bg-amber-50 text-amber-700 border border-amber-200"
-                title="Is plan me ye feature shamil nahi - yahan unlock karne par bhi band rahega"
+                title="Not included in this plan. Switch it on to grant this organisation an exception."
               >
-                Blocked by plan
+                Not in plan
+              </span>
+            )}
+
+            {planLocked && overridden && (
+              <span
+                className="text-[10px] font-medium px-1.5 py-0.5 rounded
+                  bg-emerald-50 text-emerald-700 border border-emerald-200"
+                title="Not included in this plan, but granted to this organisation anyway."
+              >
+                Plan exception
               </span>
             )}
           </div>
@@ -141,13 +161,13 @@ const FeatureRow: React.FC<{
       <div className="flex items-center gap-3 shrink-0">
         <span
           className={`text-xs font-semibold w-16 text-right
-            ${locked ? 'text-red-500' : 'text-green-600'}`}
+            ${!enabled ? 'text-red-500' : 'text-green-600'}`}
         >
-          {locked ? 'Locked' : 'Enabled'}
+          {enabled ? 'Enabled' : 'Locked'}
         </span>
         <ToggleSwitch
           checked={enabled}
-          onChange={(val) => onChange(!val)}
+          onChange={onChange}
           color="green"
           size="md"
         />
@@ -179,8 +199,14 @@ export default function OrganizationFeatures() {
   // Har module ka lock: { inboxLocked: false, telegramLocked: true, ... }
   const [locks, setLocks] = useState<Record<string, boolean>>(emptyLockState);
 
-  // Wo features jo plan ki wajah se band hain - admin ka unlock kaafi nahi.
+  // Features the plan does not include. The admin lock alone cannot open
+  // these - only an override can.
   const [planLocked, setPlanLocked] = useState<Record<string, boolean>>({});
+
+  // Per-organisation exceptions to the plan, keyed by feature key (not
+  // wireKey): { telegram: true }. This is what the server reads when it asks
+  // "the plan says no, but was this organisation granted it anyway?".
+  const [overrides, setOverrides] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     fetchFeatures();
@@ -214,6 +240,7 @@ export default function OrganizationFeatures() {
         )
       );
       setPlanLocked(payload.planLocked || {});
+      setOverrides(payload.overrides || {});
     } catch (error) {
       toast.error('Failed to fetch features');
       navigate(-1);
@@ -229,6 +256,9 @@ export default function OrganizationFeatures() {
         simpleBulkPaste: extras.simpleBulkPaste,
         csvUpload: extras.csvUpload,
         enableOverride: extras.adminOverride,
+        // Without this the plan exceptions never reach the database, and a
+        // feature switched on here stays locked for the customer.
+        overrides,
         ...locks,
       });
       toast.success('Features updated successfully');
@@ -239,16 +269,32 @@ export default function OrganizationFeatures() {
     }
   };
 
+  /**
+   * Turn one feature on or off.
+   *
+   * On: clear the admin lock, and if the plan does not include the feature,
+   * grant this organisation an exception - that second half is what was
+   * missing, and why the toggle appeared to do nothing.
+   *
+   * Off: set the admin lock, which beats everything, and drop any exception
+   * so it does not quietly come back if the lock is lifted later.
+   */
+  const setFeatureEnabled = (feature: FeatureDefinition, enabled: boolean) => {
+    setLocks((prev) => ({ ...prev, [feature.wireKey]: !enabled }));
+
+    setOverrides((prev) => {
+      const next = { ...prev };
+      if (enabled && planLocked[feature.wireKey]) {
+        next[feature.key] = true;
+      } else {
+        delete next[feature.key];
+      }
+      return next;
+    });
+  };
+
   const setAll = (locked: boolean) => {
-    setLocks(
-      FEATURES.reduce(
-        (acc, f) => {
-          acc[f.wireKey] = locked;
-          return acc;
-        },
-        {} as Record<string, boolean>
-      )
-    );
+    FEATURES.forEach((f) => setFeatureEnabled(f, !locked));
   };
 
   const grouped = useMemo(() => {
@@ -258,7 +304,11 @@ export default function OrganizationFeatures() {
     })).filter((g) => g.items.length > 0);
   }, []);
 
-  const lockedCount = FEATURES.filter((f) => locks[f.wireKey]).length;
+  // What the customer actually sees, not just the admin lock column.
+  const isEnabled = (f: FeatureDefinition) =>
+    !locks[f.wireKey] && (!planLocked[f.wireKey] || overrides[f.key] === true);
+
+  const lockedCount = FEATURES.filter((f) => !isEnabled(f)).length;
 
   if (loading) {
     return <PageLoader />;
@@ -345,8 +395,8 @@ export default function OrganizationFeatures() {
                     Admin Override
                   </p>
                   <p className="text-xs text-gray-500 mt-0.5">
-                    Plan ki paid add-on limits ignore karke ye do features
-                    manually de sakte ho. Module locks iske bina bhi chalte hain.
+                    Grant these two contact-import features by hand, whatever
+                    the plan allows. The module locks below work without it.
                   </p>
                 </div>
               </div>
@@ -389,8 +439,8 @@ export default function OrganizationFeatures() {
                       Simple Bulk Paste
                     </p>
                     <p className="text-xs text-gray-500 mt-0.5">
-                      Paste phone numbers directly · Normally requires ₹2,500+
-                      plan
+                      Paste phone numbers directly · Included from Growth
+                      onwards
                     </p>
                   </div>
                 </div>
@@ -443,8 +493,8 @@ export default function OrganizationFeatures() {
             >
               <AlertTriangle className="w-5 h-5 text-yellow-500 shrink-0" />
               <p className="text-sm text-yellow-700">
-                Bulk paste aur CSV import ke liye <strong>"Admin Override"</strong>{' '}
-                on karo. Neeche ke module locks isse alag hain.
+                Turn on <strong>Admin Override</strong> to grant bulk paste or
+                CSV import. The module locks below are separate from this.
               </p>
             </div>
           )}
@@ -472,8 +522,9 @@ export default function OrganizationFeatures() {
                   </span>
                 </div>
                 <p className="text-xs text-gray-500">
-                  Toggle on = user ko feature milega. Ye locks server par bhi
-                  lagte hain, sirf menu chhupane wali baat nahi.
+                  Toggle on and the organisation gets the feature. These apply
+                  on the server too - they do more than hide a menu item. A
+                  feature marked "Not in plan" is granted as an exception.
                 </p>
               </div>
 
@@ -509,9 +560,8 @@ export default function OrganizationFeatures() {
                   items={items}
                   locks={locks}
                   planLocked={planLocked}
-                  onChange={(wireKey, locked) =>
-                    setLocks((prev) => ({ ...prev, [wireKey]: locked }))
-                  }
+                  overrides={overrides}
+                  onChange={setFeatureEnabled}
                 />
               ))}
             </div>
@@ -554,8 +604,9 @@ const FeatureGroupSection: React.FC<{
   items: FeatureDefinition[];
   locks: Record<string, boolean>;
   planLocked: Record<string, boolean>;
-  onChange: (wireKey: string, locked: boolean) => void;
-}> = ({ group, items, locks, planLocked, onChange }) => (
+  overrides: Record<string, boolean>;
+  onChange: (feature: FeatureDefinition, enabled: boolean) => void;
+}> = ({ group, items, locks, planLocked, overrides, onChange }) => (
   <div>
     <p className="px-1 mb-2 text-[10px] font-semibold uppercase tracking-widest text-gray-400">
       {group}
@@ -567,7 +618,8 @@ const FeatureGroupSection: React.FC<{
           feature={feature}
           locked={!!locks[feature.wireKey]}
           planLocked={!!planLocked[feature.wireKey]}
-          onChange={(locked) => onChange(feature.wireKey, locked)}
+          overridden={overrides[feature.key] === true}
+          onChange={(enabled) => onChange(feature, enabled)}
         />
       ))}
     </div>
