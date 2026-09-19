@@ -42,6 +42,8 @@ interface Plan {
   maxChatbots: number;
   maxAutomations: number;
   features: string[];
+  /** Har feature ke liye plan ka saaf haan/na. Purane plans par null. */
+  includedFeatures?: Record<string, boolean> | null;
   isActive: boolean;
   popular?: boolean;
 }
@@ -257,9 +259,14 @@ const Billing: React.FC = () => {
       setIsChangingPlan(true);
 
       // Create order on backend
-      console.log('Creating order for plan:', planSlug);
+      console.log('Creating order for plan:', planSlug, billingCycle);
+      // Backend ke catalogue me har tier ki do keys hain - `pro` aur
+      // `pro_yearly`. Cycle key me jata hai, warna saal ka paisa lekar
+      // mahine ka period ban jata.
+      const planKey = billingCycle === 'yearly' ? `${planSlug}_yearly` : planSlug;
+
       const orderResponse = await billing.createRazorpayOrder({
-        planKey: planSlug,
+        planKey,
         billingCycle,
       });
 
@@ -908,6 +915,15 @@ const UsageCard: React.FC<UsageCardProps> = ({
 };
 
 const getPlanCardFeatures = (plan: Plan): { text: string; active: boolean }[] => {
+  // Naye tiers apni bullets khud lekar aate hain (plan.features, jo
+  // set-billing-plans.ts likhta hai). Neeche wali hardcoded lists sirf
+  // purane duration plans ke liye bachi hain.
+  if (Array.isArray(plan.features) && plan.features.length > 0) {
+    return plan.features
+      .filter((f) => typeof f === 'string' && f.trim())
+      .map((text) => ({ text, active: true }));
+  }
+
   const slug = (plan.slug || plan.id || plan.type || '').toLowerCase();
 
   if (slug.includes('free')) {
@@ -965,6 +981,18 @@ const getPlanCardFeatures = (plan: Plan): { text: string; active: boolean }[] =>
   ];
 };
 
+// WhatsApp ka apna flag nahi hai - uska inbox hi `inbox` hai, jo har plan
+// me khula rehta hai.
+const CARD_CHANNELS: { key: string; label: string }[] = [
+  { key: 'inbox', label: 'WhatsApp' },
+  { key: 'instagram', label: 'Instagram' },
+  { key: 'telegram', label: 'Telegram' },
+];
+
+/** "Everything in Starter, plus:" jaisi bullet heading hai, feature nahi. */
+const isSectionLabel = (text: string): boolean =>
+  /^everything in .+?,?\s*plus:?$/i.test(text.trim());
+
 interface PricingCardProps {
   plan: Plan;
   billingCycle: 'monthly' | 'yearly';
@@ -980,7 +1008,15 @@ const PricingCard: React.FC<PricingCardProps> = ({
   onSelect,
   disabled,
 }) => {
-  const price = billingCycle === 'monthly' ? (plan.monthlyPrice ?? 0) : (plan.yearlyPrice ?? 0);
+  const monthly = plan.monthlyPrice ?? 0;
+  const yearly = plan.yearlyPrice ?? 0;
+  const isFree = monthly === 0 && yearly === 0;
+
+  // Yearly par bada number per-month dikhta hai aur poore saal ka amount
+  // neeche - isse dono cycles seedha compare hote hain.
+  const price =
+    billingCycle === 'yearly' && yearly > 0 ? Math.round(yearly / 12) : monthly;
+
   const features = getPlanCardFeatures(plan);
 
   return (
@@ -1023,14 +1059,53 @@ const PricingCard: React.FC<PricingCardProps> = ({
           </span>
         </div>
         <p className="text-xs font-semibold text-gray-500 mt-2">
-          {plan.type === 'FREE_DEMO' || plan.slug === 'free' || plan.slug === 'free-demo' ? 'TOTAL' : plan.slug.includes('3') ? 'PER 3 MONTHS' : plan.slug.includes('6') ? 'PER 6 MONTHS' : plan.slug.includes('year') ? 'PER YEAR' : 'PER MONTH'}
+          {isFree
+            ? 'FREE'
+            : plan.slug.includes('3')
+              ? 'PER 3 MONTHS'
+              : plan.slug.includes('6')
+                ? 'PER 6 MONTHS'
+                : 'PER MONTH'}
         </p>
+        {billingCycle === 'yearly' && yearly > 0 && (
+          <p className="text-xs font-semibold text-emerald-600 mt-1">
+            ₹{yearly.toLocaleString('en-IN')} billed yearly
+          </p>
+        )}
+      </div>
+
+      {/* Channels - plan ke asli flags se, hardcode nahi */}
+      <div className="flex flex-wrap gap-1.5 justify-center mt-5 mb-1">
+        {CARD_CHANNELS.map((c) => {
+          const flags = plan.includedFeatures;
+          // Purane plans par ye data hai hi nahi - unke liye sab khula maano,
+          // kyunki unme sach me sab khula tha.
+          const on = !flags || typeof flags !== 'object' ? true : flags[c.key] !== false;
+          return (
+            <span
+              key={c.key}
+              className={`text-[11px] font-semibold px-2 py-1 rounded-md border ${on
+                ? 'bg-green-50 text-green-700 border-green-200'
+                : 'bg-gray-100 text-gray-400 border-gray-200'
+                }`}
+            >
+              {c.label}
+            </span>
+          );
+        })}
       </div>
 
       {/* Features List */}
-      <div className="px-2">
-        <ul className="space-y-4 mb-10 min-h-[200px]">
-          {features.map((feature, i) => (
+      <div className="px-2 mt-5">
+        <ul className="space-y-3 mb-10 min-h-[200px]">
+          {features.map((feature, i) =>
+            isSectionLabel(feature.text) ? (
+              <li key={i} className="pt-3 first:pt-0">
+                <div className="border-t border-dashed border-gray-200 pt-3 text-[11px] font-bold uppercase tracking-wider text-gray-500">
+                  {feature.text.replace(/,?\s*plus:?$/i, '')}
+                </div>
+              </li>
+            ) : (
             <li key={i} className="flex items-center text-sm">
               {feature.active ? (
                 <div className="w-5 h-5 rounded-full bg-green-50 border border-green-200 flex items-center justify-center mr-3 flex-shrink-0">
@@ -1045,7 +1120,8 @@ const PricingCard: React.FC<PricingCardProps> = ({
                 {feature.text}
               </span>
             </li>
-          ))}
+            )
+          )}
         </ul>
       </div>
 
