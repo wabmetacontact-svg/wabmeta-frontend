@@ -257,9 +257,14 @@ const Billing: React.FC = () => {
       setIsChangingPlan(true);
 
       // Create order on backend
-      console.log('Creating order for plan:', planSlug);
+      console.log('Creating order for plan:', planSlug, billingCycle);
+      // Backend ke catalogue me har tier ki do keys hain - `pro` aur
+      // `pro_yearly`. Cycle key me jata hai, warna saal ka paisa lekar
+      // mahine ka period ban jata.
+      const planKey = billingCycle === 'yearly' ? `${planSlug}_yearly` : planSlug;
+
       const orderResponse = await billing.createRazorpayOrder({
-        planKey: planSlug,
+        planKey,
         billingCycle,
       });
 
@@ -908,6 +913,15 @@ const UsageCard: React.FC<UsageCardProps> = ({
 };
 
 const getPlanCardFeatures = (plan: Plan): { text: string; active: boolean }[] => {
+  // Naye tiers apni bullets khud lekar aate hain (plan.features, jo
+  // set-billing-plans.ts likhta hai). Neeche wali hardcoded lists sirf
+  // purane duration plans ke liye bachi hain.
+  if (Array.isArray(plan.features) && plan.features.length > 0) {
+    return plan.features
+      .filter((f) => typeof f === 'string' && f.trim())
+      .map((text) => ({ text, active: true }));
+  }
+
   const slug = (plan.slug || plan.id || plan.type || '').toLowerCase();
 
   if (slug.includes('free')) {
@@ -980,7 +994,15 @@ const PricingCard: React.FC<PricingCardProps> = ({
   onSelect,
   disabled,
 }) => {
-  const price = billingCycle === 'monthly' ? (plan.monthlyPrice ?? 0) : (plan.yearlyPrice ?? 0);
+  const monthly = plan.monthlyPrice ?? 0;
+  const yearly = plan.yearlyPrice ?? 0;
+  const isFree = monthly === 0 && yearly === 0;
+
+  // Yearly par bada number per-month dikhta hai aur poore saal ka amount
+  // neeche - isse dono cycles seedha compare hote hain.
+  const price =
+    billingCycle === 'yearly' && yearly > 0 ? Math.round(yearly / 12) : monthly;
+
   const features = getPlanCardFeatures(plan);
 
   return (
@@ -1023,8 +1045,19 @@ const PricingCard: React.FC<PricingCardProps> = ({
           </span>
         </div>
         <p className="text-xs font-semibold text-gray-500 mt-2">
-          {plan.type === 'FREE_DEMO' || plan.slug === 'free' || plan.slug === 'free-demo' ? 'TOTAL' : plan.slug.includes('3') ? 'PER 3 MONTHS' : plan.slug.includes('6') ? 'PER 6 MONTHS' : plan.slug.includes('year') ? 'PER YEAR' : 'PER MONTH'}
+          {isFree
+            ? 'FREE'
+            : plan.slug.includes('3')
+              ? 'PER 3 MONTHS'
+              : plan.slug.includes('6')
+                ? 'PER 6 MONTHS'
+                : 'PER MONTH'}
         </p>
+        {billingCycle === 'yearly' && yearly > 0 && (
+          <p className="text-xs font-semibold text-emerald-600 mt-1">
+            ₹{yearly.toLocaleString('en-IN')} billed yearly
+          </p>
+        )}
       </div>
 
       {/* Features List */}
