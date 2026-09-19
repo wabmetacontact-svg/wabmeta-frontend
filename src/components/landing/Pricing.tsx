@@ -1,118 +1,143 @@
-import { useState } from 'react';
-import { Check, ShieldCheck, Headphones, Tag, Sparkles } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { Check, ShieldCheck, Headphones, Tag, Sparkles, Loader2 } from 'lucide-react';
+import { billing } from '../../services/api';
+import {
+  CARD_CHANNELS,
+  FALLBACK_PLANS,
+  channelEnabled,
+  getPlanCardFeatures,
+  isSectionLabel,
+  sectionLabelText,
+  type PlanCardPlan,
+} from '../../utils/planCards';
+
+// Landing page ke card me dikhne wali cheezein. Plans khud API se aate
+// hain - yahan sirf unhe card ki bhasha me badla jata hai.
+interface PlanFeature {
+  text: string;
+  active: boolean;
+  isHeading?: boolean;
+}
+
+interface Plan {
+  name: string;
+  tagline: string;
+  price: string;
+  priceLabel: string;
+  originalPrice?: string;
+  savings?: string;
+  channels: { label: string; on: boolean }[];
+  features: PlanFeature[];
+  cta: string;
+  ctaStyle: string;
+  badge: string | null;
+  highlighted: boolean;
+  isFree?: boolean;
+}
+
+const rupees = (n: number) => `₹${Math.round(n).toLocaleString('en-IN')}`;
+
+/**
+ * API ka plan row -> card.
+ *
+ * Yearly par bada number per-month hota hai aur poore saal ka amount neeche,
+ * taaki dono cycles seedha compare hon.
+ */
+const toCard = (plan: PlanCardPlan, cycle: 'monthly' | 'yearly'): Plan => {
+  const monthly = Number(plan.monthlyPrice) || 0;
+  const yearly = Number(plan.yearlyPrice) || 0;
+  const isFree = monthly === 0 && yearly === 0;
+  const showYearly = cycle === 'yearly' && yearly > 0;
+
+  const perMonth = showYearly ? Math.round(yearly / 12) : monthly;
+  const savedPct =
+    showYearly && monthly > 0
+      ? Math.round(((monthly * 12 - yearly) / (monthly * 12)) * 100)
+      : 0;
+
+  const features: PlanFeature[] = getPlanCardFeatures(plan).map((f) =>
+    isSectionLabel(f.text)
+      ? { text: sectionLabelText(f.text), active: true, isHeading: true }
+      : f
+  );
+
+  return {
+    name: plan.name,
+    tagline: plan.description || '',
+    price: isFree ? 'Free' : rupees(perMonth),
+    priceLabel: isFree
+      ? `${plan.validityDays ?? 5} days`
+      : showYearly
+        ? `per month · ${rupees(yearly)} billed yearly`
+        : 'per month',
+    originalPrice: showYearly && monthly > 0 ? rupees(monthly) : undefined,
+    savings: savedPct > 0 ? `Save ${savedPct}%` : undefined,
+    channels: CARD_CHANNELS.map((c) => ({
+      label: c.label,
+      on: channelEnabled(plan.includedFeatures, c.key),
+    })),
+    features,
+    cta: isFree ? 'Start free' : `Choose ${plan.name}`,
+    ctaStyle: isFree ? 'outline-gray' : 'outline-green',
+    badge: plan.popular || plan.isRecommended ? 'MOST POPULAR' : null,
+    highlighted: Boolean(plan.popular || plan.isRecommended),
+    isFree,
+  };
+};
 
 const Pricing = () => {
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
+  const [rows, setRows] = useState<PlanCardPlan[]>(FALLBACK_PLANS);
+  const [loading, setLoading] = useState(true);
 
-  const plans = [
-    {
-      name: 'Free Demo',
-      tagline: 'Try everything, free',
-      price: 'Free',
-      priceLabel: '2 days',
-      isFree: true,
-      features: [
-        { text: 'All features unlocked', active: true },
-        { text: 'Automation & chatbots', active: true },
-        { text: 'WhatsApp + Instagram + Telegram', active: true },
-        { text: '100 messages · 50 contacts', active: true },
-        { text: '1 campaign', active: true },
-        { text: '2-day trial period', active: true },
-      ],
-      cta: 'Start free',
-      ctaStyle: 'outline-gray',
-      badge: null,
-      highlighted: false,
-    },
-    {
-      name: 'Monthly',
-      tagline: 'Unlimited messaging',
-      price: '₹899',
-      priceLabel: 'per month',
-      features: [
-        { text: 'Unlimited messages*', active: true },
-        { text: 'Unlimited campaigns & contacts', active: true },
-        { text: 'WhatsApp + Instagram + Telegram', active: true },
-        { text: '3 team members', active: true },
-        { text: 'Automation', active: false },
-        { text: 'Chatbot flow builder', active: false },
-      ],
-      cta: 'Choose monthly',
-      ctaStyle: 'outline-green',
-      badge: null,
-      highlighted: false,
-    },
-    {
-      name: '3-Month',
-      tagline: 'Automation unlocks here',
-      price: '₹2,500',
-      originalPrice: '₹2,697',
-      priceLabel: 'one-time',
-      savings: 'Save 7%',
-      features: [
-        { text: 'Everything in Monthly', active: true },
-        { text: 'Automation unlocked', active: true },
-        { text: 'Chatbot flow builder', active: true },
-        { text: '5 team members', active: true },
-        { text: 'Standard support', active: true },
-        { text: '₹833/month effective', active: true },
-      ],
-      cta: 'Choose 3-month',
-      ctaStyle: 'outline-green',
-      badge: null,
-      highlighted: false,
-    },
-    {
-      name: '6-Month',
-      tagline: 'Most chosen plan',
-      price: '₹5,000',
-      originalPrice: '₹5,394',
-      priceLabel: 'one-time',
-      savings: 'Save 7%',
-      features: [
-        { text: 'Everything in 3-Month', active: true },
-        { text: '10 team members', active: true },
-        { text: '2 WhatsApp accounts', active: true },
-        { text: 'Priority support', active: true },
-        { text: 'Campaign retry', active: true },
-        { text: '₹833/month effective', active: true },
-      ],
-      cta: 'Get best value',
-      ctaStyle: 'outline-green',
-      badge: 'POPULAR',
-      highlighted: false,
-    },
-    {
-      name: '1-Year',
-      tagline: 'Best deal, period.',
-      price: '₹8,999',
-      originalPrice: '₹10,788',
-      priceLabel: 'one-time',
-      savings: 'Save 17%',
-      features: [
-        { text: 'Everything in 6-Month', active: true },
-        { text: 'Unlimited team members', active: true },
-        { text: '2 WhatsApp accounts', active: true },
-        { text: 'Priority support', active: true },
-        { text: 'Highest API limits', active: true },
-        { text: '₹750/month effective', active: true },
-      ],
-      cta: 'Go annual',
-      ctaStyle: 'solid-white',
-      badge: 'BEST DEAL',
-      highlighted: true,
-    },
-  ];
+  // Daam ek hi jagah rehne chahiye. Ye endpoint public hai (auth middleware
+  // se pehle mount hai), isliye landing page bina login ke padh sakta hai.
+  // Na mile to FALLBACK_PLANS par hi rehta hai - khali section se behtar.
+  useEffect(() => {
+    let alive = true;
+
+    billing
+      .getPlans()
+      .then((res) => {
+        const data = (res?.data as any)?.data ?? (res?.data as any);
+        const list = Array.isArray(data) ? data : data?.plans;
+        if (alive && Array.isArray(list) && list.length > 0) {
+          setRows(list as PlanCardPlan[]);
+        }
+      })
+      .catch(() => {
+        // Fallback pehle se laga hua hai.
+      })
+      .finally(() => {
+        if (alive) setLoading(false);
+      });
+
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  const plans = rows.map((p) => toCard(p, billingCycle));
+
+  // Annual par sabse zyada bachat kitni hai - toggle ke paas wahi dikhao,
+  // hardcoded "17%" nahi.
+  const maxSavings = rows.reduce((best, p) => {
+    const m = Number(p.monthlyPrice) || 0;
+    const y = Number(p.yearlyPrice) || 0;
+    if (m <= 0 || y <= 0) return best;
+    return Math.max(best, Math.round(((m * 12 - y) / (m * 12)) * 100));
+  }, 0);
 
   return (
     <section id="pricing" className="relative py-24 bg-gradient-to-b from-white via-gray-50/30 to-white overflow-hidden">
-      
+
       {/* Decorative background */}
       <div className="absolute top-40 right-20 w-72 h-72 bg-green-100/30 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-40 left-20 w-72 h-72 bg-purple-100/30 rounded-full blur-3xl pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-4 md:px-6 relative z-10">
-        
+
         {/* ═══════ Section Header ═══════ */}
         <div className="grid grid-cols-12 gap-6 mb-16 lg:mb-24">
           <div className="col-span-12 lg:col-span-7">
@@ -140,7 +165,7 @@ const Pricing = () => {
             <p className="text-base lg:text-lg text-gray-600 leading-relaxed">
               Flexible plans to help you automate, engage and grow — start free and upgrade anytime.
             </p>
-            
+
             {/* ═══════ Billing Toggle ═══════ */}
             <div className="inline-flex items-center gap-3 bg-white border border-gray-200 rounded-full p-1.5 shadow-sm">
               <button
@@ -153,7 +178,7 @@ const Pricing = () => {
               >
                 Monthly
               </button>
-              
+
               {/* Toggle Switch */}
               <button
                 onClick={() => setBillingCycle(billingCycle === 'monthly' ? 'yearly' : 'monthly')}
@@ -161,13 +186,13 @@ const Pricing = () => {
                   billingCycle === 'yearly' ? 'bg-green-500' : 'bg-gray-200'
                 }`}
               >
-                <div 
+                <div
                   className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow-md transition-all ${
                     billingCycle === 'yearly' ? 'left-[26px]' : 'left-0.5'
                   }`}
                 />
               </button>
-              
+
               <button
                 onClick={() => setBillingCycle('yearly')}
                 className={`px-4 py-2 rounded-full text-xs font-semibold transition-all flex items-center gap-2 ${
@@ -178,11 +203,20 @@ const Pricing = () => {
               >
                 Yearly
               </button>
-              
-              <span className="text-green-600 text-xs font-semibold pr-3">
-                Save up to 17%
-              </span>
+
+              {maxSavings > 0 && (
+                <span className="text-green-600 text-xs font-semibold pr-3">
+                  2 months free
+                </span>
+              )}
             </div>
+
+            {loading && (
+              <span className="inline-flex items-center gap-2 text-xs text-gray-400">
+                <Loader2 size={12} className="animate-spin" />
+                Latest pricing load ho rahi hai…
+              </span>
+            )}
           </div>
         </div>
 
@@ -210,7 +244,7 @@ const Pricing = () => {
               {
                 icon: Tag,
                 title: 'No Hidden Charges',
-                desc: 'Transparent pricing with no surprises.',
+                desc: 'Jo daam dikh raha hai wahi lagta hai — koi GST ya extra fee nahi.',
               },
             ].map((item, i) => (
               <div key={i} className="flex items-start gap-3">
@@ -242,25 +276,6 @@ const Pricing = () => {
 // ═══════════════════════════════════════════════════
 // Pricing Card Component
 // ═══════════════════════════════════════════════════
-interface PlanFeature {
-  text: string;
-  active: boolean;
-}
-
-interface Plan {
-  name: string;
-  tagline: string;
-  price: string;
-  priceLabel: string;
-  originalPrice?: string;
-  savings?: string;
-  features: PlanFeature[];
-  cta: string;
-  ctaStyle: string;
-  badge: string | null;
-  highlighted: boolean;
-  isFree?: boolean;
-}
 
 const PricingCard = ({ plan }: { plan: Plan }) => {
   const [isHovered, setIsHovered] = useState(false);
@@ -292,17 +307,17 @@ const PricingCard = ({ plan }: { plan: Plan }) => {
   };
 
   return (
-    <div 
+    <div
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       className={`relative rounded-2xl p-6 transition-all duration-300 ${cardClasses}`}
     >
-      
+
       {/* Badge */}
       {plan.badge && (
         <div className={`absolute top-4 right-4 px-2 py-1 rounded-md text-[10px] font-bold tracking-wide ${
-          isGreen 
-            ? 'bg-gray-900 text-white' 
+          isGreen
+            ? 'bg-gray-900 text-white'
             : plan.highlighted
               ? 'bg-green-100 text-green-700'
               : 'bg-purple-100 text-purple-700'
@@ -315,7 +330,7 @@ const PricingCard = ({ plan }: { plan: Plan }) => {
       <h3 className={`font-heading font-bold text-base mb-1 ${titleClasses}`}>
         {plan.name}
       </h3>
-      <p className={`text-xs mb-6 ${taglineClasses}`}>
+      <p className={`text-xs mb-6 min-h-[32px] ${taglineClasses}`}>
         {plan.tagline}
       </p>
 
@@ -333,7 +348,7 @@ const PricingCard = ({ plan }: { plan: Plan }) => {
             </span>
           )}
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <span className={`text-xs ${priceLabelClasses}`}>
             {plan.priceLabel}
           </span>
@@ -348,6 +363,26 @@ const PricingCard = ({ plan }: { plan: Plan }) => {
         </div>
       </div>
 
+      {/* Channels - plan ke asli flags se, hardcode nahi */}
+      <div className="flex flex-wrap gap-1.5 mb-5">
+        {plan.channels.map((c) => (
+          <span
+            key={c.label}
+            className={`text-[10px] font-semibold px-2 py-1 rounded-md border ${
+              c.on
+                ? isGreen
+                  ? 'bg-green-500/40 text-white border-green-300/50'
+                  : 'bg-green-50 text-green-700 border-green-200'
+                : isGreen
+                  ? 'bg-green-700/40 text-green-200/60 border-green-500/40 line-through'
+                  : 'bg-gray-100 text-gray-400 border-gray-200 line-through'
+            }`}
+          >
+            {c.label}
+          </span>
+        ))}
+      </div>
+
       {/* Divider */}
       <div className={`h-px mb-5 ${
         isGreen ? 'bg-green-500' : 'bg-gray-100'
@@ -355,32 +390,43 @@ const PricingCard = ({ plan }: { plan: Plan }) => {
 
       {/* Features */}
       <ul className="space-y-2.5 mb-6 min-h-[160px]">
-        {plan.features.map((feature, i) => (
-          <li 
-            key={i} 
-            className={`text-sm flex items-start gap-2 ${
-              feature.active 
-                ? (isGreen ? 'text-white' : 'text-gray-700')
-                : (isGreen ? 'text-green-200/60 line-through' : 'text-gray-300 line-through')
-            }`}
-          >
-            {/* Custom Check / Cross marker */}
-            {feature.active ? (
-              <Check size={16} className={`flex-shrink-0 mt-0.5 ${isGreen ? 'text-white' : 'text-green-500'}`} />
-            ) : (
-              <span className={`text-sm font-semibold flex-shrink-0 w-4 text-center ${isGreen ? 'text-green-300/40' : 'text-gray-300'}`}>×</span>
-            )}
-            <span className="flex-1">{feature.text}</span>
-          </li>
-        ))}
+        {plan.features.map((feature, i) =>
+          feature.isHeading ? (
+            <li key={i} className="pt-1 first:pt-0">
+              <span className={`text-[10px] font-bold uppercase tracking-wider ${
+                isGreen ? 'text-green-100' : 'text-gray-500'
+              }`}>
+                {feature.text}
+              </span>
+            </li>
+          ) : (
+            <li
+              key={i}
+              className={`text-sm flex items-start gap-2 ${
+                feature.active
+                  ? (isGreen ? 'text-white' : 'text-gray-700')
+                  : (isGreen ? 'text-green-200/60 line-through' : 'text-gray-300 line-through')
+              }`}
+            >
+              {/* Custom Check / Cross marker */}
+              {feature.active ? (
+                <Check size={16} className={`flex-shrink-0 mt-0.5 ${isGreen ? 'text-white' : 'text-green-500'}`} />
+              ) : (
+                <span className={`text-sm font-semibold flex-shrink-0 w-4 text-center ${isGreen ? 'text-green-300/40' : 'text-gray-300'}`}>×</span>
+              )}
+              <span className="flex-1">{feature.text}</span>
+            </li>
+          )
+        )}
       </ul>
 
       {/* CTA Button */}
-      <button
-        className={`w-full py-2.5 rounded-xl text-sm font-semibold transition-all ${getCtaButton()}`}
+      <Link
+        to="/signup"
+        className={`block text-center w-full py-2.5 rounded-xl text-sm font-semibold transition-all ${getCtaButton()}`}
       >
         {plan.cta}
-      </button>
+      </Link>
     </div>
   );
 };
