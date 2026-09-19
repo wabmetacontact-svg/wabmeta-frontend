@@ -21,6 +21,13 @@ import { useAuth } from '../context/AuthContext';
 import { billing } from '../services/api';
 import toast from 'react-hot-toast';
 import { loadRazorpayScript } from '../utils/razorpay';
+import {
+  CARD_CHANNELS,
+  channelEnabled,
+  getPlanCardFeatures,
+  isSectionLabel,
+  sectionLabelText,
+} from '../utils/planCards';
 
 // ============================================
 // TYPES
@@ -42,6 +49,7 @@ interface Plan {
   maxChatbots: number;
   maxAutomations: number;
   features: string[];
+  validityDays?: number;
   /** Har feature ke liye plan ka saaf haan/na. Purane plans par null. */
   includedFeatures?: Record<string, boolean> | null;
   isActive: boolean;
@@ -622,120 +630,7 @@ const Billing: React.FC = () => {
           <p className="text-gray-600">Choose the best plan that fits your business needs</p>
         </div>
 
-        <div className="overflow-x-auto rounded-2xl border border-gray-200 shadow-sm bg-white">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="bg-gray-50">
-                <th className="p-5 text-sm font-semibold text-gray-900 border-b border-gray-200">Features</th>
-                <th className="p-5 text-sm font-semibold text-gray-900 border-b border-gray-200 text-center">Free Demo</th>
-                <th className="p-5 text-sm font-semibold text-gray-900 border-b border-gray-200 text-center">Monthly</th>
-                <th className="p-5 text-sm font-semibold text-gray-900 border-b border-gray-200 text-center">3-Month</th>
-                <th className="p-5 text-sm font-semibold text-green-700 border-b border-green-200 text-center bg-green-50/50">
-                  6-Month ⭐<br /><span className="text-[10px] uppercase tracking-wider font-bold">Recommended</span>
-                </th>
-                <th className="p-5 text-sm font-semibold text-blue-700 border-b border-gray-200 text-center bg-blue-50/20">1-Year ⭐</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              <tr>
-                <td className="p-5 text-sm font-medium text-gray-700">Price</td>
-                <td className="p-5 text-sm text-center text-gray-600">Free</td>
-                <td className="p-5 text-sm text-center text-gray-600">₹899</td>
-                <td className="p-5 text-sm text-center text-gray-600">₹2,500</td>
-                <td className="p-5 text-sm text-center font-bold text-green-700 bg-green-50/50">₹5,000</td>
-                <td className="p-5 text-sm text-center font-bold text-blue-700 bg-blue-50/20">₹8,999</td>
-              </tr>
-              <tr>
-                <td className="p-5 text-sm font-medium text-gray-700">Validity</td>
-                <td className="p-5 text-sm text-center text-gray-600">2 Days</td>
-                <td className="p-5 text-sm text-center text-gray-600">1 Month</td>
-                <td className="p-5 text-sm text-center text-gray-600">3 Months</td>
-                <td className="p-5 text-sm text-center text-gray-600 bg-green-50/50">6 Months</td>
-                <td className="p-5 text-sm text-center text-gray-600 bg-blue-50/20">12 Months</td>
-              </tr>
-              <tr>
-                <td className="p-5 text-sm font-medium text-gray-700">Messages</td>
-                <td className="p-5 text-sm text-center text-gray-600">100</td>
-                <td className="p-5 text-sm text-center text-gray-600">Unlimited*</td>
-                <td className="p-5 text-sm text-center text-gray-600">Unlimited*</td>
-                <td className="p-5 text-sm text-center text-gray-600 bg-green-50/50">Unlimited*</td>
-                <td className="p-5 text-sm text-center text-gray-600 bg-blue-50/20">Unlimited*</td>
-              </tr>
-              <tr>
-                <td className="p-5 text-sm font-medium text-gray-700">Campaigns</td>
-                <td className="p-5 text-sm text-center text-gray-600">Limited</td>
-                <td className="p-5 text-sm text-center text-gray-600">Unlimited</td>
-                <td className="p-5 text-sm text-center text-gray-600">Unlimited</td>
-                <td className="p-5 text-sm text-center text-gray-600 bg-green-50/50">Unlimited</td>
-                <td className="p-5 text-sm text-center text-gray-600 bg-blue-50/20">Unlimited</td>
-              </tr>
-              <tr>
-                <td className="p-5 text-sm font-medium text-gray-700">Contacts</td>
-                <td className="p-5 text-sm text-center text-gray-600">Limited</td>
-                <td className="p-5 text-sm text-center text-gray-600">Unlimited</td>
-                <td className="p-5 text-sm text-center text-gray-600">Unlimited</td>
-                <td className="p-5 text-sm text-center text-gray-600 bg-green-50/50">Unlimited</td>
-                <td className="p-5 text-sm text-center text-gray-600 bg-blue-50/20">Unlimited</td>
-              </tr>
-              <tr>
-                <td className="p-5 text-sm font-bold text-gray-700">Automation</td>
-                <td className="p-5 text-center text-sm text-gray-600">Trial only</td>
-                <td className="p-5 text-center text-red-600">❌</td>
-                <td className="p-5 text-center text-green-700 font-bold">✅</td>
-                <td className="p-5 text-center text-green-700 font-bold bg-green-50/50">✅</td>
-                <td className="p-5 text-center text-green-700 font-bold bg-blue-50/20">✅</td>
-              </tr>
-              <tr>
-                <td className="p-5 text-sm font-bold text-gray-700">Chatbot Flow Builder</td>
-                <td className="p-5 text-center text-sm text-gray-600">Trial only</td>
-                <td className="p-5 text-center text-red-600">❌</td>
-                <td className="p-5 text-center text-green-700 font-bold">✅</td>
-                <td className="p-5 text-center text-green-700 font-bold bg-green-50/50">✅</td>
-                <td className="p-5 text-center text-green-700 font-bold bg-blue-50/20">✅</td>
-              </tr>
-              <tr>
-                <td className="p-5 text-sm font-bold text-gray-700">Team Members</td>
-                <td className="p-5 text-center text-sm text-gray-600">1</td>
-                <td className="p-5 text-center text-sm text-gray-600">3</td>
-                <td className="p-5 text-center text-sm text-gray-600">5</td>
-                <td className="p-5 text-center text-sm font-bold text-green-700 bg-green-50/50">10</td>
-                <td className="p-5 text-center text-sm font-bold text-blue-700 bg-blue-50/20">Unlimited</td>
-              </tr>
-              <tr>
-                <td className="p-5 text-sm font-bold text-gray-700">WhatsApp Accounts</td>
-                <td className="p-5 text-center text-sm text-gray-600">1</td>
-                <td className="p-5 text-center text-sm text-gray-600">1</td>
-                <td className="p-5 text-center text-sm text-gray-600">1</td>
-                <td className="p-5 text-center text-sm font-bold text-green-700 bg-green-50/50">2</td>
-                <td className="p-5 text-center text-sm font-bold text-blue-700 bg-blue-50/20">2</td>
-              </tr>
-              <tr>
-                <td className="p-5 text-sm font-bold text-gray-700">Bulk Paste</td>
-                <td className="p-5 text-center text-red-600">❌</td>
-                <td className="p-5 text-center text-red-600">❌</td>
-                <td className="p-5 text-center text-green-700 font-bold">✅</td>
-                <td className="p-5 text-center text-green-700 font-bold bg-green-50/50">✅</td>
-                <td className="p-5 text-center text-green-700 font-bold bg-blue-50/20">✅</td>
-              </tr>
-              <tr>
-                <td className="p-5 text-sm font-bold text-gray-700">Mobile + API Same Number</td>
-                <td className="p-5 text-center text-red-600">❌</td>
-                <td className="p-5 text-center text-red-600">❌</td>
-                <td className="p-5 text-center text-red-600">❌</td>
-                <td className="p-5 text-center text-green-700 font-bold bg-green-50/50">✅ (Active)</td>
-                <td className="p-5 text-center text-green-700 font-bold bg-blue-50/20">✅ (Active)</td>
-              </tr>
-              <tr>
-                <td className="p-5 text-sm font-medium text-gray-700">Number Safety</td>
-                <td className="p-5 text-sm text-center text-gray-600">Basic</td>
-                <td className="p-5 text-sm text-center text-gray-600">Standard</td>
-                <td className="p-5 text-sm text-center text-gray-600">Good</td>
-                <td className="p-5 text-sm text-center font-bold text-green-700 bg-green-50/50">High (Active)</td>
-                <td className="p-5 text-sm text-center font-bold text-blue-700 bg-blue-50/20">Maximum</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+        <ComparisonTable plans={plans} billingCycle={billingCycle} />
         <p className="mt-4 text-[10px] text-gray-500 text-center italic">*Unlimited messages are subject to Meta's fair usage policy and conversation-based pricing.</p>
       </div>
 
@@ -914,84 +809,150 @@ const UsageCard: React.FC<UsageCardProps> = ({
   );
 };
 
-const getPlanCardFeatures = (plan: Plan): { text: string; active: boolean }[] => {
-  // Naye tiers apni bullets khud lekar aate hain (plan.features, jo
-  // set-billing-plans.ts likhta hai). Neeche wali hardcoded lists sirf
-  // purane duration plans ke liye bachi hain.
-  if (Array.isArray(plan.features) && plan.features.length > 0) {
-    return plan.features
-      .filter((f) => typeof f === 'string' && f.trim())
-      .map((text) => ({ text, active: true }));
-  }
+// ============================================
+// COMPARE PLANS TABLE
+// ============================================
+//
+// Pehle ye table poori tarah hardcoded thi - purane duration plans ke
+// naam, daam aur ✅/❌ seedhe JSX me likhe the. Plans badle to cards badal
+// gaye par table wahi purani dikhti rahi. Ab har column wahi plan hai jo
+// API se aaya, aur har cell usi row ka data hai.
 
-  const slug = (plan.slug || plan.id || plan.type || '').toLowerCase();
+const UNLIMITED_AT = 9999;
 
-  if (slug.includes('free')) {
-    return [
-      { text: '100 messages', active: true },
-      { text: 'Basic campaigns', active: true },
-      { text: 'Number safety', active: true },
-      { text: 'Bulk paste', active: false },
-      { text: 'Automation', active: false },
-      { text: 'Webhooks', active: false },
-    ];
-  }
-
-  if (slug.includes('3') || slug.includes('quarter')) {
-    return [
-      { text: 'All monthly features', active: true },
-      { text: 'Bulk paste', active: true },
-      { text: 'Basic automation', active: true },
-      { text: 'Good number safety', active: true },
-      { text: 'Standard support', active: true },
-      { text: 'Campaign retry', active: false },
-    ];
-  }
-
-  if (slug.includes('6') || slug.includes('biannual')) {
-    return [
-      { text: 'Advanced automation', active: true },
-      { text: 'Bulk paste', active: true },
-      { text: 'Mobile + API same no.', active: true },
-      { text: 'Campaign retry', active: true },
-      { text: 'High safety (active)', active: true },
-      { text: 'Priority support', active: true },
-    ];
-  }
-
-  if (slug.includes('year') || slug.includes('annual') || slug.includes('1-year')) {
-    return [
-      { text: 'Full automation suite', active: true },
-      { text: 'Bulk paste', active: true },
-      { text: 'Mobile + API same no.', active: true },
-      { text: 'Campaign retry', active: true },
-      { text: 'Maximum safety', active: true },
-      { text: '2 WhatsApp accounts', active: true },
-    ];
-  }
-
-  // Monthly plan (default)
-  return [
-    { text: 'Unlimited messages*', active: true },
-    { text: 'Unlimited campaigns', active: true },
-    { text: 'Standard safety', active: true },
-    { text: 'Bulk paste', active: false },
-    { text: 'Webhooks + Flow Builder', active: true },
-    { text: 'Standard support', active: true },
-  ];
+const countText = (n: number | undefined | null): string => {
+  const v = Number(n);
+  if (!Number.isFinite(v) || v <= 0) return '—';
+  return v >= UNLIMITED_AT ? 'Unlimited' : v.toLocaleString('en-IN');
 };
 
-// WhatsApp ka apna flag nahi hai - uska inbox hi `inbox` hai, jo har plan
-// me khula rehta hai.
-const CARD_CHANNELS: { key: string; label: string }[] = [
-  { key: 'inbox', label: 'WhatsApp' },
-  { key: 'instagram', label: 'Instagram' },
-  { key: 'telegram', label: 'Telegram' },
+const validityText = (plan: Plan, billingCycle: 'monthly' | 'yearly'): string => {
+  const yearly = plan.yearlyPrice ?? 0;
+  if (billingCycle === 'yearly' && yearly > 0) return '12 months';
+
+  const days = plan.validityDays ?? 30;
+  if (days >= 365) return '12 months';
+  if (days >= 28) return `${Math.round(days / 30)} month${days >= 58 ? 's' : ''}`;
+  return `${days} days`;
+};
+
+// Har row ya to text deti hai ya haan/na. `flag` wahi key hai jo plan ke
+// includedFeatures me likhi hai - jis plan par wo data na ho (purane plans)
+// wahan sab khula maana jata hai.
+type CompareRow =
+  | { label: string; flag: string }
+  | { label: string; value: (plan: Plan, billingCycle: 'monthly' | 'yearly') => string; strong?: boolean };
+
+const COMPARE_ROWS: CompareRow[] = [
+  {
+    label: 'Price',
+    strong: true,
+    value: (plan, cycle) => {
+      const monthly = plan.monthlyPrice ?? 0;
+      const yearly = plan.yearlyPrice ?? 0;
+      if (monthly === 0 && yearly === 0) return 'Free';
+      if (cycle === 'yearly' && yearly > 0) return `₹${yearly.toLocaleString('en-IN')}/yr`;
+      return `₹${monthly.toLocaleString('en-IN')}/mo`;
+    },
+  },
+  { label: 'Validity', value: (plan, cycle) => validityText(plan, cycle) },
+  { label: 'WhatsApp inbox', flag: 'inbox' },
+  { label: 'Instagram inbox', flag: 'instagram' },
+  { label: 'Telegram inbox', flag: 'telegram' },
+  { label: 'Automation', flag: 'automation' },
+  { label: 'Chatbot flow builder', flag: 'chatbot' },
+  { label: 'CRM pipelines', flag: 'crm' },
+  { label: 'Reports', flag: 'reports' },
+  { label: 'AI Sales Agent', flag: 'aiAgent' },
+  { label: 'Team members', value: (plan) => countText(plan.maxTeamMembers) },
+  { label: 'WhatsApp numbers', value: (plan) => countText(plan.maxWhatsAppAccounts) },
+  { label: 'Contacts', value: (plan) => countText(plan.maxContacts) },
+  { label: 'Messages', value: (plan) => {
+      const n = countText(plan.maxMessagesPerMonth);
+      return n === 'Unlimited' ? 'Unlimited*' : n;
+    },
+  },
+  { label: 'Campaigns', value: (plan) => countText(plan.maxCampaignsPerMonth) },
 ];
 
-/** "Everything in Starter, plus:" jaisi bullet heading hai, feature nahi. */
-const isSectionLabel = (text: string): boolean =>
-  /^everything in .+?,?\s*plus:?$/i.test(text.trim());
+const ComparisonTable: React.FC<{
+  plans: Plan[];
+  billingCycle: 'monthly' | 'yearly';
+}> = ({ plans, billingCycle }) => {
+  if (!plans || plans.length === 0) return null;
+
+  return (
+    <div className="overflow-x-auto rounded-2xl border border-gray-200 shadow-sm bg-white">
+      <table className="w-full text-left border-collapse">
+        <thead>
+          <tr className="bg-gray-50">
+            <th className="p-4 text-sm font-semibold text-gray-900 border-b border-gray-200">
+              Features
+            </th>
+            {plans.map((plan) => (
+              <th
+                key={plan.id}
+                className={`p-4 text-sm font-semibold text-center border-b ${plan.popular
+                  ? 'text-green-700 border-green-200 bg-green-50/50'
+                  : 'text-gray-900 border-gray-200'
+                  }`}
+              >
+                {plan.name}
+                {plan.popular && (
+                  <>
+                    <br />
+                    <span className="text-[10px] uppercase tracking-wider font-bold">
+                      Recommended
+                    </span>
+                  </>
+                )}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-gray-200">
+          {COMPARE_ROWS.map((row) => (
+            <tr key={row.label}>
+              <td className={`p-4 text-sm text-gray-700 ${'strong' in row && row.strong ? 'font-bold' : 'font-medium'}`}>
+                {row.label}
+              </td>
+              {plans.map((plan) => {
+                const highlight = plan.popular ? 'bg-green-50/50' : '';
+
+                if ('flag' in row) {
+                  const on = channelEnabled(plan.includedFeatures, row.flag);
+                  return (
+                    <td key={plan.id} className={`p-4 text-center ${highlight}`}>
+                      {on ? (
+                        <Check className="w-4 h-4 text-green-600 mx-auto" />
+                      ) : (
+                        <X className="w-4 h-4 text-gray-300 mx-auto" />
+                      )}
+                    </td>
+                  );
+                }
+
+                return (
+                  <td
+                    key={plan.id}
+                    className={`p-4 text-sm text-center ${highlight} ${row.strong
+                      ? plan.popular
+                        ? 'font-bold text-green-700'
+                        : 'font-bold text-gray-900'
+                      : 'text-gray-600'
+                      }`}
+                  >
+                    {row.value(plan, billingCycle)}
+                  </td>
+                );
+              })}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+};
 
 interface PricingCardProps {
   plan: Plan;
@@ -1077,10 +1038,7 @@ const PricingCard: React.FC<PricingCardProps> = ({
       {/* Channels - plan ke asli flags se, hardcode nahi */}
       <div className="flex flex-wrap gap-1.5 justify-center mt-5 mb-1">
         {CARD_CHANNELS.map((c) => {
-          const flags = plan.includedFeatures;
-          // Purane plans par ye data hai hi nahi - unke liye sab khula maano,
-          // kyunki unme sach me sab khula tha.
-          const on = !flags || typeof flags !== 'object' ? true : flags[c.key] !== false;
+          const on = channelEnabled(plan.includedFeatures, c.key);
           return (
             <span
               key={c.key}
@@ -1102,7 +1060,7 @@ const PricingCard: React.FC<PricingCardProps> = ({
             isSectionLabel(feature.text) ? (
               <li key={i} className="pt-3 first:pt-0">
                 <div className="border-t border-dashed border-gray-200 pt-3 text-[11px] font-bold uppercase tracking-wider text-gray-500">
-                  {feature.text.replace(/,?\s*plus:?$/i, '')}
+                  {sectionLabelText(feature.text)}
                 </div>
               </li>
             ) : (
