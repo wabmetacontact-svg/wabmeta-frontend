@@ -5,15 +5,15 @@ import { billing } from '../../services/api';
 import {
   CARD_CHANNELS,
   FALLBACK_PLANS,
-  channelEnabled,
+  featureIncluded,
   getPlanCardFeatures,
   isSectionLabel,
   sectionLabelText,
   type PlanCardPlan,
 } from '../../utils/planCards';
 
-// Landing page ke card me dikhne wali cheezein. Plans khud API se aate
-// hain - yahan sirf unhe card ki bhasha me badla jata hai.
+// What a landing-page card shows. The plans themselves come from the API;
+// this only translates them into the card's language.
 interface PlanFeature {
   text: string;
   active: boolean;
@@ -39,11 +39,11 @@ interface Plan {
 const rupees = (n: number) => `₹${Math.round(n).toLocaleString('en-IN')}`;
 
 /**
- * API ka plan row -> card.
- *
- * Yearly par bada number per-month hota hai aur poore saal ka amount neeche,
- * taaki dono cycles seedha compare hon.
- */
+  * An API plan row -> a card.
+  *
+  * On yearly the big number is per month and the year's total sits beneath it,
+  * so the two cycles compare directly.
+  */
 const toCard = (plan: PlanCardPlan, cycle: 'monthly' | 'yearly'): Plan => {
   const monthly = Number(plan.monthlyPrice) || 0;
   const yearly = Number(plan.yearlyPrice) || 0;
@@ -75,7 +75,7 @@ const toCard = (plan: PlanCardPlan, cycle: 'monthly' | 'yearly'): Plan => {
     savings: savedPct > 0 ? `Save ${savedPct}%` : undefined,
     channels: CARD_CHANNELS.map((c) => ({
       label: c.label,
-      on: channelEnabled(plan.includedFeatures, c.key),
+      on: featureIncluded(plan.includedFeatures, c.key),
     })),
     features,
     cta: isFree ? 'Start free' : `Choose ${plan.name}`,
@@ -91,9 +91,9 @@ const Pricing = () => {
   const [rows, setRows] = useState<PlanCardPlan[]>(FALLBACK_PLANS);
   const [loading, setLoading] = useState(true);
 
-  // Daam ek hi jagah rehne chahiye. Ye endpoint public hai (auth middleware
-  // se pehle mount hai), isliye landing page bina login ke padh sakta hai.
-  // Na mile to FALLBACK_PLANS par hi rehta hai - khali section se behtar.
+  // Prices belong in one place. This endpoint is public - it is mounted
+  // before the auth middleware - so the landing page can read it without a
+  // login. If it fails we keep FALLBACK_PLANS, which beats an empty section.
   useEffect(() => {
     let alive = true;
 
@@ -107,7 +107,7 @@ const Pricing = () => {
         }
       })
       .catch(() => {
-        // Fallback pehle se laga hua hai.
+        // The fallback is already on screen.
       })
       .finally(() => {
         if (alive) setLoading(false);
@@ -120,8 +120,8 @@ const Pricing = () => {
 
   const plans = rows.map((p) => toCard(p, billingCycle));
 
-  // Annual par sabse zyada bachat kitni hai - toggle ke paas wahi dikhao,
-  // hardcoded "17%" nahi.
+  // The largest annual saving on offer, so the line next to the toggle is
+  // computed rather than a hardcoded "17%".
   const maxSavings = rows.reduce((best, p) => {
     const m = Number(p.monthlyPrice) || 0;
     const y = Number(p.yearlyPrice) || 0;
@@ -214,7 +214,7 @@ const Pricing = () => {
             {loading && (
               <span className="inline-flex items-center gap-2 text-xs text-gray-400">
                 <Loader2 size={12} className="animate-spin" />
-                Latest pricing load ho rahi hai…
+                Loading the latest pricing…
               </span>
             )}
           </div>
@@ -244,7 +244,7 @@ const Pricing = () => {
               {
                 icon: Tag,
                 title: 'No Hidden Charges',
-                desc: 'Jo daam dikh raha hai wahi lagta hai — koi GST ya extra fee nahi.',
+                desc: 'The price you see is the price you pay — no GST, no hidden fees.',
               },
             ].map((item, i) => (
               <div key={i} className="flex items-start gap-3">
@@ -363,7 +363,7 @@ const PricingCard = ({ plan }: { plan: Plan }) => {
         </div>
       </div>
 
-      {/* Channels - plan ke asli flags se, hardcode nahi */}
+      {/* Channels, from the plan's own flags rather than hardcoded */}
       <div className="flex flex-wrap gap-1.5 mb-5">
         {plan.channels.map((c) => (
           <span

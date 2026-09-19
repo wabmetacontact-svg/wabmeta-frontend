@@ -23,7 +23,7 @@ import toast from 'react-hot-toast';
 import { loadRazorpayScript } from '../utils/razorpay';
 import {
   CARD_CHANNELS,
-  channelEnabled,
+  featureIncluded,
   getPlanCardFeatures,
   isSectionLabel,
   sectionLabelText,
@@ -268,9 +268,9 @@ const Billing: React.FC = () => {
 
       // Create order on backend
       console.log('Creating order for plan:', planSlug, billingCycle);
-      // Backend ke catalogue me har tier ki do keys hain - `pro` aur
-      // `pro_yearly`. Cycle key me jata hai, warna saal ka paisa lekar
-      // mahine ka period ban jata.
+      // The backend catalogue holds two keys per tier - `pro` and
+      // `pro_yearly`. The cycle has to travel in the key, or we take a
+      // year's money and grant a month's access.
       const planKey = billingCycle === 'yearly' ? `${planSlug}_yearly` : planSlug;
 
       const orderResponse = await billing.createRazorpayOrder({
@@ -589,31 +589,7 @@ const Billing: React.FC = () => {
       )}
 
       {/* Billing Cycle Toggle */}
-      <div className="flex justify-center mb-8">
-        <div className="bg-gray-100 border border-gray-200 rounded-xl p-1.5 inline-flex shadow-sm">
-          <button
-            onClick={() => setBillingCycle('monthly')}
-            className={`px-6 py-2.5 rounded-lg font-medium transition-all ${billingCycle === 'monthly'
-              ? 'bg-emerald-600 text-white shadow-sm'
-              : 'text-gray-500 hover:text-gray-900'
-              }`}
-          >
-            Monthly
-          </button>
-          <button
-            onClick={() => setBillingCycle('yearly')}
-            className={`px-6 py-2.5 rounded-lg font-medium transition-all flex items-center ${billingCycle === 'yearly'
-              ? 'bg-emerald-600 text-white shadow-sm'
-              : 'text-gray-500 hover:text-gray-900'
-              }`}
-          >
-            Yearly
-            <span className="ml-2 text-xs bg-green-50 text-green-700 border border-green-200 px-2 py-0.5 rounded-full font-semibold">
-              Save 20%
-            </span>
-          </button>
-        </div>
-      </div>
+      <BillingCycleToggle value={billingCycle} onChange={setBillingCycle} />
 
       {/* Security Badge */}
       <div className="flex justify-center mb-6">
@@ -635,10 +611,14 @@ const Billing: React.FC = () => {
       </div>
 
       {/* Pricing Cards */}
-      <div id="pricing-plans" className="text-center mb-10">
+      <div id="pricing-plans" className="text-center mb-6">
         <h2 className="text-3xl font-extrabold text-gray-900 mb-2">Select Your Tier</h2>
         <div className="h-1.5 w-20 bg-green-500 mx-auto rounded-full"></div>
       </div>
+
+      {/* The cards are a long scroll below the first toggle, and the price on
+          them changes with it - so the switch is repeated where it applies. */}
+      <BillingCycleToggle value={billingCycle} onChange={setBillingCycle} />
 
       {plans.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6 mb-20 px-2">
@@ -810,13 +790,58 @@ const UsageCard: React.FC<UsageCardProps> = ({
 };
 
 // ============================================
+// BILLING CYCLE TOGGLE
+// ============================================
+//
+// Rendered twice - once above the comparison table and once above the cards.
+// It used to sit only at the top, a full table above the cards whose prices
+// it controls, so on the cards the annual option looked like it did not exist.
+
+const BillingCycleToggle: React.FC<{
+  value: 'monthly' | 'yearly';
+  onChange: (cycle: 'monthly' | 'yearly') => void;
+}> = ({ value, onChange }) => (
+  <div className="flex justify-center mb-8">
+    <div className="bg-gray-100 border border-gray-200 rounded-xl p-1.5 inline-flex shadow-sm">
+      <button
+        onClick={() => onChange('monthly')}
+        className={`px-6 py-2.5 rounded-lg font-medium transition-all ${value === 'monthly'
+          ? 'bg-emerald-600 text-white shadow-sm'
+          : 'text-gray-500 hover:text-gray-900'
+          }`}
+      >
+        Monthly
+      </button>
+      <button
+        onClick={() => onChange('yearly')}
+        className={`px-6 py-2.5 rounded-lg font-medium transition-all flex items-center ${value === 'yearly'
+          ? 'bg-emerald-600 text-white shadow-sm'
+          : 'text-gray-500 hover:text-gray-900'
+          }`}
+      >
+        Yearly
+        {/* Annual is ten months' price, so the saving is two months - not the
+            20% this badge used to claim. */}
+        <span className={`ml-2 text-xs px-2 py-0.5 rounded-full font-semibold border ${value === 'yearly'
+          ? 'bg-white/15 text-white border-white/25'
+          : 'bg-green-50 text-green-700 border-green-200'
+          }`}>
+          2 months free
+        </span>
+      </button>
+    </div>
+  </div>
+);
+
+// ============================================
 // COMPARE PLANS TABLE
 // ============================================
 //
-// Pehle ye table poori tarah hardcoded thi - purane duration plans ke
-// naam, daam aur ✅/❌ seedhe JSX me likhe the. Plans badle to cards badal
-// gaye par table wahi purani dikhti rahi. Ab har column wahi plan hai jo
-// API se aaya, aur har cell usi row ka data hai.
+// This table used to be hardcoded end to end - the retired plans' names,
+// prices and ticks written straight into the JSX. When the plans changed the
+// cards followed and the table did not, so the same page quoted two different
+// prices. Every column is now a plan the API returned, and every cell is that
+// plan's own data.
 
 const UNLIMITED_AT = 9999;
 
@@ -836,9 +861,9 @@ const validityText = (plan: Plan, billingCycle: 'monthly' | 'yearly'): string =>
   return `${days} days`;
 };
 
-// Har row ya to text deti hai ya haan/na. `flag` wahi key hai jo plan ke
-// includedFeatures me likhi hai - jis plan par wo data na ho (purane plans)
-// wahan sab khula maana jata hai.
+// A row is either text or a yes/no. `flag` is a key from the plan's
+// includedFeatures; a plan carrying no such data (the retired ones) is read
+// as having everything open.
 type CompareRow =
   | { label: string; flag: string }
   | { label: string; value: (plan: Plan, billingCycle: 'monthly' | 'yearly') => string; strong?: boolean };
@@ -864,15 +889,16 @@ const COMPARE_ROWS: CompareRow[] = [
   { label: 'CRM pipelines', flag: 'crm' },
   { label: 'Reports', flag: 'reports' },
   { label: 'AI Sales Agent', flag: 'aiAgent' },
+  { label: 'Bulk paste', flag: 'bulkPaste' },
   { label: 'Team members', value: (plan) => countText(plan.maxTeamMembers) },
   { label: 'WhatsApp numbers', value: (plan) => countText(plan.maxWhatsAppAccounts) },
   { label: 'Contacts', value: (plan) => countText(plan.maxContacts) },
-  { label: 'Messages', value: (plan) => {
+  { label: 'Messages / month', value: (plan) => {
       const n = countText(plan.maxMessagesPerMonth);
       return n === 'Unlimited' ? 'Unlimited*' : n;
     },
   },
-  { label: 'Campaigns', value: (plan) => countText(plan.maxCampaignsPerMonth) },
+  { label: 'Campaigns / month', value: (plan) => countText(plan.maxCampaignsPerMonth) },
 ];
 
 const ComparisonTable: React.FC<{
@@ -920,7 +946,7 @@ const ComparisonTable: React.FC<{
                 const highlight = plan.popular ? 'bg-green-50/50' : '';
 
                 if ('flag' in row) {
-                  const on = channelEnabled(plan.includedFeatures, row.flag);
+                  const on = featureIncluded(plan.includedFeatures, row.flag);
                   return (
                     <td key={plan.id} className={`p-4 text-center ${highlight}`}>
                       {on ? (
@@ -973,8 +999,8 @@ const PricingCard: React.FC<PricingCardProps> = ({
   const yearly = plan.yearlyPrice ?? 0;
   const isFree = monthly === 0 && yearly === 0;
 
-  // Yearly par bada number per-month dikhta hai aur poore saal ka amount
-  // neeche - isse dono cycles seedha compare hote hain.
+  // On yearly the big number is per month and the year's total sits below
+  // it, so the two cycles compare directly.
   const price =
     billingCycle === 'yearly' && yearly > 0 ? Math.round(yearly / 12) : monthly;
 
@@ -1035,10 +1061,10 @@ const PricingCard: React.FC<PricingCardProps> = ({
         )}
       </div>
 
-      {/* Channels - plan ke asli flags se, hardcode nahi */}
+      {/* Channels, from the plan's own flags rather than hardcoded */}
       <div className="flex flex-wrap gap-1.5 justify-center mt-5 mb-1">
         {CARD_CHANNELS.map((c) => {
-          const on = channelEnabled(plan.includedFeatures, c.key);
+          const on = featureIncluded(plan.includedFeatures, c.key);
           return (
             <span
               key={c.key}
