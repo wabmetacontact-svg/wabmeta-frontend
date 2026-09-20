@@ -432,9 +432,19 @@ export default function WhatsAppSettings() {
               return worst;
             }, 'CONNECTED');
 
+            // Meta's own words for why it is blocked. Without this the badge
+            // was a bare "Blocked" with no way to tell a real block from a
+            // stale one - which is exactly the question it provoked.
+            const reason = connectedAccounts
+              .map((a: any) => a.healthBlockedReason)
+              .find((r: any) => typeof r === 'string' && r.trim());
+
             if (state === 'BAN') {
               return (
-                <span className="px-3 py-1 bg-red-100 text-red-700 text-xs font-semibold rounded-full flex items-center gap-1.5">
+                <span
+                  title={reason || 'Meta has banned this account.'}
+                  className="px-3 py-1 bg-red-100 text-red-700 text-xs font-semibold rounded-full flex items-center gap-1.5"
+                >
                   <AlertCircle className="w-3.5 h-3.5" />
                   Banned
                 </span>
@@ -442,7 +452,10 @@ export default function WhatsAppSettings() {
             }
             if (state === 'BLOCKED') {
               return (
-                <span className="px-3 py-1 bg-orange-100 text-orange-700 text-xs font-semibold rounded-full flex items-center gap-1.5">
+                <span
+                  title={reason || 'Meta reports this number cannot send business-initiated messages.'}
+                  className="px-3 py-1 bg-orange-100 text-orange-700 text-xs font-semibold rounded-full flex items-center gap-1.5"
+                >
                   <AlertCircle className="w-3.5 h-3.5" />
                   Blocked
                 </span>
@@ -607,12 +620,45 @@ export default function WhatsAppSettings() {
               );
             })}
 
-            <div className="flex items-center gap-3 p-3 bg-green-50 border border-green-200 rounded-xl">
-              <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
-              <p className="text-sm text-green-700">
-                WhatsApp account is connected. Disconnect current account to connect a different one.
-              </p>
-            </div>
+            {(() => {
+              // A blocked number needs Meta's reason on the page, not hidden
+              // in a tooltip: it is the difference between "fix your payment
+              // method" and "this badge is out of date".
+              const blocked = connectedAccounts.find(
+                (a: any) =>
+                  (a.connectionState || a.healthCanSend) === 'BLOCKED' ||
+                  a.connectionState === 'BAN'
+              ) as any;
+
+              if (blocked) {
+                return (
+                  <div className="flex items-start gap-3 p-3 bg-orange-50 border border-orange-200 rounded-xl">
+                    <AlertCircle className="w-5 h-5 text-orange-600 flex-shrink-0 mt-0.5" />
+                    <div className="text-sm text-orange-800">
+                      <p className="font-semibold">
+                        Meta is not letting this number start conversations.
+                      </p>
+                      <p className="mt-0.5">
+                        {blocked.healthBlockedReason ||
+                          'Meta did not give a reason. Check your payment method and business verification in WhatsApp Manager.'}
+                      </p>
+                      <p className="mt-1 text-xs text-orange-700">
+                        Press Sync to re-check with Meta.
+                      </p>
+                    </div>
+                  </div>
+                );
+              }
+
+              return (
+                <div className="flex items-center gap-3 p-3 bg-green-50 border border-green-200 rounded-xl">
+                  <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
+                  <p className="text-sm text-green-700">
+                    WhatsApp account is connected. Disconnect current account to connect a different one.
+                  </p>
+                </div>
+              );
+            })()}
           </div>
         ) : (
           /* Empty State */
