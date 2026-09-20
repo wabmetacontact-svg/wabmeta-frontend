@@ -1295,6 +1295,9 @@ export const billing = {
 export const wallet = {
   getWallet: () => api.get<ApiResponse>('/wallet'),
 
+  /** Per-message rates by country - the same table the wallet charges from. */
+  getRates: () => api.get<ApiResponse>('/wallet/rates'),
+
   requestAccess: (data: { reason: string; additionalInfo?: string }) =>
     api.post<ApiResponse>('/wallet/request-access', data),
 
