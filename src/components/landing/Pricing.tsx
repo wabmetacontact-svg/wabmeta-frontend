@@ -1,10 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Check, ShieldCheck, Headphones, Tag, Sparkles, Loader2 } from 'lucide-react';
-import { billing } from '../../services/api';
+import { Check, ShieldCheck, Headphones, Tag, Sparkles } from 'lucide-react';
 import {
   CARD_CHANNELS,
-  FALLBACK_PLANS,
+  LANDING_PLANS,
   featureIncluded,
   getPlanCardFeatures,
   isSectionLabel,
@@ -88,35 +87,11 @@ const toCard = (plan: PlanCardPlan, cycle: 'monthly' | 'yearly'): Plan => {
 
 const Pricing = () => {
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
-  const [rows, setRows] = useState<PlanCardPlan[]>(FALLBACK_PLANS);
-  const [loading, setLoading] = useState(true);
 
-  // Prices belong in one place. This endpoint is public - it is mounted
-  // before the auth middleware - so the landing page can read it without a
-  // login. If it fails we keep FALLBACK_PLANS, which beats an empty section.
-  useEffect(() => {
-    let alive = true;
-
-    billing
-      .getPlans()
-      .then((res) => {
-        const data = (res?.data as any)?.data ?? (res?.data as any);
-        const list = Array.isArray(data) ? data : data?.plans;
-        if (alive && Array.isArray(list) && list.length > 0) {
-          setRows(list as PlanCardPlan[]);
-        }
-      })
-      .catch(() => {
-        // The fallback is already on screen.
-      })
-      .finally(() => {
-        if (alive) setLoading(false);
-      });
-
-    return () => {
-      alive = false;
-    };
-  }, []);
+  // Straight from code, not from GET /billing/plans. See LANDING_PLANS for
+  // why - in short, this page is marketing copy and has to be editable in the
+  // repo, and it links to /signup rather than charging anybody.
+  const rows: PlanCardPlan[] = LANDING_PLANS;
 
   // Free Demo stays on this page: for a visitor who has not signed up, the
   // free trial is the offer. It is only the Billing page - where the customer
@@ -213,13 +188,6 @@ const Pricing = () => {
                 </span>
               )}
             </div>
-
-            {loading && (
-              <span className="inline-flex items-center gap-2 text-xs text-gray-400">
-                <Loader2 size={12} className="animate-spin" />
-                Loading the latest pricing…
-              </span>
-            )}
           </div>
         </div>
 

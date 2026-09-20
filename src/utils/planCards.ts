@@ -146,13 +146,23 @@ export const getPlanCardFeatures = (plan: PlanCardPlan): PlanCardFeature[] => {
 };
 
 /**
- * What the landing page shows when it cannot reach the API.
+ * The landing page's pricing, in code.
  *
- * A copy of the public rows in the backend's prisma/set-billing-plans.ts.
- * Change a price there and it has to change here too - so keep this to the
- * minimum that stops the section rendering empty. The database is the truth.
+ * This page used to read GET /billing/plans like the Billing page does. That
+ * is the right call for Billing, where what is shown has to match what is
+ * charged - but it made the public pricing page unchangeable from the repo:
+ * the copy lived in plan rows, and fixing a typo meant running a seed script
+ * against production.
+ *
+ * Marketing copy belongs here. Money still belongs to the database: this page
+ * only links to /signup, it never starts a checkout, so nothing here can
+ * charge anyone the wrong amount.
+ *
+ * KEEP IN SYNC with the backend's prisma/set-billing-plans.ts, which sets the
+ * limits that are actually enforced. If the two disagree, this page is
+ * advertising something the product does not do.
  */
-export const FALLBACK_PLANS: PlanCardPlan[] = [
+export const LANDING_PLANS: PlanCardPlan[] = [
   {
     id: 'free-demo',
     slug: 'free-demo',
