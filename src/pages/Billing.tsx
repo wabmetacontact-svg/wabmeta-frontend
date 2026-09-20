@@ -23,7 +23,6 @@ import toast from 'react-hot-toast';
 import { loadRazorpayScript } from '../utils/razorpay';
 import {
   CARD_CHANNELS,
-  PLAN_UNLIMITED,
   featureIncluded,
   sellablePlans,
   getPlanCardFeatures,
@@ -590,9 +589,6 @@ const Billing: React.FC = () => {
         </div>
       )}
 
-      {/* Billing Cycle Toggle */}
-      <BillingCycleToggle value={billingCycle} onChange={setBillingCycle} />
-
       {/* Security Badge */}
       <div className="flex justify-center mb-6">
         <div className="flex items-center gap-2 text-sm text-gray-500">
@@ -601,25 +597,12 @@ const Billing: React.FC = () => {
         </div>
       </div>
 
-      {/* Pricing Comparison Table - NEW PREMIUM UI */}
-      <div className="mb-16">
-        <div className="text-center mb-10">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Compare Plans</h2>
-          <p className="text-gray-600">Choose the best plan that fits your business needs</p>
-        </div>
-
-        <ComparisonTable plans={sellablePlans(plans)} billingCycle={billingCycle} />
-        <p className="mt-4 text-[10px] text-gray-500 text-center italic">*Unlimited messages are subject to Meta's fair usage policy and conversation-based pricing.</p>
-      </div>
-
       {/* Pricing Cards */}
       <div id="pricing-plans" className="text-center mb-6">
         <h2 className="text-3xl font-extrabold text-gray-900 mb-2">Select Your Tier</h2>
         <div className="h-1.5 w-20 bg-green-500 mx-auto rounded-full"></div>
       </div>
 
-      {/* The cards are a long scroll below the first toggle, and the price on
-          them changes with it - so the switch is repeated where it applies. */}
       <BillingCycleToggle value={billingCycle} onChange={setBillingCycle} />
 
       {plans.length > 0 ? (
@@ -796,9 +779,10 @@ const UsageCard: React.FC<UsageCardProps> = ({
 // BILLING CYCLE TOGGLE
 // ============================================
 //
-// Rendered twice - once above the comparison table and once above the cards.
-// It used to sit only at the top, a full table above the cards whose prices
-// it controls, so on the cards the annual option looked like it did not exist.
+// It sits directly above the cards, because that is where the price it
+// changes is read. It used to sit at the top of the page instead, a full
+// comparison table above the cards, so the annual option looked like it did
+// not exist by the time you reached them.
 
 const BillingCycleToggle: React.FC<{
   value: 'monthly' | 'yearly';
@@ -835,156 +819,6 @@ const BillingCycleToggle: React.FC<{
     </div>
   </div>
 );
-
-// ============================================
-// COMPARE PLANS TABLE
-// ============================================
-//
-// This table used to be hardcoded end to end - the retired plans' names,
-// prices and ticks written straight into the JSX. When the plans changed the
-// cards followed and the table did not, so the same page quoted two different
-// prices. Every column is now a plan the API returned, and every cell is that
-// plan's own data.
-
-// The threshold here was 9999, borrowed from the seat check where that is a
-// sensible "effectively unlimited". For contacts and messages it was far too
-// low: the plans write 999999 for unlimited, so every real cap from 10,000
-// upwards - Starter's messages, Growth's 25,000 contacts, Pro's 200,000 -
-// printed as "Unlimited" even after the pricing had been applied.
-const countText = (n: number | undefined | null): string => {
-  const v = Number(n);
-  if (!Number.isFinite(v) || v <= 0) return '—';
-  return v >= PLAN_UNLIMITED ? 'Unlimited' : v.toLocaleString('en-IN');
-};
-
-const validityText = (plan: Plan, billingCycle: 'monthly' | 'yearly'): string => {
-  const yearly = plan.yearlyPrice ?? 0;
-  if (billingCycle === 'yearly' && yearly > 0) return '12 months';
-
-  const days = plan.validityDays ?? 30;
-  if (days >= 365) return '12 months';
-  if (days >= 28) return `${Math.round(days / 30)} month${days >= 58 ? 's' : ''}`;
-  return `${days} days`;
-};
-
-// A row is either text or a yes/no. `flag` is a key from the plan's
-// includedFeatures; a plan carrying no such data (the retired ones) is read
-// as having everything open.
-type CompareRow =
-  | { label: string; flag: string }
-  | { label: string; value: (plan: Plan, billingCycle: 'monthly' | 'yearly') => string; strong?: boolean };
-
-const COMPARE_ROWS: CompareRow[] = [
-  {
-    label: 'Price',
-    strong: true,
-    value: (plan, cycle) => {
-      const monthly = plan.monthlyPrice ?? 0;
-      const yearly = plan.yearlyPrice ?? 0;
-      if (monthly === 0 && yearly === 0) return 'Free';
-      if (cycle === 'yearly' && yearly > 0) return `₹${yearly.toLocaleString('en-IN')}/yr`;
-      return `₹${monthly.toLocaleString('en-IN')}/mo`;
-    },
-  },
-  { label: 'Validity', value: (plan, cycle) => validityText(plan, cycle) },
-  { label: 'WhatsApp inbox', flag: 'inbox' },
-  { label: 'Instagram inbox', flag: 'instagram' },
-  { label: 'Telegram inbox', flag: 'telegram' },
-  { label: 'Automation', flag: 'automation' },
-  { label: 'Chatbot flow builder', flag: 'chatbot' },
-  { label: 'CRM pipelines', flag: 'crm' },
-  { label: 'Reports', flag: 'reports' },
-  { label: 'AI Sales Agent', flag: 'aiAgent' },
-  { label: 'Bulk paste', flag: 'bulkPaste' },
-  { label: 'Team members', value: (plan) => countText(plan.maxTeamMembers) },
-  { label: 'WhatsApp numbers', value: (plan) => countText(plan.maxWhatsAppAccounts) },
-  { label: 'Contacts', value: (plan) => countText(plan.maxContacts) },
-  { label: 'Messages / month', value: (plan) => {
-      const n = countText(plan.maxMessagesPerMonth);
-      return n === 'Unlimited' ? 'Unlimited*' : n;
-    },
-  },
-  { label: 'Campaigns / month', value: (plan) => countText(plan.maxCampaignsPerMonth) },
-];
-
-const ComparisonTable: React.FC<{
-  plans: Plan[];
-  billingCycle: 'monthly' | 'yearly';
-}> = ({ plans, billingCycle }) => {
-  if (!plans || plans.length === 0) return null;
-
-  return (
-    <div className="overflow-x-auto rounded-2xl border border-gray-200 shadow-sm bg-white">
-      <table className="w-full text-left border-collapse">
-        <thead>
-          <tr className="bg-gray-50">
-            <th className="p-4 text-sm font-semibold text-gray-900 border-b border-gray-200">
-              Features
-            </th>
-            {plans.map((plan) => (
-              <th
-                key={plan.id}
-                className={`p-4 text-sm font-semibold text-center border-b ${plan.popular
-                  ? 'text-green-700 border-green-200 bg-green-50/50'
-                  : 'text-gray-900 border-gray-200'
-                  }`}
-              >
-                {plan.name}
-                {plan.popular && (
-                  <>
-                    <br />
-                    <span className="text-[10px] uppercase tracking-wider font-bold">
-                      Recommended
-                    </span>
-                  </>
-                )}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-gray-200">
-          {COMPARE_ROWS.map((row) => (
-            <tr key={row.label}>
-              <td className={`p-4 text-sm text-gray-700 ${'strong' in row && row.strong ? 'font-bold' : 'font-medium'}`}>
-                {row.label}
-              </td>
-              {plans.map((plan) => {
-                const highlight = plan.popular ? 'bg-green-50/50' : '';
-
-                if ('flag' in row) {
-                  const on = featureIncluded(plan.includedFeatures, row.flag);
-                  return (
-                    <td key={plan.id} className={`p-4 text-center ${highlight}`}>
-                      {on ? (
-                        <Check className="w-4 h-4 text-green-600 mx-auto" />
-                      ) : (
-                        <X className="w-4 h-4 text-gray-300 mx-auto" />
-                      )}
-                    </td>
-                  );
-                }
-
-                return (
-                  <td
-                    key={plan.id}
-                    className={`p-4 text-sm text-center ${highlight} ${row.strong
-                      ? plan.popular
-                        ? 'font-bold text-green-700'
-                        : 'font-bold text-gray-900'
-                      : 'text-gray-600'
-                      }`}
-                  >
-                    {row.value(plan, billingCycle)}
-                  </td>
-                );
-              })}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-};
 
 interface PricingCardProps {
   plan: Plan;
