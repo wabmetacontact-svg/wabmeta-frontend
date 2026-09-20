@@ -834,6 +834,19 @@ interface PricingCardProps {
   isFreePlan?: boolean;
 }
 
+/** What the big number is priced per, from the plan's own duration. */
+const pricePeriodLabel = (plan: Plan, billingCycle: 'monthly' | 'yearly'): string => {
+  if (billingCycle === 'yearly' && (plan.yearlyPrice ?? 0) > 0) return 'PER MONTH';
+
+  // This read plan.slug.includes('3') before, which also matches a slug like
+  // "starter-v3". The plan's own validity is the thing being asked about.
+  const days = plan.validityDays ?? 30;
+  if (days >= 360) return 'PER YEAR';
+  if (days >= 150) return 'PER 6 MONTHS';
+  if (days >= 80) return 'PER 3 MONTHS';
+  return 'PER MONTH';
+};
+
 const PricingCard: React.FC<PricingCardProps> = ({
   plan,
   billingCycle,
@@ -845,71 +858,90 @@ const PricingCard: React.FC<PricingCardProps> = ({
   const monthly = plan.monthlyPrice ?? 0;
   const yearly = plan.yearlyPrice ?? 0;
   const isFree = monthly === 0 && yearly === 0;
+  const showYearly = billingCycle === 'yearly' && yearly > 0;
 
   // On yearly the big number is per month and the year's total sits below
   // it, so the two cycles compare directly.
-  const price =
-    billingCycle === 'yearly' && yearly > 0 ? Math.round(yearly / 12) : monthly;
+  const price = showYearly ? Math.round(yearly / 12) : monthly;
+  const yearlySaving = showYearly ? monthly * 12 - yearly : 0;
 
   const features = getPlanCardFeatures(plan);
+  const badge = plan.popular ? 'popular' : isCurrentPlan ? 'current' : null;
 
   return (
+    // h-full + flex-col is what keeps every card the same height and every
+    // button on the same line, however many bullets a plan has. The card was
+    // also overflow-hidden, which sliced the top off its own badge.
     <div
-      className={`relative overflow-hidden bg-white rounded-2xl p-6 transition-all border-2 ${plan.popular
-        ? 'border-emerald-500 shadow-lg shadow-emerald-500/10'
+      className={`relative h-full flex flex-col bg-white rounded-2xl p-6 pt-8 border-2 transition-all ${plan.popular
+        ? 'border-emerald-500 shadow-xl shadow-emerald-500/10 lg:-translate-y-1'
         : isCurrentPlan
           ? 'border-blue-500 shadow-md shadow-blue-500/10'
-          : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+          : 'border-gray-200 hover:border-gray-300 hover:shadow-lg'
         }`}
     >
-      {/* Badges */}
-      {plan.popular && (
-        <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-          <span className="bg-green-500 text-white text-xs font-bold px-3 py-1 rounded-full flex items-center shadow-lg">
-            <Star className="w-3 h-3 mr-1 fill-current" />
-            MOST POPULAR
+      {badge && (
+        <div className="absolute -top-3 left-1/2 -translate-x-1/2 whitespace-nowrap">
+          <span
+            className={`text-[11px] font-bold px-3 py-1 rounded-full flex items-center tracking-wide ${badge === 'popular'
+              ? 'bg-green-500 text-white shadow-lg shadow-green-500/30'
+              : 'bg-blue-50 text-blue-700 border border-blue-200 shadow-sm'
+              }`}
+          >
+            {badge === 'popular' ? (
+              <>
+                <Star className="w-3 h-3 mr-1 fill-current" />
+                MOST POPULAR
+              </>
+            ) : (
+              <>
+                <Check className="w-3 h-3 mr-1" />
+                CURRENT PLAN
+              </>
+            )}
           </span>
         </div>
       )}
 
-      {isCurrentPlan && !plan.popular && (
-        <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-          <span className="bg-blue-50 text-blue-700 border border-blue-200 text-xs font-bold px-3 py-1 rounded-full flex items-center shadow-sm">
-            <Check className="w-3 h-3 mr-1" />
-            CURRENT PLAN
-          </span>
-        </div>
-      )}
-
-      {/* Plan Header */}
-      <div className="text-center mb-8 pt-4 pb-4 border-b border-gray-200">
-        <h3 className="text-xl font-bold text-gray-900 mb-3 uppercase tracking-wider">
+      {/* Plan header */}
+      <div className="text-center pb-5 border-b border-gray-100">
+        <h3 className="text-base font-bold text-gray-900 uppercase tracking-[0.15em]">
           {plan.name || 'Plan'}
         </h3>
-        <div className="flex items-baseline justify-center gap-1">
-          <span className="text-sm font-bold text-gray-500">₹</span>
-          <span className="text-4xl font-black text-gray-900">
-            {price.toLocaleString('en-IN')}
+
+        <div className="flex items-baseline justify-center mt-4">
+          {!isFree && (
+            <span className="text-xl font-bold text-gray-900 mr-0.5">&#8377;</span>
+          )}
+          <span className="text-4xl font-black text-gray-900 tracking-tight">
+            {isFree ? 'Free' : price.toLocaleString('en-IN')}
           </span>
         </div>
-        <p className="text-xs font-semibold text-gray-500 mt-2">
-          {isFree
-            ? 'FREE'
-            : plan.slug.includes('3')
-              ? 'PER 3 MONTHS'
-              : plan.slug.includes('6')
-                ? 'PER 6 MONTHS'
-                : 'PER MONTH'}
+
+        <p className="text-[11px] font-semibold text-gray-400 tracking-wider mt-1">
+          {isFree ? 'FOR 5 DAYS' : pricePeriodLabel(plan, billingCycle)}
         </p>
-        {billingCycle === 'yearly' && yearly > 0 && (
-          <p className="text-xs font-semibold text-emerald-600 mt-1">
-            ₹{yearly.toLocaleString('en-IN')} billed yearly
-          </p>
-        )}
+
+        {/* Reserved whatever the cycle, so the cards do not jump height when
+            the toggle is switched. */}
+        <div className="h-9 mt-2 flex flex-col items-center justify-start">
+          {showYearly && (
+            <>
+              <p className="text-xs font-semibold text-gray-600">
+                &#8377;{yearly.toLocaleString('en-IN')} billed yearly
+              </p>
+              {yearlySaving > 0 && (
+                <p className="text-[11px] font-bold text-emerald-600 mt-0.5">
+                  Save &#8377;{yearlySaving.toLocaleString('en-IN')}
+                </p>
+              )}
+            </>
+          )}
+        </div>
       </div>
 
       {/* Channels, from the plan's own flags rather than hardcoded */}
-      <div className="flex flex-wrap gap-1.5 justify-center mt-5 mb-1">
+      <div className="flex flex-wrap gap-1.5 justify-center py-4">
         {CARD_CHANNELS.map((c) => {
           const on = featureIncluded(plan.includedFeatures, c.key);
           return (
@@ -917,7 +949,7 @@ const PricingCard: React.FC<PricingCardProps> = ({
               key={c.key}
               className={`text-[11px] font-semibold px-2 py-1 rounded-md border ${on
                 ? 'bg-green-50 text-green-700 border-green-200'
-                : 'bg-gray-100 text-gray-400 border-gray-200'
+                : 'bg-gray-50 text-gray-300 border-gray-200 line-through'
                 }`}
             >
               {c.label}
@@ -926,47 +958,45 @@ const PricingCard: React.FC<PricingCardProps> = ({
         })}
       </div>
 
-      {/* Features List */}
-      <div className="px-2 mt-5">
-        <ul className="space-y-3 mb-10 min-h-[200px]">
-          {features.map((feature, i) =>
-            isSectionLabel(feature.text) ? (
-              <li key={i} className="pt-3 first:pt-0">
-                <div className="border-t border-dashed border-gray-200 pt-3 text-[11px] font-bold uppercase tracking-wider text-gray-500">
-                  {sectionLabelText(feature.text)}
-                </div>
-              </li>
-            ) : (
-            <li key={i} className="flex items-center text-sm">
+      {/* Features */}
+      <ul className="space-y-3 pb-6">
+        {features.map((feature, i) =>
+          isSectionLabel(feature.text) ? (
+            <li key={i} className="pt-2 first:pt-0">
+              <div className="border-t border-dashed border-gray-200 pt-3 text-[10px] font-bold uppercase tracking-wider text-gray-400">
+                {sectionLabelText(feature.text)}
+              </div>
+            </li>
+          ) : (
+            <li key={i} className="flex items-start text-sm leading-snug">
               {feature.active ? (
-                <div className="w-5 h-5 rounded-full bg-green-50 border border-green-200 flex items-center justify-center mr-3 flex-shrink-0">
-                  <Check className="w-3 h-3 text-green-700" />
-                </div>
+                <Check className="w-4 h-4 text-green-600 mr-2.5 mt-0.5 flex-shrink-0" />
               ) : (
-                <div className="w-5 h-5 rounded-full bg-gray-100 flex items-center justify-center mr-3 flex-shrink-0">
-                  <X className="w-3 h-3 text-gray-400" />
-                </div>
+                <X className="w-4 h-4 text-gray-300 mr-2.5 mt-0.5 flex-shrink-0" />
               )}
-              <span className={feature.active ? 'text-gray-700 font-medium' : 'text-gray-400 line-through opacity-60'}>
+              <span
+                className={
+                  feature.active
+                    ? 'text-gray-700'
+                    : 'text-gray-400 line-through opacity-60'
+                }
+              >
                 {feature.text}
               </span>
             </li>
-            )
-          )}
-        </ul>
-      </div>
+          )
+        )}
+      </ul>
 
-      {/* Select Button */}
+      {/* mt-auto pins this to the bottom of whichever card is tallest */}
       <button
         onClick={onSelect}
         disabled={disabled || isCurrentPlan || isFreePlan}
-        className={`w-full py-3 px-4 rounded-lg font-semibold transition-all ${isCurrentPlan || isFreePlan
+        className={`mt-auto w-full py-3 px-4 rounded-xl font-semibold text-sm transition-all ${isCurrentPlan || isFreePlan || disabled
           ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-          : disabled
-            ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-            : plan.popular
-              ? 'bg-green-600 text-white hover:bg-green-700 shadow-lg shadow-green-600/25 hover:shadow-green-600/40'
-              : 'bg-gray-900 text-white hover:bg-gray-800'
+          : plan.popular
+            ? 'bg-green-600 text-white hover:bg-green-700 shadow-lg shadow-green-600/25'
+            : 'bg-gray-900 text-white hover:bg-gray-800'
           }`}
       >
         {isCurrentPlan ? (
@@ -982,7 +1012,7 @@ const PricingCard: React.FC<PricingCardProps> = ({
             Processing...
           </span>
         ) : (
-          'Select Plan'
+          `Choose ${plan.name}`
         )}
       </button>
     </div>
