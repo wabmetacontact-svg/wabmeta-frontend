@@ -23,6 +23,7 @@ import toast from 'react-hot-toast';
 import { loadRazorpayScript } from '../utils/razorpay';
 import {
   CARD_CHANNELS,
+  PLAN_UNLIMITED,
   featureIncluded,
   sellablePlans,
   getPlanCardFeatures,
@@ -845,12 +846,15 @@ const BillingCycleToggle: React.FC<{
 // prices. Every column is now a plan the API returned, and every cell is that
 // plan's own data.
 
-const UNLIMITED_AT = 9999;
-
+// The threshold here was 9999, borrowed from the seat check where that is a
+// sensible "effectively unlimited". For contacts and messages it was far too
+// low: the plans write 999999 for unlimited, so every real cap from 10,000
+// upwards - Starter's messages, Growth's 25,000 contacts, Pro's 200,000 -
+// printed as "Unlimited" even after the pricing had been applied.
 const countText = (n: number | undefined | null): string => {
   const v = Number(n);
   if (!Number.isFinite(v) || v <= 0) return '—';
-  return v >= UNLIMITED_AT ? 'Unlimited' : v.toLocaleString('en-IN');
+  return v >= PLAN_UNLIMITED ? 'Unlimited' : v.toLocaleString('en-IN');
 };
 
 const validityText = (plan: Plan, billingCycle: 'monthly' | 'yearly'): string => {

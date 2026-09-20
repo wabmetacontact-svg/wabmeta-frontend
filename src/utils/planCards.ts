@@ -8,6 +8,15 @@
 // it was missed. The real data now comes from GET /billing/plans; this file
 // only decides how to render it.
 
+/**
+ * What the plans write where they mean "no limit".
+ *
+ * prisma/set-billing-plans.ts fills every uncapped field with this exact
+ * number, so anything at or above it is unlimited and anything below it is a
+ * real cap to print.
+ */
+export const PLAN_UNLIMITED = 999999;
+
 export interface PlanCardPlan {
   id?: string;
   name: string;
