@@ -118,6 +118,9 @@ const Pricing = () => {
     };
   }, []);
 
+  // Free Demo stays on this page: for a visitor who has not signed up, the
+  // free trial is the offer. It is only the Billing page - where the customer
+  // already has a plan - that has nothing to do with it.
   const plans = rows.map((p) => toCard(p, billingCycle));
 
   // The largest annual saving on offer, so the line next to the toggle is

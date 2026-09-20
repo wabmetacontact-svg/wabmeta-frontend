@@ -57,6 +57,19 @@ export const featureIncluded = (
 /** Kept for the channel chips, which is where this started. */
 export const channelEnabled = featureIncluded;
 
+/**
+ * The plans a paying customer can move to.
+ *
+ * Free Demo is dropped: it costs nothing, so its card can only offer a
+ * checkout Razorpay refuses, and a customer already on a plan cannot go back
+ * to it. The landing page keeps it - to a visitor, the free trial is the
+ * offer - so the filter belongs at the call site, not in the data.
+ */
+export const sellablePlans = <T extends PlanCardPlan>(plans: T[]): T[] =>
+  plans.filter(
+    (p) => (Number(p.monthlyPrice) || 0) > 0 || (Number(p.yearlyPrice) || 0) > 0
+  );
+
 /** "Everything in Starter, plus:" is a heading, not a feature. */
 export const isSectionLabel = (text: string): boolean =>
   /^everything in .+?,?\s*plus:?$/i.test(text.trim());

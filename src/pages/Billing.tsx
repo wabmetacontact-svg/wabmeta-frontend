@@ -24,6 +24,7 @@ import { loadRazorpayScript } from '../utils/razorpay';
 import {
   CARD_CHANNELS,
   featureIncluded,
+  sellablePlans,
   getPlanCardFeatures,
   isSectionLabel,
   sectionLabelText,
@@ -606,7 +607,7 @@ const Billing: React.FC = () => {
           <p className="text-gray-600">Choose the best plan that fits your business needs</p>
         </div>
 
-        <ComparisonTable plans={plans} billingCycle={billingCycle} />
+        <ComparisonTable plans={sellablePlans(plans)} billingCycle={billingCycle} />
         <p className="mt-4 text-[10px] text-gray-500 text-center italic">*Unlimited messages are subject to Meta's fair usage policy and conversation-based pricing.</p>
       </div>
 
@@ -621,8 +622,8 @@ const Billing: React.FC = () => {
       <BillingCycleToggle value={billingCycle} onChange={setBillingCycle} />
 
       {plans.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6 mb-20 px-2">
-          {plans.map((plan) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-20 px-2">
+          {sellablePlans(plans).map((plan) => (
             <PricingCard
               key={plan.id}
               plan={plan}
