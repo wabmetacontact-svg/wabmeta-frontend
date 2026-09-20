@@ -10,6 +10,7 @@ import {
   sectionLabelText,
   type PlanCardPlan,
 } from '../../utils/planCards';
+import AddOns from '../pricing/AddOns';
 
 // What a landing-page card shows. The plans themselves come from the API;
 // this only translates them into the card's language.
@@ -196,6 +197,11 @@ const Pricing = () => {
           {plans.map((plan, index) => (
             <PricingCard key={index} plan={plan} />
           ))}
+        </div>
+
+        {/* ═══════ Add-ons ═══════ */}
+        <div className="mb-12">
+          <AddOns tone="light" />
         </div>
 
         {/* ═══════ Trust Bar ═══════ */}

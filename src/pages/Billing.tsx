@@ -21,6 +21,7 @@ import { useAuth } from '../context/AuthContext';
 import { billing } from '../services/api';
 import toast from 'react-hot-toast';
 import { loadRazorpayScript } from '../utils/razorpay';
+import AddOns from '../components/pricing/AddOns';
 import {
   CARD_CHANNELS,
   featureIncluded,
@@ -627,6 +628,11 @@ const Billing: React.FC = () => {
           </p>
         </div>
       )}
+
+      {/* Add-ons */}
+      <div className="mb-16">
+        <AddOns />
+      </div>
 
       {/* Invoices / Billing History */}
       <div className="relative overflow-hidden bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
