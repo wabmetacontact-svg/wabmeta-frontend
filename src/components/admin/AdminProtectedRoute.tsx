@@ -3,6 +3,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { admin } from '../../services/api';
+import { saveAdminUser } from '../../utils/adminPermissions';
 
 interface AdminProtectedRouteProps {
   children?: React.ReactNode;
@@ -34,6 +35,8 @@ const AdminProtectedRoute: React.FC<AdminProtectedRouteProps> = ({ children }) =
         const response = await admin.getProfile();
         if (response.data?.success && isMounted) {
           console.log('✅ Admin credentials verified with backend');
+          // Keep the role's permissions current for the buttons we show.
+          saveAdminUser(response.data.data);
           setIsAuthenticated(true);
         } else if (isMounted) {
           throw new Error('Invalid Admin session profile data');

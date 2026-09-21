@@ -7,8 +7,10 @@ import {
   Settings,
   LogOut,
   Phone,
-  Wallet
+  Wallet,
+  ShieldAlert
 } from 'lucide-react';
+import { adminCan } from '../../utils/adminPermissions';
 import Logo from '../common/Logo';
 
 const AdminSidebar: React.FC = () => {
@@ -21,11 +23,17 @@ const AdminSidebar: React.FC = () => {
     { name: 'Users', href: '/manage-wabmeta-admin/users', icon: Users },
     { name: 'Subscriptions', href: '/manage-wabmeta-admin/subscriptions', icon: CreditCard },
     { name: 'Wallets', href: '/manage-wabmeta-admin/wallets', icon: Wallet },
+    ...(adminCan('audit.read') || adminCan('security.read')
+      ? [{ name: 'Audit & Security', href: '/manage-wabmeta-admin/audit', icon: ShieldAlert }]
+      : []),
     { name: 'Settings', href: '/manage-wabmeta-admin/settings', icon: Settings },
   ];
 
   const handleLogout = () => {
-    // Clear admin session
+    // Clear admin session - this used to only navigate, leaving the token
+    // behind so the next visit was still signed in.
+    localStorage.removeItem('wabmeta_admin_token');
+    localStorage.removeItem('wabmeta_admin_user');
     navigate('/manage-wabmeta-admin/login');
   };
 

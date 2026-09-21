@@ -10,6 +10,7 @@ import axios, {
   type InternalAxiosRequestConfig,
   type AxiosResponse
 } from 'axios';
+import { endImpersonation, isImpersonating } from './impersonation';
 
 // ============================================
 // TYPE DEFINITIONS
@@ -283,6 +284,12 @@ const processQueue = (error: any, token: string | null = null): void => {
 
 // ─── Main refresh function ──────────────────────────────
 export const performTokenRefresh = async (): Promise<string> => {
+  // An admin's read-only view has no refresh token of its own. The refresh
+  // cookie in this browser belongs to someone else, so never use it here.
+  if (isImpersonating()) {
+    throw new Error('The admin view has ended.');
+  }
+
   const now = Date.now();
 
   // ✅ FIX: Pehle check karo ki current token abhi valid toh nahi
@@ -419,6 +426,22 @@ api.interceptors.response.use(
       });
     }
 
+    // ─── Account blocked / maintenance ────────────────────
+    // Set by an admin. Not an error the page can recover from, so no retry:
+    // AccountStatusGate shows the reason to the user.
+    const statusCode = (error.response?.data as any)?.code;
+    if (
+      statusCode === 'MAINTENANCE' ||
+      statusCode === 'ORG_SUSPENDED' ||
+      statusCode === 'ORG_READ_ONLY' ||
+      statusCode === 'IMPERSONATION_READ_ONLY'
+    ) {
+      window.dispatchEvent(new CustomEvent('account_status', {
+        detail: { code: statusCode, message: (error.response?.data as any)?.message },
+      }));
+      return Promise.reject(error);
+    }
+
     // ─── 503 - Server busy, retry once ────────────────────
     if (status === 503 && originalRequest && !originalRequest._retry) {
       originalRequest._retry = true;
@@ -462,7 +485,12 @@ api.interceptors.response.use(
     ) {
       const isAdminRoute = url.includes('/admin');
 
-      // Admin routes - separate handling
+      // Admin routes - separate handling. A failed login is not an expired
+      // session: leave the login page alone so it can show the error (or
+      // ask for the 2FA code) instead of reloading.
+      if (isAdminRoute && url.includes('/admin/login')) {
+        return Promise.reject(error);
+      }
       if (isAdminRoute) {
         localStorage.removeItem(TOKEN_KEYS.ADMIN);
         if (window.location.pathname.startsWith('/manage-wabmeta-admin')) {
@@ -473,6 +501,12 @@ api.interceptors.response.use(
 
       // Skip for auth routes
       if (skipRefresh) {
+        return Promise.reject(error);
+      }
+
+      // The admin's 30-minute view has run out: go back to the admin panel.
+      if (isImpersonating()) {
+        window.location.href = endImpersonation();
         return Promise.reject(error);
       }
 
@@ -1510,7 +1544,7 @@ export const dashboard = {
 
 // ---------- ADMIN ----------
 export const admin = {
-  login: (data: { email: string; password: string }) =>
+  login: (data: { email: string; password: string; otp?: string }) =>
     api.post<ApiResponse<{ token: string; admin: any }>>('/admin/login', data),
 
   getProfile: () => api.get<ApiResponse>('/admin/profile'),
@@ -1754,6 +1788,48 @@ export const admin = {
       type?: string;
     }
   ) => api.get<ApiResponse>(`/admin/users/${userId}/wallet`, { params }),
+
+  // ─── Admin control ──────────────────────────────────────
+  getAuditLogs: (params?: Record<string, string | number | undefined>) =>
+    api.get<ApiResponse>('/admin/audit-logs', { params }),
+
+  getSecurityEvents: (params?: Record<string, string | number | undefined>) =>
+    api.get<ApiResponse>('/admin/security-events', { params }),
+
+  setOrganizationStatus: (
+    organizationId: string,
+    data: { status: 'ACTIVE' | 'READ_ONLY' | 'SUSPENDED'; reason?: string }
+  ) => api.post<ApiResponse>(`/admin/organizations/${organizationId}/status`, data),
+
+  getOrganizationLimits: (organizationId: string) =>
+    api.get<ApiResponse>(`/admin/organizations/${organizationId}/limits`),
+
+  updateOrganizationLimits: (organizationId: string, data: Record<string, number | null>) =>
+    api.put<ApiResponse>(`/admin/organizations/${organizationId}/limits`, data),
+
+  forceLogoutOrganization: (organizationId: string) =>
+    api.post<ApiResponse>(`/admin/organizations/${organizationId}/force-logout`),
+
+  getUserSessions: (userId: string) =>
+    api.get<ApiResponse>(`/admin/users/${userId}/sessions`),
+
+  revokeUserSession: (userId: string, sessionId: string) =>
+    api.delete<ApiResponse>(`/admin/users/${userId}/sessions/${sessionId}`),
+
+  forceLogoutUser: (userId: string) =>
+    api.post<ApiResponse>(`/admin/users/${userId}/force-logout`),
+
+  impersonateUser: (userId: string, data: { organizationId?: string; reason: string }) =>
+    api.post<ApiResponse>(`/admin/users/${userId}/impersonate`, data),
+
+  getSystemSettings: () => api.get<ApiResponse>('/admin/settings'),
+
+  updateSystemSettings: (data: Record<string, unknown>) =>
+    api.put<ApiResponse>('/admin/settings', data),
+
+  startTwoFactor: () => api.post<ApiResponse>('/admin/2fa/setup'),
+  confirmTwoFactor: (code: string) => api.post<ApiResponse>('/admin/2fa/confirm', { code }),
+  disableTwoFactor: (code: string) => api.post<ApiResponse>('/admin/2fa/disable', { code }),
 };
 
 // ============================================

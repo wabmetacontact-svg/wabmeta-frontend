@@ -35,6 +35,7 @@ import {
 } from 'lucide-react';
 import { admin } from '../../services/api';
 import toast from 'react-hot-toast';
+import UserAccountControl from '../../components/admin/UserAccountControl';
 
 // ============================================
 // TYPES
@@ -1929,6 +1930,16 @@ const UserDetail: React.FC = () => {
         <div className="bg-red-500/10 border border-red-500/20 rounded-2xl p-4 text-center text-red-300">
           User not found
         </div>
+      )}
+
+      {/* Organizations, sign-in sessions, read-only view */}
+      {user && (
+        <UserAccountControl
+          userId={userId}
+          userName={getUserDisplayName(user)}
+          userEmail={user.email}
+          organizations={(user.organizations || []) as any}
+        />
       )}
 
       {/* Tabs */}

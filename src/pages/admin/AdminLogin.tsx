@@ -9,6 +9,9 @@ const AdminLogin: React.FC = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  // Asked for only when the admin has turned on 2FA - the server says so.
+  const [otp, setOtp] = useState('');
+  const [needsOtp, setNeedsOtp] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -19,7 +22,7 @@ const AdminLogin: React.FC = () => {
 
     try {
       // ✅ Call real backend API
-      const response = await admin.login({ email, password });
+      const response = await admin.login({ email, password, ...(needsOtp ? { otp } : {}) });
       
       console.log('✅ Admin Login Response:', response.data);
 
@@ -39,6 +42,12 @@ const AdminLogin: React.FC = () => {
 
     } catch (err: any) {
       console.error('❌ Admin Login Error:', err);
+
+      if (err.response?.data?.code === 'ADMIN_OTP_REQUIRED') {
+        setNeedsOtp(true);
+        setError('');
+        return;
+      }
       
       // Extract error message
       const errorMessage = 
@@ -111,6 +120,30 @@ const AdminLogin: React.FC = () => {
                 />
               </div>
             </div>
+
+            {needsOtp && (
+              <div>
+                <label htmlFor="adminlogin-otp" className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">
+                  Authenticator Code
+                </label>
+                <div className="relative">
+                  <ShieldCheck className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                  <input id="adminlogin-otp"
+                    type="text"
+                    inputMode="numeric"
+                    autoComplete="one-time-code"
+                    maxLength={6}
+                    value={otp}
+                    onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
+                    required
+                    autoFocus
+                    className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 text-slate-900 placeholder-slate-400 rounded-xl tracking-[0.4em] focus:outline-none focus:ring-2 focus:ring-slate-900 transition-all"
+                    placeholder="123456"
+                  />
+                </div>
+                <p className="text-xs text-slate-500 mt-2">Open your authenticator app and enter the 6-digit code.</p>
+              </div>
+            )}
 
             <button
               type="submit"
