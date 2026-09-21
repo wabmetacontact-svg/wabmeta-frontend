@@ -12,6 +12,20 @@ import { useFacebookSDK } from './useFacebookSDK';
 import toast from 'react-hot-toast';
 import { refreshAllWhatsAppConnections } from './useWhatsAppConnection'; // ✅ FIX: import global refresh
 
+/**
+ * The Multi-Partner Solution to sign clients up through, if any.
+ *
+ * A client who completes Embedded Signup with a solution ID is billed on the
+ * Solution Partner's credit line instead of their own card. Empty = no
+ * solution, and signup behaves exactly as it always has.
+ *
+ * It is a build-time variable like VITE_META_CONFIG_ID beside it, rather than
+ * something fetched from the API, on purpose: FB.login has to run inside the
+ * click that started it or the browser blocks the popup, so there is no time
+ * to await a request first.
+ */
+const SOLUTION_ID = (import.meta.env.VITE_META_SOLUTION_ID || '').trim();
+
 interface UseMetaConnectOptions {
   organizationId: string;
   organizationName?: string;
@@ -101,6 +115,9 @@ export const useMetaConnect = ({
         organizationId,
         wabaId: sessionInfoRef.current.wabaId,
         phoneNumberId: sessionInfoRef.current.phoneNumberId,
+        // So the account records which solution it came in through. Meta
+        // confirms it independently with a PARTNER_ADDED webhook.
+        ...(SOLUTION_ID ? { solutionId: SOLUTION_ID } : {}),
       });
 
       const data = response.data;
@@ -229,6 +246,10 @@ export const useMetaConnect = ({
           extras: {
             sessionInfoVersion: '3',
             version: 'v3',
+            // Signs the client up through the Multi-Partner Solution, which
+            // puts them on the Solution Partner's credit line. Meta also shows
+            // them a version of the flow that says both partners get access.
+            ...(SOLUTION_ID ? { setup: { solutionID: SOLUTION_ID } } : {}),
             // Only the coexistence flow takes this. It used to be hardcoded, so
             // a business bringing a fresh number was sent down the "connect your
             // existing WhatsApp Business app" path with nothing to connect.

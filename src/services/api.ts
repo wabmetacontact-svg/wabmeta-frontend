@@ -1000,6 +1000,8 @@ export const whatsapp = {
     organizationId: string; 
     wabaId?: string; 
     phoneNumberId?: string; 
+    /** Multi-Partner Solution the signup was opened with, if any. */
+    solutionId?: string;
   }) => api.post<ApiResponse>('/meta/connect', data, {
     headers: {
       'X-Organization-Id': data.organizationId
