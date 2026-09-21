@@ -142,6 +142,77 @@ const formatLastSynced = (date: string) => {
   return synced.toLocaleDateString();
 };
 
+// ─── What the status pill says ─────────────────────────────────────────────
+//
+// Meta reports a declined card and a banned account the same way: BLOCKED.
+// Showing both as "Blocked" told customers with a payment problem that they
+// had lost their number. The backend now separates them (displayState); this
+// only renders what it decided.
+
+type DisplayState = 'CONNECTED' | 'LIMITED' | 'ACTION_NEEDED' | 'BANNED';
+
+interface DisplayIssue {
+  badge: string;
+  title: string;
+  action: string | null;
+  metaSays: string | null;
+  code: number | null;
+}
+
+const SEVERITY: Record<DisplayState, number> = {
+  CONNECTED: 0,
+  LIMITED: 1,
+  ACTION_NEEDED: 2,
+  BANNED: 3,
+};
+
+/** An account's status, falling back to the old fields on an older backend. */
+const displayOf = (a: any): { state: DisplayState; issue: DisplayIssue | null } => {
+  if (a?.displayState && a.displayState in SEVERITY) {
+    return { state: a.displayState, issue: a.displayIssue || null };
+  }
+
+  const legacy =
+    a?.connectionState || (a?.healthCanSend === 'BLOCKED' ? 'BLOCKED' : 'CONNECTED');
+  const metaSays = a?.healthBlockedReason || null;
+
+  if (legacy === 'BAN') {
+    return {
+      state: 'BANNED',
+      issue: { badge: 'Banned', title: 'Account banned', action: null, metaSays, code: null },
+    };
+  }
+  if (legacy === 'BLOCKED') {
+    return {
+      state: 'ACTION_NEEDED',
+      issue: {
+        badge: 'Action needed',
+        title: 'Templates and campaigns are paused',
+        action: null,
+        metaSays,
+        code: null,
+      },
+    };
+  }
+  return { state: 'CONNECTED', issue: null };
+};
+
+/** The most serious status across all connected numbers. */
+const worstDisplay = (accounts: any[]) =>
+  accounts
+    .map(displayOf)
+    .reduce(
+      (worst, d) => (SEVERITY[d.state] > SEVERITY[worst.state] ? d : worst),
+      { state: 'CONNECTED' as DisplayState, issue: null as DisplayIssue | null }
+    );
+
+const PILL: Record<DisplayState, string> = {
+  CONNECTED: 'bg-green-100 text-green-700',
+  LIMITED: 'bg-yellow-100 text-yellow-800',
+  ACTION_NEEDED: 'bg-orange-100 text-orange-700',
+  BANNED: 'bg-red-100 text-red-700',
+};
+
 export default function WhatsAppSettings() {
   const [accounts, setAccounts] = useState<WhatsAppAccount[]>([]);
   const [loading, setLoading] = useState(true);
@@ -417,54 +488,25 @@ export default function WhatsAppSettings() {
             </div>
           </div>
           {hasConnectedAccount && (() => {
-            // "Connected" ka matlab pehle sirf itna tha ki humne account jod
-            // rakha hai - Meta ne number par rok laga di ho tab bhi yahi hara
-            // badge dikhta tha.
-            //
-            // Ab teen haalat: Connected, Banned, Blocked. Admin ise set kar
-            // sakta hai; na ho to Meta ke health_status se aata hai.
-            const state = connectedAccounts.reduce((worst: string, a: any) => {
-              const s =
-                a.connectionState ||
-                (a.healthCanSend === 'BLOCKED' ? 'BLOCKED' : 'CONNECTED');
-              if (s === 'BAN') return 'BAN';
-              if (s === 'BLOCKED' && worst !== 'BAN') return 'BLOCKED';
-              return worst;
-            }, 'CONNECTED');
+            const { state, issue } = worstDisplay(connectedAccounts);
+            const label =
+              state === 'CONNECTED'
+                ? 'Connected'
+                : state === 'BANNED'
+                  ? 'Banned'
+                  : issue?.badge || (state === 'LIMITED' ? 'Limited' : 'Action needed');
 
-            // Meta's own words for why it is blocked. Without this the badge
-            // was a bare "Blocked" with no way to tell a real block from a
-            // stale one - which is exactly the question it provoked.
-            const reason = connectedAccounts
-              .map((a: any) => a.healthBlockedReason)
-              .find((r: any) => typeof r === 'string' && r.trim());
-
-            if (state === 'BAN') {
-              return (
-                <span
-                  title={reason || 'Meta has banned this account.'}
-                  className="px-3 py-1 bg-red-100 text-red-700 text-xs font-semibold rounded-full flex items-center gap-1.5"
-                >
-                  <AlertCircle className="w-3.5 h-3.5" />
-                  Banned
-                </span>
-              );
-            }
-            if (state === 'BLOCKED') {
-              return (
-                <span
-                  title={reason || 'Meta reports this number cannot send business-initiated messages.'}
-                  className="px-3 py-1 bg-orange-100 text-orange-700 text-xs font-semibold rounded-full flex items-center gap-1.5"
-                >
-                  <AlertCircle className="w-3.5 h-3.5" />
-                  Blocked
-                </span>
-              );
-            }
             return (
-              <span className="px-3 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded-full flex items-center gap-1.5">
-                <CheckCircle className="w-3.5 h-3.5" />
-                Connected
+              <span
+                title={issue?.metaSays || undefined}
+                className={`px-3 py-1 text-xs font-semibold rounded-full flex items-center gap-1.5 ${PILL[state]}`}
+              >
+                {state === 'CONNECTED' ? (
+                  <CheckCircle className="w-3.5 h-3.5" />
+                ) : (
+                  <AlertCircle className="w-3.5 h-3.5" />
+                )}
+                {label}
               </span>
             );
           })()}
@@ -621,41 +663,67 @@ export default function WhatsAppSettings() {
             })}
 
             {(() => {
-              // A blocked number needs Meta's reason on the page, not hidden
-              // in a tooltip: it is the difference between "fix your payment
-              // method" and "this badge is out of date".
-              const blocked = connectedAccounts.find(
-                (a: any) =>
-                  (a.connectionState || a.healthCanSend) === 'BLOCKED' ||
-                  a.connectionState === 'BAN'
-              ) as any;
+              const { state, issue } = worstDisplay(connectedAccounts);
 
-              if (blocked) {
+              if (state === 'CONNECTED') {
                 return (
-                  <div className="flex items-start gap-3 p-3 bg-orange-50 border border-orange-200 rounded-xl">
-                    <AlertCircle className="w-5 h-5 text-orange-600 flex-shrink-0 mt-0.5" />
-                    <div className="text-sm text-orange-800">
-                      <p className="font-semibold">
-                        Meta is not letting this number start conversations.
-                      </p>
-                      <p className="mt-0.5">
-                        {blocked.healthBlockedReason ||
-                          'Meta did not give a reason. Check your payment method and business verification in WhatsApp Manager.'}
-                      </p>
-                      <p className="mt-1 text-xs text-orange-700">
-                        Press Sync to re-check with Meta.
-                      </p>
-                    </div>
+                  <div className="flex items-center gap-3 p-3 bg-green-50 border border-green-200 rounded-xl">
+                    <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
+                    <p className="text-sm text-green-700">
+                      WhatsApp account is connected. Disconnect current account to connect a different one.
+                    </p>
                   </div>
                 );
               }
 
+              // Each state says what still works, because that is the first
+              // thing a worried customer wants to know.
+              const tone =
+                state === 'BANNED'
+                  ? { box: 'bg-red-50 border-red-200', icon: 'text-red-600', text: 'text-red-800', sub: 'text-red-700' }
+                  : state === 'LIMITED'
+                    ? { box: 'bg-yellow-50 border-yellow-200', icon: 'text-yellow-600', text: 'text-yellow-900', sub: 'text-yellow-800' }
+                    : { box: 'bg-orange-50 border-orange-200', icon: 'text-orange-600', text: 'text-orange-900', sub: 'text-orange-800' };
+
+              const heading =
+                state === 'BANNED'
+                  ? 'Meta has banned this WhatsApp Business Account.'
+                  : issue?.title || (state === 'LIMITED' ? 'Sending is limited' : 'Action needed');
+
+              const scope =
+                state === 'BANNED'
+                  ? 'Messages cannot be sent from this number until Meta lifts the ban.'
+                  : state === 'LIMITED'
+                    ? 'Messages still go out, but Meta is restricting how many.'
+                    : 'Templates, campaigns and automations are paused until this is fixed. Replies to customers who message you still work.';
+
               return (
-                <div className="flex items-center gap-3 p-3 bg-green-50 border border-green-200 rounded-xl">
-                  <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
-                  <p className="text-sm text-green-700">
-                    WhatsApp account is connected. Disconnect current account to connect a different one.
-                  </p>
+                <div className={`flex items-start gap-3 p-4 border rounded-xl ${tone.box}`}>
+                  <AlertCircle className={`w-5 h-5 flex-shrink-0 mt-0.5 ${tone.icon}`} />
+                  <div className={`text-sm ${tone.text}`}>
+                    <p className="font-semibold">{heading}</p>
+                    <p className={`mt-0.5 ${tone.sub}`}>{scope}</p>
+
+                    {issue?.action && (
+                      <p className="mt-2">
+                        <span className="font-semibold">What to do: </span>
+                        {issue.action}
+                      </p>
+                    )}
+
+                    {issue?.metaSays && issue.metaSays !== issue.action && (
+                      <p className={`mt-2 text-xs ${tone.sub}`}>
+                        <span className="font-semibold">Meta says:</span> {issue.metaSays}
+                        {issue.code ? ` (code ${issue.code})` : ''}
+                      </p>
+                    )}
+
+                    <p className={`mt-2 text-xs ${tone.sub}`}>
+                      {state === 'BANNED'
+                        ? 'After Meta completes its review, press Sync to re-check.'
+                        : 'Fixed it? Press Sync to re-check with Meta.'}
+                    </p>
+                  </div>
                 </div>
               );
             })()}
