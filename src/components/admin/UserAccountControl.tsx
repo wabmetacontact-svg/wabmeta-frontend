@@ -143,7 +143,9 @@ const UserAccountControl: React.FC<Props> = ({ userId, userName, userEmail, orga
               <li key={org.id} className="py-2.5 flex items-center gap-3 flex-wrap">
                 <Building2 className="w-4 h-4 text-gray-400 shrink-0" />
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm text-gray-900 truncate">{org.name}</p>
+                  <Link to={`/manage-wabmeta-admin/organizations/${org.id}`} className="text-sm text-gray-900 hover:text-primary-600 truncate block">
+                    {org.name}
+                  </Link>
                   {org.role && <p className="text-xs text-gray-500">{org.role}</p>}
                 </div>
                 <Link

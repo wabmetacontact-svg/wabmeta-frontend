@@ -109,6 +109,12 @@ const WalletManagement = lazy(() => import('./pages/admin/WalletManagement'));
 const OrganizationControl = lazy(() => import('./pages/admin/OrganizationControl'));
 const AuditSecurity = lazy(() => import('./pages/admin/AuditSecurity'));
 const Impersonate = lazy(() => import('./pages/Impersonate'));
+const Organizations = lazy(() => import('./pages/admin/Organizations'));
+const OrganizationOverview = lazy(() => import('./pages/admin/OrganizationOverview'));
+const RiskDashboard = lazy(() => import('./pages/admin/RiskDashboard'));
+const Revenue = lazy(() => import('./pages/admin/Revenue'));
+const Announcements = lazy(() => import('./pages/admin/Announcements'));
+const Coupons = lazy(() => import('./pages/admin/Coupons'));
 
 // ============================================
 // ROUTE GUARDS
@@ -457,6 +463,12 @@ const AppRoutes: React.FC = () => {
           <Route path="/manage-wabmeta-admin/organizations/:organizationId/features" element={<OrganizationFeatures />} />
           <Route path="/manage-wabmeta-admin/organizations/:organizationId/control" element={<OrganizationControl />} />
           <Route path="/manage-wabmeta-admin/audit" element={<AuditSecurity />} />
+          <Route path="/manage-wabmeta-admin/organizations" element={<Organizations />} />
+          <Route path="/manage-wabmeta-admin/organizations/:organizationId" element={<OrganizationOverview />} />
+          <Route path="/manage-wabmeta-admin/risk" element={<RiskDashboard />} />
+          <Route path="/manage-wabmeta-admin/revenue" element={<Revenue />} />
+          <Route path="/manage-wabmeta-admin/announcements" element={<Announcements />} />
+          <Route path="/manage-wabmeta-admin/coupons" element={<Coupons />} />
         </Route>
 
         {/* ============================== */}

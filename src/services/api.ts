@@ -1318,8 +1318,10 @@ export const billing = {
     api.post<ApiResponse>('/billing/upgrade', data),
   cancel: () => api.post<ApiResponse>('/billing/cancel'),
   getInvoices: (params?: any) => api.get<ApiResponse>('/billing/invoices', { params }),
-  createRazorpayOrder: (data: { planKey: string; billingCycle?: string }) =>
+  createRazorpayOrder: (data: { planKey: string; billingCycle?: string; couponCode?: string }) =>
     api.post<ApiResponse>('/billing/razorpay/create-order', data),
+  previewCoupon: (data: { planKey: string; couponCode: string }) =>
+    api.post<ApiResponse>('/billing/coupon/preview', data),
   verifyRazorpayPayment: (data: {
     razorpay_order_id: string;
     razorpay_payment_id: string;
@@ -1830,6 +1832,48 @@ export const admin = {
   startTwoFactor: () => api.post<ApiResponse>('/admin/2fa/setup'),
   confirmTwoFactor: (code: string) => api.post<ApiResponse>('/admin/2fa/confirm', { code }),
   disableTwoFactor: (code: string) => api.post<ApiResponse>('/admin/2fa/disable', { code }),
+
+  // ─── Insights ───────────────────────────────────────────
+  getOrganizationOverview: (organizationId: string) =>
+    api.get<ApiResponse>(`/admin/organizations/${organizationId}/overview`),
+  getRiskReport: () => api.get<ApiResponse>('/admin/risk'),
+  search: (q: string) => api.get<ApiResponse>('/admin/search', { params: { q } }),
+  getRevenue: (months = 6) => api.get<ApiResponse>('/admin/revenue', { params: { months } }),
+
+  // ─── Operations ─────────────────────────────────────────
+  listOrganizations: (params?: Record<string, string | number | undefined>) =>
+    api.get<ApiResponse>('/admin/organizations', { params }),
+  getNotes: (organizationId: string) => api.get<ApiResponse>(`/admin/organizations/${organizationId}/notes`),
+  addNote: (organizationId: string, data: { body: string; pinned?: boolean }) =>
+    api.post<ApiResponse>(`/admin/organizations/${organizationId}/notes`, data),
+  pinNote: (organizationId: string, noteId: string, pinned: boolean) =>
+    api.patch<ApiResponse>(`/admin/organizations/${organizationId}/notes/${noteId}`, { pinned }),
+  deleteNote: (organizationId: string, noteId: string) =>
+    api.delete<ApiResponse>(`/admin/organizations/${organizationId}/notes/${noteId}`),
+  getAllTags: () => api.get<ApiResponse>('/admin/tags'),
+  setTags: (organizationId: string, tags: string[]) =>
+    api.put<ApiResponse>(`/admin/organizations/${organizationId}/tags`, { tags }),
+
+  listAnnouncements: () => api.get<ApiResponse>('/admin/announcements'),
+  createAnnouncement: (data: Record<string, unknown>) => api.post<ApiResponse>('/admin/announcements', data),
+  updateAnnouncement: (id: string, data: Record<string, unknown>) =>
+    api.put<ApiResponse>(`/admin/announcements/${id}`, data),
+  deleteAnnouncement: (id: string) => api.delete<ApiResponse>(`/admin/announcements/${id}`),
+
+  bulkAction: (data: Record<string, unknown>) => api.post<ApiResponse>('/admin/bulk', data),
+
+  exportCsv: (kind: 'organizations' | 'users', params?: Record<string, string | undefined>) =>
+    api.get(`/admin/export/${kind}`, { params, responseType: 'blob' }),
+
+  listCoupons: () => api.get<ApiResponse>('/admin/coupons'),
+  createCoupon: (data: Record<string, unknown>) => api.post<ApiResponse>('/admin/coupons', data),
+  updateCoupon: (id: string, data: Record<string, unknown>) => api.put<ApiResponse>(`/admin/coupons/${id}`, data),
+  deleteCoupon: (id: string) => api.delete<ApiResponse>(`/admin/coupons/${id}`),
+};
+
+// ---------- ANNOUNCEMENTS (customer side) ----------
+export const announcements = {
+  active: () => api.get<ApiResponse>('/announcements/active'),
 };
 
 // ============================================

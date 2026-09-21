@@ -8,7 +8,12 @@ import {
   LogOut,
   Phone,
   Wallet,
-  ShieldAlert
+  ShieldAlert,
+  Building2,
+  AlertTriangle,
+  TrendingUp,
+  Megaphone,
+  Ticket
 } from 'lucide-react';
 import { adminCan } from '../../utils/adminPermissions';
 import Logo from '../common/Logo';
@@ -20,9 +25,14 @@ const AdminSidebar: React.FC = () => {
   const navigation = [
     { name: 'Dashboard', href: '/manage-wabmeta-admin/dashboard', icon: LayoutDashboard },
     { name: 'WhatsApp', href: '/manage-wabmeta-admin/whatsapp', icon: Phone },
+    { name: 'Needs attention', href: '/manage-wabmeta-admin/risk', icon: AlertTriangle },
+    { name: 'Organizations', href: '/manage-wabmeta-admin/organizations', icon: Building2 },
     { name: 'Users', href: '/manage-wabmeta-admin/users', icon: Users },
     { name: 'Subscriptions', href: '/manage-wabmeta-admin/subscriptions', icon: CreditCard },
     { name: 'Wallets', href: '/manage-wabmeta-admin/wallets', icon: Wallet },
+    ...(adminCan('billing.read') ? [{ name: 'Revenue', href: '/manage-wabmeta-admin/revenue', icon: TrendingUp }] : []),
+    ...(adminCan('billing.read') ? [{ name: 'Coupons', href: '/manage-wabmeta-admin/coupons', icon: Ticket }] : []),
+    { name: 'Announcements', href: '/manage-wabmeta-admin/announcements', icon: Megaphone },
     ...(adminCan('audit.read') || adminCan('security.read')
       ? [{ name: 'Audit & Security', href: '/manage-wabmeta-admin/audit', icon: ShieldAlert }]
       : []),
@@ -49,7 +59,7 @@ const AdminSidebar: React.FC = () => {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 px-4 py-6 space-y-2">
+        <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
           {navigation.map((item) => {
             const isActive = location.pathname === item.href;
             return (

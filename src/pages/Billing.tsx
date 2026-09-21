@@ -159,6 +159,8 @@ const Billing: React.FC = () => {
   const [isChangingPlan, setIsChangingPlan] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [razorpayReady, setRazorpayReady] = useState(false);
+  // A discount code, applied when the order is created.
+  const [couponCode, setCouponCode] = useState('');
 
   // Check if Razorpay is loaded
   useEffect(() => {
@@ -278,6 +280,7 @@ const Billing: React.FC = () => {
       const orderResponse = await billing.createRazorpayOrder({
         planKey,
         billingCycle,
+        ...(couponCode.trim() ? { couponCode: couponCode.trim() } : {}),
       });
 
       if (!orderResponse.data.success) {
@@ -285,6 +288,11 @@ const Billing: React.FC = () => {
       }
 
       const order = orderResponse.data.data;
+      if (order.discountAmount > 0) {
+        toast.success(
+          `Coupon ${order.couponCode} applied: ₹${(order.discountAmount / 100).toLocaleString('en-IN')} off`
+        );
+      }
       console.log('Order created:', {
         id: order.id,
         amount: order.amount,
@@ -407,7 +415,11 @@ const Billing: React.FC = () => {
 
     } catch (error: any) {
       console.error('Subscribe error:', error);
-      toast.error(error.message || 'Failed to initialize payment. Please try again.');
+      // The server's reason (e.g. "This coupon has expired.") beats axios's
+      // generic "Request failed with status code 400".
+      toast.error(
+        error.response?.data?.message || error.message || 'Failed to initialize payment. Please try again.'
+      );
       setIsChangingPlan(false);
     }
   };
@@ -605,6 +617,21 @@ const Billing: React.FC = () => {
       </div>
 
       <BillingCycleToggle value={billingCycle} onChange={setBillingCycle} />
+
+      <div className="flex justify-center mb-8 px-2">
+        <label className="flex items-center gap-2 text-sm text-gray-600">
+          <span>Have a coupon?</span>
+          <input
+            aria-label="Coupon code"
+            value={couponCode}
+            onChange={(e) => setCouponCode(e.target.value.toUpperCase().replace(/[^A-Z0-9_-]/g, ''))}
+            maxLength={32}
+            placeholder="CODE"
+            className="w-36 px-3 py-1.5 rounded-lg border border-gray-300 text-sm uppercase tracking-wide focus:outline-none focus:ring-2 focus:ring-green-500"
+          />
+          {couponCode && <span className="text-xs text-gray-400">Applied when you choose a plan</span>}
+        </label>
+      </div>
 
       {plans.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-20 px-2">
