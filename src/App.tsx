@@ -115,6 +115,7 @@ const RiskDashboard = lazy(() => import('./pages/admin/RiskDashboard'));
 const Revenue = lazy(() => import('./pages/admin/Revenue'));
 const Announcements = lazy(() => import('./pages/admin/Announcements'));
 const Coupons = lazy(() => import('./pages/admin/Coupons'));
+const AdminTeam = lazy(() => import('./pages/admin/AdminTeam'));
 
 // ============================================
 // ROUTE GUARDS
@@ -469,6 +470,7 @@ const AppRoutes: React.FC = () => {
           <Route path="/manage-wabmeta-admin/revenue" element={<Revenue />} />
           <Route path="/manage-wabmeta-admin/announcements" element={<Announcements />} />
           <Route path="/manage-wabmeta-admin/coupons" element={<Coupons />} />
+          <Route path="/manage-wabmeta-admin/team" element={<AdminTeam />} />
         </Route>
 
         {/* ============================== */}

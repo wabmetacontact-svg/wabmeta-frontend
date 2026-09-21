@@ -6,7 +6,7 @@
 
 const ADMIN_USER_KEY = 'wabmeta_admin_user';
 
-export const getAdminUser = (): { role?: string; permissions?: string[]; otpEnabled?: boolean } | null => {
+export const getAdminUser = (): { id?: string; role?: string; permissions?: string[]; otpEnabled?: boolean } | null => {
   try {
     return JSON.parse(localStorage.getItem(ADMIN_USER_KEY) || 'null');
   } catch {
