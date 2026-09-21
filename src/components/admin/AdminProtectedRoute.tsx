@@ -1,8 +1,9 @@
 // src/components/admin/AdminProtectedRoute.tsx
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { admin } from '../../services/api';
+import { saveAdminUser } from '../../utils/adminPermissions';
 
 interface AdminProtectedRouteProps {
   children?: React.ReactNode;
@@ -12,7 +13,6 @@ const AdminProtectedRoute: React.FC<AdminProtectedRouteProps> = ({ children }) =
   const location = useLocation();
   const [isChecking, setIsChecking] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const hasChecked = useRef(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -34,6 +34,8 @@ const AdminProtectedRoute: React.FC<AdminProtectedRouteProps> = ({ children }) =
         const response = await admin.getProfile();
         if (response.data?.success && isMounted) {
           console.log('✅ Admin credentials verified with backend');
+          // Keep the role's permissions current for the buttons we show.
+          saveAdminUser(response.data.data);
           setIsAuthenticated(true);
         } else if (isMounted) {
           throw new Error('Invalid Admin session profile data');
@@ -52,10 +54,11 @@ const AdminProtectedRoute: React.FC<AdminProtectedRouteProps> = ({ children }) =
       }
     };
 
-    if (!hasChecked.current) {
-      hasChecked.current = true;
-      verifyAdmin();
-    }
+    // Every mount verifies. A "check only once" ref used to guard this, and
+    // under React StrictMode (dev) it hung forever: the first run's cleanup
+    // set isMounted=false, the second run was skipped by the ref, so the
+    // only answer that arrived was ignored and the spinner never stopped.
+    verifyAdmin();
 
     return () => { isMounted = false; };
   }, []);

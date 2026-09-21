@@ -17,6 +17,7 @@ import { ConfirmProvider } from './context/ConfirmProvider';
 import LoadingScreen from './components/common/LoadingScreen';
 import ErrorBoundary from './components/common/ErrorBoundary';
 import UpgradeModal from './components/common/UpgradeModal';
+import AccountStatusGate from './components/common/AccountStatusGate';
 
 // Layouts
 import DashboardLayout from './components/dashboard/DashboardLayout';
@@ -105,6 +106,15 @@ const SystemSettings = lazy(() => import('./pages/admin/SystemSettings'));
 const WhatsAppConnections = lazy(() => import('./pages/admin/WhatsAppConnections'));
 const OrganizationFeatures = lazy(() => import('./pages/admin/OrganizationFeatures'));
 const WalletManagement = lazy(() => import('./pages/admin/WalletManagement'));
+const OrganizationControl = lazy(() => import('./pages/admin/OrganizationControl'));
+const AuditSecurity = lazy(() => import('./pages/admin/AuditSecurity'));
+const Impersonate = lazy(() => import('./pages/Impersonate'));
+const Organizations = lazy(() => import('./pages/admin/Organizations'));
+const OrganizationOverview = lazy(() => import('./pages/admin/OrganizationOverview'));
+const RiskDashboard = lazy(() => import('./pages/admin/RiskDashboard'));
+const Revenue = lazy(() => import('./pages/admin/Revenue'));
+const Announcements = lazy(() => import('./pages/admin/Announcements'));
+const Coupons = lazy(() => import('./pages/admin/Coupons'));
 
 // ============================================
 // ROUTE GUARDS
@@ -433,6 +443,8 @@ const AppRoutes: React.FC = () => {
         {/* ADMIN ROUTES */}
         {/* ============================== */}
         <Route path="/manage-wabmeta-admin/login" element={<AdminLogin />} />
+        {/* Admin's read-only view as a user - see services/impersonation.ts */}
+        <Route path="/impersonate" element={<Impersonate />} />
         <Route
           element={
             <AdminProtectedRoute>
@@ -449,6 +461,14 @@ const AppRoutes: React.FC = () => {
           <Route path="/manage-wabmeta-admin/whatsapp" element={<WhatsAppConnections />} />
           <Route path="/manage-wabmeta-admin/wallets" element={<WalletManagement />} />
           <Route path="/manage-wabmeta-admin/organizations/:organizationId/features" element={<OrganizationFeatures />} />
+          <Route path="/manage-wabmeta-admin/organizations/:organizationId/control" element={<OrganizationControl />} />
+          <Route path="/manage-wabmeta-admin/audit" element={<AuditSecurity />} />
+          <Route path="/manage-wabmeta-admin/organizations" element={<Organizations />} />
+          <Route path="/manage-wabmeta-admin/organizations/:organizationId" element={<OrganizationOverview />} />
+          <Route path="/manage-wabmeta-admin/risk" element={<RiskDashboard />} />
+          <Route path="/manage-wabmeta-admin/revenue" element={<Revenue />} />
+          <Route path="/manage-wabmeta-admin/announcements" element={<Announcements />} />
+          <Route path="/manage-wabmeta-admin/coupons" element={<Coupons />} />
         </Route>
 
         {/* ============================== */}
@@ -539,6 +559,9 @@ const App: React.FC = () => {
                       },
                     }}
                   />
+
+                  {/* Suspended / read-only / maintenance / admin view */}
+                  <AccountStatusGate />
 
                   {/* App Routes */}
                   <AppRoutes />

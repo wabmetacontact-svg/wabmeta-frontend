@@ -5,6 +5,7 @@ import Sidebar from './Sidebar';
 import PageLoader from '../common/PageLoader';
 import ErrorBoundary from '../common/ErrorBoundary';
 import TopBar from './TopBar';
+import AnnouncementBar from './AnnouncementBar';
 import { useGlobalNotifications } from '../../hooks/useGlobalNotifications';
 
 const GlobalNotificationHandler: React.FC = () => {
@@ -77,6 +78,7 @@ const DashboardLayout: React.FC = () => {
           </div>
         ) : (
           <div className="p-4 lg:p-6">
+            <AnnouncementBar />
             <ErrorBoundary variant="inline" resetKey={location.pathname}>
               <Suspense fallback={<PageLoader />}>
                 <Outlet />

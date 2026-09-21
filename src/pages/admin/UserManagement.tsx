@@ -25,6 +25,8 @@ import {
 import api, { admin } from '../../services/api';
 import toast from 'react-hot-toast';
 import WhatsAppConnectionBadge from '../../components/admin/WhatsAppConnectionBadge';
+import { adminCan } from '../../utils/adminPermissions';
+import { downloadBlob } from '../../utils/download';
 
 // ============================================
 // TYPES
@@ -1120,6 +1122,21 @@ const UserManagement: React.FC = () => {
           </p>
         </div>
         <div className="flex space-x-2 w-full sm:w-auto">
+          {adminCan('data.export') && (
+            <button
+              onClick={async () => {
+                try {
+                  const res = await admin.exportCsv('users');
+                  downloadBlob(res.data as Blob, `users-${new Date().toISOString().slice(0, 10)}.csv`);
+                } catch {
+                  toast.error('Export failed');
+                }
+              }}
+              className="px-3 py-2.5 rounded-xl border border-gray-200 bg-white text-sm text-gray-700 hover:bg-gray-50 whitespace-nowrap"
+            >
+              Export CSV
+            </button>
+          )}
           <div className="relative flex-1 sm:flex-none">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
             <input aria-label="Search users..."
