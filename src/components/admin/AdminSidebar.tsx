@@ -13,7 +13,8 @@ import {
   AlertTriangle,
   TrendingUp,
   Megaphone,
-  Ticket
+  Ticket,
+  UserCog
 } from 'lucide-react';
 import { adminCan } from '../../utils/adminPermissions';
 import Logo from '../common/Logo';
@@ -36,6 +37,7 @@ const AdminSidebar: React.FC = () => {
     ...(adminCan('audit.read') || adminCan('security.read')
       ? [{ name: 'Audit & Security', href: '/manage-wabmeta-admin/audit', icon: ShieldAlert }]
       : []),
+    ...(adminCan('admins.manage') ? [{ name: 'Admin team', href: '/manage-wabmeta-admin/team', icon: UserCog }] : []),
     { name: 'Settings', href: '/manage-wabmeta-admin/settings', icon: Settings },
   ];
 

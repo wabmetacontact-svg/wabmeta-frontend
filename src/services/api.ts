@@ -1662,6 +1662,10 @@ export const admin = {
   deleteAdmin: (id: string) =>
     api.delete<ApiResponse>(`/admin/admins/${id}`),
 
+  // Another admin's 2FA, when they lost their phone (super admin only).
+  resetAdminTwoFactor: (id: string) =>
+    api.delete<ApiResponse>(`/admin/admins/${id}/2fa`),
+
   getActivityLogs: (params?: any) =>
     api.get<ApiResponse>('/admin/activity-logs', { params }),
 
