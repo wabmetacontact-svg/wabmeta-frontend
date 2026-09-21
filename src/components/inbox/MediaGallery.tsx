@@ -14,8 +14,10 @@ import {
 } from 'lucide-react';
 import { formatMessageTime } from '../../utils/inboxHelpers';
 import type { Message } from './MessageBubble';
+import { API_BASE_URL } from '../../services/api';
 
-const API_BASE = 'https://wabmeta-api.onrender.com/api';
+// Same base as every other API call, so moving the API host needs no change here.
+const API_BASE = API_BASE_URL;
 
 interface Props {
   messages: Message[];
