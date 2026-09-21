@@ -1642,6 +1642,12 @@ export const admin = {
     api.post<ApiResponse>(`/admin/whatsapp-connections/${accountId}/disconnect`),
 
   // Meta se taaza quality rating / tier / health kheencho
+  /** Meta's full health_status for one number. refresh=true asks Meta again. */
+  getWhatsAppAccountHealth: (accountId: string, refresh = false) =>
+    api.get<ApiResponse>(`/admin/whatsapp-connections/${accountId}/health`, {
+      params: refresh ? { refresh: 'true' } : undefined,
+    }),
+
   refreshWhatsAppAccount: (accountId: string) =>
     api.post<ApiResponse>(`/admin/whatsapp-connections/${accountId}/refresh`),
 

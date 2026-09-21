@@ -9,11 +9,13 @@ import {
   Wifi,
   WifiOff,
   SlidersHorizontal,
+  Stethoscope,
 } from 'lucide-react';
 import { admin } from '../../services/api';
 import toast from 'react-hot-toast';
 import WhatsAppConnectionBadge from '../../components/admin/WhatsAppConnectionBadge';
 import DisplayOverrideModal from '../../components/admin/DisplayOverrideModal';
+import MetaHealthModal from '../../components/admin/MetaHealthModal';
 
 // ============================================
 // TYPES
@@ -228,6 +230,8 @@ export default function WhatsAppConnections() {
   };
 
   const [overrideTarget, setOverrideTarget] = useState<Connection | null>(null);
+  // Which number's Meta health is open, for support.
+  const [healthTarget, setHealthTarget] = useState<Connection | null>(null);
 
   const handleDisconnectClick = (connection: Connection) => {
     setConfirmModal({ isOpen: true, connection });
@@ -511,6 +515,14 @@ export default function WhatsAppConnections() {
                     {/* Actions */}
                     <td className="px-6 py-4 text-right">
                       <button
+                        onClick={() => setHealthTarget(conn)}
+                        className="p-2 text-gray-400 hover:text-blue-500
+                          hover:bg-blue-500/10 rounded-lg transition-all"
+                        title="Meta health - error code, level, last checked"
+                      >
+                        <Stethoscope className="w-4 h-4" />
+                      </button>
+                      <button
                         onClick={() => setOverrideTarget(conn)}
                         className="p-2 text-gray-400 hover:text-emerald-500
                           hover:bg-emerald-500/10 rounded-lg transition-all"
@@ -542,6 +554,11 @@ export default function WhatsAppConnections() {
         account={overrideTarget}
         onClose={() => setOverrideTarget(null)}
         onSaved={fetchConnections}
+      />
+
+      <MetaHealthModal
+        account={healthTarget}
+        onClose={() => setHealthTarget(null)}
       />
 
       {/* Footer info */}
