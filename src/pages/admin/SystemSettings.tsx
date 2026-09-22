@@ -193,7 +193,11 @@ const SystemSettings: React.FC = () => {
   const [saved, setSaved] = useState<PlatformSettings | null>(null);
   const [saving, setSaving] = useState(false);
 
+  // An onboarder only gets their own 2FA here, not the platform switches.
+  const canRead = adminCan('settings.read');
+
   useEffect(() => {
+    if (!canRead) return;
     admin
       .getSystemSettings()
       .then((res) => {
@@ -201,7 +205,7 @@ const SystemSettings: React.FC = () => {
         setSaved(res.data.data);
       })
       .catch((err) => toast.error(errorText(err, 'Could not load settings')));
-  }, []);
+  }, [canRead]);
 
   const update = <K extends keyof PlatformSettings>(key: K, value: PlatformSettings[K]) =>
     setSettings((s) => (s ? { ...s, [key]: value } : s));
@@ -246,6 +250,7 @@ const SystemSettings: React.FC = () => {
         <p className="text-sm text-gray-500 mt-1">Platform-wide switches. They take effect within 15 seconds.</p>
       </div>
 
+      {canRead && (
       <div className="bg-white border border-gray-200 rounded-2xl p-6">
         <div className="flex items-center gap-3 mb-5 pb-5 border-b border-gray-200">
           <div className="p-2 bg-primary-500/10 rounded-lg">
@@ -354,6 +359,8 @@ const SystemSettings: React.FC = () => {
           </div>
         )}
       </div>
+
+      )}
 
       <TwoFactorCard />
     </div>

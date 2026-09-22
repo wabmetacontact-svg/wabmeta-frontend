@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { admin } from '../../services/api';
-import { saveAdminUser } from '../../utils/adminPermissions';
+import { adminCan, saveAdminUser } from '../../utils/adminPermissions';
 
 interface AdminProtectedRouteProps {
   children?: React.ReactNode;
@@ -76,6 +76,17 @@ const AdminProtectedRoute: React.FC<AdminProtectedRouteProps> = ({ children }) =
 
   if (!isAuthenticated) {
     return <Navigate to="/manage-wabmeta-admin/login" state={{ from: location }} replace />;
+  }
+
+  // An onboarder has no dashboard: their home is their client list, and the
+  // only other pages they can use are a client's own pages and Settings.
+  if (adminCan('clients.own') && !adminCan('dashboard.read')) {
+    const p = location.pathname;
+    const allowed =
+      p.startsWith('/manage-wabmeta-admin/my-clients') ||
+      p.startsWith('/manage-wabmeta-admin/settings') ||
+      /^\/manage-wabmeta-admin\/organizations\/[^/]+(\/(billing|features))?$/.test(p);
+    if (!allowed) return <Navigate to="/manage-wabmeta-admin/my-clients" replace />;
   }
 
   return children ? <>{children}</> : <Outlet />;

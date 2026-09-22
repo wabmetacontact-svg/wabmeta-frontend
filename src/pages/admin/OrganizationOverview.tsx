@@ -6,7 +6,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import {
-  ArrowLeft, Building2, Loader2, Pin, PinOff, Shield, SlidersHorizontal, StickyNote, Tag, Trash2, X,
+  ArrowLeft, Building2, Loader2, Pin, PinOff, Shield, SlidersHorizontal, StickyNote, Tag, Trash2, Wallet, X,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { admin } from '../../services/api';
@@ -50,7 +50,8 @@ const OrganizationOverview: React.FC = () => {
   const [savingNote, setSavingNote] = useState(false);
   const [tagInput, setTagInput] = useState('');
 
-  const canWrite = adminCan('orgs.write');
+  // An onboarder may keep notes and tags on their own clients.
+  const canWrite = adminCan('orgs.write') || adminCan('clients.own');
 
   const load = useCallback(async () => {
     if (!organizationId) return;
@@ -160,8 +161,13 @@ const OrganizationOverview: React.FC = () => {
           </div>
         </div>
         <div className="flex gap-2">
-          <Link to={`/manage-wabmeta-admin/organizations/${org.id}/control`} className="flex items-center gap-2 px-3 py-2 rounded-xl bg-gray-900 text-white text-sm hover:bg-black">
-            <Shield className="w-4 h-4" /> Control
+          {adminCan('orgs.read') && (
+            <Link to={`/manage-wabmeta-admin/organizations/${org.id}/control`} className="flex items-center gap-2 px-3 py-2 rounded-xl bg-gray-900 text-white text-sm hover:bg-black">
+              <Shield className="w-4 h-4" /> Control
+            </Link>
+          )}
+          <Link to={`/manage-wabmeta-admin/organizations/${org.id}/billing`} className="flex items-center gap-2 px-3 py-2 rounded-xl border border-gray-200 text-sm text-gray-700 hover:bg-gray-50">
+            <Wallet className="w-4 h-4" /> Billing
           </Link>
           <Link to={`/manage-wabmeta-admin/organizations/${org.id}/features`} className="flex items-center gap-2 px-3 py-2 rounded-xl border border-gray-200 text-sm text-gray-700 hover:bg-gray-50">
             <SlidersHorizontal className="w-4 h-4" /> Features

@@ -116,6 +116,9 @@ const Revenue = lazy(() => import('./pages/admin/Revenue'));
 const Announcements = lazy(() => import('./pages/admin/Announcements'));
 const Coupons = lazy(() => import('./pages/admin/Coupons'));
 const AdminTeam = lazy(() => import('./pages/admin/AdminTeam'));
+const MyClients = lazy(() => import('./pages/admin/MyClients'));
+const ClientBilling = lazy(() => import('./pages/admin/ClientBilling'));
+const OfflinePayments = lazy(() => import('./pages/admin/OfflinePayments'));
 
 // ============================================
 // ROUTE GUARDS
@@ -471,6 +474,9 @@ const AppRoutes: React.FC = () => {
           <Route path="/manage-wabmeta-admin/announcements" element={<Announcements />} />
           <Route path="/manage-wabmeta-admin/coupons" element={<Coupons />} />
           <Route path="/manage-wabmeta-admin/team" element={<AdminTeam />} />
+          <Route path="/manage-wabmeta-admin/my-clients" element={<MyClients />} />
+          <Route path="/manage-wabmeta-admin/organizations/:organizationId/billing" element={<ClientBilling />} />
+          <Route path="/manage-wabmeta-admin/payments" element={<OfflinePayments />} />
         </Route>
 
         {/* ============================== */}

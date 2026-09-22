@@ -15,7 +15,8 @@ const ROLES: { value: string; label: string; help: string }[] = [
   { value: 'super_admin', label: 'Super admin', help: 'Everything, including money, plans, settings, admins and "view as user".' },
   { value: 'admin', label: 'Admin', help: 'Day-to-day: users, organizations, status, limits, features, subscriptions, announcements, exports.' },
   { value: 'support', label: 'Support', help: 'Sees everything, refreshes WhatsApp numbers, ends sessions. Changes nothing else.' },
-  { value: 'finance', label: 'Finance', help: 'Sees everything; runs subscriptions, wallets (including money), coupons and exports.' },
+  { value: 'finance', label: 'Finance', help: 'Sees everything; runs subscriptions, wallets (including money), coupons and exports; verifies offline payments.' },
+  { value: 'onboarder', label: 'Onboarder', help: 'Only their own clients: creates them, plan, features, add-ons, offline payments, notes, read-only view.' },
 ];
 
 const roleLabel = (r: string) => ROLES.find((x) => x.value === r)?.label || r;
