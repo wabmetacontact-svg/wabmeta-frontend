@@ -9,6 +9,13 @@ import {
 import { automations as automationsApi, templates as templatesApi, contacts as contactsApi, inbox as inboxApi, crm as crmApi } from '../services/api';
 import toast from 'react-hot-toast';
 import PageLoader from '../components/common/PageLoader';
+import {
+  AddToGroupConfig,
+  ButtonsConfig,
+  buttonsProblem,
+  CreateLeadConfig,
+  MediaTriggerConfig,
+} from '../components/automation/StepConfigs';
 
 interface Action {
   id: string;
@@ -25,6 +32,7 @@ interface ContactGroup {
 const triggerOptions = [
   { value: 'NEW_CONTACT', label: 'New Contact Added', icon: Users, description: 'When a new contact is created' },
   { value: 'KEYWORD', label: 'Keyword Match', icon: MessageSquare, description: 'When message contains keyword' },
+  { value: 'MEDIA_RECEIVED', label: 'Image / Video Received', icon: Image, description: 'When the customer sends a photo or video' },
   { value: 'UNKNOWN_MESSAGE', label: 'Unknown Contact', icon: UserPlus, description: 'When unknown number messages' },
   { value: 'SCHEDULE', label: 'Scheduled Time', icon: Clock, description: 'At a specific time' },
   { value: 'WEBHOOK', label: 'Webhook Received', icon: Webhook, description: 'When webhook is called' },
@@ -420,7 +428,7 @@ const LeadStageTriggerConfig: React.FC<{
 // "Minutes" dikhata tha par unit save nahi hoti thi aur backend use seconds
 // maan leta tha.
 const DEFAULT_ACTION_CONFIG: Record<string, any> = {
-  send_buttons: { buttons: [] },
+  send_buttons: { mode: 'reply', text: '', buttons: [{ id: 'btn_1', text: '' }] },
   delay: { value: 1, unit: 'hours' },
   wait_for_response: { onReply: 'stop', onTimeout: 'continue', timeoutValue: 24, timeoutUnit: 'hours' },
 };
@@ -557,6 +565,19 @@ const CreateAutomation: React.FC = () => {
     if (actions.length === 0) {
       toast.error('Add at least one action');
       return;
+    }
+
+    // Steps the backend would refuse at run time - catch them here instead.
+    for (const a of actions) {
+      const problem =
+        a.type === 'send_buttons' ? buttonsProblem(a.config)
+        : a.type === 'add_to_group' && !a.config?.groupId ? 'Add to Group: choose a group'
+        : a.type === 'webhook' && !/^https?:\/\//i.test(String(a.config?.url || '')) ? 'Call Webhook: add a URL starting with https://'
+        : null;
+      if (problem) {
+        toast.error(problem);
+        return;
+      }
     }
 
     setSaving(true);
@@ -924,6 +945,13 @@ const CreateAutomation: React.FC = () => {
                 </div>
               )}
 
+              {formData.trigger === 'MEDIA_RECEIVED' && (
+                <MediaTriggerConfig
+                  config={formData.triggerConfig || {}}
+                  onChange={(next) => setFormData({ ...formData, triggerConfig: next })}
+                />
+              )}
+
               {formData.trigger === 'TASK_DUE' && (
                 <div className="p-4 bg-blue-50 rounded-xl border border-blue-200 animate-in fade-in slide-in-from-top-2 duration-300">
                   <p className="text-sm text-blue-800">
@@ -974,6 +1002,8 @@ const CreateAutomation: React.FC = () => {
                     action={action}
                     index={index}
                     templates={templates}
+                    pipelines={pipelines}
+                    groups={groups}
                     onUpdate={updateAction}
                     onRemove={removeAction}
                   />
@@ -1015,11 +1045,13 @@ interface ActionItemProps {
   action: Action;
   index: number;
   templates: any[];
+  pipelines: any[];
+  groups: ContactGroup[];
   onUpdate: (id: string, config: any) => void;
   onRemove: (id: string) => void;
 }
 
-const ActionItem: React.FC<ActionItemProps> = ({ action, index, templates, onUpdate, onRemove }) => {
+const ActionItem: React.FC<ActionItemProps> = ({ action, index, templates, pipelines, groups, onUpdate, onRemove }) => {
   const config = action.config || {};
   const option = actionOptions.find((o) => o.value === action.type);
   const Icon = option?.icon || MessageSquare;
@@ -1118,6 +1150,18 @@ const ActionItem: React.FC<ActionItemProps> = ({ action, index, templates, onUpd
                 the remaining steps are cancelled (see General Settings).
               </p>
             </div>
+          )}
+
+          {action.type === 'send_buttons' && (
+            <ButtonsConfig config={config} onChange={(next) => onUpdate(action.id, next)} />
+          )}
+
+          {action.type === 'create_lead' && (
+            <CreateLeadConfig config={config} pipelines={pipelines} onChange={(next) => onUpdate(action.id, next)} />
+          )}
+
+          {action.type === 'add_to_group' && (
+            <AddToGroupConfig config={config} groups={groups} onChange={(next) => onUpdate(action.id, next)} />
           )}
 
           {action.type === 'wait_for_response' && (

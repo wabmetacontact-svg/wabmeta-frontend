@@ -21,7 +21,9 @@ export type AutomationTrigger =
   | 'UNKNOWN_MESSAGE' // ✅ NEW
   | 'LEAD_STAGE_CHANGED'
   | 'NO_REPLY'
-  | 'TASK_DUE';
+  | 'TASK_DUE'
+  | 'MEDIA_RECEIVED'
+  | 'PAYMENT_RECEIVED';
 
 export interface AutomationAction {
   id: string;

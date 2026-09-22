@@ -5,7 +5,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import {
   Zap, Plus, Search, Play, Pause, Trash2,
   Clock, MessageSquare, Users, Webhook, Loader2,
-  TrendingUp, Hourglass, CalendarCheck
+  TrendingUp, Hourglass, CalendarCheck, Image as ImageIcon
 } from 'lucide-react';
 import { automations as automationsApi } from '../services/api';
 import type { Automation } from '../types/automation';
@@ -24,6 +24,7 @@ const triggerIcons: Record<string, React.ReactNode> = {
   LEAD_STAGE_CHANGED: <TrendingUp className="w-4 h-4" />,
   NO_REPLY: <Hourglass className="w-4 h-4" />,
   TASK_DUE: <CalendarCheck className="w-4 h-4" />,
+  MEDIA_RECEIVED: <ImageIcon className="w-4 h-4" />,
 };
 
 const triggerLabels: Record<string, string> = {
@@ -36,6 +37,8 @@ const triggerLabels: Record<string, string> = {
   LEAD_STAGE_CHANGED: 'Lead Stage Changed',
   NO_REPLY: 'Customer Went Silent',
   TASK_DUE: 'CRM Task Due',
+  MEDIA_RECEIVED: 'Image / Video Received',
+  PAYMENT_RECEIVED: 'Payment Received',
 };
 
 const AutomationPage: React.FC = () => {
