@@ -24,6 +24,7 @@ const statusTone: Record<string, string> = {
   PENDING: 'bg-amber-50 text-amber-700 border-amber-200',
   VERIFIED: 'bg-green-50 text-green-700 border-green-200',
   REJECTED: 'bg-red-50 text-red-700 border-red-200',
+  REFUNDED: 'bg-gray-50 text-gray-600 border-gray-200',
 };
 
 const Card: React.FC<{ title: string; children: React.ReactNode; action?: React.ReactNode }> = ({ title, children, action }) => (
@@ -183,7 +184,11 @@ const ClientBilling: React.FC = () => {
 
   const { organization: org, plan, bill, revenue, addOns, payments } = data;
   const allPayments = [
-    ...payments.razorpay.map((p: any) => ({ id: p.id, when: p.paidAt || p.createdAt, what: `${p.planName || 'Plan'} · Razorpay`, amount: p.amount, status: 'VERIFIED', ref: p.razorpayPaymentId })),
+    ...payments.razorpay.map((p: any) => ({
+      id: p.id, when: p.paidAt || p.createdAt, what: `${p.planName || 'Plan'} · Razorpay`,
+      amount: p.amount - (p.refundedAmount || 0), status: p.status === 'REFUNDED' ? 'REFUNDED' : 'VERIFIED', ref: p.razorpayPaymentId,
+      note: p.refundedAmount ? `₹${(p.refundedAmount / 100).toLocaleString('en-IN')} refunded` : '',
+    })),
     ...payments.walletTopups.map((t: any) => ({ id: t.id, when: t.createdAt, what: 'Wallet top-up · Razorpay', amount: t.amountPaise, status: 'VERIFIED', ref: t.razorpayPaymentId })),
     ...payments.manual.map((m: any) => ({
       id: m.id, when: m.paidAt, what: `${m.description || 'Offline payment'} · ${m.method}`, amount: m.amountPaise, status: m.status,

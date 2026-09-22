@@ -8,6 +8,7 @@ import { useEffect, useState } from 'react';
 import { Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { admin } from '../../services/api';
+import RazorpayReconcile from '../../components/admin/RazorpayReconcile';
 
 const inr = (paise: number) =>
   `₹${(Number(paise || 0) / 100).toLocaleString('en-IN', { maximumFractionDigits: 0 })}`;
@@ -87,6 +88,23 @@ const Revenue: React.FC = () => {
 
       {data && (
         <>
+          {data.received && (
+            <div className="grid gap-4 grid-cols-1 sm:grid-cols-3">
+              {([
+                ['Received today', data.received.today],
+                ['Received this month', data.received.month],
+                ['Received all time', data.received.total],
+              ] as const).map(([label, r]: any) => (
+                <Tile
+                  key={label}
+                  label={label}
+                  value={inr(r.totalPaise)}
+                  help={`plans ${inr(r.planPaymentsPaise - r.refundsPaise)}${r.refundsPaise ? ` (after ${inr(r.refundsPaise)} refunds)` : ''} · wallet ${inr(r.walletTopupsPaise)} · offline ${inr(r.offlinePaise)}`}
+                />
+              ))}
+            </div>
+          )}
+
           <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
             <Tile label="MRR" value={inr(data.mrrPaise)} help={`Plans, from last payments · add-ons ${inr(data.addOnMrrPaise || 0)}/month on top`} />
             <Tile label="ARR" value={inr(data.arrPaise)} help="MRR × 12" />
@@ -153,6 +171,8 @@ const Revenue: React.FC = () => {
               </table>
             </div>
           )}
+
+          <RazorpayReconcile />
 
           <div className="bg-white rounded-2xl border border-gray-200 p-5">
             <h3 className="text-sm font-semibold text-gray-900 mb-3">MRR by plan</h3>

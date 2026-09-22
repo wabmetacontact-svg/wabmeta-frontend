@@ -1865,6 +1865,9 @@ export const admin = {
   getRiskReport: () => api.get<ApiResponse>('/admin/risk'),
   search: (q: string) => api.get<ApiResponse>('/admin/search', { params: { q } }),
   getRevenue: (months = 6) => api.get<ApiResponse>('/admin/revenue', { params: { months } }),
+  reconcileRevenue: (days = 7) => api.get<ApiResponse>('/admin/revenue/reconcile', { params: { days } }),
+  importRazorpayPayment: (paymentId: string) =>
+    api.post<ApiResponse>(`/admin/revenue/reconcile/${paymentId}/import`),
 
   // ─── Operations ─────────────────────────────────────────
   listOrganizations: (params?: Record<string, string | number | undefined>) =>
