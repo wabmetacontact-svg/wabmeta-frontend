@@ -1666,6 +1666,28 @@ export const admin = {
   resetAdminTwoFactor: (id: string) =>
     api.delete<ApiResponse>(`/admin/admins/${id}/2fa`),
 
+  // ─── Client billing, add-ons, offline payments, onboarders ───
+  getAddOnCatalog: () => api.get<ApiResponse>('/admin/addon-catalog'),
+  getClientBilling: (organizationId: string) =>
+    api.get<ApiResponse>(`/admin/organizations/${organizationId}/billing`),
+  addClientAddOn: (organizationId: string, data: Record<string, unknown>) =>
+    api.post<ApiResponse>(`/admin/organizations/${organizationId}/addons`, data),
+  removeClientAddOn: (organizationId: string, addOnId: string) =>
+    api.delete<ApiResponse>(`/admin/organizations/${organizationId}/addons/${addOnId}`),
+  recordManualPayment: (organizationId: string, data: Record<string, unknown>) =>
+    api.post<ApiResponse>(`/admin/organizations/${organizationId}/manual-payments`, data),
+  getManualPayments: (status?: string) =>
+    api.get<ApiResponse>('/admin/manual-payments', { params: { status } }),
+  reviewManualPayment: (paymentId: string, data: { approve: boolean; reason?: string }) =>
+    api.post<ApiResponse>(`/admin/manual-payments/${paymentId}/review`, data),
+  assignOnboarder: (organizationId: string, onboarderId: string | null) =>
+    api.put<ApiResponse>(`/admin/organizations/${organizationId}/onboarder`, { onboarderId }),
+  getOnboarders: () => api.get<ApiResponse>('/admin/onboarders'),
+  getMyClients: (search?: string) => api.get<ApiResponse>('/admin/my-clients', { params: { search } }),
+  getMyClientsSummary: () => api.get<ApiResponse>('/admin/my-clients/summary'),
+  getMyClientPayments: () => api.get<ApiResponse>('/admin/my-clients/payments'),
+  createClient: (data: Record<string, unknown>) => api.post<ApiResponse>('/admin/my-clients', data),
+
   getActivityLogs: (params?: any) =>
     api.get<ApiResponse>('/admin/activity-logs', { params }),
 

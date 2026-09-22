@@ -14,7 +14,9 @@ import {
   TrendingUp,
   Megaphone,
   Ticket,
-  UserCog
+  UserCog,
+  Briefcase,
+  BadgeCheck
 } from 'lucide-react';
 import { adminCan } from '../../utils/adminPermissions';
 import Logo from '../common/Logo';
@@ -23,17 +25,23 @@ const AdminSidebar: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
+  // Each link shows only when the role may open that page.
+  const links: { name: string; href: string; icon: typeof LayoutDashboard; show: boolean }[] = [
+    { name: 'My clients', href: '/manage-wabmeta-admin/my-clients', icon: Briefcase, show: adminCan('clients.own') },
+    { name: 'Dashboard', href: '/manage-wabmeta-admin/dashboard', icon: LayoutDashboard, show: adminCan('dashboard.read') },
+    { name: 'WhatsApp', href: '/manage-wabmeta-admin/whatsapp', icon: Phone, show: adminCan('whatsapp.read') },
+    { name: 'Needs attention', href: '/manage-wabmeta-admin/risk', icon: AlertTriangle, show: adminCan('orgs.read') },
+    { name: 'Organizations', href: '/manage-wabmeta-admin/organizations', icon: Building2, show: adminCan('orgs.read') },
+    { name: 'Users', href: '/manage-wabmeta-admin/users', icon: Users, show: adminCan('users.read') },
+    { name: 'Subscriptions', href: '/manage-wabmeta-admin/subscriptions', icon: CreditCard, show: adminCan('billing.read') },
+    { name: 'Wallets', href: '/manage-wabmeta-admin/wallets', icon: Wallet, show: adminCan('wallet.read') },
+    { name: 'Offline payments', href: '/manage-wabmeta-admin/payments', icon: BadgeCheck, show: adminCan('billing.read') },
+    { name: 'Revenue', href: '/manage-wabmeta-admin/revenue', icon: TrendingUp, show: adminCan('billing.read') },
+    { name: 'Coupons', href: '/manage-wabmeta-admin/coupons', icon: Ticket, show: adminCan('billing.read') },
+    { name: 'Announcements', href: '/manage-wabmeta-admin/announcements', icon: Megaphone, show: adminCan('orgs.read') },
+  ];
   const navigation = [
-    { name: 'Dashboard', href: '/manage-wabmeta-admin/dashboard', icon: LayoutDashboard },
-    { name: 'WhatsApp', href: '/manage-wabmeta-admin/whatsapp', icon: Phone },
-    { name: 'Needs attention', href: '/manage-wabmeta-admin/risk', icon: AlertTriangle },
-    { name: 'Organizations', href: '/manage-wabmeta-admin/organizations', icon: Building2 },
-    { name: 'Users', href: '/manage-wabmeta-admin/users', icon: Users },
-    { name: 'Subscriptions', href: '/manage-wabmeta-admin/subscriptions', icon: CreditCard },
-    { name: 'Wallets', href: '/manage-wabmeta-admin/wallets', icon: Wallet },
-    ...(adminCan('billing.read') ? [{ name: 'Revenue', href: '/manage-wabmeta-admin/revenue', icon: TrendingUp }] : []),
-    ...(adminCan('billing.read') ? [{ name: 'Coupons', href: '/manage-wabmeta-admin/coupons', icon: Ticket }] : []),
-    { name: 'Announcements', href: '/manage-wabmeta-admin/announcements', icon: Megaphone },
+    ...links.filter((l) => l.show),
     ...(adminCan('audit.read') || adminCan('security.read')
       ? [{ name: 'Audit & Security', href: '/manage-wabmeta-admin/audit', icon: ShieldAlert }]
       : []),
