@@ -11,7 +11,7 @@ import {
     Loader2,
     AlertCircle,
 } from 'lucide-react';
-import { admin, billing } from '../../services/api';
+import { admin } from '../../services/api';
 import toast from 'react-hot-toast';
 
 import { useModalA11y } from '../../hooks/useModalA11y';
@@ -20,9 +20,11 @@ interface Plan {
     name: string;
     type: string;
     slug: string;
-    monthlyPrice: number;
+    monthlyPrice: number | string;
     validityDays?: number;
     isRecommended?: boolean;
+    isActive?: boolean;
+    isPublic?: boolean;
 }
 
 interface Organization {
@@ -71,13 +73,22 @@ const AssignPlanModal: React.FC<AssignPlanModalProps> = ({
     // Reset on open/close
     useEffect(() => {
         if (isOpen) {
-            if (organization?.organization) {
-                // Pre-selected organization from table
-                setSelectedOrg({
+            // Two callers pre-select an organization in two shapes: the
+            // subscriptions table passes its row ({ organizationId,
+            // organization }), a client's billing page passes the
+            // organization itself ({ id, name, owner }). Accept both - the
+            // second one used to fall through to the search step.
+            const preset = organization?.organization
+                ? {
                     id: organization.organizationId || organization.organization.id,
                     name: organization.organization.name,
                     owner: organization.organization.owner,
-                });
+                }
+                : organization?.id && organization?.name
+                    ? { id: organization.id, name: organization.name, owner: organization.owner }
+                    : null;
+            if (preset) {
+                setSelectedOrg(preset);
                 setStep('plan');
             } else {
                 setStep('org');
@@ -110,8 +121,10 @@ const AssignPlanModal: React.FC<AssignPlanModalProps> = ({
             if (response.data.success) {
                 setOrganizations(response.data.data.organizations || response.data.data || []);
             }
-        } catch (error) {
-            console.error('Search error:', error);
+        } catch (error: any) {
+            // Say why instead of showing an empty list.
+            setOrganizations([]);
+            toast.error(error?.response?.data?.message || 'Could not search organizations');
         } finally {
             setLoading(false);
         }
@@ -119,9 +132,12 @@ const AssignPlanModal: React.FC<AssignPlanModalProps> = ({
 
     const fetchPlans = async () => {
         try {
-            const response = await billing.getPlans();
+            // All active plans, including the older ones existing customers
+            // are on - the public price list (billing.getPlans) hides those.
+            const response = await admin.getPlans();
             if (response.data.success) {
-                setPlans(response.data.data || []);
+                const all: Plan[] = response.data.data || [];
+                setPlans(all.filter((p) => p.isActive !== false));
             }
         } catch (error) {
             console.error('Fetch plans error:', error);
@@ -335,9 +351,12 @@ const AssignPlanModal: React.FC<AssignPlanModalProps> = ({
                                         )}
                                         <h3 className="font-semibold text-gray-900">
                                             {plan.name}
+                                            {plan.isPublic === false && (
+                                                <span className="ml-2 text-xs font-normal text-gray-500">(older plan)</span>
+                                            )}
                                         </h3>
                                         <p className="text-2xl font-bold text-green-600 mt-1">
-                                            ₹{plan.monthlyPrice.toLocaleString('en-IN')}
+                                            ₹{Number(plan.monthlyPrice || 0).toLocaleString('en-IN')}
                                         </p>
                                         <p className="text-sm text-gray-500 mt-1">
                                             {plan.validityDays} days validity
