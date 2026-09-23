@@ -427,6 +427,35 @@ const LeadStageTriggerConfig: React.FC<{
 // Naye step ke defaults. Delay ki unit hamesha save karo - pehle select
 // "Minutes" dikhata tha par unit save nahi hoti thi aur backend use seconds
 // maan leta tha.
+/**
+ * A step's id. Every edit finds its step by this, so two steps sharing one id
+ * are edited together - type into one and the other changes with it, and both
+ * save the same thing.
+ *
+ * It used to be `action-${Date.now()}`, which is only unique to the
+ * millisecond.
+ */
+const newActionId = (): string => {
+  const uuid = globalThis.crypto?.randomUUID?.();
+  return uuid ? `action-${uuid}` : `action-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+};
+
+/**
+ * Give every step its own id.
+ *
+ * Fixing the generator does not repair an automation that was saved with
+ * duplicate ids - it stays broken until the ids are replaced, so they are
+ * replaced on load.
+ */
+const withUniqueIds = (list: Action[]): Action[] => {
+  const seen = new Set<string>();
+  return list.map((a) => {
+    const id = a.id && !seen.has(a.id) ? a.id : newActionId();
+    seen.add(id);
+    return a.id === id ? a : { ...a, id };
+  });
+};
+
 const DEFAULT_ACTION_CONFIG: Record<string, any> = {
   send_buttons: { mode: 'reply', text: '', buttons: [{ id: 'btn_1', text: '' }] },
   delay: { value: 1, unit: 'hours' },
@@ -524,10 +553,12 @@ const CreateAutomation: React.FC = () => {
         // Bina unit wale purane delay steps: builder unhe "Minutes" dikhata tha
         // (par backend seconds chalata tha). Jo dikha wahi save ho.
         setActions(
-          (data.actions || []).map((a: Action) =>
-            a.type === 'delay' && !a.config?.unit
-              ? { ...a, config: { ...a.config, unit: 'minutes' } }
-              : a
+          withUniqueIds(
+            (data.actions || []).map((a: Action) =>
+              a.type === 'delay' && !a.config?.unit
+                ? { ...a, config: { ...a.config, unit: 'minutes' } }
+                : a
+            )
           )
         );
       }
@@ -541,19 +572,25 @@ const CreateAutomation: React.FC = () => {
 
   const addAction = (type: string) => {
     const newAction: Action = {
-      id: `action-${Date.now()}`,
+      id: newActionId(),
       type,
-      config: { ...(DEFAULT_ACTION_CONFIG[type] || {}) },
+      // A deep copy. A spread only copies the top level, so every
+      // send_buttons step started out pointing at the one buttons array in
+      // DEFAULT_ACTION_CONFIG - shared between the steps and with the
+      // constant itself.
+      config: JSON.parse(JSON.stringify(DEFAULT_ACTION_CONFIG[type] || {})),
     };
-    setActions([...actions, newAction]);
+    // Functional updates throughout: two clicks in the same render both read
+    // the same stale `actions`, and the second silently discards the first.
+    setActions((prev) => [...prev, newAction]);
   };
 
   const updateAction = (actionId: string, config: any) => {
-    setActions(actions.map((a) => (a.id === actionId ? { ...a, config } : a)));
+    setActions((prev) => prev.map((a) => (a.id === actionId ? { ...a, config } : a)));
   };
 
   const removeAction = (actionId: string) => {
-    setActions(actions.filter((a) => a.id !== actionId));
+    setActions((prev) => prev.filter((a) => a.id !== actionId));
   };
 
   const handleSave = async () => {
