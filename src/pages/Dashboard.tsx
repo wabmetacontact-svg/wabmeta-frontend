@@ -27,6 +27,7 @@ import toast from 'react-hot-toast';
 import { Link, useNavigate } from 'react-router-dom';
 import { FaWhatsapp, FaTelegram } from "react-icons/fa";
 import SocialFollowCard from '../components/dashboard/SocialFollowCard';
+import QualityWarningBanner from '../components/dashboard/QualityWarningBanner';
 
 const getGreeting = () => {
   const h = new Date().getHours();
@@ -253,6 +254,8 @@ const Dashboard: React.FC = () => {
           </button>
         </div>
       </div>
+
+      <QualityWarningBanner />
 
       <SocialFollowCard />
 
