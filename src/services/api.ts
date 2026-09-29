@@ -1159,12 +1159,20 @@ export const meta = {
     organizationId: string;
     wabaId?: string;
     phoneNumberId?: string;
+    solutionId?: string;
+    // Number WhatsApp Business app se aaya (coexistence) - backend register
+    // skip karta hai aur contacts + chat history import maangta hai.
+    coexistence?: boolean;
   }) =>
     api.post<ApiResponse<{ account: any; warning?: string; message?: string }>>('/meta/connect', data, {
       headers: {
         'X-Organization-Id': data.organizationId
       }
     }),
+  // Coexistence number ki chats/contacts ka import dobara maango (connect
+  // ke 24 ghante tak). Backend: meta.routes.ts /accounts/:id/coexistence-sync
+  coexistenceSync: (accountId: string) =>
+    api.post<ApiResponse<{ smbSyncState: any }>>(`/meta/accounts/${accountId}/coexistence-sync`),
   getOrgStatus: (organizationId: string) =>
     api.get<ApiResponse<{ status: 'CONNECTED' | 'DISCONNECTED'; connectedCount: number }>>(
       `/meta/organizations/${organizationId}/status`

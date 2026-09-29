@@ -7,6 +7,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useMetaConnect, type ConnectMode } from '../../hooks/useMetaConnect';
 import { ConnectWhatsAppChoice } from '../common/ConnectWhatsAppChoice';
+import { CoexistenceSyncStatus, type SmbSyncState } from './CoexistenceSyncStatus';
 import {
   Phone, CheckCircle, Trash2, Loader2, Star, Cloud, Plus,
   RefreshCw, AlertCircle, TrendingUp, Activity, Shield, Clock,
@@ -24,6 +25,8 @@ interface WhatsAppAccount {
   messagingLimit: string | null;
   status: string;
   connectionType: 'CLOUD_API' | 'WHATSAPP_BUSINESS_APP';
+  // Sirf coexistence numbers par - chats/contacts import ka haal
+  smbSyncState?: SmbSyncState | null;
   isDefault: boolean;
   codeVerificationStatus: string | null;
   dailyMessageLimit: number;
@@ -638,6 +641,14 @@ export default function WhatsAppSettings() {
                     </div>
                     
                   </div>
+
+                  {account.smbSyncState?.onboardedAt && (
+                    <CoexistenceSyncStatus
+                      accountId={account.id}
+                      state={account.smbSyncState}
+                      onUpdated={() => fetchAccounts(true)}
+                    />
+                  )}
 
                   {/* Actions */}
                   <div className="p-4 flex items-center justify-end gap-2 border-t border-slate-100 bg-white">
