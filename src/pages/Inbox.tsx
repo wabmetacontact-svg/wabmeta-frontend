@@ -1364,7 +1364,7 @@ const Inbox: React.FC = () => {
   }, [fetchConversations, searchQuery]);
 
   useEffect(() => {
-    if (!urlConvId || conversations.length === 0) return;
+    if (!urlConvId) return;
     if (selectedConvRef.current?.id === urlConvId) return;
 
     const conv = conversations.find((c) => c.id === urlConvId);
@@ -1373,8 +1373,40 @@ const Inbox: React.FC = () => {
       if (lastFetchedConvId.current !== urlConvId) {
         fetchMessages(urlConvId);
       }
+      return;
     }
-  }, [urlConvId, conversations, fetchMessages]);
+
+    // Not in the list. That is the normal case for a chat opened from the
+    // contacts page: a conversation nobody has written in yet has no last
+    // message, so it does not come back with the list. This used to leave the
+    // inbox blank on a link that was perfectly valid. Fetch that one
+    // conversation and show it.
+    if (conversations.length === 0 && loading) return;
+
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await inboxApi.getConversation(urlConvId);
+        const fetched: Conversation | undefined = res.data?.data;
+        if (cancelled || !fetched) return;
+
+        setConversations((prev) =>
+          prev.some((c) => c.id === fetched.id) ? prev : [fetched, ...prev]
+        );
+        setSelectedConversation(fetched);
+        setShowMobileChat(true);
+        if (lastFetchedConvId.current !== urlConvId) {
+          fetchMessages(urlConvId);
+        }
+      } catch {
+        if (!cancelled) toast.error('That conversation could not be opened.');
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [urlConvId, conversations, loading, fetchMessages]);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {

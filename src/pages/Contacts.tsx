@@ -3,7 +3,7 @@
 import React, {
   useEffect, useMemo, useState, useCallback, useRef,
 } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import {
   Plus, Upload, Download, Users, UserCheck, UserX,
@@ -19,7 +19,7 @@ import SimpleBulkPasteModal from '../components/contacts/SimpleBulkPasteModal';
 import AddToGroupModal from '../components/contacts/AddToGroupModal';
 import CsvUploadModal from '../components/contacts/CsvUploadModal';
 import UpgradeModal from '../components/common/UpgradeModal';
-import api, { getStoredAccessToken } from '../services/api';
+import api, { getStoredAccessToken, inbox as inboxApi } from '../services/api';
 import { useApp } from '../context/AppContext';
 import { useContactFeatures } from '../hooks/useContactFeatures';
 import { formatPhoneForDisplay } from '../utils/csvContacts';
@@ -128,6 +128,30 @@ const ContactRow: React.FC<{
   onDelete: (id: string) => void;
 }> = ({ contact, selected, onSelect, onEdit, onDelete }) => {
   const [showMenu, setShowMenu] = useState(false);
+  const [opening, setOpening] = useState(false);
+  const navigate = useNavigate();
+
+  // "Send Message" used to link to /dashboard/inbox?contact=<phone>, which the
+  // inbox never read - it just opened the inbox with nothing selected. Ask the
+  // API for this contact's conversation (it opens one if there is none yet) and
+  // go straight to it.
+  const openConversation = async () => {
+    if (opening) return;
+    setOpening(true);
+    try {
+      const res = await inboxApi.startConversation(contact.id);
+      const conversationId = res.data?.data?.id;
+      if (!conversationId) throw new Error('No conversation id in response');
+      setShowMenu(false);
+      navigate(`/dashboard/inbox/${conversationId}`);
+    } catch (err: any) {
+      toast.error(
+        err?.response?.data?.message || 'Could not open the chat. Please try again.'
+      );
+    } finally {
+      setOpening(false);
+    }
+  };
 
   const displayName =
     contact.whatsappProfileName ||
@@ -230,14 +254,15 @@ const ContactRow: React.FC<{
                 Edit Contact
               </button>
 
-              <Link
-                to={`/dashboard/inbox?contact=${contact.phone}`}
+              <button
+                onClick={openConversation}
+                disabled={opening}
                 className="w-full flex items-center px-4 py-2.5 text-sm
-                           text-gray-700 hover:bg-gray-50"
+                           text-gray-700 hover:bg-gray-50 disabled:opacity-60"
               >
                 <MessageCircle className="w-4 h-4 mr-2" />
-                Send Message
-              </Link>
+                {opening ? 'Opening…' : 'Send Message'}
+              </button>
 
               <hr className="my-1 border-gray-100" />
 

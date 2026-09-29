@@ -1183,6 +1183,10 @@ export const meta = {
 export const inbox = {
   getConversations: (params?: any) => api.get<ApiResponse>('/inbox/conversations', { params }),
   getConversation: (id: string) => api.get<ApiResponse>(`/inbox/conversations/${id}`),
+  // Returns the contact's conversation, opening one if nobody has written to
+  // them yet. Used by "Send Message" on the contacts list.
+  startConversation: (contactId: string) =>
+    api.post<ApiResponse>('/inbox/conversations/start', { contactId }),
   getMessages: (conversationId: string, params?: any) =>
     api.get<ApiResponse>(`/inbox/conversations/${conversationId}/messages`, { params }),
   sendMessage: async (conversationId: string, data: { content: string; type?: string }) => {
