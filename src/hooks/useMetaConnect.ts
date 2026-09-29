@@ -57,7 +57,10 @@ export const useMetaConnect = ({
     wabaId?: string;
     phoneNumberId?: string;
     sessionReceived?: boolean;
+    coexistence?: boolean;
   }>({});
+  // Kaun sa flow khola tha - coexistence event na aaye to fallback.
+  const modeRef = useRef<ConnectMode>('new');
 
   const { isReady: sdkReady, isLoading: sdkLoading, error: sdkError } = useFacebookSDK();
 
@@ -75,14 +78,19 @@ export const useMetaConnect = ({
         if (data.type === 'WA_EMBEDDED_SIGNUP') {
           console.log('📱 WA_EMBEDDED_SIGNUP Event:', data.event, data.data);
 
-          if (data.event === 'FINISH') {
+          if (data.event === 'FINISH' || data.event === 'FINISH_WHATSAPP_BUSINESS_APP_ONBOARDING') {
+            // Coexistence flow (existing WhatsApp Business app number) ka
+            // event alag hai aur usme sirf waba_id aata hai - phone number
+            // backend WABA se dhoondhta hai. Pehle sirf 'FINISH' suna jaata
+            // tha, isliye coexistence me session kabhi capture nahi hota tha.
             const { phone_number_id, waba_id } = data.data || {};
             sessionInfoRef.current = {
               wabaId: waba_id,
               phoneNumberId: phone_number_id,
               sessionReceived: true,
+              coexistence: data.event === 'FINISH_WHATSAPP_BUSINESS_APP_ONBOARDING',
             };
-            console.log('✅ Session captured:', { waba_id, phone_number_id });
+            console.log('✅ Session captured:', { event: data.event, waba_id, phone_number_id });
             window.dispatchEvent(new Event('wa_session_received')); // ✅ Event fire karo
           } else if (data.event === 'CANCEL') {
             console.log('❌ User cancelled Embedded Signup');
@@ -115,6 +123,9 @@ export const useMetaConnect = ({
         organizationId,
         wabaId: sessionInfoRef.current.wabaId,
         phoneNumberId: sessionInfoRef.current.phoneNumberId,
+        coexistence:
+          sessionInfoRef.current.coexistence ??
+          (sessionInfoRef.current.sessionReceived ? false : modeRef.current === 'existing'),
         // So the account records which solution it came in through. Meta
         // confirms it independently with a PARTNER_ADDED webhook.
         ...(SOLUTION_ID ? { solutionId: SOLUTION_ID } : {}),
@@ -129,6 +140,11 @@ export const useMetaConnect = ({
           toast.error(
             'Phone connected but not fully activated. Please check Meta Business Manager to complete setup.',
             { duration: 10000 }
+          );
+        } else if (data?.data?.account?.connectionType === 'WHATSAPP_BUSINESS_APP') {
+          toast.success(
+            '✅ WhatsApp connected! Importing your chats and contacts from the WhatsApp Business app - this can take a few minutes.',
+            { duration: 8000 }
           );
         } else {
           toast.success('✅ WhatsApp connected successfully!');
@@ -210,6 +226,7 @@ export const useMetaConnect = ({
     setLoading(true);
     setProgress('Opening Meta WhatsApp Setup...');
     sessionInfoRef.current = {};
+    modeRef.current = mode;
     localStorage.setItem('currentOrganizationId', organizationId);
 
     console.log('🚀 Launching Meta Embedded Signup');
