@@ -591,7 +591,7 @@ const Campaigns: React.FC = () => {
                   </div>
                   <div className="bg-blue-50/50 p-3 rounded-xl border border-blue-100">
                     <p className="text-[10px] uppercase tracking-wider font-semibold text-blue-500 mb-1">Sent</p>
-                    <p className="text-lg font-bold text-blue-700">{safeStr(sent)}</p>
+                    <p className="text-lg font-bold text-blue-700">{safeStr(sent + delivered + read)}</p>
                   </div>
                   <div className="bg-emerald-50/50 p-3 rounded-xl border border-emerald-100">
                     <p className="text-[10px] uppercase tracking-wider font-semibold text-emerald-600 mb-1">Delivered</p>

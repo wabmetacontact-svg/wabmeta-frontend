@@ -598,8 +598,12 @@ const CampaignDetails: React.FC = () => {
             active={filterStatus === 'PENDING'}
             pulse={isProcessing && displayStats.pending > 0}
           />
+          {/* Stats are exclusive per status (sent = still at SENT only), but
+              every delivered/read message was sent too, so the card shows
+              the cumulative count: total - pending - failed. */}
           <StatCard
-            label="Sent" value={displayStats.sent}
+            label="Sent"
+            value={displayStats.sent + displayStats.delivered + displayStats.read}
             icon={Send} iconColor="text-purple-600"
             onClick={() => handleFilterChange('SENT')}
             active={filterStatus === 'SENT'}
