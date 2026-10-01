@@ -140,9 +140,14 @@ const Dashboard: React.FC = () => {
   useEffect(() => {
     if (!socket) return;
 
+    // Throttle, not debounce: a running campaign emits events every ~0.5s,
+    // and a reset-on-every-event timer never fired until it finished.
     const debouncedRefetch = () => {
-      if (refetchTimerRef.current) clearTimeout(refetchTimerRef.current);
-      refetchTimerRef.current = setTimeout(fetchAll, 3000);
+      if (refetchTimerRef.current) return;
+      refetchTimerRef.current = setTimeout(() => {
+        refetchTimerRef.current = null;
+        fetchAll();
+      }, 3000);
     };
 
     socket.on('message:new', debouncedRefetch);
@@ -158,6 +163,7 @@ const Dashboard: React.FC = () => {
       socket.off('campaign:progress', debouncedRefetch);
       socket.off('campaign:completed', debouncedRefetch);
       if (refetchTimerRef.current) clearTimeout(refetchTimerRef.current);
+      refetchTimerRef.current = null;
     };
   }, [socket, fetchAll]);
 

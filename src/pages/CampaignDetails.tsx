@@ -66,6 +66,10 @@ const isMediaError = (r: string) =>
   r.toLowerCase().includes('expired media') ||
   r.toLowerCase().includes('re-upload');
 
+// The Sent card counts every message that went out, delivered and read
+// included, so its recipient filter asks the backend for all three.
+const SENT_FILTER = 'SENT,DELIVERED,READ';
+
 // ─── Status config ────────────────────────────────────────────
 const STATUS_CFG: Record<string, {
   label: string; color: string; icon: React.ElementType;
@@ -118,6 +122,8 @@ const CampaignDetails: React.FC = () => {
   const [campaign, setCampaign] = useState<any>(null);
   const [contacts, setContacts] = useState<CampaignContact[]>([]);
   const [stats, setStats] = useState<Stats | null>(null);
+  // When /stats last answered - compared with progress.updatedAt
+  const [statsAt, setStatsAt] = useState(0);
   const [pageMeta, setPageMeta] = useState<PageMeta>({
     page: 1, limit: 50, total: 0, totalPages: 1,
   });
@@ -145,22 +151,25 @@ const CampaignDetails: React.FC = () => {
   // ✅ FIX 1: liveStats mein bounds check properly
   const liveStats = useMemo((): Stats | null => {
     if (!stats) return null;
-    if (!progress || !isProcessing) return stats;
+    if (!progress) return stats;
+    // After the send loop ends, delivery/read receipts keep arriving as live
+    // events for hours. Use whichever is newer: live counts, or a /stats
+    // reload. (Falling back to stats on completion showed the page-load
+    // numbers - pending 140 of 210 - until the reload landed.)
+    if (!isProcessing && progress.updatedAt < statsAt) return stats;
 
     const total = Math.max(progress.total || 0, stats.totalContacts || 1);
-    
-    // ✅ Bounds check properly
-    const read = Math.max(0, Math.min(progress.read || 0, total));
-    const delivered = Math.max(0, Math.min(
-      progress.delivered || 0,
-      total - read  // delivered = delivered (excluding read)
-    ));
-    const failed = Math.max(0, Math.min(progress.failed || 0, total));
-    const sent = Math.max(0, Math.min(
-      progress.sent || 0,
-      total - delivered - read - failed
-    ));
-    const pending = Math.max(0, total - sent - delivered - read - failed);
+
+    // progress is cumulative (sent ⊇ delivered ⊇ read); the page works with
+    // exclusive per-status counts like /stats returns, so peel them apart.
+    const clamp = (v: number, max: number) => Math.max(0, Math.min(v || 0, max));
+    const failed = clamp(progress.failed, total);
+    const sentCum = clamp(progress.sent, total - failed);
+    const deliveredCum = clamp(progress.delivered, sentCum);
+    const read = clamp(progress.read, deliveredCum);
+    const delivered = deliveredCum - read;
+    const sent = sentCum - deliveredCum;
+    const pending = total - sentCum - failed;
 
     return {
       ...stats,
@@ -183,7 +192,7 @@ const CampaignDetails: React.FC = () => {
         ? Math.round((read / (delivered + read)) * 100)
         : 0,
     };
-  }, [stats, progress, isProcessing]);
+  }, [stats, statsAt, progress, isProcessing]);
 
   // ─── Live contacts merge ───────────────────────────────────
   const liveContacts = useMemo(() => {
@@ -218,6 +227,7 @@ const CampaignDetails: React.FC = () => {
       if (res.data.success) {
         setStats(res.data.data);
         lastStatsRef.current = Date.now();
+        setStatsAt(lastStatsRef.current);
       }
     } catch { /* silent */ }
   }, [id]);
@@ -297,11 +307,24 @@ const CampaignDetails: React.FC = () => {
     return () => clearInterval(interval);
   }, [isProcessing, loadStats]);
 
+  // Failure reasons only come from /stats. When the live Failed count moves
+  // away from it, reload (at most every 3s) so Failure Analysis keeps up
+  // with the card instead of lagging up to 15s behind.
+  const liveFailed = liveStats?.failed;
+  const statsFailed = stats?.failed;
+  useEffect(() => {
+    if (liveFailed == null || liveFailed === statsFailed) return;
+    const wait = Math.max(0, 3_000 - (Date.now() - lastStatsRef.current));
+    const t = setTimeout(loadStats, wait);
+    return () => clearTimeout(t);
+  }, [liveFailed, statsFailed, loadStats]);
+
   // ─── Campaign completed ────────────────────────────────────
   useEffect(() => {
     if (!completedStats) return;
     toast.success(
-      `Campaign completed! ${completedStats.sentCount} sent, ` +
+      `Campaign completed! ${completedStats.sentCount +
+        completedStats.deliveredCount + completedStats.readCount} sent, ` +
       `${completedStats.failedCount} failed`,
       { duration: 5000 }
     );
@@ -405,7 +428,7 @@ const CampaignDetails: React.FC = () => {
       const link = document.createElement('a');
       link.href = url;
       link.download = `campaign-${campaign?.name || id}-${
-        status || 'all'
+        status === SENT_FILTER ? 'SENT' : status || 'all'
       }-${new Date().toISOString().split('T')[0]}.csv`;
       document.body.appendChild(link);
       link.click();
@@ -520,7 +543,8 @@ const CampaignDetails: React.FC = () => {
               </span>
               <span className="text-sm text-gray-500">
                 {Math.min(
-                  displayStats.sent + displayStats.failed,
+                  displayStats.sent + displayStats.delivered +
+                    displayStats.read + displayStats.failed,
                   displayStats.totalContacts
                 ).toLocaleString()}{' '}
                 / {displayStats.totalContacts.toLocaleString()} processed
@@ -528,50 +552,36 @@ const CampaignDetails: React.FC = () => {
             </div>
 
             {(() => {
+              // One green bar for everything processed (sent, delivered,
+              // read, failed); displayStats is exclusive per status.
               const total = Math.max(displayStats.totalContacts, 1);
-              const delPct = Math.min((displayStats.delivered / total) * 100, 100);
-              const sentPct = Math.min(((displayStats.sent - displayStats.delivered) / total) * 100, 100 - delPct);
-              const failPct = Math.min((displayStats.failed / total) * 100, 100 - delPct - sentPct);
-              const totalPct = Math.min(100, delPct + sentPct + failPct);
+              const processed = displayStats.sent + displayStats.delivered +
+                displayStats.read + displayStats.failed;
+              const totalPct = Math.min(100, (processed / total) * 100);
 
               return (
                 <>
                   <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
                     <div
-                      className="h-full flex transition-all duration-500"
+                      className="h-full bg-green-500 rounded-full transition-all duration-500"
                       style={{ width: `${totalPct}%` }}
-                    >
-                      <div
-                        className="bg-green-500 h-full"
-                        style={{ width: `${totalPct > 0 ? (delPct / totalPct) * 100 : 0}%` }}
-                      />
-                      <div
-                        className="bg-blue-500 h-full"
-                        style={{ width: `${totalPct > 0 ? (sentPct / totalPct) * 100 : 0}%` }}
-                      />
-                      <div
-                        className="bg-red-500 h-full"
-                        style={{ width: `${totalPct > 0 ? (failPct / totalPct) * 100 : 0}%` }}
-                      />
-                    </div>
+                    />
                   </div>
-                  <div className="flex items-center justify-between
+                  <div className="flex items-start justify-between gap-3
                                 mt-2 text-xs text-gray-500">
-                    <div className="flex items-center gap-4">
-                      <span className="flex items-center gap-1">
-                        <span className="w-2 h-2 bg-green-500 rounded-full" />
-                        Delivered ({displayStats.delivered})
+                    {/* Labels wrap as whole items on narrow screens */}
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+                      <span className="whitespace-nowrap">
+                        Delivered ({displayStats.delivered + displayStats.read})
                       </span>
-                      <span className="flex items-center gap-1">
-                        <span className="w-2 h-2 bg-blue-500 rounded-full" />
-                        Sent ({Math.max(0, displayStats.sent - displayStats.delivered)})
+                      <span className="whitespace-nowrap">
+                        Awaiting delivery ({displayStats.sent})
                       </span>
-                      <span className="flex items-center gap-1">
-                        <span className="w-2 h-2 bg-red-500 rounded-full" />
+                      <span className="whitespace-nowrap">
                         Failed ({displayStats.failed})
                       </span>
                     </div>
-                    <span className="font-bold">
+                    <span className="font-bold shrink-0">
                       {Math.min(100, Math.round(totalPct))}%
                     </span>
                   </div>
@@ -605,8 +615,8 @@ const CampaignDetails: React.FC = () => {
             label="Sent"
             value={displayStats.sent + displayStats.delivered + displayStats.read}
             icon={Send} iconColor="text-purple-600"
-            onClick={() => handleFilterChange('SENT')}
-            active={filterStatus === 'SENT'}
+            onClick={() => handleFilterChange(SENT_FILTER)}
+            active={filterStatus === SENT_FILTER}
           />
           <StatCard
             label="Delivered" value={displayStats.delivered}
@@ -699,7 +709,7 @@ const CampaignDetails: React.FC = () => {
           >
             <option value="all">All Status</option>
             <option value="PENDING">Pending</option>
-            <option value="SENT">Sent</option>
+            <option value={SENT_FILTER}>Sent</option>
             <option value="DELIVERED">Delivered</option>
             <option value="READ">Read</option>
             <option value="FAILED">Failed</option>

@@ -42,6 +42,14 @@ const StatusBadge: React.FC<{ status: CampaignStatus }> = ({ status }) => {
   );
 };
 
+// campaign:update / campaign:progress carry cumulative counts (sent includes
+// delivered and read); the list keeps exclusive ones, like GET /campaigns.
+const toExclusive = (sent: number, delivered: number, read: number) => ({
+  sentCount: Math.max(0, sent - delivered),
+  deliveredCount: Math.max(0, delivered - read),
+  readCount: read,
+});
+
 const getProgress = (c: Campaign): number => {
   if (c.status === 'COMPLETED') return 100;
 
@@ -176,16 +184,26 @@ const Campaigns: React.FC = () => {
   useEffect(() => {
     if (!socket || !isConnected) return;
 
+    // Header totals come from /campaigns/stats; refresh them at most every 3s
+    // while live events flow (a debounce would never fire mid-campaign).
+    let statsTimer: ReturnType<typeof setTimeout> | null = null;
+    const refreshStatsSoon = () => {
+      if (statsTimer) return;
+      statsTimer = setTimeout(() => { statsTimer = null; fetchStats(); }, 3000);
+    };
+
     const onUpdate = (data: any) => {
+      if (data.sentCount != null) refreshStatsSoon();
       setCampaigns(prev => prev.map(c =>
         c.id === data.campaignId
           ? {
             ...c,
             status: data.status ?? c.status,
             totalContacts: data.totalContacts ?? c.totalContacts,
-            sentCount: data.sentCount ?? c.sentCount,
-            deliveredCount: data.deliveredCount ?? c.deliveredCount,
-            readCount: data.readCount ?? c.readCount,
+            // Pause/resume updates carry no counts
+            ...(data.sentCount != null
+              ? toExclusive(data.sentCount, data.deliveredCount ?? 0, data.readCount ?? 0)
+              : {}),
             failedCount: data.failedCount ?? c.failedCount,
           }
           : c
@@ -193,14 +211,13 @@ const Campaigns: React.FC = () => {
     };
 
     const onProgress = (data: any) => {
+      refreshStatsSoon();
       setCampaigns(prev => prev.map(c =>
         c.id === data.campaignId
           ? {
             ...c,
-            sentCount: data.sent,
+            ...toExclusive(data.sent || 0, data.delivered || 0, data.read || 0),
             failedCount: data.failed,
-            deliveredCount: data.delivered,
-            readCount: data.read,
             totalContacts: data.total ?? c.totalContacts,
             status: data.status || c.status,
           }
@@ -212,8 +229,10 @@ const Campaigns: React.FC = () => {
       setCampaigns(prev => prev.map(c =>
         c.id === data.campaignId
           ? {
+            // campaign:completed counts are exclusive already
             ...c, status: 'COMPLETED', sentCount: data.sentCount,
-            failedCount: data.failedCount, deliveredCount: data.deliveredCount
+            failedCount: data.failedCount, deliveredCount: data.deliveredCount,
+            readCount: data.readCount ?? c.readCount,
           }
           : c
       ));
@@ -236,6 +255,7 @@ const Campaigns: React.FC = () => {
       socket.off('campaign:progress', onProgress);
       socket.off('campaign:completed', onCompleted);
       socket.off('campaign:error', onError);
+      if (statsTimer) clearTimeout(statsTimer);
     };
   }, [socket, isConnected, fetchStats, fetchCampaigns]); // Static fetch dependencies mapped via refs or static callbacks
 

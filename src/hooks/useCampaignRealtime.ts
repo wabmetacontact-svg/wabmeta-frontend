@@ -2,6 +2,8 @@
 import { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import { useSocket } from '../context/SocketContext';
 
+// Cumulative, like the backend's campaign:progress event: sent includes
+// delivered and read, delivered includes read.
 interface CampaignProgress {
   sent: number;
   failed: number;
@@ -10,6 +12,8 @@ interface CampaignProgress {
   total: number;
   percentage: number;
   status: string;
+  /** Date.now() when received - lets the page tell live data from REST stats apart */
+  updatedAt: number;
 }
 
 interface CompletedStats {
@@ -61,15 +65,22 @@ export const useCampaignRealtime = (campaignId: string | null) => {
         if (!c) return;
 
         if (c.status === 'RUNNING') {
+          // GET /campaigns/:id counts are exclusive per status; progress is
+          // cumulative, so fold delivered/read back in.
+          const read = c.readCount || 0;
+          const delivered = (c.deliveredCount || 0) + read;
+          const sent = (c.sentCount || 0) + delivered;
+          const failed = c.failedCount || 0;
           setIsProcessing(true);
           setProgress({
-            sent: c.sentCount || 0,
-            failed: c.failedCount || 0,
-            delivered: c.deliveredCount || 0,
-            read: c.readCount || 0,
+            sent,
+            failed,
+            delivered,
+            read,
             total: c.totalContacts || 0,
-            percentage: c.totalContacts > 0 ? Math.round((c.sentCount / c.totalContacts) * 100) : 0,
+            percentage: c.totalContacts > 0 ? Math.round(((sent + failed) / c.totalContacts) * 100) : 0,
             status: 'RUNNING',
+            updatedAt: Date.now(),
           });
         }
       }).catch(() => { });
@@ -138,6 +149,7 @@ export const useCampaignRealtime = (campaignId: string | null) => {
         total: Math.max(0, data.total || 0),
         percentage: Math.min(100, Math.max(0, data.percentage || 0)),
         status: data.status || 'RUNNING',
+        updatedAt: Date.now(),
       });
       if (data.status === 'RUNNING') setIsProcessing(true);
     };
