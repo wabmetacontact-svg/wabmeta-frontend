@@ -7,6 +7,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useMetaConnect, type ConnectMode } from '../../hooks/useMetaConnect';
 import { ConnectWhatsAppChoice } from '../common/ConnectWhatsAppChoice';
+import ConnectVideoCard from '../dashboard/ConnectVideoCard';
 import { CoexistenceSyncStatus, type SmbSyncState } from './CoexistenceSyncStatus';
 import {
   Phone, CheckCircle, Trash2, Loader2, Star, Cloud, Plus,
@@ -740,40 +741,48 @@ export default function WhatsAppSettings() {
             })()}
           </div>
         ) : (
-          /* Empty State */
-          <div className="text-center py-8">
-            <div className="w-16 h-16 mx-auto mb-4 bg-slate-100 rounded-full flex items-center justify-center">
-              <AlertCircle className="w-8 h-8 text-slate-400" />
+          /* Empty State - setup video on the left, connect prompt on the right.
+             The video lives only here, so it disappears once a number is connected. */
+          <div className="py-4 grid grid-cols-1 md:grid-cols-[minmax(0,320px)_minmax(0,1fr)] gap-8 items-center">
+            <div className="text-center">
+              <div className="w-14 h-14 mx-auto mb-4 bg-slate-100 rounded-full flex items-center justify-center">
+                <AlertCircle className="w-7 h-7 text-slate-400" />
+              </div>
+              <h4 className="font-semibold text-slate-900 mb-1">No WhatsApp Account Connected</h4>
+              <p className="text-sm text-slate-500 mb-6 max-w-md mx-auto">
+                Connect your WhatsApp Business account through Meta's official
+                Cloud API for high-volume messaging with advanced features.
+              </p>
+              <button
+                onClick={handleConnect}
+                disabled={connectLoading || sdkLoading || !sdkReady}
+                className="inline-flex items-center justify-center gap-2 px-6 py-3
+                  bg-green-600 text-white rounded-xl hover:bg-green-700
+                  font-semibold transition-colors disabled:opacity-50"
+              >
+                {connectLoading ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    {progress || 'Connecting...'}
+                  </>
+                ) : sdkLoading ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    Loading...
+                  </>
+                ) : (
+                  <>
+                    <Plus className="w-5 h-5" />
+                    Connect with Meta
+                  </>
+                )}
+              </button>
             </div>
-            <h4 className="font-semibold text-slate-900 mb-1">No WhatsApp Account Connected</h4>
-            <p className="text-sm text-slate-500 mb-6 max-w-md mx-auto">
-              Connect your WhatsApp Business account through Meta's official
-              Cloud API for high-volume messaging with advanced features.
-            </p>
-            <button
-              onClick={handleConnect}
-              disabled={connectLoading || sdkLoading || !sdkReady}
-              className="inline-flex items-center justify-center gap-2 px-6 py-3
-                bg-green-600 text-white rounded-xl hover:bg-green-700
-                font-semibold transition-colors disabled:opacity-50"
-            >
-              {connectLoading ? (
-                <>
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  {progress || 'Connecting...'}
-                </>
-              ) : sdkLoading ? (
-                <>
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  Loading...
-                </>
-              ) : (
-                <>
-                  <Plus className="w-5 h-5" />
-                  Connect with Meta
-                </>
-              )}
-            </button>
+
+            {/* First on desktop; below the button on phones */}
+            <div className="md:order-first">
+              <ConnectVideoCard variant="inline" />
+            </div>
           </div>
         )}
       </div>

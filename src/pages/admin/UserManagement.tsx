@@ -13,8 +13,10 @@ import {
   Users,
   UserX,
   Eye,
+  EyeOff,
   X,
   Key,
+  LogIn,
   UserCheck,
   ExternalLink,
   ChevronLeft,
@@ -67,7 +69,6 @@ interface User {
     businessAppAccounts: number;
     activeAccounts: number;
   };
-  password?: string;
 }
 
 interface PaginationState {
@@ -517,7 +518,7 @@ const PasswordModal: React.FC<PasswordModalProps> = ({
             <p className="text-sm font-semibold text-gray-900 truncate">
               {getUserDisplayName(user)}
             </p>
-            <p className="text-xs text-blue-300 truncate">{user.email}</p>
+            <p className="text-xs text-blue-600 truncate">{user.email}</p>
           </div>
           <StatusBadge status={user.status} />
         </div>
@@ -535,7 +536,7 @@ const PasswordModal: React.FC<PasswordModalProps> = ({
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 placeholder="Enter new password"
-                className="w-full px-4 py-2.5 bg-gray-50
+                className="w-full px-4 py-2.5 pr-10 bg-gray-50
                   border border-gray-200 rounded-xl text-sm text-gray-900
                   placeholder:text-gray-500 focus:outline-none
                   focus:border-primary-500 transition-colors"
@@ -545,9 +546,10 @@ const PasswordModal: React.FC<PasswordModalProps> = ({
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
               >
-                <Eye className="w-4 h-4" />
+                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             </div>
 
@@ -558,7 +560,7 @@ const PasswordModal: React.FC<PasswordModalProps> = ({
                     <div
                       key={i}
                       className={`h-1 flex-1 rounded-full transition-all ${
-                        i < strength ? currentStrength.color : 'bg-white/[0.1]'
+                        i < strength ? currentStrength.color : 'bg-gray-200'
                       }`}
                     />
                   ))}
@@ -582,7 +584,7 @@ const PasswordModal: React.FC<PasswordModalProps> = ({
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="Confirm new password"
                 className={`w-full px-4 py-2.5 pr-10 bg-gray-50
-                  border rounded-xl text-sm text-white placeholder:text-gray-500
+                  border rounded-xl text-sm text-gray-900 placeholder:text-gray-500
                   focus:outline-none transition-colors ${
                     confirmPassword && newPassword !== confirmPassword
                       ? 'border-red-500/50 focus:border-red-500'
@@ -593,9 +595,10 @@ const PasswordModal: React.FC<PasswordModalProps> = ({
               <button
                 type="button"
                 onClick={() => setShowConfirm(!showConfirm)}
+                aria-label={showConfirm ? 'Hide password' : 'Show password'}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
               >
-                <Eye className="w-4 h-4" />
+                {showConfirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             </div>
           </div>
@@ -619,7 +622,7 @@ const PasswordModal: React.FC<PasswordModalProps> = ({
                   className="sr-only peer"
                 />
                 <div
-                  className="w-11 h-6 bg-white/[0.1] rounded-full peer
+                  className="w-11 h-6 bg-gray-300 rounded-full peer
                   peer-checked:bg-primary-600 transition-colors
                   after:content-[''] after:absolute after:top-[2px] after:left-[2px]
                   after:bg-white after:rounded-full after:h-5 after:w-5
@@ -646,11 +649,182 @@ const PasswordModal: React.FC<PasswordModalProps> = ({
                 loading || !newPassword || newPassword !== confirmPassword
               }
               className="px-4 py-2 bg-primary-600 hover:bg-primary-700
-                text-gray-900 rounded-xl flex items-center gap-2
+                text-white rounded-xl flex items-center gap-2
                 disabled:opacity-50 transition-colors text-sm font-medium"
             >
               {loading && <Loader2 className="w-4 h-4 animate-spin" />}
               Update Password
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+// ============================================
+// LOGIN AS USER MODAL
+// ============================================
+// Opens the customer app as this user in a new tab, without their password.
+// Same flow as "View as user" on the user's detail page (see
+// components/admin/UserAccountControl.tsx): a 30-minute, read-only token,
+// and the backend writes the reason to the audit log.
+interface LoginAsModalProps {
+  user: User | null;
+  onClose: () => void;
+}
+
+const LoginAsModal: React.FC<LoginAsModalProps> = ({ user, onClose }) => {
+  const [orgId, setOrgId] = useState('');
+  const [reason, setReason] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    setOrgId(user?.organizations?.[0]?.id || '');
+    setReason('');
+  }, [user]);
+
+  if (!user) return null;
+  const orgs = user.organizations || [];
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (reason.trim().length < 3) {
+      toast.error('Write a short reason. It is recorded in the audit log.');
+      return;
+    }
+
+    // Open the tab now, inside the click, so a popup blocker allows it; the
+    // address is filled in once the token arrives.
+    const tab = window.open('about:blank', '_blank');
+    setLoading(true);
+    try {
+      const res = await admin.impersonateUser(user.id, { organizationId: orgId || undefined, reason: reason.trim() });
+      const d = res.data.data;
+      const params = new URLSearchParams({
+        token: d.accessToken,
+        name: getUserDisplayName(user),
+        email: user.email,
+        org: d.organization?.name || '',
+        expiresAt: d.expiresAt,
+        returnTo: '/manage-wabmeta-admin/users',
+      });
+      const url = `/impersonate#${params.toString()}`;
+      if (tab) {
+        tab.opener = null;
+        tab.location.href = url;
+      } else {
+        window.location.href = url;
+      }
+      onClose();
+    } catch (err: any) {
+      tab?.close();
+      toast.error(err.response?.data?.message || 'Could not open the account');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={() => !loading && onClose()} />
+      <div className="relative bg-white border border-gray-200 rounded-2xl shadow-2xl max-w-md w-full overflow-hidden">
+        {/* Header */}
+        <div className="bg-gray-50 border-b border-gray-200 px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-amber-500/10 border border-amber-500/20 rounded-xl flex items-center justify-center">
+                <LogIn className="w-5 h-5 text-amber-600" />
+              </div>
+              <div>
+                <h2 className="text-base font-bold text-gray-900">Login as User</h2>
+                <p className="text-xs text-gray-500 mt-0.5">Open their account without a password</p>
+              </div>
+            </div>
+            <button
+              onClick={onClose}
+              disabled={loading}
+              aria-label="Close"
+              className="p-2 text-gray-500 hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+
+        {/* User info banner */}
+        <div className="px-6 py-3 bg-blue-500/10 border-b border-blue-500/20 flex items-center gap-2">
+          <div className="w-7 h-7 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0">
+            {getUserInitials(user)}
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-semibold text-gray-900 truncate">{getUserDisplayName(user)}</p>
+            <p className="text-xs text-blue-600 truncate">{user.email}</p>
+          </div>
+          <StatusBadge status={user.status} />
+        </div>
+
+        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          {orgs.length > 1 && (
+            <div>
+              <label htmlFor="loginas-org" className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                Organization
+              </label>
+              <select
+                id="loginas-org"
+                value={orgId}
+                onChange={(e) => setOrgId(e.target.value)}
+                className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 focus:outline-none focus:border-primary-500"
+              >
+                {orgs.map((o) => (
+                  <option key={o.id} value={o.id}>
+                    {o.name} ({o.role})
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          <div>
+            <label htmlFor="loginas-reason" className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+              Reason
+            </label>
+            <input
+              id="loginas-reason"
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              maxLength={500}
+              placeholder="e.g. Support ticket #123"
+              className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 placeholder:text-gray-500 focus:outline-none focus:border-primary-500"
+              required
+              autoFocus
+            />
+          </div>
+
+          <div className="flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs text-amber-800">
+            <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+            <p>
+              Opens in a new tab for 30 minutes. It is view-only: nothing can be changed or sent.
+              The reason is saved in the audit log.
+            </p>
+          </div>
+
+          <div className="flex gap-3 justify-end pt-2">
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={loading}
+              className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors disabled:opacity-50 text-sm font-medium"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={loading || reason.trim().length < 3}
+              className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl flex items-center gap-2 disabled:opacity-50 transition-colors text-sm font-medium"
+            >
+              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <LogIn className="w-4 h-4" />}
+              Open Account
             </button>
           </div>
         </form>
@@ -839,6 +1013,8 @@ const UserManagement: React.FC = () => {
 
   const [detailsModalUser, setDetailsModalUser] = useState<User | null>(null);
   const [passwordModalUser, setPasswordModalUser] = useState<User | null>(null);
+  const [loginAsUser, setLoginAsUser] = useState<User | null>(null);
+  const canLoginAs = adminCan('impersonate');
 
   const [confirmModal, setConfirmModal] = useState<{
     isOpen: boolean;
@@ -1049,6 +1225,8 @@ const UserManagement: React.FC = () => {
         onClose={() => setPasswordModalUser(null)}
         onUpdate={handleUpdatePassword}
       />
+
+      <LoginAsModal user={loginAsUser} onClose={() => setLoginAsUser(null)} />
 
       {/* Force Delete Modal (Dark) */}
       {deleteModal.isOpen && (
@@ -1295,6 +1473,24 @@ const UserManagement: React.FC = () => {
                           >
                             <Key className="w-4 h-4" />
                           </button>
+                          {canLoginAs && (
+                            <button
+                              onClick={() => setLoginAsUser(user)}
+                              disabled={user.status !== 'ACTIVE' || !user.organizations?.length}
+                              className="p-2 text-gray-400 hover:text-amber-500
+                                hover:bg-amber-500/10 rounded-lg transition-all
+                                disabled:opacity-30 disabled:hover:text-gray-400 disabled:hover:bg-transparent"
+                              title={
+                                user.status !== 'ACTIVE'
+                                  ? 'Login as user (only for active users)'
+                                  : !user.organizations?.length
+                                    ? 'Login as user (not in any organization)'
+                                    : 'Login as User'
+                              }
+                            >
+                              <LogIn className="w-4 h-4" />
+                            </button>
+                          )}
 
                           {user.status === 'ACTIVE' ? (
                             <button

@@ -28,6 +28,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { FaWhatsapp, FaTelegram } from "react-icons/fa";
 import SocialFollowCard from '../components/dashboard/SocialFollowCard';
 import QualityWarningBanner from '../components/dashboard/QualityWarningBanner';
+import ConnectVideoCard from '../components/dashboard/ConnectVideoCard';
 
 const getGreeting = () => {
   const h = new Date().getHours();
@@ -332,66 +333,67 @@ const Dashboard: React.FC = () => {
         </div>
       )}
 
+      {/* Quick Metrics: tutorial video + one card per channel */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
+        <ConnectVideoCard />
+        {loadingStats ? (
+          <>
+            <QuickStatSkeleton />
+            <QuickStatSkeleton />
+            <QuickStatSkeleton />
+          </>
+        ) : (
+          <>
+            <div className="relative overflow-hidden rounded-2xl bg-emerald-50/40 border border-emerald-100 p-6 group shadow-sm">
+              <div className="absolute top-0 right-0 p-4 opacity-[0.05] text-emerald-600 group-hover:scale-110 transition-transform">
+                <FaWhatsapp size={80} />
+              </div>
+              <div className="relative">
+                <p className="text-[10px] font-mono text-emerald-700 uppercase tracking-widest mb-1 font-semibold">WhatsApp</p>
+                <h3 className="text-3xl font-bold text-gray-900">{formatNum(messagesSent)}</h3>
+                <p className="text-xs text-gray-500 font-normal mt-2">Messages sent this month</p>
+                <div className="mt-4 flex items-center gap-2">
+                  <span className="text-[10px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-semibold">{deliveryRate}% Delivery</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="relative overflow-hidden rounded-2xl bg-pink-50/40 border border-pink-100 p-6 group shadow-sm">
+              <div className="absolute top-0 right-0 p-4 opacity-[0.05] text-pink-600 group-hover:scale-110 transition-transform">
+                <Instagram size={80} />
+              </div>
+              <div className="relative">
+                <p className="text-[10px] font-mono text-pink-700 uppercase tracking-widest mb-1 font-semibold">Instagram</p>
+                <h3 className="text-3xl font-bold text-gray-900">{formatNum((igCh.sent || 0) + (igCh.received || 0))}</h3>
+                <p className="text-xs text-gray-500 font-normal mt-2">Messages exchanged</p>
+                <div className="mt-4 flex items-center gap-2">
+                  <span className="text-[10px] bg-pink-100 text-pink-800 px-2 py-0.5 rounded-full font-semibold">{formatNum(igCh.conversations || 0)} chats</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="relative overflow-hidden rounded-2xl bg-sky-50/40 border border-sky-100 p-6 group shadow-sm">
+              <div className="absolute top-0 right-0 p-4 opacity-[0.05] text-sky-600 group-hover:scale-110 transition-transform">
+                <FaTelegram size={80} />
+              </div>
+              <div className="relative">
+                <p className="text-[10px] font-mono text-sky-700 uppercase tracking-widest mb-1 font-semibold">Telegram</p>
+                <h3 className="text-3xl font-bold text-gray-900">{formatNum((tgCh.sent || 0) + (tgCh.received || 0))}</h3>
+                <p className="text-xs text-gray-500 font-normal mt-2">Messages exchanged</p>
+                <div className="mt-4 flex items-center gap-2">
+                  <span className="text-[10px] bg-sky-100 text-sky-800 px-2 py-0.5 rounded-full font-semibold">{formatNum(tgCh.conversations || 0)} chats</span>
+                </div>
+              </div>
+            </div>
+          </>
+        )}
+      </div>
+
       {/* Grid container */}
       <div className="grid grid-cols-1 xl:grid-cols-4 gap-6 items-start">
 
         {/* Left main area */}
         <div className="xl:col-span-3 space-y-6 min-w-0 w-full">
-
-          {/* Quick Metrics */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {loadingStats ? (
-              <>
-                <QuickStatSkeleton />
-                <QuickStatSkeleton />
-                <QuickStatSkeleton />
-              </>
-            ) : (
-              <>
-                <div className="relative overflow-hidden rounded-2xl bg-emerald-50/40 border border-emerald-100 p-6 group shadow-sm">
-                  <div className="absolute top-0 right-0 p-4 opacity-[0.05] text-emerald-600 group-hover:scale-110 transition-transform">
-                    <FaWhatsapp size={80} />
-                  </div>
-                  <div className="relative">
-                    <p className="text-[10px] font-mono text-emerald-700 uppercase tracking-widest mb-1 font-semibold">WhatsApp</p>
-                    <h3 className="text-3xl font-bold text-gray-900">{formatNum(messagesSent)}</h3>
-                    <p className="text-xs text-gray-500 font-normal mt-2">Messages sent this month</p>
-                    <div className="mt-4 flex items-center gap-2">
-                      <span className="text-[10px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-semibold">{deliveryRate}% Delivery</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="relative overflow-hidden rounded-2xl bg-pink-50/40 border border-pink-100 p-6 group shadow-sm">
-                  <div className="absolute top-0 right-0 p-4 opacity-[0.05] text-pink-600 group-hover:scale-110 transition-transform">
-                    <Instagram size={80} />
-                  </div>
-                  <div className="relative">
-                    <p className="text-[10px] font-mono text-pink-700 uppercase tracking-widest mb-1 font-semibold">Instagram</p>
-                    <h3 className="text-3xl font-bold text-gray-900">{formatNum((igCh.sent || 0) + (igCh.received || 0))}</h3>
-                    <p className="text-xs text-gray-500 font-normal mt-2">Messages exchanged</p>
-                    <div className="mt-4 flex items-center gap-2">
-                      <span className="text-[10px] bg-pink-100 text-pink-800 px-2 py-0.5 rounded-full font-semibold">{formatNum(igCh.conversations || 0)} chats</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="relative overflow-hidden rounded-2xl bg-sky-50/40 border border-sky-100 p-6 group shadow-sm">
-                  <div className="absolute top-0 right-0 p-4 opacity-[0.05] text-sky-600 group-hover:scale-110 transition-transform">
-                    <FaTelegram size={80} />
-                  </div>
-                  <div className="relative">
-                    <p className="text-[10px] font-mono text-sky-700 uppercase tracking-widest mb-1 font-semibold">Telegram</p>
-                    <h3 className="text-3xl font-bold text-gray-900">{formatNum((tgCh.sent || 0) + (tgCh.received || 0))}</h3>
-                    <p className="text-xs text-gray-500 font-normal mt-2">Messages exchanged</p>
-                    <div className="mt-4 flex items-center gap-2">
-                      <span className="text-[10px] bg-sky-100 text-sky-800 px-2 py-0.5 rounded-full font-semibold">{formatNum(tgCh.conversations || 0)} chats</span>
-                    </div>
-                  </div>
-                </div>
-              </>
-            )}
-          </div>
 
           {/* Charts view */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">

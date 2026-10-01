@@ -1108,6 +1108,20 @@ const Contacts: React.FC = () => {
                         <span className="text-gray-600 font-normal">contacts</span>
                       </span>
                     </div>
+                    {group.createdAt && (
+                      <p className="mt-4 pt-3 border-t border-gray-100 flex items-center gap-1.5 text-xs text-gray-500">
+                        <Calendar className="w-3.5 h-3.5" />
+                        Created{' '}
+                        {new Date(group.createdAt).toLocaleString('en-IN', {
+                          day: 'numeric',
+                          month: 'short',
+                          year: 'numeric',
+                          hour: 'numeric',
+                          minute: '2-digit',
+                          hour12: true,
+                        })}
+                      </p>
+                    )}
                   </div>
 
                   {/* Hover actions */}
