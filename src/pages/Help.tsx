@@ -34,7 +34,7 @@ interface VideoTutorial {
   youtubeId?: string; // YouTube video ID
   videoUrl?: string; // Direct video URL (if self-hosted)
   duration: string;
-  category: 'getting-started' | 'features' | 'advanced' | 'troubleshooting';
+  category: 'getting-started' | 'features' | 'automation';
 }
 
 const Help: React.FC = () => {
@@ -48,71 +48,80 @@ const Help: React.FC = () => {
   const SUPPORT_EMAIL = 'wabmetacontact@gmail.com';
   const WHATSAPP_LINK = `https://wa.me/${SUPPORT_WHATSAPP}?text=Hi, I need help with WabMeta!`;
 
-  // ✅ VIDEO TUTORIALS DATA
+  // ✅ VIDEO TUTORIALS DATA - the WabMeta Tutorials series on YouTube (Hindi
+  // voiceover). Thumbnails come from YouTube.
   const videoTutorials: VideoTutorial[] = [
     {
       id: '1',
-      title: 'Getting Started with WabMeta',
-      description: 'Learn how to set up your account and connect WhatsApp Business API',
-      youtubeId: 'YOUR_YOUTUBE_VIDEO_ID_1', // Replace with actual YouTube ID
-      duration: '5:30',
+      title: 'Connect WhatsApp Business API',
+      description: 'Connect your WhatsApp number to WabMeta through Meta’s official signup — new number or WhatsApp Business app.',
+      youtubeId: '2Gr_88Wsk5Y',
+      duration: '2:09',
       category: 'getting-started',
     },
     {
       id: '2',
-      title: 'How to Connect Meta Business Account',
-      description: 'Step-by-step guide to connect your Meta Business account',
-      youtubeId: 'OJ620JsrfXo',
-      duration: '1:36',
+      title: 'Create a WhatsApp Template',
+      description: 'Build a template with an image, variables and buttons, and submit it to Meta for approval.',
+      youtubeId: 'y2TD7H7Vjy0',
+      duration: '1:57',
       category: 'getting-started',
     },
     {
       id: '3',
-      title: 'Creating Your First Campaign',
-      description: 'Learn how to create and send bulk WhatsApp campaigns',
-      youtubeId: 'jyHmlO8cUcw',
-      duration: '1:09',
-      category: 'features',
+      title: 'Import Contacts from CSV',
+      description: 'Upload your customer list in one go, with invalid and duplicate numbers caught for you.',
+      youtubeId: 'FlaJFbsf6i0',
+      duration: '1:39',
+      category: 'getting-started',
     },
     {
       id: '4',
-      title: 'WhatsApp Template Management',
-      description: 'How to create, edit and get approval for message templates',
-      youtubeId: 'urKw3mscCSc',
-      duration: '1:01',
+      title: 'Send Bulk WhatsApp Campaigns',
+      description: 'Send an approved template to thousands of customers, personalised per contact, and track delivery.',
+      youtubeId: 'ituDf3olR24',
+      duration: '1:53',
       category: 'features',
     },
     {
       id: '5',
-      title: 'Building Chatbot Flows',
-      description: 'Create automated chatbot flows with our visual builder',
-      youtubeId: 'YOUR_YOUTUBE_VIDEO_ID_5',
-      duration: '15:30',
-      category: 'advanced',
+      title: 'Build a WhatsApp Chatbot',
+      description: 'Drag-and-drop a chatbot with a welcome menu, replies and AI answers — no coding needed.',
+      youtubeId: 'JUPaDwVlz48',
+      duration: '1:51',
+      category: 'automation',
     },
     {
       id: '6',
-      title: 'Managing Inbox & Conversations',
-      description: 'Handle customer conversations efficiently with our inbox',
-      youtubeId: 'YOUR_YOUTUBE_VIDEO_ID_6',
-      duration: '7:45',
-      category: 'features',
+      title: 'Auto Reply & Follow-up Automation',
+      description: 'Reply instantly to keywords, tag customers and follow up the next day automatically.',
+      youtubeId: 'N2UBfmgK8PE',
+      duration: '1:43',
+      category: 'automation',
     },
     {
       id: '7',
-      title: 'Analytics & Reporting',
-      description: 'Track campaign performance and conversation metrics',
-      youtubeId: 'YOUR_YOUTUBE_VIDEO_ID_7',
-      duration: '9:20',
-      category: 'features',
+      title: 'AI Sales Agent',
+      description: 'Let AI answer customers 24/7 from your products and FAQs, and hand chats to your team when needed.',
+      youtubeId: 'OF7pC1GPjKg',
+      duration: '1:53',
+      category: 'automation',
     },
     {
       id: '8',
-      title: 'Troubleshooting Common Issues',
-      description: 'Fix common problems like message delivery failures',
-      youtubeId: 'YOUR_YOUTUBE_VIDEO_ID_8',
-      duration: '11:00',
-      category: 'troubleshooting',
+      title: 'Manage Leads in the CRM',
+      description: 'Track every enquiry through your pipeline with notes and follow-up tasks until the deal is won.',
+      youtubeId: 'thcGjItky80',
+      duration: '1:51',
+      category: 'features',
+    },
+    {
+      id: '9',
+      title: 'Recharge Your Wallet',
+      description: 'Pay for WhatsApp message charges in rupees with UPI, card or net banking — no international card.',
+      youtubeId: 'l1K82M8DR5E',
+      duration: '1:28',
+      category: 'features',
     },
   ];
 
@@ -120,8 +129,7 @@ const Help: React.FC = () => {
     { id: 'all', label: 'All Videos', icon: Video },
     { id: 'getting-started', label: 'Getting Started', icon: PlayCircle },
     { id: 'features', label: 'Features', icon: Book },
-    { id: 'advanced', label: 'Advanced', icon: FileText },
-    { id: 'troubleshooting', label: 'Troubleshooting', icon: HelpCircle },
+    { id: 'automation', label: 'Automation & AI', icon: FileText },
   ];
 
   // Ids like YOUR_YOUTUBE_VIDEO_ID_1 are placeholders, not real videos.
@@ -384,7 +392,7 @@ const Help: React.FC = () => {
             Video Tutorials
           </h2>
           <p className="text-gray-500">
-            Learn WabMeta with our step-by-step video guides
+            Learn WabMeta with our step-by-step video guides (Hindi voiceover)
           </p>
         </div>
 
@@ -463,7 +471,7 @@ const Help: React.FC = () => {
               {/* Video Info */}
               <div className="p-5">
                 <h3 className="font-semibold text-gray-900 mb-2 group-hover:text-green-600 transition-colors">
-                  {video.title}
+                  {video.id}. {video.title}
                 </h3>
                 <p className="text-sm text-gray-500 line-clamp-2">
                   {video.description}
