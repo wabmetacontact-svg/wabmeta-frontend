@@ -369,11 +369,11 @@ const NodeConfigPanel: React.FC<Props> = ({ node, onUpdate, onDelete, onClose })
               </p>
               <div className="space-y-1">
                 {[
-                  { icon: '✅', text: 'Conversation history yaad rakhega' },
+                  { icon: '✅', text: 'Remembers conversation history' },
                   { icon: '✅', text: 'Hindi + English (Hinglish) support' },
                   { icon: '✅', text: 'Context-aware replies' },
                   { icon: '✅', text: 'Auto conversation summary (long chats)' },
-                  { icon: '✅', text: 'Off-topic questions handle karega' },
+                  { icon: '✅', text: 'Handles off-topic questions' },
                 ].map((item, i) => (
                   <div key={i} className="flex items-center gap-2 text-xs text-gray-500">
                     <span>{item.icon}</span>
