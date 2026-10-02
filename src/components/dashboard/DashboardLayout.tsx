@@ -7,6 +7,7 @@ import ErrorBoundary from '../common/ErrorBoundary';
 import TopBar from './TopBar';
 import AnnouncementBar from './AnnouncementBar';
 import { useGlobalNotifications } from '../../hooks/useGlobalNotifications';
+import { CallProvider } from '../../context/CallContext';
 
 const GlobalNotificationHandler: React.FC = () => {
   useGlobalNotifications();
@@ -26,6 +27,8 @@ const DashboardLayout: React.FC = () => {
   }, [location.pathname]);
 
   return (
+    // WhatsApp calls ring on every dashboard page
+    <CallProvider>
     <div className={`relative bg-gray-50 ${isInbox ? 'h-screen max-md:h-[100dvh] overflow-hidden' : 'min-h-screen'}`}>
       <GlobalNotificationHandler />
 
@@ -88,6 +91,7 @@ const DashboardLayout: React.FC = () => {
         )}
       </main>
     </div>
+    </CallProvider>
   );
 };
 

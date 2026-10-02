@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   Phone, PhoneCall, ToggleLeft, ToggleRight, Loader2,
-  AlertCircle, Clock, Globe, CheckCircle2,
+  AlertCircle, Clock, Globe, CheckCircle2, PhoneIncoming, PhoneOutgoing, XCircle,
 } from 'lucide-react';
 import api from '../../services/api';
 import toast from 'react-hot-toast';
@@ -51,7 +51,40 @@ const DEFAULT_HOURS: DayHours[] = DAYS.map((day) => ({
   enabled: !['SATURDAY', 'SUNDAY'].includes(day),
 }));
 
+interface Eligibility {
+  connected: boolean;
+  phoneNumber?: string;
+  callingEnabled?: boolean | null;
+  messagingLimit?: string | null;
+  dailyLimit?: number | null;
+  minimumDailyLimit?: number;
+  meetsLimit?: boolean | null;
+  outboundAvailable?: boolean;
+  outboundBlockedReason?: string | null;
+}
+
+interface CallLogRow {
+  id: string;
+  direction: 'INBOUND' | 'OUTBOUND';
+  status: string;
+  from: string | null;
+  to: string | null;
+  startedAt: string;
+  duration: number | null;
+  contactName: string | null;
+}
+
+const CALL_STATUS_TEXT: Record<string, string> = {
+  COMPLETED: 'Completed', MISSED: 'Missed', NOT_ANSWERED: 'No answer', REJECTED: 'Declined',
+  FAILED: 'Failed', RINGING: 'Ringing', CALLING: 'Calling', ANSWERING: 'Answering', ANSWERED: 'In progress',
+};
+
+const formatSeconds = (s: number | null) =>
+  s ? `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}` : '';
+
 const CallingSettings: React.FC = () => {
+  const [eligibility, setEligibility] = useState<Eligibility | null>(null);
+  const [recentCalls, setRecentCalls] = useState<CallLogRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [callingEnabled, setCallingEnabled] = useState(false);
@@ -65,7 +98,11 @@ const CallingSettings: React.FC = () => {
   const [timezone, setTimezone] = useState('Asia/Kolkata');
   const [weeklyHours, setWeeklyHours] = useState<DayHours[]>(DEFAULT_HOURS);
 
-  useEffect(() => { fetchSettings(); }, []);
+  useEffect(() => {
+    fetchSettings();
+    api.get('/calling/eligibility').then((r) => setEligibility(r.data?.data ?? null)).catch(() => undefined);
+    api.get('/calling/logs', { params: { limit: 10 } }).then((r) => setRecentCalls(r.data?.data || [])).catch(() => undefined);
+  }, []);
 
   const fetchSettings = async () => {
     try {
@@ -154,25 +191,59 @@ const CallingSettings: React.FC = () => {
         </p>
       </div>
 
-      {/* Requirements Banner */}
-      <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
-        <div className="flex items-start gap-3">
-          <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
-          <div>
-            <p className="text-amber-800 font-medium text-sm">Requirements</p>
-            <ul className="text-amber-700 text-xs mt-1 space-y-1">
-              <li>• Daily messaging limit of at least 2,000 unique recipients</li>
-              <li>• Cloud API phone number (not the WhatsApp Business app)</li>
-              <li>• Calling enabled on the number in WhatsApp Manager</li>
-              <li>
-                • <strong>Business-initiated calls</strong> are not available for numbers in
-                the US, Canada, Egypt, Vietnam or Nigeria. Customers from those
-                countries can still call you.
-              </li>
-            </ul>
+      {/* Can this number use calling? Meta's rules, checked against the number */}
+      {eligibility?.connected && eligibility.meetsLimit === false ? (
+        <div className="bg-red-50 border border-red-200 rounded-xl p-4">
+          <div className="flex items-start gap-3">
+            <XCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
+            <div>
+              <p className="text-red-800 font-medium text-sm">This number cannot use calling yet</p>
+              <p className="text-red-700 text-xs mt-1">
+                WhatsApp allows calling only on numbers that can message at least{' '}
+                {(eligibility.minimumDailyLimit || 2000).toLocaleString('en-IN')} customers a day. Yours is at{' '}
+                <strong>{eligibility.dailyLimit?.toLocaleString('en-IN') ?? 'a lower tier'}</strong> a day. Meta raises the
+                limit as you keep sending messages people want, with a good quality rating.
+              </p>
+            </div>
           </div>
         </div>
-      </div>
+      ) : eligibility?.connected && eligibility.meetsLimit ? (
+        <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4">
+          <div className="flex items-start gap-3">
+            <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
+            <div className="text-xs text-emerald-800 space-y-1">
+              <p className="font-medium text-sm">
+                {eligibility.phoneNumber} can use WhatsApp calling
+                {eligibility.dailyLimit ? ` (limit ${eligibility.dailyLimit.toLocaleString('en-IN')} a day)` : ' (unlimited tier)'}
+              </p>
+              <p>
+                {eligibility.callingEnabled
+                  ? 'Calling is switched on. Customer calls ring in the dashboard for every agent.'
+                  : 'Calling is switched off. Turn on "Enable WhatsApp Calling" below and save.'}
+              </p>
+              {eligibility.outboundAvailable === false && <p>{eligibility.outboundBlockedReason}</p>}
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
+          <div className="flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+            <div>
+              <p className="text-amber-800 font-medium text-sm">Requirements</p>
+              <ul className="text-amber-700 text-xs mt-1 space-y-1">
+                <li>• Daily messaging limit of at least 2,000 unique recipients</li>
+                <li>• Cloud API phone number (not the WhatsApp Business app)</li>
+                <li>
+                  • <strong>Business-initiated calls</strong> are not available for numbers in
+                  the US, Canada, Egypt, Vietnam or Nigeria. Customers from those
+                  countries can still call you.
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Basic Toggles */}
       <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
@@ -390,6 +461,38 @@ const CallingSettings: React.FC = () => {
         )}
         {saving ? 'Saving...' : 'Save Calling Settings'}
       </button>
+
+      {/* Recent calls */}
+      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
+        <div className="px-4 py-3 border-b border-slate-100 bg-slate-50">
+          <p className="text-sm font-semibold text-slate-700">Recent calls</p>
+        </div>
+        {recentCalls.length === 0 ? (
+          <p className="px-4 py-6 text-sm text-slate-500 text-center">No calls yet.</p>
+        ) : (
+          recentCalls.map((c) => {
+            const Icon = c.direction === 'INBOUND' ? PhoneIncoming : PhoneOutgoing;
+            const missed = ['MISSED', 'NOT_ANSWERED', 'REJECTED', 'FAILED'].includes(c.status);
+            return (
+              <div key={c.id} className="flex items-center gap-3 px-4 py-3 border-b border-slate-100 last:border-0">
+                <Icon className={`w-4 h-4 shrink-0 ${missed ? 'text-red-500' : 'text-emerald-600'}`} />
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm text-slate-900 truncate">
+                    {c.contactName || (c.direction === 'INBOUND' ? c.from : c.to) || 'Unknown'}
+                  </p>
+                  <p className="text-xs text-slate-500">
+                    {new Date(c.startedAt).toLocaleString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                  </p>
+                </div>
+                <div className="text-right text-xs">
+                  <p className={missed ? 'text-red-600 font-medium' : 'text-slate-700'}>{CALL_STATUS_TEXT[c.status] || c.status}</p>
+                  {c.duration ? <p className="text-slate-400">{formatSeconds(c.duration)}</p> : null}
+                </div>
+              </div>
+            );
+          })
+        )}
+      </div>
     </div>
   );
 };

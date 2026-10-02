@@ -225,9 +225,12 @@ const ClientBilling: React.FC = () => {
           </p>
         </div>
         <div className="flex gap-2 flex-wrap">
-          <button onClick={() => setPlanOpen(true)} className="flex items-center gap-2 px-3 py-2 rounded-xl bg-gray-900 text-white text-sm">
-            <Wallet className="w-4 h-4" /> Assign plan
-          </button>
+          {/* Onboarders cannot assign plans (the API refuses too) */}
+          {adminCan('billing.write') && (
+            <button onClick={() => setPlanOpen(true)} className="flex items-center gap-2 px-3 py-2 rounded-xl bg-gray-900 text-white text-sm">
+              <Wallet className="w-4 h-4" /> Assign plan
+            </button>
+          )}
           <Link to={`/manage-wabmeta-admin/organizations/${org.id}/features`} className="flex items-center gap-2 px-3 py-2 rounded-xl border border-gray-200 text-sm text-gray-700 hover:bg-gray-50">
             <SlidersHorizontal className="w-4 h-4" /> Features
           </Link>

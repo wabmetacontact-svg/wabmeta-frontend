@@ -23,6 +23,7 @@ import { Link } from 'react-router-dom';
 // Components
 import AssignPlanModal from '../../components/admin/AssignPlanModal';
 import ExtendSubscriptionModal from '../../components/admin/ExtendSubscriptionModal';
+import { adminCan } from '../../utils/adminPermissions';
 
 // ============================================
 // STAT CARD
@@ -381,15 +382,17 @@ const SubscriptionManagement: React.FC = () => {
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
             Refresh
           </button>
-          <button
-            onClick={() => setAssignModalOpen(true)}
-            className="px-4 py-2.5 bg-primary-600 hover:bg-primary-700
-              text-gray-900 rounded-xl flex items-center gap-2 text-sm font-medium
-              transition-colors"
-          >
-            <Plus className="w-4 h-4" />
-            Assign Plan
-          </button>
+          {adminCan('billing.write') && (
+            <button
+              onClick={() => setAssignModalOpen(true)}
+              className="px-4 py-2.5 bg-primary-600 hover:bg-primary-700
+                text-gray-900 rounded-xl flex items-center gap-2 text-sm font-medium
+                transition-colors"
+            >
+              <Plus className="w-4 h-4" />
+              Assign Plan
+            </button>
+          )}
         </div>
       </div>
 
