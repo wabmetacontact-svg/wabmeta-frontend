@@ -230,7 +230,10 @@ const PlanPayments: React.FC = () => {
                     </td>
                     <td className="px-4 py-3 text-gray-700">
                       {r.planName || '—'}
-                      {r.billingCycle && <span className="block text-xs text-gray-400 capitalize">{r.billingCycle}</span>}
+                      {/* Retired duration plans ("6-Month Plan") always stored "monthly"; their name already says the term */}
+                      {r.billingCycle && !/month|year/i.test(r.planName || '') && (
+                        <span className="block text-xs text-gray-400 capitalize">{r.billingCycle}</span>
+                      )}
                     </td>
                     <td className="px-4 py-3 text-right whitespace-nowrap">
                       <span className="font-semibold text-gray-900">{inr(r.amountPaise)}</span>

@@ -1889,6 +1889,14 @@ export const admin = {
     page?: number;
     limit?: number;
   } = {}) => api.get<ApiResponse>('/admin/plan-payments', { params }),
+  // The Razorpay account's own payments, live (incl. QR / link / page money)
+  getRazorpayPayments: (params: {
+    account?: 'plans' | 'wallet';
+    from?: string;
+    to?: string;
+    q?: string;
+    page?: number;
+  } = {}) => api.get<ApiResponse>('/admin/razorpay-payments', { params }),
 
   // ─── Operations ─────────────────────────────────────────
   listOrganizations: (params?: Record<string, string | number | undefined>) =>
