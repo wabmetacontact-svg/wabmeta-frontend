@@ -16,7 +16,8 @@ import {
   Ticket,
   UserCog,
   Briefcase,
-  BadgeCheck
+  BadgeCheck,
+  Receipt
 } from 'lucide-react';
 import { adminCan } from '../../utils/adminPermissions';
 import Logo from '../common/Logo';
@@ -35,6 +36,7 @@ const AdminSidebar: React.FC = () => {
     { name: 'Users', href: '/manage-wabmeta-admin/users', icon: Users, show: adminCan('users.read') },
     { name: 'Subscriptions', href: '/manage-wabmeta-admin/subscriptions', icon: CreditCard, show: adminCan('billing.read') },
     { name: 'Wallets', href: '/manage-wabmeta-admin/wallets', icon: Wallet, show: adminCan('wallet.read') },
+    { name: 'Plan payments', href: '/manage-wabmeta-admin/plan-payments', icon: Receipt, show: adminCan('billing.read') },
     { name: 'Offline payments', href: '/manage-wabmeta-admin/payments', icon: BadgeCheck, show: adminCan('billing.read') },
     { name: 'Revenue', href: '/manage-wabmeta-admin/revenue', icon: TrendingUp, show: adminCan('billing.read') },
     { name: 'Coupons', href: '/manage-wabmeta-admin/coupons', icon: Ticket, show: adminCan('billing.read') },
