@@ -1,404 +1,143 @@
 // src/components/inbox/CallScreen.tsx
-// Full-screen calling overlay triggered when the Call button is clicked in Inbox.
-// Handles: initiating the API call, call timer, mute/speaker/recording UI,
-// and clear messaging about how WhatsApp Business Calling actually works.
+//
+// The live call panel. Everything it shows comes from CallContext, which
+// follows the real call: microphone, WebRTC connection and Meta's webhooks.
+// (It used to pretend: "connected" after a fixed 4 seconds and a record
+// button that recorded nothing.)
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import {
-  PhoneOff, Mic, MicOff, Volume2, VolumeX,
-  Circle, Square, Loader2, X, Info, CheckCircle2,
-  PhoneCall, MessageSquare,
-} from 'lucide-react';
-import api from '../../services/api';
-import toast from 'react-hot-toast';
+import React, { useEffect, useState } from 'react';
+import { Loader2, Mic, MicOff, Phone, PhoneOff, Send, X } from 'lucide-react';
+import { useCall, type CallPhase } from '../../context/CallContext';
 
-// ─────────────────────────────────────────────
-// Types
-// ─────────────────────────────────────────────
-interface Contact {
-  id?: string;
-  name?: string;
-  firstName?: string;
-  lastName?: string;
-  phone: string;
-  whatsappProfileName?: string;
-}
-
-type CallState = 'initiating' | 'ringing' | 'connected' | 'ended' | 'failed';
-
-interface CallScreenProps {
-  contact: Contact;
-  conversationId?: string;
-  onClose: () => void;
-}
-
-// ─────────────────────────────────────────────
-// Helpers
-// ─────────────────────────────────────────────
-const getContactName = (c: Contact) =>
-  c.whatsappProfileName || c.name ||
-  [c.firstName, c.lastName].filter(Boolean).join(' ') ||
-  c.phone;
-
-const getInitial = (c: Contact) => getContactName(c).charAt(0).toUpperCase();
-
-const formatDuration = (secs: number): string => {
-  const h = Math.floor(secs / 3600);
-  const m = Math.floor((secs % 3600) / 60);
-  const s = secs % 60;
-  if (h > 0) return `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
-  return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+const formatDuration = (ms: number) => {
+  const s = Math.max(0, Math.floor(ms / 1000));
+  return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
 };
 
-// ─────────────────────────────────────────────
-// Main Component
-// ─────────────────────────────────────────────
-const CallScreen: React.FC<CallScreenProps> = ({ contact, conversationId, onClose }) => {
-  const [callState, setCallState] = useState<CallState>('initiating');
-  const [isMuted, setIsMuted] = useState(false);
-  const [isSpeaker, setIsSpeaker] = useState(false);
-  const [isRecording, setIsRecording] = useState(false);
-  const [duration, setDuration] = useState(0);
-  const [errorMsg, setErrorMsg] = useState('');
-  const [messageId, setMessageId] = useState<string | null>(null);
-  const [recordingSeconds, setRecordingSeconds] = useState(0);
+const PHASE_TEXT: Partial<Record<CallPhase, string>> = {
+  mic: 'Allow microphone access…',
+  connecting: 'Connecting…',
+  calling: 'Calling on WhatsApp…',
+  ringing: 'Ringing…',
+};
 
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const recordingTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const hasInitiated = useRef(false);
+const initials = (name: string) =>
+  name.replace(/[^A-Za-z0-9 ]/g, '').split(' ').filter(Boolean).slice(0, 2).map((w) => w[0]).join('').toUpperCase() || '?';
 
-  // ── Start timer when connected ──
-  const startTimer = useCallback(() => {
-    timerRef.current = setInterval(() => {
-      setDuration(d => d + 1);
-    }, 1000);
-  }, []);
+const CallPanel: React.FC = () => {
+  const { active, hangup, toggleMute, requestPermission, dismiss } = useCall();
+  const [now, setNow] = useState(Date.now());
 
-  const stopTimer = useCallback(() => {
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-      timerRef.current = null;
-    }
-  }, []);
-
-  // ── Recording timer ──
-  const toggleRecording = () => {
-    if (isRecording) {
-      setIsRecording(false);
-      if (recordingTimerRef.current) clearInterval(recordingTimerRef.current);
-      setRecordingSeconds(0);
-      toast.success(`Recording saved (${formatDuration(recordingSeconds)})`);
-    } else {
-      setIsRecording(true);
-      setRecordingSeconds(0);
-      recordingTimerRef.current = setInterval(() => {
-        setRecordingSeconds(s => s + 1);
-      }, 1000);
-    }
-  };
-
-  // ── Initiate call on mount ──
   useEffect(() => {
-    if (hasInitiated.current) return;
-    hasInitiated.current = true;
+    if (active?.phase !== 'connected') return;
+    const t = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(t);
+  }, [active?.phase]);
 
-    const initiate = async () => {
-      try {
-        setCallState('initiating');
-        const response = await api.post('/calling/initiate', {
-          to: contact.phone,
-          contactId: contact.id,
-          conversationId,
-        });
+  if (!active) return null;
+  const { phase, party } = active;
+  const live = ['mic', 'connecting', 'calling', 'ringing', 'connected'].includes(phase);
 
-        if (response.data.success) {
-          const mid = response.data.data?.messageId;
-          setMessageId(mid);
-          setCallState('ringing');
+  const tone =
+    phase === 'connected' ? 'from-emerald-600 to-emerald-700' :
+    phase === 'failed' ? 'from-red-600 to-rose-700' :
+    phase === 'permission' ? 'from-amber-500 to-orange-600' :
+    phase === 'ended' ? 'from-slate-600 to-slate-700' :
+    'from-slate-800 to-slate-900';
 
-          // Simulate "connected" after a few seconds
-          // In reality the user receives a CTA message and taps Call
-          setTimeout(() => {
-            setCallState('connected');
-            startTimer();
-          }, 4000);
-        }
-      } catch (err: any) {
-        const msg =
-          err.response?.data?.message ||
-          err.message ||
-          'Failed to initiate call';
-        setErrorMsg(msg);
-        setCallState('failed');
-      }
-    };
-
-    initiate();
-  }, [contact, conversationId, startTimer]);
-
-  // ── Cleanup on unmount ──
-  useEffect(() => {
-    return () => {
-      stopTimer();
-      if (recordingTimerRef.current) clearInterval(recordingTimerRef.current);
-    };
-  }, [stopTimer]);
-
-  // ── End call handler ──
-  const handleEndCall = () => {
-    stopTimer();
-    if (recordingTimerRef.current) clearInterval(recordingTimerRef.current);
-    if (isRecording) {
-      toast.success(`Recording saved (${formatDuration(recordingSeconds)})`);
-    }
-    setCallState('ended');
-    setTimeout(() => onClose(), 1500);
-  };
-
-  // ── Backdrop click to close (only if ended/failed) ──
-  const handleBackdropClick = (e: React.MouseEvent) => {
-    if (e.target === e.currentTarget && (callState === 'ended' || callState === 'failed')) {
-      onClose();
-    }
-  };
-
-  // ── Colors by state ──
-  const stateColor =
-    callState === 'connected' ? 'from-green-600 to-emerald-700' :
-    callState === 'ringing' ? 'from-blue-600 to-indigo-700' :
-    callState === 'failed' ? 'from-red-600 to-rose-700' :
-    callState === 'ended' ? 'from-gray-600 to-gray-700' :
-    'from-gray-700 to-gray-800';
-
-  const statusLabel =
-    callState === 'initiating' ? 'Sending call request…' :
-    callState === 'ringing' ? 'Call sent — waiting for user to tap…' :
-    callState === 'connected' ? 'Connected' :
-    callState === 'ended' ? 'Call Ended' :
-    'Call Failed';
+  const statusLine =
+    phase === 'connected' ? formatDuration(now - (active.connectedAt || now)) :
+    phase === 'ended' || phase === 'failed' ? active.message || 'Call ended' :
+    phase === 'permission' ? 'This customer has not allowed calls yet' :
+    PHASE_TEXT[phase];
 
   return (
     <div
-      onClick={handleBackdropClick}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
+      role="dialog"
+      aria-label={`Call with ${party.name}`}
+      className="fixed bottom-4 right-4 left-4 sm:left-auto z-[60] sm:w-[340px] rounded-2xl shadow-2xl overflow-hidden"
     >
-      <div
-        className={`relative w-[340px] rounded-3xl overflow-hidden shadow-2xl bg-gradient-to-b ${stateColor} text-white select-none`}
-        onClick={e => e.stopPropagation()}
-      >
-        {/* ── Close button (top-right) ── */}
-        {(callState === 'ended' || callState === 'failed') && (
-          <button
-            onClick={onClose}
-            className="absolute top-4 right-4 p-1.5 bg-[#0a0e27]/20 hover:bg-[#0a0e27]/30 rounded-full transition-colors"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        )}
-
-        {/* ── Recording badge ── */}
-        {isRecording && (
-          <div className="absolute top-4 left-4 flex items-center gap-1.5 bg-red-500 px-2.5 py-1 rounded-full animate-pulse">
-            <Circle className="w-2.5 h-2.5 fill-white text-white" />
-            <span className="text-xs font-semibold">{formatDuration(recordingSeconds)}</span>
+      <div className={`bg-gradient-to-br ${tone} text-white p-5`}>
+        <div className="flex items-start gap-3">
+          <div className="w-12 h-12 rounded-full bg-white/15 flex items-center justify-center text-lg font-semibold shrink-0">
+            {initials(party.name)}
           </div>
-        )}
-
-        {/* ─────────────────────── AVATAR ─────────────────────── */}
-        <div className="flex flex-col items-center pt-12 pb-6 px-6">
-
-          {/* Ripple animation during ringing/initiating */}
-          <div className="relative mb-6">
-            {(callState === 'ringing' || callState === 'initiating') && (
-              <>
-                <div className="absolute inset-0 rounded-full bg-[#0a0e27]/20 animate-ping scale-150" />
-                <div className="absolute inset-0 rounded-full bg-[#0a0e27]/10 animate-ping scale-125 animation-delay-300" />
-              </>
-            )}
-            <div className="relative w-24 h-24 bg-[#0a0e27]/20 rounded-full flex items-center justify-center text-4xl font-bold shadow-lg border-4 border-white/30">
-              {getInitial(contact)}
-            </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-xs uppercase tracking-wide text-white/70">
+              WhatsApp call · {active.direction === 'INBOUND' ? 'Incoming' : 'Outgoing'}
+            </p>
+            <p className="font-semibold truncate">{party.name}</p>
+            <p className="text-sm text-white/70 truncate">{party.phone}</p>
           </div>
-
-          {/* Name & phone */}
-          <h2 className="text-2xl font-bold tracking-tight">{getContactName(contact)}</h2>
-          <p className="text-white/70 text-sm mt-0.5">{contact.phone}</p>
-
-          {/* Status */}
-          <div className="mt-3 flex items-center gap-2">
-            {callState === 'initiating' && (
-              <Loader2 className="w-4 h-4 animate-spin text-white/70" />
-            )}
-            {callState === 'connected' && (
-              <CheckCircle2 className="w-4 h-4 text-green-300" />
-            )}
-            {callState === 'failed' && (
-              <X className="w-4 h-4 text-red-300" />
-            )}
-            <span className="text-sm text-white/80">{statusLabel}</span>
-          </div>
-
-          {/* Timer (when connected) */}
-          {callState === 'connected' && (
-            <div className="mt-2 text-3xl font-mono font-semibold tracking-widest">
-              {formatDuration(duration)}
-            </div>
-          )}
-
-          {/* Info box for ringing state */}
-          {callState === 'ringing' && (
-            <div className="mt-4 bg-[#0a0e27]/10 rounded-xl px-4 py-3 w-full">
-              <div className="flex gap-2 items-start">
-                <Info className="w-4 h-4 text-blue-200 shrink-0 mt-0.5" />
-                <p className="text-xs text-white/80 leading-relaxed">
-                  A WhatsApp message with a <strong>Call button</strong> has been sent.
-                  The customer will start the call by tapping it on their phone.
-                </p>
-              </div>
-              <div className="flex items-center gap-1.5 mt-2">
-                <MessageSquare className="w-3.5 h-3.5 text-white/60" />
-                <span className="text-xs text-white/60">Message ID: {messageId || '—'}</span>
-              </div>
-            </div>
-          )}
-
-          {/* Error message */}
-          {callState === 'failed' && errorMsg && (
-            <div className="mt-4 bg-[#0a0e27]/10 rounded-xl px-4 py-3 w-full">
-              <p className="text-xs text-red-200 leading-relaxed">{errorMsg}</p>
-            </div>
-          )}
-
-          {/* Ended */}
-          {callState === 'ended' && (
-            <div className="mt-4 flex flex-col items-center gap-1">
-              <p className="text-white/70 text-sm">Duration: {formatDuration(duration)}</p>
-              <p className="text-white/50 text-xs">Closing…</p>
-            </div>
+          {!live && (
+            <button onClick={dismiss} aria-label="Close" className="p-1 rounded-lg hover:bg-white/10">
+              <X className="w-4 h-4" />
+            </button>
           )}
         </div>
 
-        {/* ─────────────────────── CONTROLS ─────────────────────── */}
-        {(callState === 'connected' || callState === 'ringing') && (
-          <div className="bg-black/20 backdrop-blur-sm px-6 pt-5 pb-8">
+        <div className="mt-4 flex items-center gap-2 text-sm min-h-[20px]" aria-live="polite">
+          {['mic', 'connecting', 'calling', 'ringing'].includes(phase) && <Loader2 className="w-4 h-4 animate-spin shrink-0" />}
+          {phase === 'connected' && <span className="w-2 h-2 rounded-full bg-white animate-pulse shrink-0" />}
+          <span className={phase === 'connected' ? 'font-mono text-base' : ''}>{statusLine}</span>
+        </div>
 
-            {/* Top row: Mute | Speaker | Record */}
-            <div className="flex justify-center gap-6 mb-6">
-
-              {/* Mute */}
-              <ControlButton
-                active={isMuted}
-                activeColor="bg-[#0a0e27] text-white"
-                inactiveColor="bg-[#0a0e27]/20 text-white"
-                onClick={() => setIsMuted(m => !m)}
-                label={isMuted ? 'Unmute' : 'Mute'}
-                icon={isMuted ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
-              />
-
-              {/* Speaker */}
-              <ControlButton
-                active={isSpeaker}
-                activeColor="bg-blue-400 text-white"
-                inactiveColor="bg-[#0a0e27]/20 text-white"
-                onClick={() => setIsSpeaker(s => !s)}
-                label="Speaker"
-                icon={isSpeaker ? <Volume2 className="w-5 h-5" /> : <VolumeX className="w-5 h-5" />}
-              />
-
-              {/* Record */}
-              <ControlButton
-                active={isRecording}
-                activeColor="bg-red-500 text-white"
-                inactiveColor="bg-[#0a0e27]/20 text-white"
-                onClick={toggleRecording}
-                label={isRecording ? 'Stop REC' : 'Record'}
-                icon={isRecording
-                  ? <Square className="w-4 h-4 fill-white" />
-                  : <Circle className="w-4 h-4" />
-                }
-              />
-            </div>
-
-            {/* End Call button */}
-            <div className="flex justify-center">
+        {phase === 'permission' && (
+          <div className="mt-3 text-sm text-white/90 space-y-3">
+            <p>
+              WhatsApp lets a business call a customer only after they allow it. Send a request; when they tap
+              <strong> Allow</strong>, call again. (Needs a chat reply from them in the last 24 hours.)
+            </p>
+            {active.requestSent ? (
+              <p className="font-medium">Request sent. Wait for the customer to allow calls.</p>
+            ) : active.canSendRequest === false ? (
+              <p className="font-medium">WhatsApp limits requests (1 a day, 2 a week). Try again later.</p>
+            ) : (
               <button
-                onClick={handleEndCall}
-                className="w-16 h-16 bg-red-500 hover:bg-red-600 active:scale-95 rounded-full flex items-center justify-center shadow-lg transition-all duration-150"
+                onClick={requestPermission}
+                className="w-full flex items-center justify-center gap-2 rounded-xl bg-white text-amber-700 font-semibold py-2.5 hover:bg-amber-50"
               >
-                <PhoneOff className="w-7 h-7 text-white" />
+                <Send className="w-4 h-4" /> Send call permission request
               </button>
-            </div>
+            )}
           </div>
         )}
 
-        {/* Initiating state controls (just end/cancel) */}
-        {callState === 'initiating' && (
-          <div className="bg-black/20 px-6 pt-4 pb-8 flex justify-center">
+        {live && (
+          <div className="mt-5 flex items-center justify-center gap-6">
             <button
-              onClick={() => { setCallState('ended'); setTimeout(onClose, 800); }}
-              className="w-14 h-14 bg-red-500 hover:bg-red-600 rounded-full flex items-center justify-center shadow-lg transition-colors"
+              onClick={toggleMute}
+              disabled={phase !== 'connected'}
+              aria-label={active.muted ? 'Unmute' : 'Mute'}
+              className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors disabled:opacity-40 ${
+                active.muted ? 'bg-white text-slate-900' : 'bg-white/15 hover:bg-white/25'
+              }`}
             >
-              <PhoneOff className="w-6 h-6 text-white" />
+              {active.muted ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
+            </button>
+            <button
+              onClick={hangup}
+              aria-label="End call"
+              className="w-14 h-14 rounded-full bg-red-500 hover:bg-red-600 flex items-center justify-center shadow-lg"
+            >
+              <PhoneOff className="w-6 h-6" />
             </button>
           </div>
         )}
 
-        {/* Failed state: retry or close */}
-        {callState === 'failed' && (
-          <div className="bg-black/20 px-6 pt-4 pb-8 flex justify-center gap-4">
-            <button
-              onClick={onClose}
-              className="flex items-center gap-2 px-5 py-2.5 bg-[#0a0e27]/20 hover:bg-[#0a0e27]/30 rounded-full text-sm font-medium transition-colors"
-            >
-              <X className="w-4 h-4" /> Close
-            </button>
-            <button
-              onClick={() => {
-                hasInitiated.current = false;
-                setCallState('initiating');
-                setErrorMsg('');
-                setDuration(0);
-                // re-trigger effect
-                const el = document.getElementById('__call_retry_trigger__');
-                if (el) el.click();
-              }}
-              className="flex items-center gap-2 px-5 py-2.5 bg-[#0a0e27]/20 hover:bg-[#0a0e27]/30 rounded-full text-sm font-medium transition-colors"
-            >
-              <PhoneCall className="w-4 h-4" /> Retry
-            </button>
-          </div>
+        {phase === 'failed' && (
+          <button onClick={dismiss} className="mt-4 w-full rounded-xl bg-white/15 hover:bg-white/25 py-2 text-sm font-medium">
+            Close
+          </button>
         )}
       </div>
+      {phase === 'connected' && (
+        <p className="bg-white text-[11px] text-gray-500 px-4 py-2 flex items-center gap-1.5">
+          <Phone className="w-3 h-3" /> Voice goes through this browser. Keep this tab open.
+        </p>
+      )}
     </div>
   );
 };
 
-// ─────────────────────────────────────────────
-// Control Button sub-component
-// ─────────────────────────────────────────────
-interface ControlButtonProps {
-  active: boolean;
-  activeColor: string;
-  inactiveColor: string;
-  onClick: () => void;
-  label: string;
-  icon: React.ReactNode;
-}
-
-const ControlButton: React.FC<ControlButtonProps> = ({
-  active, activeColor, inactiveColor, onClick, label, icon,
-}) => (
-  <button
-    onClick={onClick}
-    className="flex flex-col items-center gap-1.5"
-  >
-    <div
-      className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-200 active:scale-90 shadow-md ${active ? activeColor : inactiveColor}`}
-    >
-      {icon}
-    </div>
-    <span className="text-[11px] text-white/70">{label}</span>
-  </button>
-);
-
-export default CallScreen;
+export default CallPanel;

@@ -364,33 +364,20 @@ export function useGlobalNotifications() {
       }
     };
 
-    // ====================
-    // INCOMING CALL
-    // ====================
-    const handleIncomingCall = (data: any) => {
-      addNotification({
-        type: 'message',
-        title: 'Incoming WhatsApp call',
-        description: `Call from ${data?.contactName || data?.from || 'Unknown'}`,
-        actionUrl: '/dashboard/inbox',
-        metadata: data,
-      });
-      playNotificationSound();
-    };
+    // Incoming WhatsApp calls ring through CallContext (call:incoming); a
+    // missed one arrives as a normal notification from the backend.
 
     // ✅ Attach all listeners
     socket.on('message:new', handleNewMessage);
     socket.on('campaign:completed', handleCampaignCompleted);
     socket.on('campaign:failed', handleCampaignFailed);
     socket.on('account:updated', handleAccountUpdated);
-    socket.on('incomingCall', handleIncomingCall);
 
     return () => {
       socket.off('message:new', handleNewMessage);
       socket.off('campaign:completed', handleCampaignCompleted);
       socket.off('campaign:failed', handleCampaignFailed);
       socket.off('account:updated', handleAccountUpdated);
-      socket.off('incomingCall', handleIncomingCall);
     };
   }, [socket, addNotification, showToast, navigateToConversation]);
 }

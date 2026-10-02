@@ -22,7 +22,7 @@ import GlobalSearch from '../components/inbox/GlobalSearch';
 import TypingIndicator from '../components/inbox/TypingIndicator';
 import SendTemplateModal from '../components/inbox/SendTemplateModal';
 import UpgradeModal from '../components/common/UpgradeModal';
-import CallScreen from '../components/inbox/CallScreen';
+import { useCall } from '../context/CallContext';
 import QuickRepliesPanel, { type QuickReply } from '../components/inbox/QuickRepliesPanel';
 
 // Hooks & Services
@@ -171,7 +171,8 @@ const Inbox: React.FC = () => {
   const [showContactInfo, setShowContactInfo] = useState(false);
   const [selectedConversationIds, setSelectedConversationIds] = useState<string[]>([]);
   const [showTemplateModal, setShowTemplateModal] = useState(false);
-  const [showCallScreen, setShowCallScreen] = useState(false);
+  // WhatsApp voice calls run in CallContext (rings on every page, one call at a time)
+  const call = useCall();
   const [showMobileChat, setShowMobileChat] = useState(false);
   const [showQuickReplies, setShowQuickReplies] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
@@ -1514,7 +1515,20 @@ const Inbox: React.FC = () => {
               isMobile={true}
               onBack={() => setShowMobileChat(false)}
               onToggleContactInfo={() => setShowContactInfo(!showContactInfo)}
-              onCall={() => setShowCallScreen(true)}
+              onCall={
+                // Calling is a WhatsApp feature; Telegram and Instagram chats have no call button
+                (selectedConversation.channel ?? 'WHATSAPP') === 'WHATSAPP' && selectedConversation.contact?.phone
+                  ? () =>
+                      call.startCall(
+                        {
+                          id: selectedConversation.contact.id,
+                          name: getContactName(selectedConversation.contact),
+                          phone: selectedConversation.contact.phone,
+                        },
+                        selectedConversation.id
+                      )
+                  : undefined
+              }
               onSearchMessages={() => setShowMessageSearch(true)}
               onArchive={() => {
                 const event = new MouseEvent('click') as any;
@@ -1658,14 +1672,6 @@ const Inbox: React.FC = () => {
               fetchMessages(selectedConversation.id, true);
             }
           }}
-        />
-      )}
-
-      {showCallScreen && selectedConversation && (
-        <CallScreen
-          contact={selectedConversation.contact}
-          conversationId={selectedConversation.id}
-          onClose={() => setShowCallScreen(false)}
         />
       )}
 

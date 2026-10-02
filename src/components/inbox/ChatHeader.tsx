@@ -51,7 +51,8 @@ interface Props {
   isMobile?: boolean;
   onBack: () => void;
   onToggleContactInfo: () => void;
-  onCall: () => void;
+  /** Omitted for chats that cannot be called (Telegram, Instagram). */
+  onCall?: () => void;
   onVideoCall?: () => void;
   onSearchMessages: () => void;
   onMute?: () => void;
@@ -212,19 +213,22 @@ const ChatHeader: React.FC<Props> = ({
 
         {/* ── Right: Actions ───────────────────────────────────────────── */}
         <div className="flex items-center gap-1 flex-shrink-0">
-          {/* Voice Call */}
-          <button
-            onClick={onCall}
-            title="Voice call"
-            className="
-              p-2 rounded-lg
-              hover:bg-emerald-50
-              text-gray-500 hover:text-emerald-600
-              transition-all hover:scale-110
-            "
-          >
-            <Phone className="w-4 h-4 sm:w-[18px] sm:h-[18px]" />
-          </button>
+          {/* Voice Call - WhatsApp chats only (the inbox leaves onCall out otherwise) */}
+          {onCall && (
+            <button
+              onClick={onCall}
+              title="WhatsApp voice call"
+              aria-label="WhatsApp voice call"
+              className="
+                p-2 rounded-lg
+                hover:bg-emerald-50
+                text-gray-500 hover:text-emerald-600
+                transition-all hover:scale-110
+              "
+            >
+              <Phone className="w-4 h-4 sm:w-[18px] sm:h-[18px]" />
+            </button>
+          )}
 
           {/* Video Call */}
           {onVideoCall && (
