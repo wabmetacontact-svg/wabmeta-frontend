@@ -335,7 +335,7 @@ const Dashboard: React.FC = () => {
 
       {/* Quick Metrics: tutorial video + one card per channel */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
-        <ConnectVideoCard />
+        <ConnectVideoCard video="setup" />
         {loadingStats ? (
           <>
             <QuickStatSkeleton />

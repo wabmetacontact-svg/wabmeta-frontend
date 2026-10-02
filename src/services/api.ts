@@ -1880,6 +1880,15 @@ export const admin = {
   reconcileRevenue: (days = 7) => api.get<ApiResponse>('/admin/revenue/reconcile', { params: { days } }),
   importRazorpayPayment: (paymentId: string) =>
     api.post<ApiResponse>(`/admin/revenue/reconcile/${paymentId}/import`),
+  // Plan payments across customers: SUCCESS, REFUNDED and FAILED attempts
+  getPlanPayments: (params: {
+    status?: 'SUCCESS' | 'FAILED' | 'REFUNDED';
+    q?: string;
+    from?: string;
+    to?: string;
+    page?: number;
+    limit?: number;
+  } = {}) => api.get<ApiResponse>('/admin/plan-payments', { params }),
 
   // ─── Operations ─────────────────────────────────────────
   listOrganizations: (params?: Record<string, string | number | undefined>) =>

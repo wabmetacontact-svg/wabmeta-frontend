@@ -52,6 +52,15 @@ const Help: React.FC = () => {
   // voiceover). Thumbnails come from YouTube.
   const videoTutorials: VideoTutorial[] = [
     {
+      // Not part of the numbered series (its thumbnail says "Start here")
+      id: 'start-here',
+      title: 'WhatsApp Business API Setup A to Z',
+      description: 'The complete beginner guide: set up the WhatsApp Business API and the documents Meta asks for to verify your business.',
+      youtubeId: 'FIbL1pRFv5U',
+      duration: '8:47',
+      category: 'getting-started',
+    },
+    {
       id: '1',
       title: 'Connect WhatsApp Business API',
       description: 'Connect your WhatsApp number to WabMeta through Meta’s official signup — new number or WhatsApp Business app.',
@@ -121,6 +130,14 @@ const Help: React.FC = () => {
       description: 'Pay for WhatsApp message charges in rupees with UPI, card or net banking — no international card.',
       youtubeId: 'l1K82M8DR5E',
       duration: '1:28',
+      category: 'features',
+    },
+    {
+      id: '10',
+      title: 'Telegram Bot for Business',
+      description: 'Connect a Telegram bot to auto-reply to customers, send broadcasts and handle chats in the shared inbox.',
+      youtubeId: 'ddX6EAwavyU',
+      duration: '3:16',
       category: 'features',
     },
   ];
@@ -471,7 +488,7 @@ const Help: React.FC = () => {
               {/* Video Info */}
               <div className="p-5">
                 <h3 className="font-semibold text-gray-900 mb-2 group-hover:text-green-600 transition-colors">
-                  {video.id}. {video.title}
+                  {/^\d+$/.test(video.id) && `${video.id}. `}{video.title}
                 </h3>
                 <p className="text-sm text-gray-500 line-clamp-2">
                   {video.description}
