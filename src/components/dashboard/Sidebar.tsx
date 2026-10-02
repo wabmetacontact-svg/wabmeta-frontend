@@ -206,11 +206,11 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, setCollapsed, isMobile = f
 
       {/* Header */}
       <div className={`flex items-center h-16 px-4 border-b border-gray-100 ${collapsed && !isMobile ? 'justify-center' : 'justify-between'}`}>
-        <Link to="/dashboard" className="flex items-center gap-2 group">
+        <Link to="/dashboard" className={`flex items-center gap-2 group ${collapsed && !isMobile ? '' : 'ml-2'}`}>
           <img
             src={logo}
             alt="WabMeta"
-            className={`object-contain transition-all duration-300 group-hover:scale-105 ${collapsed && !isMobile ? 'w-8 h-8' : 'h-7 w-auto'}`}
+            className={`object-contain transition-all duration-300 group-hover:scale-105 ${collapsed && !isMobile ? 'w-8 h-8' : 'h-10 w-auto'}`}
           />
         </Link>
 
