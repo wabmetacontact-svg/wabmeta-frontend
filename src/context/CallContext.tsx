@@ -54,6 +54,8 @@ export interface ActiveCall {
   message?: string;
   canSendRequest?: boolean;
   requestSent?: boolean;
+  /** Outside the 24-hour window with no approved call permission template yet */
+  templateNeeded?: string;
 }
 
 export interface IncomingCall {
@@ -393,10 +395,19 @@ export const CallProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const a = activeRef.current;
     if (!a) return;
     try {
-      await api.post('/calling/permission-request', { to: a.party.phone, conversationId: a.conversationId });
-      update({ requestSent: true });
-      toast.success('Call permission request sent');
+      const res = await api.post('/calling/permission-request', { to: a.party.phone, conversationId: a.conversationId });
+      update({ requestSent: true, templateNeeded: undefined });
+      toast.success(
+        res.data?.data?.via === 'template'
+          ? 'Call permission request sent as a template'
+          : 'Call permission request sent'
+      );
     } catch (err: any) {
+      // Outside the 24-hour window and no approved template: say where to set it up
+      if (err?.response?.data?.code === 'CALL_PERMISSION_TEMPLATE_REQUIRED') {
+        update({ templateNeeded: errorText(err, '') });
+        return;
+      }
       toast.error(errorText(err, 'Could not send the request.'));
     }
   }, [update]);
