@@ -1708,6 +1708,12 @@ export const admin = {
   updateSettings: (data: any) =>
     api.put<ApiResponse>('/admin/settings', data),
 
+  // The TeamOS sync queue. Reading needs settings.read; the two actions need
+  // settings.write, which the server enforces as well as the UI hiding them.
+  getTeamosSync: () => api.get<ApiResponse>('/admin/teamos-sync'),
+  runTeamosSync: () => api.post<ApiResponse>('/admin/teamos-sync/run'),
+  retryTeamosSync: () => api.post<ApiResponse>('/admin/teamos-sync/retry'),
+
   getWhatsAppConnections: () => api.get<ApiResponse>('/admin/whatsapp-connections'),
   getWhatsAppStats: () => api.get<ApiResponse>('/admin/whatsapp-stats'),
   updateWhatsAppConnectionType: (accountId: string, connectionType: string) =>
