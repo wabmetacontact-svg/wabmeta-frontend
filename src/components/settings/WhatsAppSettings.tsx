@@ -30,6 +30,11 @@ interface WhatsAppAccount {
   smbSyncState?: SmbSyncState | null;
   isDefault: boolean;
   codeVerificationStatus: string | null;
+  // Business verification of the Meta portfolio that owns the WABA
+  // (verified, pending, not_verified, rejected, ...) - the card's "Verification"
+  businessVerificationStatus?: string | null;
+  // Display name approval: APPROVED, PENDING_REVIEW, AVAILABLE_WITHOUT_REVIEW, DECLINED
+  nameStatus?: string | null;
   dailyMessageLimit: number;
   dailyMessagesUsed: number;
   // Backend se aate hain (meta.service getMessagingUsage). Meta ki limit
@@ -93,43 +98,56 @@ const getMessagingTierLabel = (
 // ============================================
 // ✅ Verification Config Helper - Add karo top mein
 // ============================================
-const getVerificationConfig = (status: string | null) => {
-  switch (status?.toUpperCase()) {
-    case 'VERIFIED':
-      return { 
-        label: 'Verified', 
-        color: 'text-green-700', 
-        bg: 'bg-green-100',
-        icon: '✓' 
+// Meta business verification (WABA business_verification_status). Not the
+// phone number's SMS/voice code check, whose "Expired" only means an old code
+// lapsed and alarmed customers for nothing.
+const getVerificationConfig = (status?: string | null) => {
+  const green = { color: 'text-green-700', bg: 'bg-green-100' };
+  const amber = { color: 'text-yellow-700', bg: 'bg-yellow-100' };
+  const red = { color: 'text-red-700', bg: 'bg-red-100' };
+  const grey = { color: 'text-slate-600', bg: 'bg-slate-100' };
+  switch (status?.toLowerCase()) {
+    case 'verified':
+      return { ...green, label: 'Verified', icon: '✓', hint: null };
+    case 'pending':
+    case 'pending_submission':
+    case 'pending_need_more_info':
+      return {
+        ...amber,
+        label: status?.toLowerCase() === 'pending_need_more_info' ? 'More info needed' : 'In review',
+        icon: '⏳',
+        hint: 'Meta is reviewing your business',
       };
-    case 'EXPIRED':
-      return { 
-        label: 'Expired', 
-        color: 'text-red-700', 
-        bg: 'bg-red-100',
-        icon: '⚠' 
-      };
-    case 'PENDING':
-      return { 
-        label: 'Pending', 
-        color: 'text-yellow-700', 
-        bg: 'bg-yellow-100',
-        icon: '⏳' 
-      };
-    case 'NOT_VERIFIED':
-      return { 
-        label: 'Not Verified', 
-        color: 'text-orange-700', 
-        bg: 'bg-orange-100',
-        icon: '✕' 
-      };
+    case 'not_verified':
+      return { ...amber, label: 'Not verified', icon: '!', hint: 'Verify in Meta Business Suite › Security Center' };
+    case 'rejected':
+    case 'failed':
+      return { ...red, label: 'Rejected', icon: '✕', hint: 'Resubmit in Meta Business Suite › Security Center' };
+    case 'revoked':
+      return { ...red, label: 'Revoked', icon: '✕', hint: 'Check Meta Business Suite › Security Center' };
+    case 'expired':
+      return { ...red, label: 'Expired', icon: '⚠', hint: 'Renew in Meta Business Suite › Security Center' };
+    case 'ineligible':
+      return { ...grey, label: 'Not eligible', icon: '–', hint: null };
     default:
-      return { 
-        label: status || 'Unknown', 
-        color: 'text-slate-600', 
-        bg: 'bg-slate-100',
-        icon: '?' 
-      };
+      return { ...grey, label: 'Checking…', icon: '…', hint: 'Shown after the next sync with Meta' };
+  }
+};
+
+// Display name approval (name_status). Meta keeps an unapproved name's number
+// limited, so this is shown next to the name.
+const getNameStatusConfig = (status?: string | null) => {
+  switch (status?.toUpperCase()) {
+    case 'APPROVED':
+      return { label: 'Name approved', className: 'bg-green-50 text-green-700' };
+    case 'PENDING_REVIEW':
+      return { label: 'Name in review', className: 'bg-yellow-50 text-yellow-700' };
+    case 'AVAILABLE_WITHOUT_REVIEW':
+      return { label: 'Name not reviewed yet', className: 'bg-yellow-50 text-yellow-700' };
+    case 'DECLINED':
+      return { label: 'Name declined', className: 'bg-red-50 text-red-700' };
+    default:
+      return null;
   }
 };
 
@@ -201,13 +219,17 @@ const displayOf = (a: any): { state: DisplayState; issue: DisplayIssue | null } 
   return { state: 'CONNECTED', issue: null };
 };
 
-/** The most serious status across all connected numbers. */
+/** The most serious status across all connected numbers, and whose it is. */
 const worstDisplay = (accounts: any[]) =>
   accounts
-    .map(displayOf)
+    .map((a) => ({ ...displayOf(a), phoneNumber: a.phoneNumber as string | undefined }))
     .reduce(
       (worst, d) => (SEVERITY[d.state] > SEVERITY[worst.state] ? d : worst),
-      { state: 'CONNECTED' as DisplayState, issue: null as DisplayIssue | null }
+      {
+        state: 'CONNECTED' as DisplayState,
+        issue: null as DisplayIssue | null,
+        phoneNumber: undefined as string | undefined,
+      }
     );
 
 const PILL: Record<DisplayState, string> = {
@@ -544,8 +566,16 @@ export default function WhatsAppSettings() {
                               </>
                             )}
                           </div>
-                          <p className="text-sm text-slate-500 mt-0.5">
+                          <p className="text-sm text-slate-500 mt-0.5 flex flex-wrap items-center gap-2">
                             {account.verifiedName || account.displayName || 'Unnamed'}
+                            {(() => {
+                              const name = getNameStatusConfig(account.nameStatus);
+                              return name ? (
+                                <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${name.className}`}>
+                                  {name.label}
+                                </span>
+                              ) : null;
+                            })()}
                           </p>
                         </div>
                       </div>
@@ -620,7 +650,7 @@ export default function WhatsAppSettings() {
                             )}
                         </>
                       ) : (
-                        <p className="text-xs text-slate-400 mt-0.5">Unique customers per day</p>
+                        <p className="text-xs text-slate-400 mt-0.5">Loading today's usage…</p>
                       )}
                     </div>
 
@@ -628,15 +658,18 @@ export default function WhatsAppSettings() {
                     <div className="bg-white p-4 rounded-lg border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
                       <div className="flex items-center gap-1.5 text-xs text-slate-500 mb-2">
                         <Shield className="w-3.5 h-3.5" />
-                        Verification
+                        Business verification
                       </div>
                       {(() => {
-                        const verify = getVerificationConfig(account.codeVerificationStatus);
+                        const verify = getVerificationConfig(account.businessVerificationStatus);
                         return (
-                          <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold ${verify.bg} ${verify.color}`}>
-                            <span>{verify.icon}</span>
-                            {verify.label}
-                          </div>
+                          <>
+                            <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold ${verify.bg} ${verify.color}`}>
+                              <span>{verify.icon}</span>
+                              {verify.label}
+                            </div>
+                            {verify.hint && <p className="text-xs text-slate-400 mt-1.5">{verify.hint}</p>}
+                          </>
                         );
                       })()}
                     </div>
@@ -675,7 +708,7 @@ export default function WhatsAppSettings() {
             })}
 
             {(() => {
-              const { state, issue } = worstDisplay(connectedAccounts);
+              const { state, issue, phoneNumber } = worstDisplay(connectedAccounts);
 
               if (state === 'CONNECTED') {
                 return (
@@ -713,7 +746,16 @@ export default function WhatsAppSettings() {
                 <div className={`flex items-start gap-3 p-4 border rounded-xl ${tone.box}`}>
                   <AlertCircle className={`w-5 h-5 flex-shrink-0 mt-0.5 ${tone.icon}`} />
                   <div className={`text-sm ${tone.text}`}>
-                    <p className="font-semibold">{heading}</p>
+                    <p className="font-semibold">
+                      {heading}
+                      {/* With several numbers, say which one this is about */}
+                      {connectedAccounts.length > 1 && phoneNumber && (
+                        <span className="font-mono font-normal">
+                          {' · '}
+                          {phoneNumber.startsWith('+') ? phoneNumber : `+${phoneNumber}`}
+                        </span>
+                      )}
+                    </p>
                     <p className={`mt-0.5 ${tone.sub}`}>{scope}</p>
 
                     {issue?.action && (
