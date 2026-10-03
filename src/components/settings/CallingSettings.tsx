@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   Phone, PhoneCall, ToggleLeft, ToggleRight, Loader2,
-  AlertCircle, Clock, Globe, CheckCircle2, PhoneIncoming, PhoneOutgoing, XCircle,
+  AlertCircle, Clock, Globe, CheckCircle2, PhoneIncoming, PhoneOutgoing, XCircle, ShieldCheck,
 } from 'lucide-react';
 import api from '../../services/api';
 import toast from 'react-hot-toast';
@@ -81,6 +81,112 @@ const CALL_STATUS_TEXT: Record<string, string> = {
 
 const formatSeconds = (s: number | null) =>
   s ? `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}` : '';
+
+interface PermissionTemplate {
+  name: string;
+  status: 'APPROVED' | 'PENDING' | 'REJECTED' | 'PAUSED' | string;
+  category: string;
+  rejectionReason: string | null;
+  bodyText: string;
+}
+
+/**
+ * WhatsApp lets a business call a customer only after they allow it. Inside
+ * the 24-hour chat window the request goes as a free message; outside it Meta
+ * needs an approved template with a call permission button - this card
+ * creates that template and shows its review status.
+ */
+const PermissionTemplateCard: React.FC = () => {
+  const [template, setTemplate] = useState<PermissionTemplate | null>(null);
+  const [loaded, setLoaded] = useState(false);
+  const [creating, setCreating] = useState(false);
+
+  useEffect(() => {
+    api.get('/calling/permission-template')
+      .then((r) => setTemplate(r.data?.data ?? null))
+      .catch(() => undefined)
+      .finally(() => setLoaded(true));
+  }, []);
+
+  const create = async () => {
+    setCreating(true);
+    try {
+      const r = await api.post('/calling/permission-template');
+      setTemplate(r.data?.data ?? null);
+      toast.success('Sent to Meta for approval');
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Could not create the template');
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  const status = template?.status;
+  return (
+    <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
+      <div className="px-4 py-3 border-b border-slate-100 bg-slate-50 flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <ShieldCheck className="w-4 h-4 text-slate-500" />
+          <p className="text-sm font-semibold text-slate-700">Call permission template</p>
+        </div>
+        {status === 'APPROVED' && (
+          <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-full px-2.5 py-0.5">Approved</span>
+        )}
+        {status === 'PENDING' && (
+          <span className="text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200 rounded-full px-2.5 py-0.5">Waiting for Meta</span>
+        )}
+        {(status === 'REJECTED' || status === 'PAUSED') && (
+          <span className="text-xs font-semibold text-red-700 bg-red-50 border border-red-200 rounded-full px-2.5 py-0.5">
+            {status === 'PAUSED' ? 'Paused' : 'Rejected'}
+          </span>
+        )}
+      </div>
+      <div className="px-4 py-3 space-y-3">
+        <p className="text-xs text-slate-500">
+          You can call a customer only after they tap <strong>Allow</strong>. If they messaged you in the last 24 hours the
+          request is a free chat message. Otherwise WhatsApp needs this approved template, charged like any utility
+          template from your wallet.
+        </p>
+
+        {!loaded ? (
+          <Loader2 className="w-4 h-4 animate-spin text-slate-400" />
+        ) : template ? (
+          <>
+            <div className="rounded-lg bg-slate-50 border border-slate-200 p-3">
+              <p className="text-sm text-slate-800">{template.bodyText}</p>
+              <p className="mt-2 text-xs font-semibold text-sky-700 text-center border-t border-slate-200 pt-2">📞 Allow calls</p>
+            </div>
+            {status === 'PENDING' && (
+              <p className="text-xs text-slate-500">Meta usually reviews it within a few minutes to 24 hours.</p>
+            )}
+            {(status === 'REJECTED' || status === 'PAUSED') && (
+              <div className="space-y-2">
+                {template.rejectionReason && <p className="text-xs text-red-600">{template.rejectionReason}</p>}
+                {status === 'REJECTED' && (
+                  <button
+                    onClick={create}
+                    disabled={creating}
+                    className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-lg bg-green-600 text-white hover:bg-green-700 disabled:opacity-50"
+                  >
+                    {creating && <Loader2 className="w-4 h-4 animate-spin" />} Submit again
+                  </button>
+                )}
+              </div>
+            )}
+          </>
+        ) : (
+          <button
+            onClick={create}
+            disabled={creating}
+            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-lg bg-green-600 text-white hover:bg-green-700 disabled:opacity-50"
+          >
+            {creating && <Loader2 className="w-4 h-4 animate-spin" />} Create template & send to Meta
+          </button>
+        )}
+      </div>
+    </div>
+  );
+};
 
 const CallingSettings: React.FC = () => {
   const [eligibility, setEligibility] = useState<Eligibility | null>(null);
@@ -278,6 +384,8 @@ const CallingSettings: React.FC = () => {
           </div>
         ))}
       </div>
+
+      <PermissionTemplateCard />
 
       {/* Country Restriction */}
       <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">

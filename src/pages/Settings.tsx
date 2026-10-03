@@ -31,7 +31,12 @@ import PaymentsSettings from '../components/settings/PaymentsSettings';
 type SettingsTab = 'whatsapp' | 'general' | 'business' | 'payments' | 'notifications' | 'security' | 'api' | 'calling';
 
 const Settings: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<SettingsTab>('whatsapp');
+  // ?tab=calling (etc.) opens that tab directly - the call screen links here.
+  const [activeTab, setActiveTab] = useState<SettingsTab>(() => {
+    const tab = new URLSearchParams(window.location.search).get('tab');
+    const known: SettingsTab[] = ['whatsapp', 'general', 'business', 'payments', 'notifications', 'security', 'api', 'calling'];
+    return known.includes(tab as SettingsTab) ? (tab as SettingsTab) : 'whatsapp';
+  });
   const { organization, updateOrganization } = useAuth();
 
   const handleUpdateOrganization = async (data: any) => {

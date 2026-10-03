@@ -86,10 +86,20 @@ const CallPanel: React.FC = () => {
           <div className="mt-3 text-sm text-white/90 space-y-3">
             <p>
               WhatsApp lets a business call a customer only after they allow it. Send a request; when they tap
-              <strong> Allow</strong>, call again. (Needs a chat reply from them in the last 24 hours.)
+              <strong> Allow</strong>, call again.
             </p>
             {active.requestSent ? (
               <p className="font-medium">Request sent. Wait for the customer to allow calls.</p>
+            ) : active.templateNeeded ? (
+              <div className="space-y-2">
+                <p className="font-medium">{active.templateNeeded}</p>
+                <a
+                  href="/dashboard/settings?tab=calling"
+                  className="w-full flex items-center justify-center gap-2 rounded-xl bg-white text-amber-700 font-semibold py-2.5 hover:bg-amber-50"
+                >
+                  Open Settings › Calling
+                </a>
+              </div>
             ) : active.canSendRequest === false ? (
               <p className="font-medium">WhatsApp limits requests (1 a day, 2 a week). Try again later.</p>
             ) : (
