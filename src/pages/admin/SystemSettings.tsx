@@ -15,6 +15,7 @@ import toast from 'react-hot-toast';
 import { admin } from '../../services/api';
 import { useConfirm } from '../../context/ConfirmContext';
 import { adminCan, getAdminUser, saveAdminUser } from '../../utils/adminPermissions';
+import TeamOsSyncCard from '../../components/admin/TeamOsSyncCard';
 
 interface PlatformSettings {
   maintenanceMode: boolean;
@@ -361,6 +362,8 @@ const SystemSettings: React.FC = () => {
       </div>
 
       )}
+
+      <TeamOsSyncCard />
 
       <TwoFactorCard />
     </div>
