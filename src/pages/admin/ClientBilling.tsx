@@ -13,6 +13,7 @@ import PageLoader from '../../components/common/PageLoader';
 import AssignPlanModal from '../../components/admin/AssignPlanModal';
 import { useConfirm } from '../../context/ConfirmContext';
 import { adminCan } from '../../utils/adminPermissions';
+import SetupSheet from '../../components/admin/SetupSheet';
 
 const inr = (paise: number) => `₹${(Number(paise || 0) / 100).toLocaleString('en-IN', { maximumFractionDigits: 2 })}`;
 const d = (v?: string | null) => (v ? new Date(v).toLocaleDateString('en-IN', { dateStyle: 'medium' }) : '—');
@@ -368,6 +369,9 @@ const ClientBilling: React.FC = () => {
         </Card>
         )}
       </div>
+
+      {/* What was set up for the client - the onboarder's sheet */}
+      <SetupSheet organizationId={org.id} />
 
       {/* Payments */}
       <Card title="All payments">
