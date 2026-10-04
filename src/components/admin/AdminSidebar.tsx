@@ -29,7 +29,7 @@ const AdminSidebar: React.FC = () => {
 
   // Each link shows only when the role may open that page.
   const links: { name: string; href: string; icon: typeof LayoutDashboard; show: boolean }[] = [
-    { name: 'My clients', href: '/manage-wabmeta-admin/my-clients', icon: Briefcase, show: adminCan('clients.own') },
+    { name: 'My clients', href: '/manage-wabmeta-admin/my-clients', icon: Briefcase, show: adminCan('clients.own') || adminCan('clients.sell') },
     { name: 'Dashboard', href: '/manage-wabmeta-admin/dashboard', icon: LayoutDashboard, show: adminCan('dashboard.read') },
     { name: 'WhatsApp', href: '/manage-wabmeta-admin/whatsapp', icon: Phone, show: adminCan('whatsapp.read') },
     { name: 'Needs attention', href: '/manage-wabmeta-admin/risk', icon: AlertTriangle, show: adminCan('orgs.read') },

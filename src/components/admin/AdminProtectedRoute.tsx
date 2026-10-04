@@ -78,14 +78,20 @@ const AdminProtectedRoute: React.FC<AdminProtectedRouteProps> = ({ children }) =
     return <Navigate to="/manage-wabmeta-admin/login" state={{ from: location }} replace />;
   }
 
-  // An onboarder has no dashboard: their home is their client list, and the
-  // only other pages they can use are a client's own pages and Settings.
-  if (adminCan('clients.own') && !adminCan('dashboard.read')) {
+  // Onboarders and sales have no dashboard: their home is their client list,
+  // and the only other pages they can use are a client's own pages and
+  // Settings. Sales do not get the features page - that is the onboarder's.
+  const onboarder = adminCan('clients.own');
+  const sales = adminCan('clients.sell');
+  if ((onboarder || sales) && !adminCan('dashboard.read')) {
     const p = location.pathname;
+    const clientPages = onboarder
+      ? /^\/manage-wabmeta-admin\/organizations\/[^/]+(\/(billing|features))?$/
+      : /^\/manage-wabmeta-admin\/organizations\/[^/]+(\/billing)?$/;
     const allowed =
       p.startsWith('/manage-wabmeta-admin/my-clients') ||
       p.startsWith('/manage-wabmeta-admin/settings') ||
-      /^\/manage-wabmeta-admin\/organizations\/[^/]+(\/(billing|features))?$/.test(p);
+      clientPages.test(p);
     if (!allowed) return <Navigate to="/manage-wabmeta-admin/my-clients" replace />;
   }
 

@@ -52,6 +52,10 @@ const ClientBilling: React.FC = () => {
   const [savingPay, setSavingPay] = useState(false);
   const [viewReason, setViewReason] = useState('');
   const [onboarders, setOnboarders] = useState<any[]>([]);
+  // A sales person reads this page; changing the plan, add-ons or payments is
+  // the onboarder's job, and the API refuses it for sales anyway. Hiding the
+  // controls is what stops them from finding that out one 403 at a time.
+  const salesView = adminCan('clients.sell') && !adminCan('billing.write');
 
   const load = useCallback(async () => {
     if (!organizationId) return;
@@ -231,9 +235,11 @@ const ClientBilling: React.FC = () => {
               <Wallet className="w-4 h-4" /> Assign plan
             </button>
           )}
-          <Link to={`/manage-wabmeta-admin/organizations/${org.id}/features`} className="flex items-center gap-2 px-3 py-2 rounded-xl border border-gray-200 text-sm text-gray-700 hover:bg-gray-50">
-            <SlidersHorizontal className="w-4 h-4" /> Features
-          </Link>
+          {!salesView && (
+            <Link to={`/manage-wabmeta-admin/organizations/${org.id}/features`} className="flex items-center gap-2 px-3 py-2 rounded-xl border border-gray-200 text-sm text-gray-700 hover:bg-gray-50">
+              <SlidersHorizontal className="w-4 h-4" /> Features
+            </Link>
+          )}
           <Link to={`/manage-wabmeta-admin/organizations/${org.id}`} className="px-3 py-2 rounded-xl border border-gray-200 text-sm text-gray-700 hover:bg-gray-50">
             Overview & notes
           </Link>
@@ -288,7 +294,7 @@ const ClientBilling: React.FC = () => {
                     </p>
                   </div>
                   <span className="font-medium text-gray-900">{inr(a.linePaise)}</span>
-                  {a.active && !a.removedAt && (
+                  {a.active && !a.removedAt && !salesView && (
                     <button aria-label={`Remove ${a.label}`} onClick={() => removeAddOn(a)} className="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50">
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -298,6 +304,7 @@ const ClientBilling: React.FC = () => {
             </ul>
           )}
 
+          {!salesView && (
           <div className="mt-4 pt-4 border-t border-gray-100 space-y-2">
             <p className="text-xs font-semibold text-gray-700">Add an add-on</p>
             <div className="grid gap-2 grid-cols-2 md:grid-cols-4">
@@ -318,9 +325,19 @@ const ClientBilling: React.FC = () => {
             </div>
             {item && <p className="text-xs text-gray-400">{item.billing === 'MONTHLY' ? 'Billed monthly' : 'One-time'}{item.limitKey ? ' · raises the client\'s limit while active' : ' · bill line only'}</p>}
           </div>
+          )}
         </Card>
 
-        {/* Record a payment */}
+        {/* Record a payment - the onboarder's job, so not shown to sales */}
+        {salesView ? (
+          <Card title="Set up by the onboarder">
+            <p className="text-sm text-gray-600">
+              {data.onboarder
+                ? `${data.onboarder.name} is onboarding this client: the plan, add-ons and payments are set up by them.`
+                : 'Not handed to an onboarder yet. Do that from My clients; the onboarder then sets up the plan and records payments.'}
+            </p>
+          </Card>
+        ) : (
         <Card title="Record a payment received offline">
           <div className="grid gap-2 grid-cols-2">
             <input aria-label="Amount in rupees" inputMode="decimal" className={inputCls} placeholder="Amount ₹" value={pay.amount} onChange={(e) => setPay({ ...pay, amount: e.target.value.replace(/[^\d.]/g, '') })} />
@@ -350,6 +367,7 @@ const ClientBilling: React.FC = () => {
             </div>
           )}
         </Card>
+        )}
       </div>
 
       {/* Payments */}
