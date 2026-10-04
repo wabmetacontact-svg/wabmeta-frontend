@@ -1683,6 +1683,13 @@ export const admin = {
   getAddOnCatalog: () => api.get<ApiResponse>('/admin/addon-catalog'),
   getClientBilling: (organizationId: string) =>
     api.get<ApiResponse>(`/admin/organizations/${organizationId}/billing`),
+  // The onboarder's setup sheet. Passwords are never in the sheet; each is read
+  // on its own, and only by the client's onboarder or a super admin.
+  getClientSetup: (organizationId: string) => api.get<ApiResponse>(`/admin/organizations/${organizationId}/setup`),
+  saveClientSetup: (organizationId: string, data: Record<string, unknown>) =>
+    api.put<ApiResponse>(`/admin/organizations/${organizationId}/setup`, data),
+  revealSetupPassword: (organizationId: string, itemId: string) =>
+    api.post<ApiResponse>(`/admin/organizations/${organizationId}/setup/${itemId}/password`),
   addClientAddOn: (organizationId: string, data: Record<string, unknown>) =>
     api.post<ApiResponse>(`/admin/organizations/${organizationId}/addons`, data),
   removeClientAddOn: (organizationId: string, addOnId: string) =>
