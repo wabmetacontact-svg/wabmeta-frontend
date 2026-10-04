@@ -1700,6 +1700,10 @@ export const admin = {
   getMyClientsSummary: () => api.get<ApiResponse>('/admin/my-clients/summary'),
   getMyClientPayments: () => api.get<ApiResponse>('/admin/my-clients/payments'),
   createClient: (data: Record<string, unknown>) => api.post<ApiResponse>('/admin/my-clients', data),
+  // Sales: the onboarders a sold client can go to, and handing it over.
+  getHandOffOnboarders: () => api.get<ApiResponse>('/admin/my-clients/onboarders'),
+  handOffClient: (organizationId: string, onboarderId: string) =>
+    api.put<ApiResponse>(`/admin/my-clients/${organizationId}/onboarder`, { onboarderId }),
 
   getActivityLogs: (params?: any) =>
     api.get<ApiResponse>('/admin/activity-logs', { params }),
