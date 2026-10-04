@@ -14,6 +14,7 @@ import {
   RefreshCw,
   Clock,
   IndianRupee,
+  Search,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { formatINR } from '../../utils/currency';
@@ -76,6 +77,15 @@ const WalletManagement: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'requests' | 'wallets'>('requests');
   const [loading, setLoading] = useState(false);
 
+  // Search runs on the server, so it finds wallets beyond the first page too.
+  // `query` follows the box after a short pause, so each keystroke is not a request.
+  const [search, setSearch] = useState('');
+  const [query, setQuery] = useState('');
+  useEffect(() => {
+    const t = setTimeout(() => setQuery(search.trim()), 350);
+    return () => clearTimeout(t);
+  }, [search]);
+
   // Requests state
   const [requests, setRequests] = useState<any[]>([]);
   const [reviewing, setReviewing] = useState<string | null>(null);
@@ -109,12 +119,13 @@ const WalletManagement: React.FC = () => {
     } else {
       fetchWallets();
     }
-  }, [activeTab]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab, query]);
 
   const fetchRequests = async () => {
     try {
       setLoading(true);
-      const res = await admin.getWalletRequests({ limit: 50 });
+      const res = await admin.getWalletRequests({ limit: 50, search: query || undefined });
       setRequests(res.data?.data?.requests || []);
     } catch (err) {
       toast.error('Failed to load wallet requests');
@@ -126,7 +137,7 @@ const WalletManagement: React.FC = () => {
   const fetchWallets = async () => {
     try {
       setLoading(true);
-      const res = await admin.getAllWallets({ limit: 50 });
+      const res = await admin.getAllWallets({ limit: 50, search: query || undefined });
       setWallets(res.data?.data?.wallets || []);
     } catch (err) {
       toast.error('Failed to load wallets');
@@ -303,6 +314,30 @@ const WalletManagement: React.FC = () => {
 
       {/* Content */}
       <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+        <div className="p-4 border-b border-gray-200 bg-gray-50/60">
+          <div className="relative max-w-md">
+            <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              aria-label="Search by business, name, email or phone"
+              placeholder="Search by business, name, email or phone"
+              className="w-full pl-9 pr-9 py-2.5 bg-white border border-gray-200 rounded-xl text-sm text-gray-900
+                placeholder:text-gray-400 focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/10"
+            />
+            {search && (
+              <button
+                type="button"
+                onClick={() => setSearch('')}
+                aria-label="Clear search"
+                className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-md text-gray-400 hover:text-gray-700 hover:bg-gray-100"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+        </div>
         {loading ? (
           <div className="p-16 flex flex-col items-center justify-center">
             <Loader2 className="w-8 h-8 text-primary-400 animate-spin mb-3" />
@@ -345,7 +380,7 @@ const WalletManagement: React.FC = () => {
                         <CheckCircle className="w-7 h-7 text-gray-600" />
                       </div>
                       <p className="text-gray-500 font-medium">
-                        No wallet requests found
+                        {query ? `No wallet requests match “${query}”` : 'No wallet requests found'}
                       </p>
                     </td>
                   </tr>
@@ -498,7 +533,7 @@ const WalletManagement: React.FC = () => {
                         <Wallet className="w-7 h-7 text-gray-600" />
                       </div>
                       <p className="text-gray-500 font-medium">
-                        No wallets found
+                        {query ? `No wallets match “${query}”` : 'No wallets found'}
                       </p>
                     </td>
                   </tr>
@@ -523,6 +558,7 @@ const WalletManagement: React.FC = () => {
                             </p>
                             <p className="text-xs text-gray-500">
                               {w.organization?.planType || 'FREE'}
+                              {w.user?.email && <> · {w.user.email}</>}
                             </p>
                           </div>
                         </div>

@@ -1387,6 +1387,7 @@ export const wallet = {
     limit?: number;
     flagged?: boolean;
     isActive?: boolean;
+    search?: string;
   }) => api.get<ApiResponse>('/admin/wallets', { params }),
 
   adminGetRequests: (params?: {
@@ -1746,6 +1747,7 @@ export const admin = {
 
   getWalletRequests: (params?: {
     status?: string;
+    search?: string;
     page?: number;
     limit?: number;
   }) => api.get<ApiResponse>('/admin/wallets/requests', { params }),
@@ -1755,6 +1757,7 @@ export const admin = {
     limit?: number;
     flagged?: boolean;
     isActive?: boolean;
+    search?: string;
   }) => api.get<ApiResponse>('/admin/wallets', { params }),
 
   reviewWalletRequest: (

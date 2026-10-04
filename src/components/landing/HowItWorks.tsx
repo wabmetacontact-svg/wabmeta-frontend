@@ -4,6 +4,7 @@ import {
   ArrowRight
 } from 'lucide-react';
 import { FaWhatsapp, FaInstagram } from 'react-icons/fa';
+import SetupVideo from './SetupVideo';
 
 const HowItWorks = () => {
   const steps = [
@@ -456,6 +457,9 @@ const HowItWorks = () => {
             </svg>
           </div>
         </div>
+
+        {/* ═══════ Full setup walkthrough ═══════ */}
+        <SetupVideo />
 
         {/* ═══════ Bottom Trust Bar ═══════ */}
         <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-6 md:p-8">
