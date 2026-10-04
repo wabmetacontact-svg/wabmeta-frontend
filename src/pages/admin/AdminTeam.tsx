@@ -17,7 +17,7 @@ const ROLES: { value: string; label: string; help: string }[] = [
   { value: 'support', label: 'Support', help: 'Sees everything, refreshes WhatsApp numbers, ends sessions. Changes nothing else.' },
   { value: 'finance', label: 'Finance', help: 'Sees everything; runs subscriptions, wallets (including money), coupons and exports; verifies offline payments.' },
   { value: 'onboarder', label: 'Onboarder', help: 'Only their own clients: creates them, plan, features, add-ons, offline payments, notes, read-only view.' },
-  { value: 'sales', label: 'Sales', help: 'Creates clients and hands each one to an onboarder. Sees the clients they sold and the money from them; plans, features and payments stay with the onboarder.' },
+  { value: 'sales', label: 'Sales', help: 'Creates clients, adds the add-ons they sold, and hands each one to an onboarder. Sees the clients they sold and the money from them; plans, features and payments stay with the onboarder.' },
 ];
 
 const roleLabel = (r: string) => ROLES.find((x) => x.value === r)?.label || r;
