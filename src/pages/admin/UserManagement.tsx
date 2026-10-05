@@ -667,7 +667,7 @@ const PasswordModal: React.FC<PasswordModalProps> = ({
 // ============================================
 // Opens the customer app as this user in a new tab, without their password.
 // Same flow as "View as user" on the user's detail page (see
-// components/admin/UserAccountControl.tsx): a 30-minute, read-only token,
+// components/admin/UserAccountControl.tsx): a 30-minute token, inbox view-only,
 // and the backend writes the reason to the audit log.
 interface LoginAsModalProps {
   user: User | null;

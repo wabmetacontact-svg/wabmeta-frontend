@@ -1,6 +1,6 @@
 // src/pages/Impersonate.tsx
 //
-// Landing page for an admin's read-only "view as user". The admin panel
+// Landing page for an admin's "view as user". The admin panel
 // opens /impersonate#<params> in a new tab; the token travels in the URL
 // fragment, which browsers never send to a server or put in a Referer.
 
@@ -36,7 +36,7 @@ const Impersonate: React.FC = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4">
-      <p className="text-sm text-slate-600">{error || 'Opening read-only view…'}</p>
+      <p className="text-sm text-slate-600">{error || 'Opening the client’s account…'}</p>
     </div>
   );
 };

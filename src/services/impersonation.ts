@@ -1,11 +1,12 @@
 // src/services/impersonation.ts
 //
-// An admin's read-only "view as user" session in the customer app.
+// An admin's "view as user" session in the customer app.
 //
 // The admin panel gets a 30-minute token from the API and opens
 // /impersonate#... in a new tab. That page stores the token where the app
 // normally keeps a user's token and reloads, so the whole app runs as that
-// user. The backend refuses every change made with this token.
+// user. The backend lets it make changes, except the inbox, the login and
+// money (wabmeta-backend src/modules/admin/impersonation.ts).
 //
 // localStorage is shared by every tab of the site, so whatever user session
 // this browser already had is set aside first and put back on exit.
