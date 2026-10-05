@@ -1,7 +1,7 @@
 // src/components/admin/UserAccountControl.tsx
 //
 // On a user's admin page: their organizations (with a way into each one's
-// Control page and a read-only "view as" for each), and their sessions.
+// Control page and a "view as" for each), and their sessions.
 
 import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
@@ -181,7 +181,7 @@ const UserAccountControl: React.FC<Props> = ({ userId, userName, userEmail, orga
                       className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-500 text-xs font-medium text-amber-950 hover:bg-amber-400 disabled:opacity-50"
                     >
                       {busy === `view-${org.id}` ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Eye className="w-3.5 h-3.5" />}
-                      Open read-only view
+                      Open client view
                     </button>
                     <button aria-label="Cancel" onClick={() => setViewOrg(null)} className="p-1.5 text-gray-400 hover:text-gray-700">
                       <X className="w-3.5 h-3.5" />
