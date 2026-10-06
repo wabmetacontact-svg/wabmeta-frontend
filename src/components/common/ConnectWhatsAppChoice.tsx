@@ -16,6 +16,7 @@ import {
   MessagesSquare,
 } from 'lucide-react';
 import type { ConnectMode } from '../../hooks/useMetaConnect';
+import { useAuth } from '../../context/AuthContext';
 
 interface ConnectWhatsAppChoiceProps {
   open: boolean;
@@ -28,6 +29,12 @@ export const ConnectWhatsAppChoice: React.FC<ConnectWhatsAppChoiceProps> = ({
   onCancel,
   onChoose,
 }) => {
+  // The free demo connects through the Cloud API only; the server refuses
+  // coexistence too. Only a loaded FREE_DEMO plan disables it - an
+  // organization still loading must not look like a demo.
+  const { organization } = useAuth();
+  const freeDemo = organization?.planType === 'FREE_DEMO';
+
   if (!open) return null;
 
   return (
@@ -67,11 +74,13 @@ export const ConnectWhatsAppChoice: React.FC<ConnectWhatsAppChoiceProps> = ({
         <div className="px-5 space-y-2.5">
           {/* Coexistence */}
           <button
-            onClick={() => onChoose('existing')}
-            className="group w-full text-left rounded-xl border border-slate-200
+            onClick={() => !freeDemo && onChoose('existing')}
+            disabled={freeDemo}
+            aria-disabled={freeDemo}
+            className={`group w-full text-left rounded-xl border border-slate-200
                        p-4 transition-all
-                       hover:border-emerald-500 hover:shadow-md
-                       focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                       focus:outline-none focus:ring-2 focus:ring-emerald-500
+                       ${freeDemo ? 'opacity-60 cursor-not-allowed' : 'hover:border-emerald-500 hover:shadow-md'}`}
           >
             <div className="flex items-start gap-3.5">
               <div className="w-10 h-10 rounded-xl bg-emerald-50 flex-shrink-0
@@ -93,6 +102,11 @@ export const ConnectWhatsAppChoice: React.FC<ConnectWhatsAppChoiceProps> = ({
                   Keep the app on your phone. WabMeta sends and receives on the
                   same number, and your chats stay where they are.
                 </p>
+                {freeDemo && (
+                  <p className="mt-2 text-xs font-medium text-amber-700">
+                    Not available on the free demo. Upgrade your plan to use it, or connect a new number below.
+                  </p>
+                )}
 
                 <div className="mt-2.5 pt-2.5 border-t border-slate-100 space-y-1.5">
                   <Caveat icon={Gauge}>
