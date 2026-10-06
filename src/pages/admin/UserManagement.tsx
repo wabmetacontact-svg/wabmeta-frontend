@@ -45,9 +45,13 @@ interface WhatsAppAccount {
   displayPhoneNumber: string;
   connectionType: 'CLOUD_API' | 'BUSINESS_APP' | 'ON_PREMISE';
   status: 'active' | 'inactive';
+  /** CONNECTED, DISCONNECTED, PENDING… as the backend stores it. */
+  rawStatus?: string;
   isDefault: boolean;
   qualityRating: string | null;
   phoneNumberId: string;
+  wabaId?: string;
+  organizationName?: string;
   createdAt: string;
 }
 
@@ -330,7 +334,9 @@ const UserDetailsModal: React.FC<UserDetailsModalProps> = ({
                         )}
                       </div>
                       <p className="text-sm text-gray-500">
-                        {account.displayPhoneNumber}
+                        +{account.displayPhoneNumber}
+                        {account.organizationName ? ` · ${account.organizationName}` : ''}
+                        {account.rawStatus && account.rawStatus !== 'CONNECTED' ? ` · ${account.rawStatus}` : ''}
                       </p>
                     </div>
                     <WhatsAppConnectionBadge
@@ -349,10 +355,16 @@ const UserDetailsModal: React.FC<UserDetailsModalProps> = ({
                     </div>
                     <div>
                       <p className="text-xs text-gray-500">Phone Number ID</p>
-                      <p className="text-sm font-mono text-gray-700">
-                        {account.phoneNumberId.slice(0, 12)}...
+                      <p className="text-sm font-mono text-gray-700 break-all select-all">
+                        {account.phoneNumberId}
                       </p>
                     </div>
+                    {account.wabaId && (
+                      <div className="col-span-2">
+                        <p className="text-xs text-gray-500">WABA ID</p>
+                        <p className="text-sm font-mono text-gray-700 break-all select-all">{account.wabaId}</p>
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
