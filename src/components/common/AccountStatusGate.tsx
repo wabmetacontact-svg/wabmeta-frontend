@@ -7,7 +7,7 @@
 //   MAINTENANCE              the whole platform is down for maintenance
 //   ORG_SUSPENDED            this account is suspended
 //   ORG_READ_ONLY            this account can look but not change or send
-//   IMPERSONATION_READ_ONLY  the admin view tried to change the inbox, the login or money
+//   IMPERSONATION_READ_ONLY  the admin view tried to change the login or the plan
 
 import React, { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
@@ -41,7 +41,7 @@ const ImpersonationBar: React.FC = () => {
         <Eye className="w-4 h-4 shrink-0" />
         <span>
           Admin view of <strong>{info.userName || info.userEmail}</strong>
-          {info.organizationName ? <> · {info.organizationName}</> : null} · changes allowed, inbox view-only ·{' '}
+          {info.organizationName ? <> · {info.organizationName}</> : null} · changes allowed ·{' '}
           ends in {minutesLeft(info.expiresAt)} min
         </span>
         <button

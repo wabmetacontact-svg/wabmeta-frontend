@@ -355,9 +355,9 @@ const ClientBilling: React.FC = () => {
             </button>
           </div>
 
-          {(adminCan('impersonate') || adminCan('clients.own')) && org.owner && (
+          {(adminCan('impersonate') || adminCan('clients.own') || adminCan('clients.sell')) && org.owner && (
             <div className="mt-5 pt-4 border-t border-gray-100">
-              <p className="text-xs font-semibold text-gray-700 mb-2">Open the client's account (30 minutes). You can make changes; the inbox stays view-only.</p>
+              <p className="text-xs font-semibold text-gray-700 mb-2">Open the client's account (30 minutes). You can work in it, inbox and wallet included; the login and the plan stay as they are.</p>
               <div className="flex gap-2">
                 <input aria-label="Reason for viewing" className={inputCls} placeholder="Reason, e.g. helping set up templates" value={viewReason} onChange={(e) => setViewReason(e.target.value)} />
                 <button onClick={viewAsClient} className="flex items-center gap-1 px-3 py-2 rounded-xl bg-amber-500 text-amber-950 text-sm whitespace-nowrap">

@@ -45,7 +45,6 @@ import type { Message } from '../components/inbox/MessageBubble';
 import type { Note } from '../components/inbox/ConversationNotes';
 
 import { useConfirm } from '../context/ConfirmContext';
-import { isImpersonating } from '../services/impersonation';
 // Styles
 import '../components/inbox/inbox.styles.css';
 
@@ -1463,13 +1462,6 @@ const Inbox: React.FC = () => {
 
   return (
     <div className="flex h-full overflow-hidden relative chat-bg select-none">
-
-      {/* The admin view may set the account up, but not reply in the client's name. */}
-      {isImpersonating() && (
-        <div className="absolute top-2 left-1/2 -translate-x-1/2 z-30 px-3 py-1.5 rounded-full bg-amber-100 border border-amber-300 text-amber-900 text-xs font-medium shadow-sm whitespace-nowrap">
-          Admin view: the inbox is view-only. Messages cannot be sent from here.
-        </div>
-      )}
 
       {/* ─── Left Sidebar: Conversation List ─────────────────────────────── */}
       <div className={`
