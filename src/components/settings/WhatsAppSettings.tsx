@@ -14,7 +14,8 @@ import {
   RefreshCw, AlertCircle, TrendingUp, Activity, Shield, Clock,
   AlertTriangle,
 } from 'lucide-react';
-import api, { whatsapp } from '../../services/api';
+import api, { meta, whatsapp } from '../../services/api';
+import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 
 interface WhatsAppAccount {
@@ -397,6 +398,7 @@ export default function WhatsAppSettings() {
     return () => window.removeEventListener('focus', handleFocus);
   }, [syncAllQuality]);
 
+  const navigate = useNavigate();
   const { connect, loading: connectLoading, progress, sdkReady, sdkLoading } = useMetaConnect({
     organizationId: orgId,
     onSuccess: async (data: any) => {
@@ -415,10 +417,35 @@ export default function WhatsAppSettings() {
     }
   });
 
-  const handleConnect = () => {
-    if (accounts.some(a => a.status === 'CONNECTED')) {
-      toast.error('Please disconnect the current account before connecting a new one.');
-      return;
+  const handleConnect = async () => {
+    // How many numbers the plan allows comes from the server. Asking before
+    // Meta's signup opens saves a client at their limit going through it only
+    // to be refused; the server checks again when the number is saved.
+    try {
+      const res = await meta.numberAllowance();
+      const a = res.data?.data;
+      if (a && !a.canConnect) {
+        toast.error(
+          (t) => (
+            <span className="text-sm">
+              {a.message}{' '}
+              <button
+                className="ml-1 font-semibold underline"
+                onClick={() => {
+                  toast.dismiss(t.id);
+                  navigate('/dashboard/settings/billing');
+                }}
+              >
+                Upgrade plan
+              </button>
+            </span>
+          ),
+          { duration: 10000, id: 'number-limit' }
+        );
+        return;
+      }
+    } catch {
+      // Could not ask: carry on, the server refuses with the same message.
     }
     // Meta opens a different Embedded Signup flow depending on whether the
     // number already runs the WhatsApp Business app, and it cannot work that
@@ -541,6 +568,18 @@ export default function WhatsAppSettings() {
         {/* Connected Accounts */}
         {hasConnectedAccount ? (
           <div className="space-y-4 mt-6">
+            {/* A plan may include more than one number. Whether this one does is
+                checked when it is pressed (handleConnect), not guessed here. */}
+            <div className="flex justify-end">
+              <button
+                onClick={handleConnect}
+                disabled={connectLoading || sdkLoading || !sdkReady}
+                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-xl border border-green-300 bg-white text-green-700 hover:bg-green-50 disabled:opacity-50"
+              >
+                {connectLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+                Add another number
+              </button>
+            </div>
             {connectedAccounts.map((account) => {
               const quality = getQualityConfig(account.qualityRating);
               const isSyncingThis = syncingAccountId === account.id;

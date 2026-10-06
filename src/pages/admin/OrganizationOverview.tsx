@@ -105,7 +105,7 @@ const OrganizationOverview: React.FC = () => {
   if (loading) return <PageLoader />;
   if (!data) return <div className="text-center py-20 text-gray-500">Organization not found.</div>;
 
-  const { organization: org, owner, members, subscription, whatsappAccounts, wallet, counts, usage, payments, notes } = data;
+  const { organization: org, owner, members, subscription, whatsappAccounts, numberAllowance, wallet, counts, usage, payments, notes } = data;
   const tags: string[] = org.adminTags || [];
 
   return (
@@ -204,7 +204,7 @@ const OrganizationOverview: React.FC = () => {
           </ul>
         </Card>
 
-        <Card title={`WhatsApp numbers (${whatsappAccounts.length})`}>
+        <Card title={`WhatsApp numbers (${numberAllowance ? `${numberAllowance.connected} of ${numberAllowance.limit} allowed connected` : whatsappAccounts.length})`}>
           {whatsappAccounts.length === 0 ? (
             <p className="text-sm text-gray-500">None connected.</p>
           ) : (
@@ -214,6 +214,10 @@ const OrganizationOverview: React.FC = () => {
                   <div className="flex-1">
                     <p className="text-gray-900">{w.displayName || w.phoneNumber}</p>
                     <p className="text-xs text-gray-500">{w.phoneNumber} · {w.messagingLimit || 'tier ?'}</p>
+                    <p className="text-xs text-gray-500">
+                      Phone number ID <span className="font-mono select-all">{w.phoneNumberId}</span> · WABA ID{' '}
+                      <span className="font-mono select-all">{w.wabaId}</span>
+                    </p>
                   </div>
                   <span className="text-xs text-gray-600">{w.status}</span>
                   <span className={`text-xs font-medium ${String(w.qualityRating).toUpperCase() === 'RED' ? 'text-red-600' : String(w.qualityRating).toUpperCase() === 'YELLOW' ? 'text-amber-600' : 'text-green-600'}`}>

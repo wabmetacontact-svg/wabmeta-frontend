@@ -1154,6 +1154,9 @@ export const businessProfile = {
 };
 
 export const meta = {
+  /** How many WhatsApp numbers the organization may connect, and how many are. */
+  numberAllowance: () =>
+    api.get<ApiResponse<{ limit: number; connected: number; canConnect: boolean; message: string | null }>>('/meta/number-allowance'),
   connect: (data: {
     code: string;
     organizationId: string;
