@@ -188,7 +188,7 @@ const ClientBilling: React.FC = () => {
   if (loading) return <PageLoader />;
   if (!data) return <div className="text-center py-20 text-gray-500">Client not found.</div>;
 
-  const { organization: org, plan, bill, revenue, addOns, payments } = data;
+  const { organization: org, plan, bill, revenue, addOns, payments, whatsappNumbers, numberAllowance } = data;
   const allPayments = [
     ...payments.razorpay.map((p: any) => ({
       id: p.id, when: p.paidAt || p.createdAt, what: `${p.planName || 'Plan'} · Razorpay`,
@@ -369,6 +369,32 @@ const ClientBilling: React.FC = () => {
         </Card>
         )}
       </div>
+
+      {/* The WhatsApp numbers this client connected, with the ids Meta knows them by */}
+      <Card title={`WhatsApp numbers - ${numberAllowance?.connected ?? 0} of ${numberAllowance?.limit ?? '?'} allowed connected`}>
+        {!whatsappNumbers?.length ? (
+          <p className="text-sm text-gray-500">No number connected yet.</p>
+        ) : (
+          <ul className="divide-y divide-gray-100">
+            {whatsappNumbers.map((w: any) => (
+              <li key={w.id} className="py-2.5 text-sm flex flex-wrap items-start gap-x-4 gap-y-1">
+                <div className="min-w-[180px] flex-1">
+                  <p className="text-gray-900 font-medium">{w.displayName || w.phoneNumber}</p>
+                  <p className="text-xs text-gray-500">+{w.phoneNumber}</p>
+                </div>
+                <div className="text-xs text-gray-600 space-y-0.5">
+                  <p>Phone number ID: <span className="font-mono select-all">{w.phoneNumberId}</span></p>
+                  <p>WABA ID: <span className="font-mono select-all">{w.wabaId}</span></p>
+                </div>
+                <span className={`text-xs font-medium ${w.status === 'CONNECTED' ? 'text-green-600' : 'text-gray-500'}`}>{w.status}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+        {numberAllowance && numberAllowance.connected >= numberAllowance.limit && (
+          <p className="mt-2 text-xs text-amber-700">At the limit: connecting another number needs a plan upgrade or a number add-on.</p>
+        )}
+      </Card>
 
       {/* What was set up for the client - the onboarder's sheet */}
       <SetupSheet organizationId={org.id} />
