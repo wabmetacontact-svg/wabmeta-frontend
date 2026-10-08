@@ -1,15 +1,80 @@
-import React from 'react';
-import { X, Trash2, Plus, Info, Sparkles } from 'lucide-react';
+import React, { useState } from 'react';
+import { X, Trash2, Plus, Info, Sparkles, Upload, Loader2, Copy } from 'lucide-react';
 import type { ChatbotFlowNode, ChatbotNodeData } from '../../types/chatbot';
+import { templates as templatesApi } from '../../services/api';
+import toast from 'react-hot-toast';
+
+const MediaUploadButton: React.FC<{
+  messageType: ChatbotNodeData['messageType'];
+  onUploadComplete: (url: string) => void;
+}> = ({ messageType, onUploadComplete }) => {
+  const [uploading, setUploading] = useState(false);
+
+  const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const allowedTypes: Record<string, string[]> = {
+      image: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
+      video: ['video/mp4', 'video/mpeg', 'video/quicktime'],
+      audio: ['audio/mpeg', 'audio/mp4', 'audio/ogg', 'audio/wav'],
+      document: ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
+    };
+
+    if (messageType && allowedTypes[messageType] && !allowedTypes[messageType].includes(file.type)) {
+      toast.error(`Invalid file type for ${messageType}`);
+      return;
+    }
+
+    if (file.size > 100 * 1024 * 1024) {
+      toast.error('File size must be less than 100MB');
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const res = await templatesApi.uploadMedia(file);
+      if (res.data.success && res.data.data?.cloudinaryUrl) {
+        onUploadComplete(res.data.data.cloudinaryUrl);
+        toast.success('Media uploaded successfully!');
+      } else {
+        toast.error('Upload failed');
+      }
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Upload failed');
+    } finally {
+      setUploading(false);
+      event.target.value = '';
+    }
+  };
+
+  return (
+    <label className="flex items-center justify-center px-4 py-2 bg-gray-100 border border-gray-200 rounded-lg hover:bg-gray-200 transition-colors cursor-pointer">
+      <input
+        type="file"
+        onChange={handleUpload}
+        disabled={uploading}
+        className="sr-only"
+        accept={messageType === 'image' ? 'image/*' : messageType === 'video' ? 'video/*' : messageType === 'audio' ? 'audio/*' : '.pdf,.doc,.docx'}
+      />
+      {uploading ? (
+        <Loader2 className="w-5 h-5 text-gray-500 animate-spin" />
+      ) : (
+        <Upload className="w-5 h-5 text-gray-600" />
+      )}
+    </label>
+  );
+};
 
 interface Props {
   node: ChatbotFlowNode;
   onUpdate: (data: Partial<ChatbotNodeData>) => void;
   onDelete: () => void;
+  onDuplicate?: () => void;
   onClose: () => void;
 }
 
-const NodeConfigPanel: React.FC<Props> = ({ node, onUpdate, onDelete, onClose }) => {
+const NodeConfigPanel: React.FC<Props> = ({ node, onUpdate, onDelete, onDuplicate, onClose }) => {
   const renderConfig = () => {
     switch (node.type) {
 
@@ -51,13 +116,19 @@ const NodeConfigPanel: React.FC<Props> = ({ node, onUpdate, onDelete, onClose })
                   <label htmlFor="nodeconfigpanel-media-url" className="block text-sm font-medium mb-1 text-gray-700">
                     Media URL
                   </label>
-                  <input id="nodeconfigpanel-media-url"
-                    type="url"
-                    value={node.data.mediaUrl || ''}
-                    onChange={(e) => onUpdate({ mediaUrl: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white text-gray-900 focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                    placeholder="https://example.com/media.jpg"
-                  />
+                  <div className="flex gap-2">
+                    <input id="nodeconfigpanel-media-url"
+                      type="url"
+                      value={node.data.mediaUrl || ''}
+                      onChange={(e) => onUpdate({ mediaUrl: e.target.value })}
+                      className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white text-gray-900 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                      placeholder="https://example.com/media.jpg"
+                    />
+                    <MediaUploadButton
+                      messageType={msgType}
+                      onUploadComplete={(url) => onUpdate({ mediaUrl: url })}
+                    />
+                  </div>
                 </div>
               )}
 
@@ -685,6 +756,81 @@ const NodeConfigPanel: React.FC<Props> = ({ node, onUpdate, onDelete, onClose })
         );
 
       // ─────────────────────────────────
+      case 'call':
+        return (
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium mb-1 text-gray-700">
+                Call Action
+              </label>
+              <select aria-label="Call Action"
+                value={node.data.callAction || 'initiate'}
+                onChange={(e) => onUpdate({ callAction: e.target.value as 'initiate' | 'hangup' })}
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white text-gray-900"
+              >
+                <option value="initiate">Initiate Call</option>
+                <option value="hangup">Hang Up Call</option>
+              </select>
+            </div>
+
+            {node.data.callAction === 'initiate' && (
+              <div className="space-y-4">
+                <div>
+                  <label htmlFor="nodeconfigpanel-call-duration" className="block text-sm font-medium mb-1 text-gray-700">
+                    Max Duration (seconds)
+                  </label>
+                  <input id="nodeconfigpanel-call-duration"
+                    type="number"
+                    value={node.data.callDuration || 60}
+                    onChange={(e) => onUpdate({ callDuration: Number(e.target.value) })}
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white text-gray-900"
+                    min={10}
+                    max={3600}
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Maximum call duration before auto-hangup (10-3600 seconds)</p>
+                </div>
+
+                <div className="border border-green-200 rounded-lg p-3 bg-green-50">
+                  <label className="flex items-center gap-3 cursor-pointer">
+                    <div className="relative">
+                      <input
+                        type="checkbox"
+                        checked={!!node.data.callRecording}
+                        onChange={(e) => onUpdate({ callRecording: e.target.checked })}
+                        className="sr-only"
+                      />
+                      <div
+                        className={`w-10 h-5 rounded-full transition-colors ${
+                          node.data.callRecording ? 'bg-green-500' : 'bg-gray-300'
+                        }`}
+                      >
+                        <div
+                          className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${
+                            node.data.callRecording ? 'translate-x-5' : 'translate-x-0'
+                          }`}
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-green-800">Record Call</p>
+                      <p className="text-xs text-green-600 mt-0.5">Save call recording for quality and training</p>
+                    </div>
+                  </label>
+                </div>
+              </div>
+            )}
+
+            {node.data.callAction === 'hangup' && (
+              <div className="p-3 bg-red-50 rounded-lg border border-red-200">
+                <p className="text-sm text-red-700">
+                  This node will end the active call. Connect this after a Call Initiate node or condition.
+                </p>
+              </div>
+            )}
+          </div>
+        );
+
+      // ─────────────────────────────────
       case 'end':
         return (
           <div className="p-3 bg-red-50 rounded-lg">
@@ -724,7 +870,17 @@ const NodeConfigPanel: React.FC<Props> = ({ node, onUpdate, onDelete, onClose })
 
       {/* Delete button - not shown for start node */}
       {node.type !== 'start' && (
-        <div className="p-4 border-t border-gray-200">
+        <div className="p-4 border-t border-gray-200 space-y-2">
+          <button
+            onClick={() => {
+              if (onDuplicate) onDuplicate();
+              onClose();
+            }}
+            className="flex items-center justify-center gap-2 w-full px-4 py-2 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors"
+          >
+            <Copy className="w-4 h-4" />
+            Duplicate Node
+          </button>
           <button
             onClick={onDelete}
             className="flex items-center justify-center gap-2 w-full px-4 py-2 text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors"

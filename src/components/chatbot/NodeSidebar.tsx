@@ -1,5 +1,5 @@
 import React from 'react';
-import { MessageSquare, MousePointer, GitBranch, Clock, Zap, StopCircle, List, Sparkles } from 'lucide-react';
+import { MessageSquare, MousePointer, GitBranch, Clock, Zap, StopCircle, List, Sparkles, Phone } from 'lucide-react';
 
 const nodeTypes = [
   {
@@ -50,6 +50,13 @@ const nodeTypes = [
     icon: Zap,
     color: 'bg-pink-500',
     desc: 'Tag, variable, webhook',
+  },
+  {
+    type: 'call',
+    label: 'Call',
+    icon: Phone,
+    color: 'bg-green-500',
+    desc: 'Initiate or end a call',
   },
   {
     type: 'end',

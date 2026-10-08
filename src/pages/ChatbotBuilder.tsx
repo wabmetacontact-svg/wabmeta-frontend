@@ -26,7 +26,7 @@ import toast from 'react-hot-toast';
 import PageLoader from '../components/common/PageLoader';
 import {
   StartNode, MessageNode, ButtonNode, ConditionNode,
-  DelayNode, ActionNode, EndNode, ListNode, AiNode,
+  DelayNode, ActionNode, EndNode, ListNode, AiNode, CallNode,
   NodeSidebar, NodeConfigPanel
 } from '../components/chatbot';
 
@@ -40,6 +40,7 @@ const nodeTypes: NodeTypes = {
   condition: ConditionNode,
   delay: DelayNode,
   action: ActionNode,
+  call: CallNode,
   end: EndNode,
 };
 
@@ -488,6 +489,8 @@ const ChatbotBuilder: React.FC = () => {
         return { label: 'Delay', delay: 2000 };
       case 'action':
         return { label: 'Action', action: { type: 'tagContact', params: {} } };
+      case 'call':
+        return { label: 'Call', callAction: 'initiate', callDuration: 60, callRecording: false };
       case 'end':
         return { label: 'End' };
       default:
@@ -534,6 +537,28 @@ const ChatbotBuilder: React.FC = () => {
     setSelectedNode(null);
     setActivePanel(null);
     setIsDirty(true);
+  };
+
+  const duplicateNode = (nodeId: string) => {
+    const node = nodes.find(n => n.id === nodeId);
+    if (!node) return;
+
+    const newNodeId = `${node.type}-${Date.now()}`;
+    const offset = 30;
+
+    const duplicatedNode: Node = {
+      ...node,
+      id: newNodeId,
+      position: {
+        x: node.position.x + offset,
+        y: node.position.y + offset,
+      },
+      data: { ...node.data },
+    };
+
+    setNodes((nds) => nds.concat(duplicatedNode));
+    setIsDirty(true);
+    toast.success('Node duplicated');
   };
 
   const updateChatbotSettings = (data: any) => {
@@ -831,6 +856,7 @@ const ChatbotBuilder: React.FC = () => {
             node={selectedNode}
             onUpdate={(data: any) => updateNodeData(selectedNode.id, data)}
             onDelete={() => deleteNode(selectedNode.id)}
+            onDuplicate={() => duplicateNode(selectedNode.id)}
             onClose={() => {
               setSelectedNode(null);
               setActivePanel(null);

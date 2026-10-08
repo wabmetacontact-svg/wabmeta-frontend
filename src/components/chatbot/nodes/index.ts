@@ -9,3 +9,4 @@ export { default as ActionNode } from './ActionNode';
 export { default as EndNode } from './EndNode';
 export { default as ListNode } from './ListNode';
 export { default as AiNode } from './AiNode';
+export { default as CallNode } from './CallNode';

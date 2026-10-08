@@ -21,7 +21,7 @@ export interface FlowData {
 
 export interface FlowNode {
   id: string;
-  type: 'start' | 'message' | 'button' | 'list' | 'condition' | 'delay' | 'action' | 'ai' | 'end';
+  type: 'start' | 'message' | 'button' | 'list' | 'condition' | 'delay' | 'action' | 'ai' | 'end' | 'call';
   position: { x: number; y: number };
   data: NodeData;
 }
@@ -94,6 +94,10 @@ export type ChatbotNodeData = {
   action?: ChatbotAction;
   systemPrompt?: string;
   nextNodeId?: string;
+  // Call node fields
+  callAction?: 'initiate' | 'hangup';
+  callDuration?: number; // max duration in seconds
+  callRecording?: boolean;
 };
 
 export type ChatbotFlowNode = import('@xyflow/react').Node<ChatbotNodeData>;
