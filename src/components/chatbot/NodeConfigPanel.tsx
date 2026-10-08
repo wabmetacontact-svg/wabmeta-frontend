@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { X, Trash2, Plus, Info, Sparkles, Upload, Loader2, Copy } from 'lucide-react';
 import type { ChatbotFlowNode, ChatbotNodeData } from '../../types/chatbot';
-import { templates as templatesApi } from '../../services/api';
+import { inbox as inboxApi } from '../../services/api';
 import toast from 'react-hot-toast';
 
 const MediaUploadButton: React.FC<{
@@ -17,7 +17,7 @@ const MediaUploadButton: React.FC<{
     const allowedTypes: Record<string, string[]> = {
       image: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
       video: ['video/mp4', 'video/mpeg', 'video/quicktime'],
-      audio: ['audio/mpeg', 'audio/mp4', 'audio/ogg', 'audio/wav'],
+      audio: ['audio/mpeg', 'audio/mp4', 'audio/ogg', 'audio/wav', 'audio/webm'],
       document: ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
     };
 
@@ -33,9 +33,9 @@ const MediaUploadButton: React.FC<{
 
     setUploading(true);
     try {
-      const res = await templatesApi.uploadMedia(file);
-      if (res.data.success && res.data.data?.cloudinaryUrl) {
-        onUploadComplete(res.data.data.cloudinaryUrl);
+      const res = await inboxApi.uploadMedia(file);
+      if (res.data.success && res.data.data?.url) {
+        onUploadComplete(res.data.data.url);
         toast.success('Media uploaded successfully!');
       } else {
         toast.error('Upload failed');
