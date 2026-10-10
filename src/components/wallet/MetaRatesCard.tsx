@@ -29,8 +29,8 @@ const INDIA_FALLBACK: CountryRate = {
   name: 'India',
   marketing: 1.0,
   utility: 0.145,
-  authentication: 0.12,
-  service: 0,
+  authentication: 0.145,
+  service: 0.145,
 };
 
 const FLAGS: Record<string, string> = {
@@ -183,7 +183,9 @@ const MetaRatesCard: React.FC = () => {
         <Info className="w-3 h-3 flex-shrink-0 mt-0.5" />
         <span>
           Charged per message sent to {selected.name}, on the country of the
-          number you message. Replies inside the 24-hour window are free.
+          number you message. Service is a reply inside the 24-hour window; it
+          is charged only on numbers billed through WabMeta, and is free on
+          numbers billed to your own Meta account.
         </span>
       </div>
     </div>

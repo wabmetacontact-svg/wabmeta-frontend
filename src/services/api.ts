@@ -1174,6 +1174,12 @@ export const meta = {
     }),
   // Coexistence number ki chats/contacts ka import dobara maango (connect
   // ke 24 ghante tak). Backend: meta.routes.ts /accounts/:id/coexistence-sync
+  // Gupshup number: app link / live check dobara chalao.
+  // Backend: meta.routes.ts /accounts/:id/gupshup-link
+  gupshupLink: (accountId: string) =>
+    api.post<ApiResponse<{ gupshupStatus: string | null; gupshupError: string | null }>>(
+      `/meta/accounts/${accountId}/gupshup-link`
+    ),
   coexistenceSync: (accountId: string) =>
     api.post<ApiResponse<{ smbSyncState: any }>>(`/meta/accounts/${accountId}/coexistence-sync`),
   getOrgStatus: (organizationId: string) =>

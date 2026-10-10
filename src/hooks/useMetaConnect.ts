@@ -127,8 +127,10 @@ export const useMetaConnect = ({
           sessionInfoRef.current.coexistence ??
           (sessionInfoRef.current.sessionReceived ? false : modeRef.current === 'existing'),
         // So the account records which solution it came in through. Meta
-        // confirms it independently with a PARTNER_ADDED webhook.
-        ...(SOLUTION_ID ? { solutionId: SOLUTION_ID } : {}),
+        // confirms it independently with a PARTNER_ADDED webhook. The backend
+        // also uses it to put the number on Gupshup (credit line + sends).
+        // Coexistence is never on the solution - see the FB.login extras.
+        ...(SOLUTION_ID && modeRef.current !== 'existing' ? { solutionId: SOLUTION_ID } : {}),
       });
 
       const data = response.data;
@@ -266,7 +268,11 @@ export const useMetaConnect = ({
             // Signs the client up through the Multi-Partner Solution, which
             // puts them on the Solution Partner's credit line. Meta also shows
             // them a version of the flow that says both partners get access.
-            ...(SOLUTION_ID ? { setup: { solutionID: SOLUTION_ID } } : {}),
+            //
+            // Not for coexistence: Gupshup's partner-hosted flow does not
+            // support existing WhatsApp Business app numbers yet, so those stay
+            // on Meta direct (the customer's own payment method).
+            ...(SOLUTION_ID && mode !== 'existing' ? { setup: { solutionID: SOLUTION_ID } } : {}),
             // Only the coexistence flow takes this. It used to be hardcoded, so
             // a business bringing a fresh number was sent down the "connect your
             // existing WhatsApp Business app" path with nothing to connect.

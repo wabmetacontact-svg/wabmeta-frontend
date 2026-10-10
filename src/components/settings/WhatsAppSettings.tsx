@@ -9,6 +9,7 @@ import { useMetaConnect, type ConnectMode } from '../../hooks/useMetaConnect';
 import { ConnectWhatsAppChoice } from '../common/ConnectWhatsAppChoice';
 import ConnectVideoCard from '../dashboard/ConnectVideoCard';
 import { CoexistenceSyncStatus, type SmbSyncState } from './CoexistenceSyncStatus';
+import { GupshupActivationStatus } from './GupshupActivationStatus';
 import {
   Phone, CheckCircle, Trash2, Loader2, Star, Cloud, Plus,
   RefreshCw, AlertCircle, TrendingUp, Activity, Shield, Clock,
@@ -29,6 +30,10 @@ interface WhatsAppAccount {
   connectionType: 'CLOUD_API' | 'WHATSAPP_BUSINESS_APP';
   // Sirf coexistence numbers par - chats/contacts import ka haal
   smbSyncState?: SmbSyncState | null;
+  // Gupshup (credit line) numbers - activation haal
+  sendProvider?: 'META' | 'GUPSHUP';
+  gupshupStatus?: string | null;
+  gupshupError?: string | null;
   isDefault: boolean;
   codeVerificationStatus: string | null;
   // Business verification of the Meta portfolio that owns the WABA
@@ -714,6 +719,15 @@ export default function WhatsAppSettings() {
                     </div>
                     
                   </div>
+
+                  {account.sendProvider === 'GUPSHUP' && (
+                    <GupshupActivationStatus
+                      accountId={account.id}
+                      status={account.gupshupStatus}
+                      error={account.gupshupError}
+                      onUpdated={() => fetchAccounts(true)}
+                    />
+                  )}
 
                   {account.smbSyncState?.onboardedAt && (
                     <CoexistenceSyncStatus
