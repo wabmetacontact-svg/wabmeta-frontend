@@ -232,7 +232,7 @@ const CallingSettings: React.FC = () => {
   const handleSaveAll = async () => {
     try {
       setSaving(true);
-      await api.put('/calling/settings', {
+      const response = await api.put('/calling/settings', {
         callingEnabled,
         showCallButton,
         callbackEnabled,
@@ -245,7 +245,14 @@ const CallingSettings: React.FC = () => {
             }))
           : [],
       });
-      toast.success('✅ Calling settings saved!');
+      if (response.data?.callbackUnsupported) {
+        // Meta is number ke country mein business-initiated calls allow nahi
+        // karta, isliye backend ne callback band karke save kiya
+        setCallbackEnabled(false);
+        toast.success('✅ Calling settings saved. Callback requests are not available for your number\'s country, so they were turned off.');
+      } else {
+        toast.success('✅ Calling settings saved!');
+      }
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Failed to save settings');
     } finally {
